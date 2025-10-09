@@ -7,7 +7,7 @@ echo "=== Sirius3 Robot Simulation Launcher ==="
 echo "ワークスペースをセットアップしています..."
 
 # ワークスペースのパスを設定
-WORKSPACE_PATH="/home/kotantu-nuc/sirius_jazzy_ws"
+WORKSPACE_PATH="/home/kotantu-desktop/sirius_jazzy_ws"
 
 # ワークスペースディレクトリに移動
 cd $WORKSPACE_PATH
