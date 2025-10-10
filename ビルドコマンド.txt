@@ -1,1 +1,5 @@
+# 順次ビルド
 colcon build --executor sequential
+
+# 依存関係のインストール
+rosdep install --from-paths src -y --ignore-src
