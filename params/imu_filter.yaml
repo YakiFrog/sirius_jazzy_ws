@@ -1,0 +1,13 @@
+imu_filter_madgwick_node:
+  ros__parameters:
+    use_mag: false                    # 磁気センサー使用
+    gain: 0.1                         # フィルタゲイン（0.01-0.5）
+    zeta: 0.0                         # ジャイロドリフト補正
+    publish_tf: true                  # TF配信
+    world_frame: enu                  # 座標系（enu or nwu）
+    use_magnetic_field_msg: false     # 磁気フィールドメッセージ
+    reverse_tf: false                 # TF方向を逆にする
+    fixed_frame: sirius3/base_link    # 固定フレーム
+    constant_dt: 0.0                  # 固定dt（0=自動）
+    # odom
+    odom_frame: sirius3/odom
