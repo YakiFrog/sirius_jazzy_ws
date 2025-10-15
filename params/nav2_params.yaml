@@ -142,9 +142,9 @@ controller_server:
       yaw_goal_tolerance: 0.25
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 80
+      time_steps: 60  # 80 -> 60
       model_dt: 0.07 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
-      batch_size: 1000  # 2000→1500 計算負荷を半減（制御ループ遅延対策）
+      batch_size: 1200  # 2000→1500 計算負荷を半減（制御ループ遅延対策）
 
       ax_max: 2.5
       ax_min: -2.5 # 急ブレーキのために(無根拠)
@@ -326,7 +326,7 @@ global_costmap:
           topic: /velodyne_points # 点群トピック
           marking: true # 障害物をマークするかどうか
           clearing: false # 障害物をクリアするかどうか
-          obstacle_range: 8.0 # 障害物検知範囲（メートル）
+          obstacle_range: 20.0 # 障害物検知範囲（メートル）
           min_obstacle_height: 0.3 # 最小障害物高さ（メートル）、デフォルトは0
           max_obstacle_height: 2.0 # 最大障害物高さ（メートル）、デフォルトは3
           expected_update_rate: 0.0 # 期待更新レート、この速度で更新されない場合はバッファから削除
@@ -360,9 +360,9 @@ global_costmap:
           clearing: True
           marking: True
           data_type: "LaserScan"
-          raytrace_max_range: 10.0
+          raytrace_max_range: 20.0
           raytrace_min_range: 0.0
-          obstacle_max_range: 8.0
+          obstacle_max_range: 18.0
           obstacle_min_range: 0.0
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
