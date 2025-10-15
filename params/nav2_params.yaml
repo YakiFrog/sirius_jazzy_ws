@@ -22,7 +22,7 @@ amcl:
     
     # センサーモデルパラメータ
     lambda_short: 0.1                      # 短距離測定の指数分布パラメータ
-    laser_likelihood_max_dist: 5.0        # 尤度計算の最大距離[m]
+    laser_likelihood_max_dist: 15.0        # 尤度計算の最大距離[m]
     laser_max_range: 100.0                 # レーザーの最大測定距離[m]
     laser_min_range: -1.0                  # レーザーの最小測定距離[m]（-1は自動設定）
     laser_model_type: "likelihood_field_prob"   # センサーモデルタイプ
@@ -30,6 +30,7 @@ amcl:
     #   - 事前計算された距離場を使用して高速に尤度を計算
     #   - 動的障害物や一時的なノイズに対してロバスト
     #   - 室内環境や構造化された環境で最適
+    #   - 自己位置がジャンプしやすいが、補正が効く
     # likelihood_field: 基本的な尤度場モデル（高速だが正規化なし）
     # beam: ビームモデル（高精度だが計算コスト大・ノイズに弱い）
     #   - レイトレーシングで障害物を検出
@@ -157,7 +158,7 @@ controller_server:
         trajectory_step: 5
         time_step: 3
       AckermannConstraints:
-        min_turning_r: 0.0 # default 0.2
+        min_turning_r: 0.2 # default 0.2 あったほうがいいのかも
       critics: [
         "ConstraintCritic", "CostCritic", "GoalCritic",
         "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic",
