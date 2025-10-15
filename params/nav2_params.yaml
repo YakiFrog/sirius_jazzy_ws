@@ -277,32 +277,12 @@ local_costmap:
       resolution: 0.05
       # footprint: "[ [0.30, 0.30], [0.30, -0.30], [-0.50, -0.30], [-0.50, 0.30] ]" # ロボットの形状（ぴったりサイズ）
       footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
-      plugins: ["inflation_layer", "voxel_layer", "static_layer"]
+      plugins: ["inflation_layer", "static_layer"]
       track_unknown_space: true 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
         inflation_radius: 0.75 # ロボットが近づけない距離
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"
-        enabled: True
-        publish_voxel_map: True
-        origin_z: 0.0
-        z_resolution: 0.05
-        z_voxels: 40
-        max_obstacle_height: 2.0
-        mark_threshold: 0
-        observation_sources: scan
-        scan:
-          topic: /scan
-          max_obstacle_height: 2.0
-          clearing: True
-          marking: True
-          data_type: "LaserScan"
-          raytrace_max_range: 10.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 8.0
-          obstacle_min_range: 0.0
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
@@ -317,16 +297,64 @@ global_costmap:
       global_frame: map # ✅ 長距離・経路計画用
       robot_base_frame: sirius3/base_link
       footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン)
-      resolution: 0.10 # 0.05 -> 0.10 (軽量化のため)
+      resolution: 0.05 # 0.05 -> 0.10 (軽量化のため)
       track_unknown_space: true
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      plugins: ["static_layer","stvl_layer","obstacle_layer","inflation_layer"]
+      # リアルタイムで出てくる障害物に枠付するのはこれ。
+      stvl_layer:
+        plugin: "spatio_temporal_voxel_layer/SpatioTemporalVoxelLayer" # 時空間ボクセルレイヤープラグイン
+        enabled: true # レイヤーを有効化
+        voxel_decay: 0.5 # ボクセル減衰時間（秒）- 線形なら秒単位、指数関数なら e^n
+        decay_model: 0 # 減衰モデル（0=線形、1=指数関数、-1=永続的）
+        voxel_size: 0.10 # ボクセルサイズ（メートル）
+        track_unknown_space: true # 未知の領域を追跡するかどうか（デフォルトは既知）
+        mark_threshold: 0 # 障害物としてマークするボクセル高さの閾値
+        update_footprint_enabled: true # ロボットの足跡を更新するかどうか
+        combination_method: 1 # レイヤー結合方法（1=最大値、0=上書き）
+        origin_z: 0.0 # Z原点（メートル）
+        publish_voxel_map: true # ボクセルマップを公開するかどうか（デフォルトはオフ）
+        transform_tolerance: 1.0 # 変換許容時間（秒）
+        mapping_mode: false # マッピングモード（デフォルトはオフ、ナビゲーション以外の用途でマップを保存）
+        map_save_duration: 60.0 # マップの自動保存間隔（秒）、デフォルトは60秒
+        observation_sources: rgbd1_mark rgbd1_clear # 観測ソース
+
+        # 障害物を追加
+        rgbd1_mark:
+          enabled: true # 有効化（サービスコールで切り替え可能）
+          data_type: PointCloud2 # データ型
+          topic: /velodyne_points # 点群トピック
+          marking: true # 障害物をマークするかどうか
+          clearing: false # 障害物をクリアするかどうか
+          obstacle_range: 8.0 # 障害物検知範囲（メートル）
+          min_obstacle_height: 0.3 # 最小障害物高さ（メートル）、デフォルトは0
+          max_obstacle_height: 2.0 # 最大障害物高さ（メートル）、デフォルトは3
+          expected_update_rate: 1.0 # 期待更新レート、この速度で更新されない場合はバッファから削除
+          observation_persistence: 0.0 # 観測持続時間、値が0の場合は最新の測定値のみ使用
+          inf_is_valid: false # 無限値が有効かどうか（レーザースキャン用）
+          filter: "voxel" # フィルタータイプ（"voxel"、"passthrough"、またはフィルタなし）
+          clear_after_reading: true # 読み取り後にバッファをクリアするかどうか
+
+        # 障害物を削除
+        rgbd1_clear:
+          enabled: true # 有効化（サービスコールで切り替え可能）
+          data_type: PointCloud2 # データ型
+          topic: /velodyne_points # 点群トピック
+          marking: false # 障害物をマークしない
+          clearing: true # 障害物をクリアする
+          max_z: 8.0 # 最大Z値（メートル）、デフォルトは0
+          min_z: 0.0 # 最小Z値（メートル）、デフォルトは10
+          vertical_fov_angle: 0.523 # 垂直視野角（ラジアン）、デフォルトは0.7
+          vertical_fov_padding: 0.05 # 3DライダーのパディングF（メートル）
+          horizontal_fov_angle: 6.29 # 水平視野角（ラジアン）、VLP16などは360度（約6.29ラジアン）
+          decay_acceleration: 5.0 # 減衰加速度（1/s^2）、デフォルトは0
+          model_type: 1 # フラスタムのモデルタイプ（0=深度カメラ、1=VLP16などの3Dライダー）
       # リアルタイムで出てくる障害物に枠付するのはこれ。
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
         observation_sources: scan
         scan:
-          topic: /scan
+          topic: /hokuyo_scan
           max_obstacle_height: 2.0
           clearing: True
           marking: True
