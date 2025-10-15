@@ -159,62 +159,90 @@ controller_server:
         time_step: 3
       AckermannConstraints:
         min_turning_r: 0.2 # default 0.2 あったほうがいいのかも
+      
+      # Critics: 軌道評価基準のリスト（複数の基準でベスト軌道を選択）
+      # 各criticがコストを計算し、合計コストが最小の軌道を選ぶ
+      # cost = Σ(cost_weight × (評価値 ^ cost_power))
       critics: [
         "ConstraintCritic", "CostCritic", "GoalCritic",
         "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic",
         "PathAngleCritic", "PreferForwardCritic"]
+      
+      # ConstraintCritic: 物理的制約（速度・加速度制限）の評価
+      # ロボットの動力学的制約を満たさない軌道にペナルティを与える
       ConstraintCritic:
         enabled: true
-        cost_power: 1
-        cost_weight: 4.0
+        cost_power: 1              # コストの累乗（1=線形、2=二次的にペナルティ増加）
+        cost_weight: 4.0           # この評価基準の重み（大きいほど影響大）
+      
+      # GoalCritic: ゴールへの接近度評価
+      # ゴールに近づく軌道を優先（距離が近いほどコスト低）
       GoalCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 5.0
-        threshold_to_consider: 1.4
+        cost_weight: 5.0           # ゴール到達を重視（高め）
+        threshold_to_consider: 1.4 # この距離[m]以内でゴール評価開始
+      
+      # GoalAngleCritic: ゴール時の姿勢（角度）評価
+      # ゴール地点での向きを正確に合わせる（最終姿勢の精度）
       GoalAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.0
-        threshold_to_consider: 0.5
+        cost_weight: 3.0           # 姿勢精度の重視度（中程度）
+        threshold_to_consider: 0.5 # この距離[m]以内で角度評価開始
+      
+      # PreferForwardCritic: 前進優先評価
+      # 後退より前進を優先（バック走行にペナルティ）
       PreferForwardCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 5.0
-        threshold_to_consider: 0.5
+        cost_weight: 5.0           # 前進を強く優先
+        threshold_to_consider: 0.5 # この距離[m]以内で前進優先評価
+      
+      # CostCritic: コストマップ（障害物）評価
+      # 障害物に近い軌道にペナルティ（衝突回避の核心）
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.81
-        near_collision_cost: 253
-        critical_cost: 300.0
-        consider_footprint: false
-        collision_cost: 1000000.0
-        near_goal_distance: 1.0
-        trajectory_point_step: 2
+        cost_weight: 3.81              # 障害物回避の重み
+        near_collision_cost: 253       # 衝突手前のコスト閾値
+        critical_cost: 300.0           # 危険レベルのコスト閾値
+        consider_footprint: false      # フットプリント全体で評価するか（false=中心点のみ）
+        collision_cost: 1000000.0      # 衝突時の高ペナルティ（実質的に選択されない）
+        near_goal_distance: 1.0        # ゴール付近[m]での評価調整
+        trajectory_point_step: 2       # 軌道上の評価点間隔（大きいほど高速・粗い）
+      
+      # PathAlignCritic: 経路整合性評価
+      # グローバルパスに沿った軌道を優先（パスから外れにくくする）
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 14.0
-        max_path_occupancy_ratio: 0.05
-        trajectory_point_step: 4
-        threshold_to_consider: 0.5
-        offset_from_furthest: 20
-        use_path_orientations: false
+        cost_weight: 14.0              # パス追従を強く重視（最も高い重み）
+        max_path_occupancy_ratio: 0.05 # パス上の障害物許容率（5%まで）
+        trajectory_point_step: 4       # 評価点間隔
+        threshold_to_consider: 0.5     # この距離[m]以内でパス整合評価
+        offset_from_furthest: 20       # 最遠点からのオフセット（先読み距離）
+        use_path_orientations: false   # パスの向き情報を使うか
+      
+      # PathFollowCritic: 経路追従評価
+      # グローバルパスの進行方向に従う（パスに沿って進む）
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 5.0
-        offset_from_furthest: 5
-        threshold_to_consider: 1.4
+        cost_weight: 5.0               # 経路追従の重視度
+        offset_from_furthest: 5        # 先読み距離[points]（パス上の何点先を見るか）
+        threshold_to_consider: 1.4     # この距離[m]以内で追従評価
+      
+      # PathAngleCritic: 経路角度評価
+      # パスの向きと軌道の向きの一致度（滑らかな追従）
       PathAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 2.0
-        offset_from_furthest: 4
-        threshold_to_consider: 0.5
-        max_angle_to_furthest: 1.0
-        mode: 0
+        cost_weight: 2.0               # 角度一致の重視度（低め）
+        offset_from_furthest: 4        # 先読み距離[points]
+        threshold_to_consider: 0.5     # この距離[m]以内で角度評価
+        max_angle_to_furthest: 1.0     # 最大許容角度差[rad]（約57度）
+        mode: 0                        # 評価モード（0=標準）
       # TwirlingCritic:
       #   enabled: true
       #   twirling_cost_power: 1
