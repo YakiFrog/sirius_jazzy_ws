@@ -162,7 +162,7 @@ controller_server:
       wz_max: 2.3
 
       iteration_count: 1
-      prune_distance: 3.0 # より遠くまで軌道を維持
+      prune_distance: 2.0 # より遠くまで軌道を維持
       transform_tolerance: 0.1
       temperature: 0.35
       gamma: 0.020
@@ -234,7 +234,7 @@ controller_server:
         cost_power: 1
         cost_weight: 10.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0
         max_path_occupancy_ratio: 0.15 # パス上の障害物許容率（5% -> 15%に緩和）
-        trajectory_point_step: 3       # 評価点間隔 4 -> 3
+        trajectory_point_step: 4       # 評価点間隔 4 -> 3
         threshold_to_consider: 1.0     # この距離[m]以内でパス整合評価 0.5 -> 1.0
         offset_from_furthest: 25       # 最遠点からのオフセット（先読み距離）20 -> 25
         use_path_orientations: false   # パスの向き情報を使うか
