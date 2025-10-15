@@ -47,7 +47,7 @@ amcl:
     # リカバリー機能（ロボットロスト時の回復）
     # 自己位置がジャンプするのはこの子の値のせい。大きくしすぎず、修正が効くような値にする。
     recovery_alpha_fast: 0.005  # 高速リカバリーの学習率（大きいと素早く回復）-> Likelihood_field_probは確率的に自己位置を計算するため、ジャンプしがち。その際にある程度早くリカバリーしないとだめなのなので0.001では遅い。
-    recovery_alpha_slow: 0.01    # 低速リカバリーの学習率（安定性重視）
+    recovery_alpha_slow: 0.02    # 低速リカバリーの学習率（安定性重視）
     
     # フィルタ更新設定
     resample_interval: 1          # リサンプリング間隔（毎フレーム）
@@ -253,7 +253,7 @@ local_costmap:
   local_costmap:
     ros__parameters:
       use_sim_time: true
-      update_frequency: 5.0
+      update_frequency: 3.0 # 軽量化 5.0 -> 3.0
       publish_frequency: 2.0
       global_frame: sirius3/odom # ✅ 短距離・リアルタイム制御用, MapだとAMCLのジャンプで軌道が乱れる
       robot_base_frame: sirius3/base_link
