@@ -13,10 +13,10 @@ amcl:
 
     # 自己位置ぶっとびやすいのは、ここの値。シミュレータ上のオドメトリはずれやすい
     # 点群と環境情報が一致していないときは、ここの値を高くする（LiDARの信頼度を上げる）ことで、ビッタリ合うはず。
-    alpha1: 0.25  # 回転による回転誤差（小さく=回転時の角度ブレを抑制）
-    alpha2: 0.25  # 並進による回転誤差（小さく=直進時の角度ブレを抑制）
-    alpha3: 0.25  # 並進による並進誤差（進行方向のブレ）← 若干大きめで前方に広げる
-    alpha4: 0.25  # 回転による並進誤差（小さく=回転時の横ズレを抑制）
+    alpha1: 0.15  # 回転による回転誤差（小さく=回転時の角度ブレを抑制）
+    alpha2: 0.15  # 並進による回転誤差（小さく=直進時の角度ブレを抑制）
+    alpha3: 0.15  # 並進による並進誤差（進行方向のブレ）← 若干大きめで前方に広げる
+    alpha4: 0.15  # 回転による並進誤差（小さく=回転時の横ズレを抑制）
     alpha5: 0.10  # 並進誤差の追加ノイズ（小さく=全方向の無駄な拡散を抑制）
     
     # フレームID設定
@@ -112,11 +112,11 @@ bt_navigator:
 controller_server:
   ros__parameters:
     use_sim_time: true
-    controller_frequency: 20.0 # 20.0 -> 15.0 制御ループの周波数（高いほど応答性良・負荷大）
+    controller_frequency: 15.0 # 20.0 -> 15.0 制御ループの周波数（高いほど応答性良・負荷大）
     costmap_update_timeout: 0.30
-    min_x_velocity_threshold: 0.05
+    min_x_velocity_threshold: 0.01
     min_y_velocity_threshold: 0.5
-    min_theta_velocity_threshold: 0.05
+    min_theta_velocity_threshold: 0.01
     failure_tolerance: 0.3
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
@@ -142,8 +142,8 @@ controller_server:
       yaw_goal_tolerance: 0.25
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 60
-      model_dt: 0.05 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
+      time_steps: 100
+      model_dt: 0.07 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 1000  # 2000→1500 計算負荷を半減（制御ループ遅延対策）
 
       ax_max: 2.5
@@ -156,15 +156,15 @@ controller_server:
       vy_std: 0.00
       wz_std: 0.60
 
-      vx_max: 1.0
-      vx_min: -0.2 # 後退は控えめに
+      vx_max: 1.3
+      vx_min: -0.3 # 後退は控えめに
       vy_max: 0.0
-      wz_max: 2.0
+      wz_max: 2.3
 
       iteration_count: 1
-      prune_distance: 2.0 # より遠くまで軌道を維持
+      prune_distance: 3.0 # より遠くまで軌道を維持
       transform_tolerance: 0.1
-      temperature: 0.3
+      temperature: 0.35
       gamma: 0.020
       motion_model: "DiffDrive"
       visualize: true
@@ -209,9 +209,9 @@ controller_server:
       # PreferForwardCritic: 前進優先評価
       # 後退より前進を優先（バック走行にペナルティ）
       PreferForwardCritic:
-        enabled: false
+        enabled: true
         cost_power: 1
-        cost_weight: 0.0           # 前進を強く優先
+        cost_weight: 2.0           # 前進を強く優先
         threshold_to_consider: 0.5 # この距離[m]以内で前進優先評価
       
       # CostCritic: コストマップ（障害物）評価
@@ -219,7 +219,7 @@ controller_server:
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.00              # 障害物回避の重み(高いほど、パスからそれて避ける) 3.81 -> 3.0
+        cost_weight: 4.0              # 障害物回避の重み(高いほど、パスからそれて避ける) 3.81 -> 3.0
         near_collision_cost: 253       # 衝突手前のコスト閾値
         critical_cost: 300.0           # 危険レベルのコスト閾値　
         consider_footprint: true      # フットプリント全体で評価するか（false=中心点のみ） これでフットプリントが干渉しているとき動かない
@@ -244,7 +244,7 @@ controller_server:
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 10.0               # 経路追従の重視度 5.0 -> 10.0
+        cost_weight: 5.0               # 経路追従の重視度 5.0 -> 10.0
         offset_from_furthest: 8        # 先読み距離[points]（パス上の何点先を見るか） 5 -> 8
         threshold_to_consider: 2.0     # この距離[m]以内で追従評価 1.4 -> 2.0
       
@@ -357,61 +357,6 @@ map_saver:
     occupied_thresh_default: 0.65
     map_subscribe_transient_local: True
 
-# planner_server:
-#   ros__parameters:
-#     use_sim_time: true
-#     expected_planner_frequency: 1.0
-#     planner_plugins: ["GridBased"]
-#     costmap_update_timeout: 1.0
-    
-#     GridBased:
-#       plugin: "nav2_smac_planner::SmacPlannerHybrid"
-      
-#       # 基本設定
-#       tolerance: 0.5
-#       downsample_costmap: false
-#       downsampling_factor: 1
-#       allow_unknown: true
-#       max_iterations: 1000000
-#       max_on_approach_iterations: 1000
-#       terminal_checking_interval: 5000
-#       max_planning_time: 5.0
-      
-#       # === 前進優先の運動モデル ===
-#       motion_model_for_search: "REEDS_SHEPP"  # または "DUBIN"（前進のみ）
-      
-#       # === 後進を強く抑制 ===
-#       minimum_turning_radius: 0.10     # 最低でも必要
-#       reverse_penalty: 1.0            # 2.0 → 10.0 (後進に巨大ペナルティ)
-#       change_penalty: 0.0              # 0.0 → 5.0 (前後切替にもペナルティ)
-#       non_straight_penalty: 0.2        # 1.0 → 1.2 (直進以外にペナルティ)
-#       cost_penalty: 1.5                # 1.0 → 2.0 (コストマップの影響を強める) -> 障害物回避
-#       rotation_penalty: 0.0            # 0.0 → 5.0 (回転にペナルティ)
-      
-#       # 角度の細かさ
-#       angle_quantization_bins: 72      # 360 / 72 = 5度刻み（細かいほど滑らか）
-      
-#       # 解析的拡張（最終アプローチ）
-#       analytic_expansion_ratio: 3.5
-#       analytic_expansion_max_length: 3.0
-#       analytic_expansion_max_cost: 200.0
-      
-#       retrospective_penalty: 0.010
-#       lookup_table_size: 20.0
-#       cache_obstacle_heuristic: false
-      
-#       # パススムージング
-#       smooth_path: true
-#       smoother:
-#         max_iterations: 1000
-#         w_smooth: 0.3
-#         w_data: 0.2
-#         tolerance: 1.0e-10
-#         do_refinement: true
-      
-#       debug_visualizations: false
-#       use_final_approach_orientation: false
-
 planner_server:
   ros__parameters:
     use_sim_time: true
@@ -484,10 +429,10 @@ velocity_smoother:
     # min_velocity: [-1.0, 0.0, -2.0]
     # max_accel: [2.5, 0.0, 3.2]
     # max_decel: [-2.5, 0.0, -3.2]
-    max_velocity: [1.00, 0.0, 2.00]
-    min_velocity: [-0.50, 0.0, -2.00]
-    max_accel: [2.5, 0.0, 2.50]
-    max_decel: [-2.5, 0.0, -2.50]
+    max_velocity: [1.30, 0.0, 2.30]
+    min_velocity: [-0.50, 0.0, -2.30]
+    max_accel: [3.0, 0.0, 2.80]
+    max_decel: [-3.0, 0.0, -2.80]
     odom_topic: "odom"
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
