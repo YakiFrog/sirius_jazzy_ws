@@ -276,7 +276,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
-        inflation_radius: 0.45 # ロボットが近づけない距離
+        inflation_radius: 0.50 # ロボットが近づけない距離
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -306,14 +306,15 @@ global_costmap:
   global_costmap:
     ros__parameters:
       use_sim_time: true
-      update_frequency: 1.0
-      publish_frequency: 1.0
+      update_frequency: 3.0 # 1.0 -> 3.0 障害物の削除を早めたい
+      publish_frequency: 2.0
       global_frame: map # ✅ 長距離・経路計画用
       robot_base_frame: sirius3/base_link
       footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン)
       resolution: 0.10 # 0.05 -> 0.10 (軽量化のため)
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      # リアルタイムで出てくる障害物に枠付するのはこれ。
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
@@ -324,17 +325,17 @@ global_costmap:
           clearing: True
           marking: True
           data_type: "LaserScan"
-          raytrace_max_range: 3.0
+          raytrace_max_range: 5.0
           raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
+          obstacle_max_range: 4.0
           obstacle_min_range: 0.0
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0 # ここをゆるくしておかないと、頑張れば通れそうなところで立ち往生しちゃう。
-        inflation_radius: 0.70 # こうしないと、青色に車体が入って動かなくなる
+        cost_scaling_factor: 10.0 # ここをゆるくしておかないと、頑張れば通れそうなところで立ち往生しちゃう。
+        inflation_radius: 0.55 # こうしないと、青色に車体が入って動かなくなる
       always_send_full_costmap: True
 
 # The yaml_filename does not need to be specified since it going to be set by defaults in launch.
