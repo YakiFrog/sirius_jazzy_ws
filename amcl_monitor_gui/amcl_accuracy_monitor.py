@@ -210,7 +210,7 @@ class AMCLMonitorWindow(QMainWindow):
         super().__init__()
         self.ros_worker = ros_worker
         
-        self.setWindowTitle("AMCL 自己位置推定精度モニター")
+        self.setWindowTitle("AMCL 自己位置推定モニター")
         self.setMinimumSize(800, 600)
         
         # メインウィジェット
@@ -221,14 +221,14 @@ class AMCLMonitorWindow(QMainWindow):
         main_layout = QVBoxLayout()
         
         # タイトル
-        title_label = QLabel("🎯 AMCL 位置推定精度モニター")
-        title_font = QFont()
-        title_font.setPointSize(18)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setAlignment(Qt.AlignCenter)
-        title_label.setStyleSheet("color: #2196F3; padding: 10px;")
-        main_layout.addWidget(title_label)
+        # title_label = QLabel("🎯 AMCL 位置推定精度モニター")
+        # title_font = QFont()
+        # title_font.setPointSize(18)
+        # title_font.setBold(True)
+        # title_label.setFont(title_font)
+        # title_label.setAlignment(Qt.AlignCenter)
+        # title_label.setStyleSheet("color: #2196F3; padding: 10px;")
+        # main_layout.addWidget(title_label)
         
         # 位置情報グループ
         position_group = QGroupBox("現在位置")
