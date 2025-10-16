@@ -4,20 +4,20 @@ amcl:
     
     # オドメトリモデルのノイズパラメータ（回転・並進の誤差モデル）
     # 進行方向に集中させるため、横方向の拡散を抑制
-    # alpha1: 0.05  # 回転による回転誤差（小さく=回転時の角度ブレを抑制）
-    # alpha2: 0.05  # 並進による回転誤差（小さく=直進時の角度ブレを抑制）
-    # alpha3: 0.15  # 並進による並進誤差（進行方向のブレ）← 若干大きめで前方に広げる
-    # alpha4: 0.05  # 回転による並進誤差（小さく=回転時の横ズレを抑制）
-    # alpha5: 0.10  # 並進誤差の追加ノイズ（小さく=全方向の無駄な拡散を抑制）
-
-
-    # 自己位置ぶっとびやすいのは、ここの値。シミュレータ上のオドメトリはずれやすい
-    # 点群と環境情報が一致していないときは、ここの値を高くする（LiDARの信頼度を上げる）ことで、ビッタリ合うはず。
-    alpha1: 0.35  # 回転による回転誤差（小さく=回転時の角度ブレを抑制）
-    alpha2: 0.35  # 並進による回転誤差（小さく=直進時の角度ブレを抑制）
-    alpha3: 0.35  # 並進による並進誤差（進行方向のブレ）← 若干大きめで前方に広げる
-    alpha4: 0.35  # 回転による並進誤差（小さく=回転時の横ズレを抑制）
+    alpha1: 0.05  # 回転による回転誤差（小さく=回転時の角度ブレを抑制）
+    alpha2: 0.05  # 並進による回転誤差（小さく=直進時の角度ブレを抑制）
+    alpha3: 0.15  # 並進による並進誤差（進行方向のブレ）← 若干大きめで前方に広げる
+    alpha4: 0.05  # 回転による並進誤差（小さく=回転時の横ズレを抑制）
     alpha5: 0.10  # 並進誤差の追加ノイズ（小さく=全方向の無駄な拡散を抑制）
+
+
+    # # 自己位置ぶっとびやすいのは、ここの値。シミュレータ上のオドメトリはずれやすい
+    # # 点群と環境情報が一致していないときは、ここの値を高くする（LiDARの信頼度を上げる）ことで、ビッタリ合うはず。
+    # alpha1: 0.35  # 回転による回転誤差（小さく=回転時の角度ブレを抑制）
+    # alpha2: 0.35  # 並進による回転誤差（小さく=直進時の角度ブレを抑制）
+    # alpha3: 0.35  # 並進による並進誤差（進行方向のブレ）← 若干大きめで前方に広げる
+    # alpha4: 0.35  # 回転による並進誤差（小さく=回転時の横ズレを抑制）
+    # alpha5: 0.10  # 並進誤差の追加ノイズ（小さく=全方向の無駄な拡散を抑制）
     
     # フレームID設定
     base_frame_id: "sirius3/base_footprint"  # ロボットのベースフレーム
@@ -49,8 +49,8 @@ amcl:
     scan_topic: scan                       # 購読するレーザースキャントピック名
     
     # パーティクルフィルタ設定
-    max_particles: 2000  # 最大パーティクル数（多いほど精度高・計算量大）3000 -> 2000
-    min_particles: 500  # 最小パーティクル数（少ないと精度低・計算量小）700 -> 500
+    max_particles: 3000  # 最大パーティクル数（多いほど精度高・計算量大）3000 -> 2000
+    min_particles: 600  # 最小パーティクル数（少ないと精度低・計算量小）700 -> 500
     pf_err: 0.10         # 位置推定の許容誤差（小さいほど高精度だが計算量増）
     pf_z: 0.99           # パーティクルフィルタの信頼度（0.99推奨）
     
@@ -144,7 +144,7 @@ controller_server:
       plugin: "nav2_mppi_controller::MPPIController"
       time_steps: 60  # 80 -> 60
       model_dt: 0.07 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
-      batch_size: 1000  # 2000→1500 計算負荷を半減（制御ループ遅延対策）
+      batch_size: 1500  # 2000→1500 計算負荷を半減（制御ループ遅延対策）
 
       ax_max: 2.5
       ax_min: -2.5 # 急ブレーキのために(無根拠)
@@ -164,8 +164,8 @@ controller_server:
       iteration_count: 1
       prune_distance: 2.0 # より遠くまで軌道を維持
       transform_tolerance: 0.1
-      temperature: 0.35
-      gamma: 0.020
+      temperature: 0.50 # 軌道選択のランダム性
+      gamma: 0.010 # 減衰率(未来のコストをどれだけ重視するか)
       motion_model: "DiffDrive"
       visualize: true
       regenerate_noises: true
@@ -173,7 +173,7 @@ controller_server:
         trajectory_step: 5
         time_step: 3
       AckermannConstraints:
-        min_turning_r: 0.0 # default 0.2 あったほうがいいのかも
+        min_turning_r: 0.2 # default 0.2 あったほうがいいのかも
       
       # Critics: 軌道評価基準のリスト（複数の基準でベスト軌道を選択）
       # 各criticがコストを計算し、合計コストが最小の軌道を選ぶ
@@ -210,8 +210,8 @@ controller_server:
       # 後退より前進を優先（バック走行にペナルティ）
       PreferForwardCritic:
         enabled: true
-        cost_power: 1
-        cost_weight: 1.5           # 前進を強く優先
+        cost_power: 1 # 前進優先度
+        cost_weight: 5.0          # 前進を強く優先
         threshold_to_consider: 2.5 # この距離[m]以内で前進優先評価
       
       # CostCritic: コストマップ（障害物）評価
@@ -224,15 +224,25 @@ controller_server:
         critical_cost: 250.0           # 危険レベルのコスト閾値　300 -> 250 危険判定を厳しく
         consider_footprint: true      # フットプリント全体で評価するか（false=中心点のみ） これでフットプリントが干渉しているとき動かない
         collision_cost: 1000000.0      # 衝突時の高ペナルティ（実質的に選択されない）
-        near_goal_distance: 1.0        # ゴール付近[m]での評価調整
+        near_goal_distance: 2.0        # ゴール付近[m]での評価調整
         trajectory_point_step: 1       # 軌道上の評価点間隔（大きいほど高速・粗い） 2 -> 1 
       
       # PathAlignCritic: 経路整合性評価
       # グローバルパスに沿った軌道を優先（パスから外れにくくする）
+      # PathAlignCritic:
+      #   enabled: true
+      #   cost_power: 1
+      #   cost_weight: 5.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0
+      #   max_path_occupancy_ratio: 0.20 # パス上の障害物許容率（5% -> 15%に緩和）
+      #   trajectory_point_step: 4       # 評価点間隔 4 -> 3
+      #   threshold_to_consider: 1.0     # この距離[m]以内でパス整合評価 0.5 -> 1.0
+      #   offset_from_furthest: 25       # 最遠点からのオフセット（先読み距離）20 -> 25
+      #   use_path_orientations: false   # パスの向き情報を使うか
+
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 5.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0
+        cost_weight: 10.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0
         max_path_occupancy_ratio: 0.20 # パス上の障害物許容率（5% -> 15%に緩和）
         trajectory_point_step: 4       # 評価点間隔 4 -> 3
         threshold_to_consider: 1.0     # この距離[m]以内でパス整合評価 0.5 -> 1.0
@@ -244,9 +254,9 @@ controller_server:
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 2.0               # 経路追従の重視度 5.0 -> 10.0
+        cost_weight: 10.0               # 経路追従の重視度 5.0 -> 10.0 !!!! めっちゃきく。これがパス追従になる
         offset_from_furthest: 8        # 先読み距離[points]（パス上の何点先を見るか） 5 -> 8
-        threshold_to_consider: 2.0     # この距離[m]以内で追従評価 1.4 -> 2.0
+        threshold_to_consider: 1.0     # この距離[m]以内で追従評価 1.4 -> 2.0
       
       # PathAngleCritic: 経路角度評価
       # パスの向きと軌道の向きの一致度（滑らかな追従）
@@ -255,7 +265,7 @@ controller_server:
         cost_power: 1
         cost_weight: 2.0               # 角度一致の重視度（低め）
         offset_from_furthest: 6        # 先読み距離[points] 4 -> 6
-        threshold_to_consider: 1.0     # この距離[m]以内で角度評価 0.5 -> 1.0
+        threshold_to_consider: 0.5     # この距離[m]以内で角度評価 0.5 -> 1.0
         max_angle_to_furthest: 1.2     # 最大許容角度差[rad]（約57度） 1.0 -> 1.2 (寛容に)
         mode: 0                        # 評価モード（0=標準）
       # TwirlingCritic:
@@ -281,7 +291,7 @@ local_costmap:
       track_unknown_space: true 
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
+        cost_scaling_factor: 3.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
         inflation_radius: 0.75 # ロボットが近づけない距離
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
@@ -369,7 +379,7 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 20.0 # ここをゆるくしておかないと、頑張れば通れそうなところで立ち往生しちゃう。
+        cost_scaling_factor: 3.0 # ここをゆるくしておかないと、頑張れば通れそうなところで立ち往生しちゃう。
         inflation_radius: 0.75 # こうしないと、青色に車体が入って動かなくなる
       always_send_full_costmap: True
 
@@ -391,7 +401,7 @@ map_saver:
 planner_server:
   ros__parameters:
     use_sim_time: true
-    expected_planner_frequency: 1.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
+    expected_planner_frequency: 10.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
     planner_plugins: ["GridBased"]
     costmap_update_timeout: 1.0
     GridBased:
