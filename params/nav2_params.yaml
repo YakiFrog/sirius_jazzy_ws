@@ -195,7 +195,7 @@ controller_server:
       GoalCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.0           # ゴール到達を重視（高め） 5.0 -> 3.0 パス追従を優先
+        cost_weight: 8.0           # ゴール到達を重視（高め） 5.0 -> 8.0 なんか移動速度が少し上がった
         threshold_to_consider: 1.4 # この距離[m]以内でゴール評価開始
       
       # GoalAngleCritic: ゴール時の姿勢（角度）評価
@@ -211,7 +211,7 @@ controller_server:
       PreferForwardCritic:
         enabled: true
         cost_power: 1 # 前進優先度
-        cost_weight: 5.0          # 前進を強く優先
+        cost_weight: 10.0          # 前進を強く優先
         threshold_to_consider: 2.5 # この距離[m]以内で前進優先評価
       
       # CostCritic: コストマップ（障害物）評価
@@ -254,7 +254,7 @@ controller_server:
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 10.0               # 経路追従の重視度 5.0 -> 10.0 !!!! めっちゃきく。これがパス追従になる
+        cost_weight: 10.0         # 経路追従の重視度 5.0 -> 10.0 !!!! めっちゃきく。これがパス追従になる
         offset_from_furthest: 8        # 先読み距離[points]（パス上の何点先を見るか） 5 -> 8
         threshold_to_consider: 1.0     # この距離[m]以内で追従評価 1.4 -> 2.0
       
