@@ -376,9 +376,9 @@ global_costmap:
 # The yaml_filename does not need to be specified since it going to be set by defaults in launch.
 # If you'd rather set it in the yaml, remove the default "map" value in the tb3_simulation_launch.py
 # file & provide full path to map below. If CLI map configuration or launch default is provided, that will be used.
-map_server:
-  ros__parameters:
-    yaml_filename: "/home/kotantu-nuc/sirius_jazzy_ws/maps_waypoints/maps/map.yaml"
+# map_server:
+#   ros__parameters:
+#     yaml_filename: ""
 
 map_saver:
   ros__parameters:
@@ -409,6 +409,8 @@ smoother_server:
       tolerance: 1.0e-10
       max_its: 1000
       do_refinement: True
+      w_smooth: 0.3
+      w_data: 0.2
 
 behavior_server:
   ros__parameters:

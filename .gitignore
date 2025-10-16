@@ -3,3 +3,4 @@ build
 log
 install
 .vscode
+.venv
