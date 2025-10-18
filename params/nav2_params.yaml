@@ -192,9 +192,9 @@ local_costmap:
             clearing: true             # 両方有効にする[web:22]
             obstacle_range: 10.0       # VLP16の有効範囲（屋外なら10-15m）[web:22][web:31]
             min_obstacle_height: 0.3   # 地面ノイズ除去（ロボット高さに応じて調整）[web:22][web:25]
-            max_obstacle_height: 2.0   # 天井や高い物体を無視[web:22]
+            max_obstacle_height: 1.3   # 天井や高い物体を無視[web:22]
             min_z: 0.1                 # クリアリング用最小高さ[web:22]
-            max_z: 2.5                 # クリアリング用最大高さ[web:22]
+            max_z: 2.0                 # クリアリング用最大高さ[web:22]
             vertical_fov_angle: 0.523  # VLP16の垂直FOV（約30度=0.523rad）[web:22]
             horizontal_fov_angle: 6.28 # 360度（2π）[web:22]
             decay_acceleration: 0.0    # LiDARは必ず0に設定[web:22]
@@ -391,7 +391,7 @@ velocity_smoother:
     max_decel: [-3.0, 0.0, -2.80]
     odom_topic: "odom"
     odom_duration: 0.1
-    deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする
+    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする
     velocity_timeout: 1.0
 
 waypoint_follower:
