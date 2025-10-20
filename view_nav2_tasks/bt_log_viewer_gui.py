@@ -135,7 +135,9 @@ class MainWindow(QMainWindow):
     def setup_ui(self):
         """UIのセットアップ"""
         self.setWindowTitle('Nav2 アクティブノード')
-        self.setGeometry(100, 100, 400, 350)
+        
+        # ウィンドウサイズを固定
+        self.setFixedSize(400, 330)
         
         # メインウィジェット
         main_widget = QWidget()
@@ -160,20 +162,20 @@ class MainWindow(QMainWindow):
         
         layout.addLayout(header_layout)
         
-        # ノードリスト表示エリア（固定高さ、スクロールなし）
+        # ノードリスト表示エリア（固定高さ、10個常に表示）
         self.nodes_widget = QWidget()
         self.nodes_layout = QVBoxLayout(self.nodes_widget)
         self.nodes_layout.setAlignment(Qt.AlignTop)
         self.nodes_layout.setSpacing(2)
         self.nodes_layout.setContentsMargins(0, 0, 0, 0)
         
-        # 最大10個のラベルを事前に作成
+        # 最大10個のラベルを事前に作成（常に表示）
         self.node_labels = []
         for i in range(10):
-            label = QLabel('')
+            label = QLabel('-')  # デフォルトで「-」を表示
             label.setFont(QFont('Arial', 9))
             label.setStyleSheet('padding: 3px; border: 1px solid #ddd;')
-            label.setVisible(False)
+            label.setFixedHeight(24)  # 高さを固定
             self.nodes_layout.addWidget(label)
             self.node_labels.append(label)
         
@@ -187,9 +189,9 @@ class MainWindow(QMainWindow):
         # タイムスタンプ更新
         self.status_label.setText(timestamp.strftime("%H:%M:%S"))
         
-        # すべてのラベルを非表示に
+        # すべてのラベルをデフォルトに戻す
         for label in self.node_labels:
-            label.setVisible(False)
+            label.setText('-')
         
         # アクティブノードを表示（最大10個）
         if node_states:
@@ -199,11 +201,9 @@ class MainWindow(QMainWindow):
                 status_jp = self.status_jp.get(status, status)
                 
                 self.node_labels[i].setText(f'{node_jp}: {status_jp}')
-                self.node_labels[i].setVisible(True)
         else:
-            # ノードがない場合
+            # ノードがない場合、最初だけメッセージ表示
             self.node_labels[0].setText('アクティブなノードなし')
-            self.node_labels[0].setVisible(True)
 
 
 def main(args=None):
