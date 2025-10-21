@@ -3,3 +3,7 @@ colcon build --executor sequential
 
 # 依存関係のインストール
 rosdep install --from-paths src -y --ignore-src
+
+# 必要な追加パッケージのインストール
+sudo apt update
+sudo apt install ros-jazzy-ros2trace ros-jazzy-tracetools-analysis
