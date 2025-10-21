@@ -31,6 +31,15 @@ class BTLogViewerGUI(Node):
         self.signals = signals
         self.node_states = {}
         
+        # 表示しないノードのリスト
+        self.hidden_nodes = [
+            'RateController',
+            'NavigateRecovery',
+            'RecoveryNode',
+            'PipelineSequence',
+            'Sequence'
+        ]
+        
         # ステータスの日本語訳
         self.status_jp = {
             'IDLE': '待機中',
@@ -102,6 +111,15 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         
+        # 表示しないノードのリスト
+        self.hidden_nodes = [
+            'RateController',
+            'NavigateRecovery',
+            'RecoveryNode',
+            'PipelineSequence',
+            'Sequence'
+        ]
+        
         # ステータスの日本語訳
         self.status_jp = {
             'IDLE': '待機中',
@@ -136,8 +154,8 @@ class MainWindow(QMainWindow):
         """UIのセットアップ"""
         self.setWindowTitle('Nav2 アクティブノード')
         
-        # ウィンドウサイズを固定
-        self.setFixedSize(400, 330)
+        # ウィンドウサイズを固定（4セクション対応で高さ拡大）
+        self.setFixedSize(450, 550)
         
         # メインウィジェット
         main_widget = QWidget()
@@ -145,7 +163,7 @@ class MainWindow(QMainWindow):
         
         # メインレイアウト
         layout = QVBoxLayout(main_widget)
-        layout.setSpacing(3)
+        layout.setSpacing(2)
         layout.setContentsMargins(5, 5, 5, 5)
         
         # ヘッダー
@@ -162,24 +180,81 @@ class MainWindow(QMainWindow):
         
         layout.addLayout(header_layout)
         
-        # ノードリスト表示エリア（固定高さ、10個常に表示）
-        self.nodes_widget = QWidget()
-        self.nodes_layout = QVBoxLayout(self.nodes_widget)
-        self.nodes_layout.setAlignment(Qt.AlignTop)
-        self.nodes_layout.setSpacing(2)
-        self.nodes_layout.setContentsMargins(0, 0, 0, 0)
+        # 実行中セクション
+        running_group = QGroupBox('🔵 実行中')
+        running_group.setFont(QFont('Arial', 9, QFont.Bold))
+        running_layout = QVBoxLayout()
+        running_layout.setSpacing(2)
+        running_layout.setContentsMargins(3, 3, 3, 3)
         
-        # 最大10個のラベルを事前に作成（常に表示）
-        self.node_labels = []
-        for i in range(10):
-            label = QLabel('-')  # デフォルトで「-」を表示
+        self.running_labels = []
+        for i in range(3):
+            label = QLabel('-')
             label.setFont(QFont('Arial', 9))
             label.setStyleSheet('padding: 3px; border: 1px solid #ddd;')
-            label.setFixedHeight(24)  # 高さを固定
-            self.nodes_layout.addWidget(label)
-            self.node_labels.append(label)
+            label.setFixedHeight(22)
+            running_layout.addWidget(label)
+            self.running_labels.append(label)
         
-        layout.addWidget(self.nodes_widget)
+        running_group.setLayout(running_layout)
+        layout.addWidget(running_group)
+        
+        # 成功セクション
+        success_group = QGroupBox('✅ 成功')
+        success_group.setFont(QFont('Arial', 9, QFont.Bold))
+        success_layout = QVBoxLayout()
+        success_layout.setSpacing(2)
+        success_layout.setContentsMargins(3, 3, 3, 3)
+        
+        self.success_labels = []
+        for i in range(3):
+            label = QLabel('-')
+            label.setFont(QFont('Arial', 9))
+            label.setStyleSheet('padding: 3px; border: 1px solid #ddd;')
+            label.setFixedHeight(22)
+            success_layout.addWidget(label)
+            self.success_labels.append(label)
+        
+        success_group.setLayout(success_layout)
+        layout.addWidget(success_group)
+        
+        # 失敗セクション
+        failure_group = QGroupBox('❌ 失敗')
+        failure_group.setFont(QFont('Arial', 9, QFont.Bold))
+        failure_layout = QVBoxLayout()
+        failure_layout.setSpacing(2)
+        failure_layout.setContentsMargins(3, 3, 3, 3)
+        
+        self.failure_labels = []
+        for i in range(2):
+            label = QLabel('-')
+            label.setFont(QFont('Arial', 9))
+            label.setStyleSheet('padding: 3px; border: 1px solid #ddd;')
+            label.setFixedHeight(22)
+            failure_layout.addWidget(label)
+            self.failure_labels.append(label)
+        
+        failure_group.setLayout(failure_layout)
+        layout.addWidget(failure_group)
+        
+        # 待機中セクション
+        idle_group = QGroupBox('⚪ 待機中')
+        idle_group.setFont(QFont('Arial', 9, QFont.Bold))
+        idle_layout = QVBoxLayout()
+        idle_layout.setSpacing(2)
+        idle_layout.setContentsMargins(3, 3, 3, 3)
+        
+        self.idle_labels = []
+        for i in range(2):
+            label = QLabel('-')
+            label.setFont(QFont('Arial', 9))
+            label.setStyleSheet('padding: 3px; border: 1px solid #ddd;')
+            label.setFixedHeight(22)
+            idle_layout.addWidget(label)
+            self.idle_labels.append(label)
+        
+        idle_group.setLayout(idle_layout)
+        layout.addWidget(idle_group)
     
     def update_display(self, data):
         """表示を更新"""
@@ -189,21 +264,62 @@ class MainWindow(QMainWindow):
         # タイムスタンプ更新
         self.status_label.setText(timestamp.strftime("%H:%M:%S"))
         
-        # すべてのラベルをデフォルトに戻す
-        for label in self.node_labels:
-            label.setText('-')
+        # ステータスごとにノードを分類（非表示リストを除外）
+        running_nodes = []
+        success_nodes = []
+        failure_nodes = []
+        idle_nodes = []
         
-        # アクティブノードを表示（最大10個）
-        if node_states:
-            items = list(node_states.items())[:10]  # 最大10個
-            for i, (node, status) in enumerate(items):
-                node_jp = self.node_name_jp.get(node, node)
-                status_jp = self.status_jp.get(status, status)
-                
-                self.node_labels[i].setText(f'{node_jp}: {status_jp}')
-        else:
-            # ノードがない場合、最初だけメッセージ表示
-            self.node_labels[0].setText('アクティブなノードなし')
+        for node, status in node_states.items():
+            # 非表示リストに含まれるノードはスキップ
+            if node in self.hidden_nodes:
+                continue
+            
+            node_jp = self.node_name_jp.get(node, node)
+            
+            if status == 'RUNNING':
+                running_nodes.append(node_jp)
+            elif status == 'SUCCESS':
+                success_nodes.append(node_jp)
+            elif status == 'FAILURE':
+                failure_nodes.append(node_jp)
+            elif status == 'IDLE':
+                idle_nodes.append(node_jp)
+        
+        # 実行中ラベルを更新
+        for i, label in enumerate(self.running_labels):
+            if i < len(running_nodes):
+                label.setText(running_nodes[i])
+            else:
+                label.setText('-')
+        
+        # 成功ラベルを更新
+        for i, label in enumerate(self.success_labels):
+            if i < len(success_nodes):
+                label.setText(success_nodes[i])
+            else:
+                label.setText('-')
+        
+        # 失敗ラベルを更新
+        for i, label in enumerate(self.failure_labels):
+            if i < len(failure_nodes):
+                label.setText(failure_nodes[i])
+            else:
+                label.setText('-')
+        
+        # 待機中ラベルを更新
+        for i, label in enumerate(self.idle_labels):
+            if i < len(idle_nodes):
+                label.setText(idle_nodes[i])
+            else:
+                label.setText('-')
+        
+        # すべて空の場合
+        if not running_nodes and not success_nodes and not failure_nodes and not idle_nodes:
+            self.running_labels[0].setText('アクティブなノードなし')
+            self.success_labels[0].setText('-')
+            self.failure_labels[0].setText('-')
+            self.idle_labels[0].setText('-')
 
 
 def main(args=None):
