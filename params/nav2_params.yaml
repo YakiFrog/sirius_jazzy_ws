@@ -453,14 +453,27 @@ behavior_server:
       plugin: "nav2_behaviors::Wait"
     assisted_teleop:
       plugin: "nav2_behaviors::AssistedTeleop"
+      # Assisted Teleop専用の設定
+      projection_time: 5.0              # 軌道投影時間（秒）- 5秒先まで障害物をチェック
+      simulation_time_step: 0.1         # シミュレーションのタイムステップ
+      max_linear_vel: 1.2               # 最大直進速度（m/s）
+      min_linear_vel: -0.8              # 最小直進速度（m/s）- 後退
+      max_angular_vel: 1.8              # 最大回転速度（rad/s）
+      min_angular_vel: -1.8             # 最小回転速度（rad/s）
+      max_linear_accel: 3.0             # 最大直進加速度（m/s²）
+      max_angular_accel: 2.8            # 最大回転加速度（rad/s²）
+      costmap_topic: "local_costmap/costmap_raw"  # 使用するコストマップ
+      footprint_topic: "local_costmap/published_footprint"  # ロボットのフットプリント
+      use_collision_detection: true     # 衝突検出を有効化
+      transform_tolerance: 0.2          # TF変換の許容誤差
     local_frame: sirius3/odom
     global_frame: map
     robot_base_frame: sirius3/base_link
     transform_tolerance: 0.1
-    simulate_ahead_time: 2.0
-    max_rotational_vel: 1.0
+    simulate_ahead_time: 5.0            # 全体のデフォルトも5秒に延長
+    max_rotational_vel: 1.8             # 他のビヘイビアと統一
     min_rotational_vel: 0.4
-    rotational_acc_lim: 1.5
+    rotational_acc_lim: 2.8
 
 # 以下はオプション機能。コメントアウトしたら駄目。
 

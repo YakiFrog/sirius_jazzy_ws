@@ -11,3 +11,6 @@ sudo apt install ros-jazzy-ros2trace ros-jazzy-tracetools-analysis
 # pkg 作成コマンド (例)
 cd /home/kotantu-desktop/sirius_jazzy_ws/src
 ros2 pkg create --build-type ament_python sirius_navigation --dependencies rclpy geometry_msgs nav_msgs sensor_msgs std_msgs
+
+# RQTコンソールの起動(Debug用)
+ros2 run rqt_console rqt_console
