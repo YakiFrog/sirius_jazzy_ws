@@ -1,0 +1,36 @@
+<!-- Offline map demo using local tile server
+Usage:
+  ros2 launch demo_offline.launch.xml
+
+This launch file will:
+1. Start the local tile server (serving tiles from ./tiles directory)
+2. Start RViz with offline map configuration
+3. Publish GPS demo data for 大阪工業大学梅田キャンパス
+
+Note: For best results, use the launch_offline.sh script which handles
+the tile server startup and cleanup automatically.
+-->
+
+<launch>
+    <!-- Set working directory -->
+    <let name="satellite_dir" value="/home/kotantu-nuc/sirius_jazzy_ws/satellite" />
+
+    <!-- Start local tile server in background -->
+    <executable cmd="python3 $(var satellite_dir)/tile_server.py 8000 $(var satellite_dir)/tiles" 
+                cwd="$(var satellite_dir)" 
+                output="screen" 
+                shell="true" />
+
+    <!-- Wait a bit for tile server to start -->
+    <executable cmd="sleep 2" output="screen" shell="true" />
+
+    <!-- Start RViz with offline map configuration -->
+    <node pkg="rviz2" exec="rviz2" args="-d $(var satellite_dir)/demo_offline.rviz" output="screen" />
+
+    <!-- 大阪工業大学梅田キャンパス -->
+    <node pkg="rviz_satellite" exec="publish_demo_data" args="34.7054644 135.5001309" output="screen" />
+
+    <!-- Both frames need to be present, so just coupling them https://github.com/nobleo/rviz_satellite/issues/110 -->
+    <node pkg="tf2_ros" exec="static_transform_publisher" args="--frame-id map --child-frame-id gps_sensor" />
+
+</launch>

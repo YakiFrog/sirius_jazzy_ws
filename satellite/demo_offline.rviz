@@ -52,19 +52,8 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: AerialMap
-      # Object URI: https://tile.openstreetmap.org/{z}/{x}/{y}.png
-
-      # 衛星画像
-      Object URI: https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}
-
-      # 通常の道路地図
-      # Object URI: https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}
-
-      # 衛生地図＋道路地図
-      # Object URI: https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}
-
-      # ハイブリッド
-      # Object URI: https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}
+      # Offline map using local tile server
+      Object URI: http://localhost:8000/{z}/{x}/{y}.png
       TF tolerance: 0.10000000149011612
       Timeout: 3
       Topic:
@@ -74,7 +63,7 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /fix
       Value: true
-      Zoom: 20
+      Zoom: 18
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
