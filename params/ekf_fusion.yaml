@@ -1,0 +1,72 @@
+### EKF Sensor Fusion Configuration ###
+# IMUとオドメトリを融合して、より安定した自己位置推定を実現
+ekf_filter_node:
+  ros__parameters:
+    use_sim_time: true
+    
+    # フレーム設定
+    map_frame: map
+    odom_frame: sirius3/odom
+    base_link_frame: sirius3/base_footprint
+    world_frame: sirius3/odom
+    
+    # 更新周波数（30Hzで高頻度更新）
+    frequency: 30.0
+    
+    # センサータイムアウト（100msで新しいデータを要求）
+    sensor_timeout: 0.1
+    
+    # 2D/3Dモード（3D環境なのでfalse）
+    two_d_mode: false
+    
+    # Odometry設定（ホイールエンコーダーからの位置と速度情報）
+    odom0: /odom
+    odom0_config: [true,  true,  false,  # x, y, z位置（x, yのみ使用）
+                   false, false, false,  # roll, pitch, yaw（IMUを優先）
+                   true,  true,  false,  # vx, vy, vz速度（vx, vyのみ使用）
+                   false, false, false,  # vroll, vpitch, vyaw（使用しない）
+                   false, false, false]  # ax, ay, az加速度（IMUを優先）
+    odom0_queue_size: 10
+    odom0_differential: false
+    odom0_relative: false
+    
+    # IMU設定（姿勢、角速度、加速度情報）
+    imu0: /imu
+    imu0_config: [false, false, false,  # x, y, z位置（IMUは位置情報なし）
+                  true,  true,  true,   # roll, pitch, yaw（姿勢を使用）
+                  false, false, false,  # vx, vy, vz速度（オドメトリを優先）
+                  true,  true,  true,   # vroll, vpitch, vyaw（角速度を使用）
+                  true,  true,  true]   # ax, ay, az（加速度を使用）
+    imu0_queue_size: 10
+    imu0_differential: false
+    imu0_relative: false
+    imu0_remove_gravitational_acceleration: true
+    
+    # プロセスノイズ共分散行列（15x15の対角行列）
+    # 各状態変数の不確実性を表現
+    process_noise_covariance: [0.05, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.05, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.06, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.03, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.03, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.06, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.025,0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.025,0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.04, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.02, 0.0,  0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,
+                               0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]
+    
+    # 診断とデバッグ用設定
+    publish_tf: true              # TF変換を配信
+    publish_acceleration: false   # 加速度情報は配信しない
+    print_diagnostics: true       # 診断情報を出力
+    
+    # 高度な設定（通常は変更不要）
+    predict_to_current_time: false
+    smooth_lagged_data: false
+
+# ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf.yaml --ros-args --log-level info
