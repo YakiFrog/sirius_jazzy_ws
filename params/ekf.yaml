@@ -1,7 +1,7 @@
 ekf_filter_node:
   ros__parameters:
-    frequency: 50.0
-    sensor_timeout: 0.1
+    frequency: 5.0
+    sensor_timeout: 0.5
     two_d_mode: true
     publish_tf: true
     
@@ -23,11 +23,20 @@ ekf_filter_node:
     imu0_config: [false, false, false,  # x, y, z位置（IMUは使用しない）
                   true,  true,  true,   # roll, pitch, yaw（姿勢）
                   false, false, false,  # x, y, z速度
-                  true,  true,  true,   # roll, pitch, yaw角速度
-                  true,  true,  true]   # x, y, z加速度
-    
+                  false,  false,  false,   # roll, pitch, yaw角速度
+                  false,  false,  false]   # x, y, z加速度
+
+    # IMUの共分散値を大きく設定（信頼度を下げる）
+    imu0_angular_velocity_covariance: [0.01, 0.0, 0.0,
+                                      0.0, 0.01, 0.0,
+                                      0.0, 0.0, 0.01]
+
+    imu0_queue_size: 10
     imu0_differential: false
     imu0_relative: false
     imu0_remove_gravitational_acceleration: true
+
+    predict_to_current_time: false
+    smooth_lagged_data: false
 
 # ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf.yaml --ros-args --log-level info
