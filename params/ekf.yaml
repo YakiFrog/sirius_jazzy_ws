@@ -1,0 +1,33 @@
+ekf_filter_node:
+  ros__parameters:
+    frequency: 50.0
+    sensor_timeout: 0.1
+    two_d_mode: true
+    publish_tf: true
+    
+    map_frame: map
+    odom_frame: sirius3/odom
+    base_link_frame: sirius3/base_link
+    world_frame: sirius3/odom
+    
+    # ホイールオドメトリの設定
+    odom0: /odom
+    odom0_config: [true,  true,  false,  # x, y, z位置
+                   false, false, false,  # roll, pitch, yaw
+                   true,  true,  false,  # x, y, z速度
+                   false, false, false,  # roll, pitch, yaw速度
+                   false, false, false]  # x, y, z加速度
+    
+    # IMUの設定
+    imu0: /imu
+    imu0_config: [false, false, false,  # x, y, z位置（IMUは使用しない）
+                  true,  true,  true,   # roll, pitch, yaw（姿勢）
+                  false, false, false,  # x, y, z速度
+                  true,  true,  true,   # roll, pitch, yaw角速度
+                  true,  true,  true]   # x, y, z加速度
+    
+    imu0_differential: false
+    imu0_relative: false
+    imu0_remove_gravitational_acceleration: true
+
+# ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf.yaml --ros-args --log-level info

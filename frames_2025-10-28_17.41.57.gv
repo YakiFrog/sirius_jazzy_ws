@@ -1,0 +1,17 @@
+digraph G {
+"sirius3/odom" -> "sirius3/base_footprint"[label=" Broadcaster: default_authority\nAverage rate: 40.217\nBuffer length: 4.6\nMost recent transform: 1218.85\nOldest transform: 1214.25\n"];
+"map" -> "sirius3/odom"[label=" Broadcaster: default_authority\nAverage rate: 10.213\nBuffer length: 4.7\nMost recent transform: 1220.8\nOldest transform: 1216.1\n"];
+"sirius3/base_link" -> "sirius3/left_wheel"[label=" Broadcaster: default_authority\nAverage rate: 20.294\nBuffer length: 3.4\nMost recent transform: 1218.803\nOldest transform: 1215.403\n"];
+"sirius3/base_footprint" -> "sirius3/base_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/base_link" -> "sirius3/right_wheel"[label=" Broadcaster: default_authority\nAverage rate: 20.294\nBuffer length: 3.4\nMost recent transform: 1218.803\nOldest transform: 1215.403\n"];
+"sirius3/base_link" -> "sirius3/imu_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/base_link" -> "sirius3/lidar_link2"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/base_link" -> "sirius3/lidar_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/realsense_link" -> "sirius3/realsense_color_optical_frame"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/base_link" -> "sirius3/realsense_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/realsense_link" -> "sirius3/realsense_depth_optical_frame"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1761640917.09462"[ shape=plaintext ] ;
+}->"map";
+}
