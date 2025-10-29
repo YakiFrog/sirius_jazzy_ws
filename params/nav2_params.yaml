@@ -404,7 +404,7 @@ velocity_smoother:
     min_velocity: [-0.50, 0.0, -2.30]
     max_accel: [3.0, 0.0, 2.80]
     max_decel: [-3.0, 0.0, -2.80]
-    odom_topic: "odom/filtered"  # センサフュージョン後のオドメトリを使用
+    odom_topic: "/odom"  # センサフュージョン後のオドメトリを使用
     odom_duration: 0.1
     deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする
     velocity_timeout: 1.0
@@ -426,7 +426,7 @@ bt_navigator:
     use_sim_time: true
     global_frame: map
     robot_base_frame: sirius3/base_link
-    odom_topic: /odom/filtered  # センサフュージョン後のオドメトリを使用
+    odom_topic: /odom # センサフュージョン後のオドメトリを使用
     bt_loop_duration: 10
     default_server_timeout: 20
     wait_for_service_timeout: 1000
