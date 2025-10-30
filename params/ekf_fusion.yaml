@@ -11,7 +11,7 @@ ekf_filter_node:
     world_frame: sirius3/odom
     
     # 更新周波数（シミュレータに合わせて低めに設定）
-    frequency: 10.0
+    frequency: 20.0
     
     # EKFは融合後のオドメトリを /odometry/filtered トピックに出力するが、TFは配信しない
     # Gazeboのオドメトリがsirius3/odom→sirius3/base_footprintを配信しているため競合を避ける
@@ -90,7 +90,7 @@ ekf_filter_node:
                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]
     
     # 診断とデバッグ用設定
-    publish_tf: true              # TF変換を配信（IMU+Odom融合後のTF）
+    publish_tf: true             # TF変換は配信しない（Gazeboのオドメトリに任せる）
     publish_acceleration: false   # 加速度情報は配信しない
     print_diagnostics: true       # 診断情報を出力
     
