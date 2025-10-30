@@ -3,46 +3,19 @@
 ekf_filter_node:
   ros__parameters:
     use_sim_time: true
-    
     # フレーム設定
     map_frame: map
     odom_frame: sirius3/odom
     base_link_frame: sirius3/base_footprint
     world_frame: sirius3/odom
-    
     # 更新周波数（シミュレータに合わせて低めに設定）
     frequency: 20.0
-    
-    # EKFは融合後のオドメトリを /odometry/filtered トピックに出力するが、TFは配信しない
-    # Gazeboのオドメトリがsirius3/odom→sirius3/base_footprintを配信しているため競合を避ける
-    
     # センサータイムアウト（余裕を持たせる）
     sensor_timeout: 0.2
-    
     # 2D/3Dモード（安定性のため2Dモードに変更）
     two_d_mode: true
     
-    # 初期状態でも起動を許可
-    permit_corrected_publication: true
-    
-    # 初期共分散（不確実性）- 大きめに設定してセンサーデータを待つ
-    initial_estimate_covariance: [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-                                  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
-    
-    # Odometry設定（ホイールエンコーダーからの位置と速度情報）
+    # オドメトリ
     odom0: /odom
     odom0_config: [false,  false,  false,  # x, y, z位置（x, yのみ使用）
                     false, false, false,  # roll, pitch, yaw（IMUを優先）
@@ -52,12 +25,8 @@ ekf_filter_node:
     odom0_queue_size: 10
     odom0_differential: false # 速度は相対的
     odom0_relative: false
-    # Gazebo bridgeとの互換性のためRELIABLE QoSを使用
-    odom0_nodelay: false
-    # odom0_pose_use_child_frame: false
-    # odom0_twist_use_child_frame: false
     
-    # IMU設定（姿勢と角速度を使用して回転推定を改善）
+    # IMU
     imu0: /imu
     imu0_config: [false, false, false,  # x, y, z位置（IMUは位置情報なし）
                   true, true, true,  # roll, pitch, yaw（IMUを優先）
@@ -65,12 +34,10 @@ ekf_filter_node:
                   false, false, false,   # vroll, vpitch, vyaw
                   false, false, false]  # ax, ay, az（加速度オフ）
     imu0_queue_size: 10
-    imu0_differential: false  
-    imu0_relative: false      
-    imu0_remove_gravitational_acceleration: true
-    # Gazebo bridgeとの互換性のためRELIABLE QoSを使用
-    imu0_pose_use_child_frame: false
-    
+    imu0_differential: false
+    imu0_relative: false
+    imu0_remove_gravitational_acceleration: true # 重力加速度9.8m/s^2を除去
+
     # プロセスノイズ共分散行列（15x15の対角行列）
     # 各状態変数の不確実性を表現
     process_noise_covariance: [0.05, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
