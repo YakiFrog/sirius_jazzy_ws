@@ -57,12 +57,12 @@ ekf_filter_node:
     odom0_pose_use_child_frame: false
     odom0_twist_use_child_frame: false
     
-    # IMU設定（姿勢のみ使用、角速度と加速度はオフ）
+    # IMU設定（姿勢と角速度を使用して回転推定を改善）
     imu0: /imu
     imu0_config: [false, false, false,  # x, y, z位置（IMUは位置情報なし）
                   false, false, true,   # roll, pitch, yaw（yawのみ使用）
                   false, false, false,  # vx, vy, vz速度（オドメトリを優先）
-                  false, false, false,  # vroll, vpitch, vyaw（角速度オフ）
+                  false, false, true,   # vroll, vpitch, vyaw（vyawを有効化！回転精度向上）
                   false, false, false]  # ax, ay, az（加速度オフ）
     imu0_queue_size: 10
     imu0_differential: false
@@ -90,7 +90,7 @@ ekf_filter_node:
                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]
     
     # 診断とデバッグ用設定
-    publish_tf: true             # TF変換は配信しない（Gazeboのオドメトリに任せる）
+    publish_tf: true             
     publish_acceleration: false   # 加速度情報は配信しない
     print_diagnostics: true       # 診断情報を出力
     
