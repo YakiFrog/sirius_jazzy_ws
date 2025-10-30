@@ -13,6 +13,9 @@ ekf_filter_node:
     # 更新周波数（シミュレータに合わせて低めに設定）
     frequency: 10.0
     
+    # EKFは融合後のオドメトリを /odometry/filtered トピックに出力するが、TFは配信しない
+    # Gazeboのオドメトリがsirius3/odom→sirius3/base_footprintを配信しているため競合を避ける
+    
     # センサータイムアウト（余裕を持たせる）
     sensor_timeout: 5.0  # 5秒に延長してセンサー待機時間を確保
     
@@ -47,9 +50,10 @@ ekf_filter_node:
                    false, false, false,  # vroll, vpitch, vyaw（使用しない）
                    false, false, false]  # ax, ay, az加速度（IMUを優先）
     odom0_queue_size: 10
-    odom0_differential: false
+    odom0_differential: false  # false = 絶対位置を使用、true = 速度のみ使用
     odom0_relative: false
     # Gazebo bridgeとの互換性のためRELIABLE QoSを使用
+    odom0_nodelay: false
     odom0_pose_use_child_frame: false
     odom0_twist_use_child_frame: false
     
@@ -86,7 +90,7 @@ ekf_filter_node:
                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]
     
     # 診断とデバッグ用設定
-    publish_tf: true              # TF変換を配信（センサフュージョン後のTF）
+    publish_tf: true              # TF変換を配信（IMU+Odom融合後のTF）
     publish_acceleration: false   # 加速度情報は配信しない
     print_diagnostics: true       # 診断情報を出力
     
@@ -94,4 +98,4 @@ ekf_filter_node:
     predict_to_current_time: true
     smooth_lagged_data: true
 
-# ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf.yaml --ros-args --log-level info
+# ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf_fusion.yaml --ros-args --log-level info
