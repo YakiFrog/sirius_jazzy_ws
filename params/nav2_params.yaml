@@ -90,7 +90,7 @@ global_costmap:
       update_frequency: 1.0 # 1.0 変えないほうがいい
       publish_frequency: 1.0
       global_frame: map # ✅ 長距離・経路計画用
-      robot_base_frame: sirius3/base_link
+      robot_base_frame: sirius3/base_footprint
       footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン)
       resolution: 0.05 # 0.05 -> 0.10 (軽量化のため)
       track_unknown_space: true
@@ -159,7 +159,7 @@ local_costmap:
       update_frequency: 5.0 
       publish_frequency: 3.0
       global_frame: sirius3/odom # ✅ 短距離・リアルタイム制御用, MapだとAMCLのジャンプで軌道が乱れる
-      robot_base_frame: sirius3/base_link
+      robot_base_frame: sirius3/base_footprint
       rolling_window: true
       width: 5
       height: 5
@@ -420,7 +420,7 @@ bt_navigator:
   ros__parameters:
     use_sim_time: true
     global_frame: map
-    robot_base_frame: sirius3/base_link
+    robot_base_frame: sirius3/base_footprint
     odom_topic: /odom/filtered # EKFセンサフュージョン後のオドメトリを使用
     bt_loop_duration: 10
     default_server_timeout: 20
@@ -478,7 +478,7 @@ behavior_server:
       transform_tolerance: 0.2          # TF変換の許容誤差
     local_frame: sirius3/odom
     global_frame: map
-    robot_base_frame: sirius3/base_link
+    robot_base_frame: sirius3/base_footprint
     transform_tolerance: 0.1
     simulate_ahead_time: 5.0            # 全体のデフォルトも5秒に延長
     max_rotational_vel: 1.8             # 他のビヘイビアと統一
