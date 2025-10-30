@@ -83,9 +83,6 @@ amcl:
     update_min_a: 0.10  # 更新に必要な最小角度変化[rad]（約8.6度）
     update_min_d: 0.10  # 更新に必要な最小移動距離[m]
 
-    # ekf
-    odom_topic: /odom/filtered  # ここでEKF融合後のオドメトリを使用するよう指定
-
 # 地図上の障害物情報を扱うコストマップ設定
 global_costmap:
   global_costmap:
