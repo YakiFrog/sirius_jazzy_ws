@@ -94,6 +94,9 @@ global_costmap:
       robot_base_frame: sirius3/base_footprint
       footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン)
       resolution: 0.05 # 0.05 -> 0.10 (軽量化のため)
+      rolling_window: true
+      width: 50
+      height: 50
       track_unknown_space: false # falseにすることで、UNKNOWN領域を通過可能として扱う
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"] # プラグインの読み込み順序は大事。適用順序になる。
       filters: ["keepout_filter"]
@@ -166,7 +169,7 @@ local_costmap:
       height: 5
       resolution: 0.05
       # footprint: "[ [0.30, 0.30], [0.30, -0.30], [-0.50, -0.30], [-0.50, 0.30] ]" # ロボットの形状（ぴったりサイズ）
-      footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
+      footprint: "[ [0.40, 0.30], [0.40, -0.30], [-0.60, -0.30], [-0.60, 0.30] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
       plugins: ["stvl_layer", "obstacle_layer", "inflation_layer"]
       # filters: ["keepout_filter"]
       track_unknown_space: false # falseにすることで、UNKNOWN領域を通過可能として扱う
@@ -230,7 +233,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
-        inflation_radius: 0.75 # ロボットが近づけない距離
+        inflation_radius: 0.70 # ロボットが近づけない距離
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: True
