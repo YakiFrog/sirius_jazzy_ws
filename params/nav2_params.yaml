@@ -8,7 +8,7 @@ amcl:
   
     # オドメトリモデルのノイズパラメータ（回転・並進の誤差モデル）
     # 回転後の分散を抑えるため、回転誤差を若干大きめに設定
-    alpha1: 0.15  # 回転による回転誤差（0.10→0.15：回転時の角度不確実性を認める）
+    alpha1: 0.10  # 回転による回転誤差（0.10→0.15：回転時の角度不確実性を認める）
     alpha2: 0.10  # 並進による回転誤差（直進時の角度ブレを抑制）
     alpha3: 0.15  # 並進による並進誤差（進行方向のブレ）
     alpha4: 0.15  # 回転による並進誤差（回転時の横ズレを抑制）
@@ -110,8 +110,8 @@ global_costmap:
         scan:
           topic: /scan
           max_obstacle_height: 2.0
-          clearing: True
-          marking: True
+          clearing: true
+          marking: true
           data_type: "LaserScan"
           raytrace_max_range: 20.0
           raytrace_min_range: 0.0
