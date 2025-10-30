@@ -7,11 +7,11 @@ ekf_filter_node:
     map_frame: map
     odom_frame: sirius3/odom
     base_link_frame: sirius3/base_footprint
-    world_frame: sirius3/odom
-    # 更新周波数（シミュレータに合わせて低めに設定）
-    frequency: 20.0
+    world_frame: sirius3/odom  # odomフレームで動作（AMCLが別途map→odomを配信）
+    # 更新周波数（センサー処理速度に合わせて設定）
+    frequency: 20.0  # 20Hz→15Hzに下げて安定性向上
     # センサータイムアウト（余裕を持たせる）
-    sensor_timeout: 0.2
+    sensor_timeout: 0.3  # 0.2→0.3秒に延長
     # 2D/3Dモード（安定性のため2Dモードに変更）
     two_d_mode: true
     
@@ -57,11 +57,17 @@ ekf_filter_node:
     # 診断とデバッグ用設定
     publish_tf: true             
     publish_acceleration: false   # 加速度情報は配信しない
-    print_diagnostics: true       # 診断情報を出力
-    
+    print_diagnostics: false      # 診断情報を出力しない（ログ削減）
+
     # 高度な設定
     predict_to_current_time: true
     smooth_lagged_data: false # 遅延データの平滑化を無効化(センサのタイミングがバラバラならtrueに変更)
+    
+    # TF取得のタイムアウト設定
+    transform_timeout: 0.5  # TF取得の待機時間（秒）を延長
+    
+    # set_poseサービスの有効化（RViz2からの初期位置設定用）
+    enable_set_pose: true  # デフォルトはtrue（明示的に記載）
 
 # ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf_fusion.yaml --ros-args --log-level info
 
