@@ -17,25 +17,25 @@ ekf_filter_node:
     
     # オドメトリ
     odom0: /odom
-    odom0_config: [false,  false,  false,  # x, y, z位置（x, yのみ使用）
-                    false, false, false,  # roll, pitch, yaw（IMUを優先）
-                    true,  true,  false,  # vx, vy, vz速度（vx, vyのみ使用）
-                    false, false, true,  # vroll, vpitch, vyaw（vyawを有効化）
-                    false, false, false]  # ax, ay, az加速度（IMUを優先）
+    odom0_config: [true, true, false, # x, y, z
+                  false, false, false, # roll, pitch, yaw
+                  true,  true,  false, # vx, vy, vz
+                  false, false, true, # vroll, vpitch, vyaw
+                  false, false, false] # ax, ay, az
     odom0_queue_size: 10
-    odom0_differential: false # 速度は相対的
-    odom0_relative: false
+    odom0_differential: false # 位置は絶対値
+    odom0_relative: false # 絶対値
     
     # IMU
     imu0: /imu
-    imu0_config: [false, false, false,  # x, y, z位置（IMUは位置情報なし）
-                  true, true, true,  # roll, pitch, yaw（IMUを優先）
-                  false, false, false,  # vx, vy, vz速度（オドメトリを優先）
-                  false, false, false,   # vroll, vpitch, vyaw
-                  false, false, false]  # ax, ay, az（加速度オフ）
+    imu0_config: [false, false, false,  # x, y, z
+                  false, false, true,  # roll, pitch, yaw
+                  false, false, false,  # vx, vy, vz
+                  false, false, true,   # vroll, vpitch, vyaw
+                  false, false, false]  # ax, ay, az
     imu0_queue_size: 10
-    imu0_differential: false
-    imu0_relative: false
+    imu0_differential: true # 角度は差分
+    imu0_relative: true   # 相対値
     imu0_remove_gravitational_acceleration: true # 重力加速度9.8m/s^2を除去
 
     # プロセスノイズ共分散行列（15x15の対角行列）
@@ -66,3 +66,15 @@ ekf_filter_node:
     smooth_lagged_data: false
 
 # ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf_fusion.yaml --ros-args --log-level info
+
+# ┌─────────────┬──────────────┬───────────────────┐
+# │ 情報         │ センサー      │ 理由              │
+# ├─────────────┼──────────────┼───────────────────┤
+# │ 位置 (x,y)   │ オドメトリ     │ 車輪で正確に計測    │
+# ├─────────────┼──────────────┼───────────────────┤
+# │ 速度 (vx,vy) │ オドメトリ     │ 車輪の回転速度      │
+# ├─────────────┼──────────────┼───────────────────┤
+# │ 姿勢 (yaw)   │ IMU (差分)   │ 回転検出が得意       │
+# ├─────────────┼──────────────┼───────────────────┤
+# │ 角速度(vyaw) │ オドメ + IMU  │ 両方で補完          │
+# └─────────────┴──────────────┴───────────────────┘
