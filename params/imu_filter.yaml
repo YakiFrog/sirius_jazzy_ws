@@ -3,11 +3,23 @@ imu_filter_madgwick_node:
     use_mag: false                    # 磁気センサー使用
     gain: 0.1                         # フィルタゲイン（0.01-0.5）
     zeta: 0.0                         # ジャイロドリフト補正
-    publish_tf: true                  # TF配信
-    world_frame: enu                  # 座標系（enu or nwu）
+    publish_tf: false                  # TF配信
+    world_frame: enu                  # 座標系（enu: East-North-Up, nwu: North-West-Up）
     use_magnetic_field_msg: false     # 磁気フィールドメッセージ
     reverse_tf: false                 # TF方向を逆にする
     fixed_frame: sirius3/base_link    # 固定フレーム
     constant_dt: 0.0                  # 固定dt（0=自動）
     # odom
     odom_frame: sirius3/odom
+
+
+# MADGWICKフィルタが行うこと
+# 生のIMUデータ（/imu/data_raw）を受け取り、姿勢推定を行う
+# フィルタリングされた姿勢データを/imu/dataトピックに出力
+
+# 実機IMUで姿勢が出力されない場合
+# ros2 topic echo /imu/data_raw --once | grep orientation_covariance
+# orientation_covarianceがすべて-1の場合、姿勢情報が無効化されている
+# この場合、imu_filter_madgwick_nodeで姿勢推定
+
+# ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf_fusion.yaml --ros-args --log-level info

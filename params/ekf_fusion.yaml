@@ -17,7 +17,7 @@ ekf_filter_node:
     # Gazeboのオドメトリがsirius3/odom→sirius3/base_footprintを配信しているため競合を避ける
     
     # センサータイムアウト（余裕を持たせる）
-    sensor_timeout: 5.0  # 5秒に延長してセンサー待機時間を確保
+    sensor_timeout: 0.2
     
     # 2D/3Dモード（安定性のため2Dモードに変更）
     two_d_mode: true
@@ -44,29 +44,29 @@ ekf_filter_node:
     
     # Odometry設定（ホイールエンコーダーからの位置と速度情報）
     odom0: /odom
-    odom0_config: [true,  true,  false,  # x, y, z位置（x, yのみ使用）
+    odom0_config: [false,  false,  false,  # x, y, z位置（x, yのみ使用）
                    false, false, false,  # roll, pitch, yaw（IMUを優先）
                    true,  true,  false,  # vx, vy, vz速度（vx, vyのみ使用）
-                   false, false, false,  # vroll, vpitch, vyaw（使用しない）
+                   false, false, true,  # vroll, vpitch, vyaw（vyawを有効化）
                    false, false, false]  # ax, ay, az加速度（IMUを優先）
     odom0_queue_size: 10
-    odom0_differential: true
-    odom0_relative: true
+    odom0_differential: false # 速度は相対的
+    odom0_relative: false
     # Gazebo bridgeとの互換性のためRELIABLE QoSを使用
     odom0_nodelay: false
-    odom0_pose_use_child_frame: false
-    odom0_twist_use_child_frame: false
+    # odom0_pose_use_child_frame: false
+    # odom0_twist_use_child_frame: false
     
     # IMU設定（姿勢と角速度を使用して回転推定を改善）
     imu0: /imu
     imu0_config: [false, false, false,  # x, y, z位置（IMUは位置情報なし）
-                  false, false, false,  # roll, pitch, yaw（差分モードでは絶対姿勢を使わない）
+                  true, true, true,  # roll, pitch, yaw（差分モードでは絶対姿勢を使わない）
                   false, false, false,  # vx, vy, vz速度（オドメトリを優先）
-                  false, false, true,   # vroll, vpitch, vyaw（vyawを有効化！回転精度向上）
+                  false, false, false,   # vroll, vpitch, vyaw（vyawを有効化！回転精度向上）
                   false, false, false]  # ax, ay, az（加速度オフ）
     imu0_queue_size: 10
-    imu0_differential: true  
-    imu0_relative: true      
+    imu0_differential: false  
+    imu0_relative: false      
     imu0_remove_gravitational_acceleration: true
     # Gazebo bridgeとの互換性のためRELIABLE QoSを使用
     imu0_pose_use_child_frame: false
@@ -96,6 +96,6 @@ ekf_filter_node:
     
     # 高度な設定
     predict_to_current_time: true
-    smooth_lagged_data: true
+    smooth_lagged_data: false
 
 # ros2 run robot_localization ekf_node --ros-args --params-file ~/sirius_jazzy_ws/params/ekf_fusion.yaml --ros-args --log-level info

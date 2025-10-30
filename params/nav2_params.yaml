@@ -94,7 +94,7 @@ global_costmap:
       robot_base_frame: sirius3/base_footprint
       footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン)
       resolution: 0.05 # 0.05 -> 0.10 (軽量化のため)
-      track_unknown_space: true
+      track_unknown_space: false # falseにすることで、UNKNOWN領域を通過可能として扱う
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"] # プラグインの読み込み順序は大事。適用順序になる。
       filters: ["keepout_filter"]
       static_layer:
@@ -168,8 +168,8 @@ local_costmap:
       # footprint: "[ [0.30, 0.30], [0.30, -0.30], [-0.50, -0.30], [-0.50, 0.30] ]" # ロボットの形状（ぴったりサイズ）
       footprint: "[ [0.40, 0.35], [0.40, -0.35], [-0.60, -0.35], [-0.60, 0.35] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
       plugins: ["stvl_layer", "obstacle_layer", "inflation_layer"]
-      filters: ["keepout_filter"]
-      track_unknown_space: true
+      # filters: ["keepout_filter"]
+      track_unknown_space: false # falseにすることで、UNKNOWN領域を通過可能として扱う
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
@@ -181,7 +181,7 @@ local_costmap:
         voxel_decay: 0.5 # ボクセル減衰時間（秒）- 線形なら秒単位、指数関数なら e^n
         decay_model: 0 # 減衰モデル（0=線形、1=指数関数、-1=永続的）
         voxel_size: 0.10 # ボクセルサイズ（メートル）
-        track_unknown_space: true # 未知の領域を追跡するかどうか（デフォルトは既知）
+        track_unknown_space: false # 未知の領域を追跡するかどうか（デフォルトは既知）
         mark_threshold: 0 # 障害物としてマークするボクセル高さの閾値
         update_footprint_enabled: true # ロボットの足跡を更新するかどうか
         combination_method: 1 # レイヤー結合方法（1=最大値、0=上書き）
