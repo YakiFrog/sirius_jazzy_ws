@@ -35,7 +35,6 @@ ekf_filter_node:
                   false, false, false]  # ax, ay, az
     imu0_queue_size: 10
     imu0_differential: true # 角度は差分
-    imu0_relative: true   # 相対値
     imu0_remove_gravitational_acceleration: true # 重力加速度9.8m/s^2を除去
 
     # プロセスノイズ共分散行列（15x15の対角行列）
