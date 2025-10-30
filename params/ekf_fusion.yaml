@@ -60,9 +60,9 @@ ekf_filter_node:
     # IMU設定（姿勢と角速度を使用して回転推定を改善）
     imu0: /imu
     imu0_config: [false, false, false,  # x, y, z位置（IMUは位置情報なし）
-                  true, true, true,  # roll, pitch, yaw（差分モードでは絶対姿勢を使わない）
+                  true, true, true,  # roll, pitch, yaw（IMUを優先）
                   false, false, false,  # vx, vy, vz速度（オドメトリを優先）
-                  false, false, false,   # vroll, vpitch, vyaw（vyawを有効化！回転精度向上）
+                  false, false, false,   # vroll, vpitch, vyaw
                   false, false, false]  # ax, ay, az（加速度オフ）
     imu0_queue_size: 10
     imu0_differential: false  
