@@ -125,7 +125,7 @@ global_costmap:
         inflation_radius: 0.75 # こうしないと、青色に車体が入って動かなくなる
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
-        enabled: True
+        enabled: False  # True -> False (フィルター情報がない場合は無効化)
         filter_info_topic: "/costmap_filter_info"
       always_send_full_costmap: True
 
@@ -133,9 +133,10 @@ global_costmap:
 planner_server:
   ros__parameters:
     use_sim_time: true
-    expected_planner_frequency: 10.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
+    expected_planner_frequency: 5.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
     planner_plugins: ["GridBased"]
-    costmap_update_timeout: 1.0
+    costmap_update_timeout: 3.0  # 1.0 -> 3.0 (タイムアウトを延長)
+    action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
       tolerance: 0.5
@@ -236,7 +237,7 @@ local_costmap:
         inflation_radius: 0.70 # ロボットが近づけない距離
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
-        enabled: True
+        enabled: False  # True -> False (フィルター情報がない場合は無効化)
         filter_info_topic: "/costmap_filter_info"
       always_send_full_costmap: True
 
@@ -245,7 +246,8 @@ controller_server:
   ros__parameters:
     use_sim_time: true
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
-    costmap_update_timeout: 0.30
+    costmap_update_timeout: 1.0  # 0.30 -> 1.0 (タイムアウトを延長)
+    action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
     min_x_velocity_threshold: 0.1
     min_y_velocity_threshold: 0.0
     min_theta_velocity_threshold: 0.1
