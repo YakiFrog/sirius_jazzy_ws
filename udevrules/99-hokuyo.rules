@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty",ATTRS{idVendor}=="15d1",ATTRS{idProduct}=="0000",SYMLINK+="hokuyo",MODE="0666"
