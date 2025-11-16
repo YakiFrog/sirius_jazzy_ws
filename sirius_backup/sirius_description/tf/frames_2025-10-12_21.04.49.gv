@@ -1,0 +1,12 @@
+digraph G {
+"sirius3/odom" -> "sirius3/base_footprint"[label=" Broadcaster: default_authority\nAverage rate: 50.206\nBuffer length: 4.86\nMost recent transform: 60.58\nOldest transform: 55.72\n"];
+"sirius3/base_footprint" -> "sirius3/base_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/base_link" -> "sirius3/lidar_link2"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/base_link" -> "sirius3/lidar_link"[label=" Broadcaster: default_authority\nAverage rate: 10000.0\nBuffer length: 0.0\nMost recent transform: 0.0\nOldest transform: 0.0\n"];
+"sirius3/base_link" -> "sirius3/left_wheel"[label=" Broadcaster: default_authority\nAverage rate: 20.206\nBuffer length: 4.85\nMost recent transform: 60.579\nOldest transform: 55.729\n"];
+"sirius3/base_link" -> "sirius3/right_wheel"[label=" Broadcaster: default_authority\nAverage rate: 20.206\nBuffer length: 4.85\nMost recent transform: 60.579\nOldest transform: 55.729\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1760270689.127709"[ shape=plaintext ] ;
+}->"sirius3/odom";
+}
