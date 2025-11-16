@@ -6,4 +6,4 @@
 	url = https://github.com/YakiFrog/sirius_navigation
 [submodule "src/roboteq_ros2_jazzy_driver"]
 	path = src/roboteq_ros2_jazzy_driver
-	url = https://github.com/YakiFrog/roboteq_ros2_jazzy_driver.git
+	url = git@github.com:YakiFrog/roboteq_ros2_jazzy_driver.git

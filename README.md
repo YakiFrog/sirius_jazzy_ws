@@ -2,8 +2,30 @@
 
 このワークスペースは、SIRIUSロボットのROS 2 Jazzy環境用の開発環境です。
 
+## クローン方法
+
+### 通常のクローン
 ```bash
 git clone --recurse-submodules https://github.com/YakiFrog/sirius_jazzy_ws.git
+```
+
+### プライベートサブモジュールがある場合
+一部のサブモジュールがプライベートリポジトリのため、以下のいずれかが必要です：
+
+#### SSH認証を使用する場合
+```bash
+# SSH鍵の設定後
+git clone --recurse-submodules git@github.com:YakiFrog/sirius_jazzy_ws.git
+```
+
+#### 段階的にクローンする場合
+```bash
+# 1. メインリポジトリをクローン
+git clone https://github.com/YakiFrog/sirius_jazzy_ws.git
+cd sirius_jazzy_ws
+
+# 2. 認証設定後、サブモジュールを更新
+git submodule update --init --recursive
 ```
 
 ## 概要
