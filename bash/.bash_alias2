@@ -9,3 +9,6 @@ alias scn='src && ros2 run sirius_keyop sirius_controller_node'
 
 # Hokuyo起動(udevルール設定済み前提)
 alias hokuyo='src && ros2 launch urg_node2 urg_node2.launch.py'
+
+# Simulation起動
+alias sim='src && ros2 launch sirius_description sim_with_ui.launch.py'
