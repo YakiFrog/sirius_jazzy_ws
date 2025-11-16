@@ -2,6 +2,10 @@
 
 このワークスペースは、SIRIUSロボットのROS 2 Jazzy環境用の開発環境です。
 
+```bash
+git clone --recurse-submodules https://github.com/YakiFrog/sirius_jazzy_ws.git
+```
+
 ## 概要
 
 このワークスペースには、SIRIUSロボットの自律ナビゲーション、センサー統合、および制御に必要なパッケージが含まれています。
