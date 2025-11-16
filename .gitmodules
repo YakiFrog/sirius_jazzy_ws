@@ -4,6 +4,3 @@
 [submodule "src/sirius/sirius_navigation"]
 	path = src/sirius/sirius_navigation
 	url = https://github.com/YakiFrog/sirius_navigation.git
-[submodule "src/roboteq_ros2_jazzy_driver"]
-	path = src/roboteq_ros2_jazzy_driver
-	url = https://github.com/YakiFrog/roboteq_ros2_jazzy_driver.git
