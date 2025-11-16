@@ -214,13 +214,17 @@ class LaunchButton(QWidget):
                 timeout=2
             )
             lines = result.stdout.split('\n')
+            print(f"=== ウィンドウ一覧 (検索: {self.window_title}) ===")
             for line in lines:
+                if line.strip():
+                    print(f"  {line}")
                 if self.window_title in line:
                     parts = line.split()
                     if parts:
                         self.window_id = parts[0]
-                        print(f"ウィンドウID取得: {self.name} -> {self.window_id}")
-                        break
+                        print(f"✓ ウィンドウID取得: {self.name} -> {self.window_id}")
+                        return
+            print(f"✗ ウィンドウが見つかりません: {self.window_title}")
         except Exception as e:
             print(f"get_window_id エラー: {e}")
     

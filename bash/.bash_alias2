@@ -54,3 +54,7 @@ alias sf='src && ros2 launch sirius_navigation sensor_fusion.launch.py'
 
 # Sensor Fusion + IMU起動
 alias sfimu='src && ros2 launch sirius_navigation sensor_fusion.launch.py start_hwt905:=true'
+
+# GROUP: Pythonスクリプト
+# Siriusランチャー起動
+alias sirius_launcher='python3 ${HOME}/sirius_jazzy_ws/other_programs/sirius_launcher/sirius_launcher.py'
