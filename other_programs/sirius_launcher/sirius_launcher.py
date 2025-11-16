@@ -100,6 +100,7 @@ class LaunchButton(QWidget):
         self.launcher = launcher
         self.window_id = None
         self.window_title = None
+        self.just_launched = False  # 起動直後かどうかのフラグ
         self.setup_ui()
     
     def setup_ui(self):
@@ -151,23 +152,41 @@ class LaunchButton(QWidget):
             import time
             unique_title = f"SIRIUS_{self.name}_{int(time.time()*1000)}"
             self.window_title = unique_title
+            self.just_launched = True  # 起動直後フラグ
             
-            # 常に独立したウィンドウで起動（タブの問題を回避）
-            terminal_cmd = [
-                "terminator",
-                "-T", unique_title,
-                "-e", f"bash -c '{self.command}; exec bash'"
-            ]
+            # コマンドをシェルスクリプトとして一時ファイルに保存
+            import tempfile
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
+                f.write('#!/bin/bash\n')
+                f.write(f'# Window title: {unique_title}\n')
+                f.write(f'echo -ne "\\033]0;{unique_title}\\007"\n')  # タイトルを設定
+                f.write(f'{self.command}\n')
+                f.write('exec bash\n')
+                script_path = f.name
             
-            subprocess.Popen(
-                terminal_cmd,
+            os.chmod(script_path, 0o755)
+            
+            # シェル経由で起動（環境変数を確実に継承）
+            shell_cmd = f'terminator --title="{unique_title}" -x bash "{script_path}" &'
+            
+            print(f"実行コマンド: {shell_cmd}")
+            
+            process = subprocess.Popen(
+                shell_cmd,
+                shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                start_new_session=True
+                env=os.environ.copy()
             )
             
+            # スクリプトファイルは後で削除
+            QTimer.singleShot(8000, lambda: self.cleanup_script(script_path))
+            
             # ウィンドウIDを取得するまで待つ
-            QTimer.singleShot(1500, self.get_window_id)
+            QTimer.singleShot(1000, self.get_window_id)
+            QTimer.singleShot(2000, self.get_window_id)
+            QTimer.singleShot(3000, self.get_window_id)
+            QTimer.singleShot(4500, self.clear_launch_flag)
             
             self.launch_btn.setEnabled(False)
             self.stop_btn.setEnabled(True)
@@ -178,6 +197,16 @@ class LaunchButton(QWidget):
             
         except Exception as e:
             QMessageBox.critical(self, "エラー", f"起動に失敗しました: {str(e)}")
+            print(f"起動エラー: {e}")
+    
+    def cleanup_script(self, script_path):
+        """一時スクリプトファイルを削除"""
+        try:
+            if os.path.exists(script_path):
+                os.remove(script_path)
+                print(f"スクリプト削除: {script_path}")
+        except Exception as e:
+            print(f"スクリプト削除エラー: {e}")
     
     def is_running(self):
         """プロセスが実行中かチェック"""
@@ -283,6 +312,7 @@ class LaunchButton(QWidget):
         """ボタンの状態をリセット"""
         self.window_id = None
         self.window_title = None
+        self.just_launched = False
         self.launch_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
         self.focus_btn.setEnabled(False)
@@ -290,11 +320,27 @@ class LaunchButton(QWidget):
     
     def check_status(self):
         """プロセスの状態をチェック"""
-        if self.window_title:
-            # ウィンドウが存在するか確認
+        if self.window_title and not self.just_launched:
+            # 起動直後でない場合のみチェック
             if not self.is_running():
                 # ウィンドウが閉じられた場合、状態をリセット
                 print(f"ウィンドウ閉じられた: {self.name}")
+                self.reset_state()
+    
+    def clear_launch_flag(self):
+        """起動直後フラグをクリア"""
+        self.just_launched = False
+        print(f"起動フラグクリア: {self.name}")
+    
+    def check_launch_error(self, process):
+        """起動エラーをチェック"""
+        if process.poll() is not None:
+            # プロセスが終了している場合、エラーを確認
+            stdout, stderr = process.communicate()
+            if stderr:
+                error_msg = stderr.decode('utf-8', errors='ignore')
+                print(f"Terminatorエラー ({self.name}): {error_msg}")
+                QMessageBox.critical(self, "Terminatorエラー", f"ターミナルの起動に失敗しました:\n{error_msg}")
                 self.reset_state()
 
 
