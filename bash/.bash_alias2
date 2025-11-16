@@ -1,3 +1,5 @@
+# GROUP: センサー・ハードウェア
+
 # Roboteq起動(udevルール設定済み前提)
 alias roboteq='src && ros2 launch roboteq_ros2_driver roboteq_ros2_driver.launch.py'
 
@@ -10,14 +12,23 @@ alias scn='src && ros2 run sirius_keyop sirius_controller_node'
 # Hokuyo起動(udevルール設定済み前提)
 alias hokuyo='src && ros2 launch urg_node2 urg_node2.launch.py'
 
+# IMU起動(udevルール設定済み前提)
+alias imu='src && ros2 launch sirius_navigation witmotion_hwt905.launch.py'
+
+# GROUP: シミュレーション
+
 # Simulation起動
 alias sim='src && ros2 launch sirius_description sim_with_ui.launch.py'
+
+# GROUP: ユーティリティ
 
 # install packages （初回のみ実行）
 alias install_packages='\
 sudo apt install ros-jazzy-spatio-temporal-voxel-layer -y  && \
 sudo apt install ros-jazzy-rqt-tf-tree -y && \
 sudo apt-get install libqt5serialport5-dev'
+
+# GROUP: ナビゲーション
 
 # Nav2起動(既存MAP)
 alias nav2='src && ros2 launch nav2_bringup bringup_launch.py \
@@ -28,7 +39,7 @@ use_sim_time:=True'
 
 # Nav2起動（MAPなし）
 alias nav2slam='src && ros2 launch nav2_bringup bringup_launch.py \
-params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml
+params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
 slam:=True \
 use_composition:=False \
 use_sim_time:=True'
@@ -37,9 +48,6 @@ use_sim_time:=True'
 alias slamtoolbox='src && ros2 launch slam_toolbox online_async_launch.py \
 slam_params_file:=${HOME}/sirius_jazzy_ws/params/mapper_params_online_async.yaml \
 use_sim_time:=True'
-
-# IMU起動(udevルール設定済み前提)
-alias imu='src && ros2 launch sirius_navigation witmotion_hwt905.launch.py'
 
 # Sensor Fusion起動
 alias sf='src && ros2 launch sirius_navigation sensor_fusion.launch.py'
