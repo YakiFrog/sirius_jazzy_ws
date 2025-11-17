@@ -22,10 +22,12 @@ from PySide6.QtGui import QFont, QColor
 
 
 def parse_bash_aliases(alias_file_path):
-    """bash_alias2ファイルからエイリアスを解析（複数行対応）"""
+    """bash_alias2ファイルからエイリアスとプリセットを解析（複数行対応）"""
     groups = {}
+    presets = []  # プリセットリスト
     current_group = "その他"
     current_description = ""
+    current_preset_name = None
     
     try:
         with open(alias_file_path, 'r', encoding='utf-8') as f:
@@ -38,6 +40,21 @@ def parse_bash_aliases(alias_file_path):
             
             if not line:
                 current_description = ""
+                i += 1
+                continue
+            
+            # プリセット名の検出
+            if line.startswith('# PRESET:'):
+                current_preset_name = line.replace('# PRESET:', '').strip()
+                i += 1
+                continue
+            
+            # プリセットアイテムの検出
+            if line.startswith('# PRESET_ITEMS:') and current_preset_name:
+                items_str = line.replace('# PRESET_ITEMS:', '').strip()
+                items = [item.strip() for item in items_str.split(',')]
+                presets.append((current_preset_name, items))
+                current_preset_name = None
                 i += 1
                 continue
             
@@ -89,7 +106,7 @@ def parse_bash_aliases(alias_file_path):
     except Exception as e:
         print(f"エイリアスファイルの読み込みエラー: {e}")
     
-    return groups
+    return groups, presets
 
 
 class LaunchButton(QWidget):
@@ -118,24 +135,29 @@ class LaunchButton(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
         
-        self.launch_btn = QPushButton(self.name)
+        # 起動ボタン
+        self.launch_btn = QPushButton(f"▶ {self.name}")
         self.launch_btn.setMinimumWidth(200)
         self.launch_btn.clicked.connect(self.launch)
         layout.addWidget(self.launch_btn)
         
+        # ステータス表示
         self.status_label = QLabel("●")
-        self.status_label.setStyleSheet("color: gray; font-size: 16px;")
+        self.status_label.setStyleSheet("color: gray; font-size: 20px;")
+        self.status_label.setFixedWidth(30)
+        self.status_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.status_label)
         
+        # 説明ラベル
         desc_label = QLabel(self.description)
         desc_label.setStyleSheet("color: gray;")
         layout.addWidget(desc_label, 1)
         
-        self.stop_btn = QPushButton("停止")
-        self.stop_btn.setMinimumWidth(80)
+        # 停止ボタン
+        self.stop_btn = QPushButton("■ 停止")
+        self.stop_btn.setMaximumWidth(100)
         self.stop_btn.clicked.connect(self.stop)
         self.stop_btn.setEnabled(False)
-        self.stop_btn.setStyleSheet("background-color: #dc3545; color: white;")
         layout.addWidget(self.stop_btn)
     
     def launch(self):
@@ -364,6 +386,8 @@ class SiriusLauncher(QMainWindow):
     def __init__(self):
         super().__init__()
         self.buttons = []
+        self.button_map = {}  # 名前からボタンへのマッピング
+        self.presets = []
         self.setup_ui()
         self.load_aliases()
     
@@ -390,6 +414,13 @@ class SiriusLauncher(QMainWindow):
         info_label.setStyleSheet("color: gray; font-style: italic;")
         info_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(info_label)
+        
+        # プリセットセクション
+        self.preset_group = QGroupBox("プリセット")
+        self.preset_group.setStyleSheet("QGroupBox { font-weight: bold; }")
+        self.preset_layout = QHBoxLayout()
+        self.preset_group.setLayout(self.preset_layout)
+        main_layout.addWidget(self.preset_group)
         
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -418,12 +449,18 @@ class SiriusLauncher(QMainWindow):
             QMessageBox.warning(self, "警告", f"エイリアスファイルが見つかりません: {alias_file}")
             return
         
-        groups = parse_bash_aliases(str(alias_file))
+        groups, presets = parse_bash_aliases(str(alias_file))
+        self.presets = presets
         
         if not groups:
             QMessageBox.warning(self, "警告", "エイリアスが見つかりませんでした。")
             return
         
+        # プリセットボタンを作成
+        for preset_name, items in presets:
+            self.add_preset_button(preset_name, items)
+        
+        # 通常のボタンを作成
         for group_name, aliases in groups.items():
             if aliases:
                 group_layout = self.add_group(group_name)
@@ -432,11 +469,36 @@ class SiriusLauncher(QMainWindow):
         
         self.buttons_layout.addStretch()
     
+    def add_preset_button(self, preset_name, items):
+        """プリセットボタンを追加"""
+        preset_btn = QPushButton(f"▶ {preset_name}")
+        preset_btn.setMinimumHeight(40)
+        preset_btn.setStyleSheet("background-color: #007bff; color: white; font-weight: bold;")
+        preset_btn.clicked.connect(lambda: self.launch_preset(preset_name, items))
+        self.preset_layout.addWidget(preset_btn)
+    
+    def launch_preset(self, preset_name, items):
+        """プリセットの複数コマンドを同時起動"""
+        print(f"プリセット起動: {preset_name}")
+        import time
+        for item in items:
+            if item in self.button_map:
+                button = self.button_map[item]
+                # 起動中でない場合のみ起動
+                if not (hasattr(button, 'pid_file_content') and button.pid_file_content):
+                    button.launch()
+                    time.sleep(0.5)  # 各起動の間に少し待つ
+                else:
+                    print(f"  スキップ: {item} (既に起動中)")
+            else:
+                print(f"  エラー: {item} が見つかりません")
+    
     def add_button(self, layout, name, command, description):
         """ボタンを追加"""
         button = LaunchButton(name, command, description)
         layout.addWidget(button)
         self.buttons.append(button)
+        self.button_map[name] = button  # 名前で検索できるように保存
 
 
 def main():

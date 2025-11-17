@@ -1,3 +1,12 @@
+# PRESET: フルセンサーセット
+# PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,scn
+
+# PRESET: シミュレータセット
+# PRESET_ITEMS: sim,sf,nav2
+
+# PRESET: シミュレータセット（SLAM）
+# PRESET_ITEMS: sim,sf,nav2slam,slamtoolbox
+
 # GROUP: センサー・ハードウェア
 
 # Roboteq起動(udevルール設定済み前提)
