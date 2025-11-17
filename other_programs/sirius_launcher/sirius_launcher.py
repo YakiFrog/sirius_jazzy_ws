@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
-Sirius ROS2 Launch Manager
+Sirius ROS2 Launch Manager (New Tab Version)
 ROSノードやlaunchファイルをGUIボタンから起動するランチャーアプリケーション
+Terminatorの--new-tabオプションを使用したシンプル版
+起動状態追跡と停止ボタン機能付き
 """
 
 import sys
 import os
 import subprocess
-import signal
 import re
+import signal
+import psutil
 from pathlib import Path
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QScrollArea, QFrame, QMessageBox, QGroupBox
 )
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QColor
 
 
 def parse_bash_aliases(alias_file_path):
@@ -90,18 +93,24 @@ def parse_bash_aliases(alias_file_path):
 
 
 class LaunchButton(QWidget):
-    """起動ボタンとステータス表示を含むウィジェット"""
+    """起動ボタンを含むウィジェット"""
     
-    def __init__(self, name, command, description="", launcher=None):
+    def __init__(self, name, command, description=""):
         super().__init__()
         self.name = name
         self.command = command
         self.description = description
-        self.launcher = launcher
-        self.window_id = None
-        self.window_title = None
-        self.just_launched = False  # 起動直後かどうかのフラグ
+        self.process = None
+        self.pid_file = f"/tmp/sirius_launcher_{name}.pid"
         self.setup_ui()
+        
+        # 起動時に古いPIDファイルをチェック
+        self.load_pid()
+        
+        # 定期的にプロセス状態をチェック
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.check_process_status)
+        self.timer.start(1000)  # 1秒ごとにチェック
     
     def setup_ui(self):
         """UIのセットアップ"""
@@ -109,239 +118,239 @@ class LaunchButton(QWidget):
         layout.setContentsMargins(5, 5, 5, 5)
         
         self.launch_btn = QPushButton(self.name)
-        self.launch_btn.setMinimumWidth(150)
+        self.launch_btn.setMinimumWidth(200)
         self.launch_btn.clicked.connect(self.launch)
         layout.addWidget(self.launch_btn)
         
-        self.status_label = QLabel("停止中")
-        self.status_label.setMinimumWidth(80)
-        self.update_status_style(False)
+        self.status_label = QLabel("●")
+        self.status_label.setStyleSheet("color: gray; font-size: 16px;")
         layout.addWidget(self.status_label)
         
         desc_label = QLabel(self.description)
         desc_label.setStyleSheet("color: gray;")
         layout.addWidget(desc_label, 1)
         
-        self.focus_btn = QPushButton("ウィンドウ表示")
-        self.focus_btn.setEnabled(False)
-        self.focus_btn.clicked.connect(self.focus_window)
-        layout.addWidget(self.focus_btn)
-        
         self.stop_btn = QPushButton("停止")
-        self.stop_btn.setEnabled(False)
+        self.stop_btn.setMinimumWidth(80)
         self.stop_btn.clicked.connect(self.stop)
+        self.stop_btn.setEnabled(False)
+        self.stop_btn.setStyleSheet("background-color: #dc3545; color: white;")
         layout.addWidget(self.stop_btn)
     
-    def update_status_style(self, is_running):
-        """ステータス表示の更新"""
-        if is_running:
-            self.status_label.setText("起動中")
-            self.status_label.setStyleSheet("color: green; font-weight: bold;")
-        else:
-            self.status_label.setText("停止中")
-            self.status_label.setStyleSheet("color: gray;")
-    
     def launch(self):
-        """コマンドを新しいターミナルで起動"""
-        if self.is_running():
-            self.focus_window()
-            return
-        
+        """コマンドを新しいターミナルタブで起動"""
         try:
-            # ユニークなウィンドウタイトルを作成
-            import time
-            unique_title = f"SIRIUS_{self.name}_{int(time.time()*1000)}"
-            self.window_title = unique_title
-            self.just_launched = True  # 起動直後フラグ
-            
-            # コマンドをシェルスクリプトとして一時ファイルに保存
+            # 一時スクリプトファイルを作成
             import tempfile
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
+            script_fd, script_path = tempfile.mkstemp(suffix='.sh', prefix='sirius_launcher_')
+            
+            with os.fdopen(script_fd, 'w') as f:
                 f.write('#!/bin/bash\n')
-                f.write(f'# Window title: {unique_title}\n')
-                f.write(f'echo -ne "\\033]0;{unique_title}\\007"\n')  # タイトルを設定
+                f.write(f'echo $BASHPID > {self.pid_file}\n')
                 f.write(f'{self.command}\n')
-                f.write('exec bash\n')
-                script_path = f.name
             
             os.chmod(script_path, 0o755)
             
-            # シェル経由で起動（環境変数を確実に継承）
-            shell_cmd = f'terminator --title="{unique_title}" -x bash "{script_path}" &'
+            # Terminatorで新しいタブを開く
+            shell_cmd = f'terminator --new-tab -e "bash -c \'exec {script_path}; exec bash\'"'
             
-            print(f"実行コマンド: {shell_cmd}")
+            self.process = subprocess.Popen(shell_cmd, shell=True, env=os.environ.copy())
+            self.script_path = script_path
             
-            process = subprocess.Popen(
-                shell_cmd,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=os.environ.copy()
-            )
+            # PIDファイルが作成されるまで待つ
+            QTimer.singleShot(1500, self.load_pid)
             
-            # スクリプトファイルは後で削除
-            QTimer.singleShot(8000, lambda: self.cleanup_script(script_path))
-            
-            # ウィンドウIDを取得するまで待つ
-            QTimer.singleShot(1000, self.get_window_id)
-            QTimer.singleShot(2000, self.get_window_id)
-            QTimer.singleShot(3000, self.get_window_id)
-            QTimer.singleShot(4500, self.clear_launch_flag)
-            
-            self.launch_btn.setEnabled(False)
-            self.stop_btn.setEnabled(True)
-            self.focus_btn.setEnabled(True)
-            self.update_status_style(True)
-            
-            print(f"起動: {self.name} (ウィンドウタイトル: {unique_title})")
+            print(f"起動: {self.name} (Terminatorタブ)")
             
         except Exception as e:
             QMessageBox.critical(self, "エラー", f"起動に失敗しました: {str(e)}")
             print(f"起動エラー: {e}")
     
-    def cleanup_script(self, script_path):
-        """一時スクリプトファイルを削除"""
+    def load_pid(self, retry_count=0):
+        """PIDファイルからプロセスIDを読み込む"""
         try:
-            if os.path.exists(script_path):
-                os.remove(script_path)
-                print(f"スクリプト削除: {script_path}")
-        except Exception as e:
-            print(f"スクリプト削除エラー: {e}")
-    
-    def is_running(self):
-        """プロセスが実行中かチェック"""
-        if not self.window_title:
-            return False
-        
-        try:
-            # ウィンドウが存在するかチェック
-            result = subprocess.run(
-                ["wmctrl", "-l"],
-                capture_output=True,
-                text=True,
-                timeout=2
-            )
-            is_found = self.window_title in result.stdout
-            if is_found and not self.window_id:
-                # ウィンドウIDをまだ取得していない場合は取得
-                self.get_window_id()
-            return is_found
-        except Exception as e:
-            print(f"is_running エラー: {e}")
-            return False
-    
-    def get_window_id(self):
-        """起動したターミナルのウィンドウIDを取得"""
-        if not self.window_title:
-            return
-        
-        try:
-            result = subprocess.run(
-                ["wmctrl", "-l"],
-                capture_output=True,
-                text=True,
-                timeout=2
-            )
-            lines = result.stdout.split('\n')
-            print(f"=== ウィンドウ一覧 (検索: {self.window_title}) ===")
-            for line in lines:
-                if line.strip():
-                    print(f"  {line}")
-                if self.window_title in line:
-                    parts = line.split()
-                    if parts:
-                        self.window_id = parts[0]
-                        print(f"✓ ウィンドウID取得: {self.name} -> {self.window_id}")
+            if os.path.exists(self.pid_file):
+                with open(self.pid_file, 'r') as f:
+                    pid_str = f.read().strip()
+                    if not pid_str:
+                        # ファイルが空の場合、後で再試行
+                        if retry_count < 10:
+                            QTimer.singleShot(500, lambda: self.load_pid(retry_count + 1))
                         return
-            print(f"✗ ウィンドウが見つかりません: {self.window_title}")
+                    
+                    pid = int(pid_str)
+                    if psutil.pid_exists(pid):
+                        # プロセスが実際に存在するか確認
+                        try:
+                            proc = psutil.Process(pid)
+                            # bashプロセスなので、その子プロセスを探す
+                            children = proc.children(recursive=True)  # recursive=Trueに変更
+                            if children:
+                                # すべての子孫プロセスを含む
+                                self.pid_file_content = pid
+                                print(f"プロセス検出: {self.name} (Bash PID: {pid}, 全子プロセス: {len(children)}個)")
+                                self.update_status()
+                            else:
+                                # 子プロセスがまだない場合は後でもう一度試す（最大10回）
+                                if retry_count < 10:
+                                    QTimer.singleShot(500, lambda: self.load_pid(retry_count + 1))
+                                else:
+                                    # 子プロセスがなくてもbashプロセスは記録
+                                    self.pid_file_content = pid
+                                    print(f"プロセス検出(子なし): {self.name} (Bash PID: {pid})")
+                                    self.update_status()
+                        except psutil.NoSuchProcess:
+                            # プロセスが既に終了している
+                            if os.path.exists(self.pid_file):
+                                os.remove(self.pid_file)
+                    else:
+                        # PIDが存在しない場合、ファイルを削除
+                        if os.path.exists(self.pid_file):
+                            os.remove(self.pid_file)
+            else:
+                # PIDファイルがまだ作成されていない場合、後で再試行
+                if retry_count < 10:
+                    QTimer.singleShot(500, lambda: self.load_pid(retry_count + 1))
         except Exception as e:
-            print(f"get_window_id エラー: {e}")
+            print(f"PID読み込みエラー ({self.name}): {e}")
     
-    def focus_window(self):
-        """起動したターミナルウィンドウにフォーカス"""
-        # ウィンドウIDを再取得
-        self.get_window_id()
-        
-        print(f"フォーカス試行: {self.name}, ID: {self.window_id}")
-        
-        if self.window_id:
-            try:
-                result = subprocess.run(
-                    ["wmctrl", "-i", "-a", self.window_id],
-                    capture_output=True,
-                    text=True,
-                    timeout=2
-                )
-                if result.returncode != 0:
-                    print(f"wmctrl エラー: {result.stderr}")
-                    QMessageBox.warning(self, "警告", "ウィンドウのフォーカスに失敗しました")
-            except Exception as e:
-                print(f"focus_window エラー: {e}")
-                QMessageBox.warning(self, "警告", f"ウィンドウのフォーカスに失敗しました: {e}")
-        else:
-            QMessageBox.information(self, "情報", "ウィンドウが見つかりません")
+    def get_process_tree_pids(self, pid):
+        """プロセスとその子孫のPIDリストを取得"""
+        pids = [pid]
+        try:
+            proc = psutil.Process(pid)
+            children = proc.children(recursive=True)
+            for child in children:
+                pids.append(child.pid)
+        except:
+            pass
+        return pids
     
     def stop(self):
         """プロセスを停止"""
-        # ウィンドウIDを再取得
-        self.get_window_id()
-        
-        print(f"停止試行: {self.name}, ID: {self.window_id}")
-        
-        if self.window_id:
+        try:
+            if hasattr(self, 'pid_file_content') and self.pid_file_content:
+                # プロセスツリー全体のPIDを取得
+                pids = self.get_process_tree_pids(self.pid_file_content)
+                
+                if len(pids) > 1:
+                    print(f"停止対象PID: Bash={self.pid_file_content}, 子孫={len(pids)-1}個")
+                else:
+                    print(f"停止対象PID: Bash={self.pid_file_content}, 子孫なし")
+                
+                # Terminatorのタブを見つける
+                terminator_pid = None
+                for pid in pids:
+                    try:
+                        proc = psutil.Process(pid)
+                        if proc.name() == 'terminator':
+                            terminator_pid = pid
+                            break
+                    except:
+                        pass
+                
+                # 子プロセスから順に終了（逆順）、terminatorは除外
+                for pid in reversed(pids):
+                    if pid == terminator_pid:
+                        continue  # terminatorプロセスはスキップ
+                    try:
+                        if psutil.pid_exists(pid):
+                            proc = psutil.Process(pid)
+                            proc.terminate()
+                            print(f"  terminate: PID {pid} ({proc.name()})")
+                    except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+                        print(f"  スキップ: PID {pid} - {e}")
+                
+                # 2秒待っても終了しない場合は強制終了
+                QTimer.singleShot(2000, lambda: self.force_kill_tree(pids, terminator_pid))
+                
+                # Terminatorのタブを閉じる
+                QTimer.singleShot(2500, lambda: self.close_terminator_tab(terminator_pid))
+                
+                print(f"停止: {self.name} (Bash PID: {self.pid_file_content})")
+                
+                # PIDファイルを削除
+                if os.path.exists(self.pid_file):
+                    os.remove(self.pid_file)
+                
+                # 一時スクリプトファイルを削除
+                if hasattr(self, 'script_path') and os.path.exists(self.script_path):
+                    try:
+                        os.remove(self.script_path)
+                    except:
+                        pass
+                
+                self.pid_file_content = None
+                self.update_status()
+            else:
+                print(f"停止対象なし: {self.name}")
+            
+        except Exception as e:
+            QMessageBox.critical(self, "エラー", f"停止に失敗しました: {str(e)}")
+            print(f"停止エラー: {e}")
+    
+    def force_kill_tree(self, pids, terminator_pid=None):
+        """プロセスツリーを強制終了"""
+        killed_count = 0
+        for pid in reversed(pids):
+            if pid == terminator_pid:
+                continue  # terminatorプロセスはスキップ
             try:
-                # ウィンドウを閉じる
-                result = subprocess.run(
-                    ["wmctrl", "-i", "-c", self.window_id],
-                    capture_output=True,
-                    text=True,
-                    timeout=2
-                )
-                if result.returncode != 0:
-                    print(f"wmctrl エラー: {result.stderr}")
-                QTimer.singleShot(500, self.reset_state)
-            except Exception as e:
-                print(f"stop エラー: {e}")
-                QMessageBox.warning(self, "警告", f"停止に失敗しました: {str(e)}")
-                self.reset_state()
+                if psutil.pid_exists(pid):
+                    proc = psutil.Process(pid)
+                    proc.kill()
+                    killed_count += 1
+                    print(f"  強制終了: PID {pid} ({proc.name()})")
+            except:
+                pass
+        if killed_count > 0:
+            print(f"強制終了完了: {self.name} ({killed_count}個のプロセス)")
+    
+    def close_terminator_tab(self, terminator_pid):
+        """Terminatorのタブを閉じる"""
+        try:
+            if terminator_pid and psutil.pid_exists(terminator_pid):
+                # Terminatorウィンドウにフォーカスして Ctrl+Shift+W でタブを閉じる
+                output = subprocess.check_output(['wmctrl', '-lp'], text=True)
+                for line in output.splitlines():
+                    parts = line.split()
+                    if len(parts) >= 4:
+                        window_id = parts[0]
+                        window_pid = int(parts[2])
+                        if window_pid == terminator_pid:
+                            subprocess.run(['wmctrl', '-i', '-a', window_id])
+                            subprocess.run(['xdotool', 'key', 'ctrl+shift+w'])
+                            print(f"Terminatorタブを閉じました: {self.name}")
+                            return
+        except Exception as e:
+            print(f"タブを閉じるエラー: {e}")
+    
+    def check_process_status(self):
+        """プロセスの状態を定期的にチェック"""
+        if hasattr(self, 'pid_file_content') and self.pid_file_content:
+            if not psutil.pid_exists(self.pid_file_content):
+                # プロセスが終了している
+                print(f"プロセス終了検出: {self.name}")
+                self.pid_file_content = None
+                if os.path.exists(self.pid_file):
+                    os.remove(self.pid_file)
+                self.update_status()
+    
+    def update_status(self):
+        """ステータス表示を更新"""
+        is_running = hasattr(self, 'pid_file_content') and self.pid_file_content is not None
+        
+        # ボタンの状態を更新
+        self.launch_btn.setEnabled(not is_running)
+        self.stop_btn.setEnabled(is_running)
+        
+        # ステータスインジケータを更新
+        if is_running:
+            self.status_label.setStyleSheet("color: #28a745; font-size: 16px;")  # 緑
+            self.status_label.setText("●")
         else:
-            QMessageBox.information(self, "情報", "ウィンドウが見つかりません\nすでに閉じられている可能性があります")
-            self.reset_state()
-    
-    def reset_state(self):
-        """ボタンの状態をリセット"""
-        self.window_id = None
-        self.window_title = None
-        self.just_launched = False
-        self.launch_btn.setEnabled(True)
-        self.stop_btn.setEnabled(False)
-        self.focus_btn.setEnabled(False)
-        self.update_status_style(False)
-    
-    def check_status(self):
-        """プロセスの状態をチェック"""
-        if self.window_title and not self.just_launched:
-            # 起動直後でない場合のみチェック
-            if not self.is_running():
-                # ウィンドウが閉じられた場合、状態をリセット
-                print(f"ウィンドウ閉じられた: {self.name}")
-                self.reset_state()
-    
-    def clear_launch_flag(self):
-        """起動直後フラグをクリア"""
-        self.just_launched = False
-        print(f"起動フラグクリア: {self.name}")
-    
-    def check_launch_error(self, process):
-        """起動エラーをチェック"""
-        if process.poll() is not None:
-            # プロセスが終了している場合、エラーを確認
-            stdout, stderr = process.communicate()
-            if stderr:
-                error_msg = stderr.decode('utf-8', errors='ignore')
-                print(f"Terminatorエラー ({self.name}): {error_msg}")
-                QMessageBox.critical(self, "Terminatorエラー", f"ターミナルの起動に失敗しました:\n{error_msg}")
-                self.reset_state()
+            self.status_label.setStyleSheet("color: gray; font-size: 16px;")
+            self.status_label.setText("●")
 
 
 class SiriusLauncher(QMainWindow):
@@ -350,18 +359,13 @@ class SiriusLauncher(QMainWindow):
     def __init__(self):
         super().__init__()
         self.buttons = []
-        self.first_terminal = True
         self.setup_ui()
         self.load_aliases()
-        
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.check_all_status)
-        self.timer.start(2000)
     
     def setup_ui(self):
         """UIのセットアップ"""
         self.setWindowTitle("Sirius ROS2 Launch Manager")
-        self.setMinimumSize(900, 600)
+        self.setMinimumSize(800, 600)
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -377,6 +381,11 @@ class SiriusLauncher(QMainWindow):
         title.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(title)
         
+        info_label = QLabel("ボタンを押すとTerminatorのタブで起動します (--new-tab使用) | 緑●=起動中")
+        info_label.setStyleSheet("color: gray; font-style: italic;")
+        info_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(info_label)
+        
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
@@ -387,12 +396,6 @@ class SiriusLauncher(QMainWindow):
         
         scroll.setWidget(scroll_content)
         main_layout.addWidget(scroll)
-        
-        stop_all_btn = QPushButton("全て停止")
-        stop_all_btn.clicked.connect(self.stop_all)
-        stop_all_btn.setStyleSheet("background-color: #ff4444; color: white; font-weight: bold;")
-        stop_all_btn.setMinimumHeight(40)
-        main_layout.addWidget(stop_all_btn)
     
     def add_group(self, title):
         """グループボックスを追加"""
@@ -426,26 +429,9 @@ class SiriusLauncher(QMainWindow):
     
     def add_button(self, layout, name, command, description):
         """ボタンを追加"""
-        button = LaunchButton(name, command, description, launcher=self)
+        button = LaunchButton(name, command, description)
         layout.addWidget(button)
         self.buttons.append(button)
-    
-    def check_all_status(self):
-        """全ボタンのステータスをチェック"""
-        for button in self.buttons:
-            button.check_status()
-    
-    def stop_all(self):
-        """全てのプロセスを停止"""
-        reply = QMessageBox.question(
-            self, "確認",
-            "全てのプロセスを停止しますか？",
-            QMessageBox.Yes | QMessageBox.No
-        )
-        
-        if reply == QMessageBox.Yes:
-            for button in self.buttons:
-                button.stop()
 
 
 def main():
