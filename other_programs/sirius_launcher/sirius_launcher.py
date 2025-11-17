@@ -102,6 +102,7 @@ class LaunchButton(QWidget):
         self.description = description
         self.process = None
         self.pid_file = f"/tmp/sirius_launcher_{name}.pid"
+        self.tab_title = name  # Sirius_を削除
         self.setup_ui()
         
         # 起動時に古いPIDファイルをチェック
@@ -147,12 +148,16 @@ class LaunchButton(QWidget):
             with os.fdopen(script_fd, 'w') as f:
                 f.write('#!/bin/bash\n')
                 f.write(f'echo $BASHPID > {self.pid_file}\n')
+                # プロンプトにタブ名を表示（PS1に設定）
+                f.write(f'export PS1="[{self.tab_title}] $ "\n')
+                # ウィンドウタイトルを設定
+                f.write(f'echo -ne "\\033]0;{self.tab_title}\\007"\n')
                 f.write(f'{self.command}\n')
             
             os.chmod(script_path, 0o755)
             
             # Terminatorで新しいタブを開く
-            shell_cmd = f'terminator --new-tab -e "bash -c \'exec {script_path}; exec bash\'"'
+            shell_cmd = f'terminator --new-tab -e "bash --rcfile {script_path}"'
             
             self.process = subprocess.Popen(shell_cmd, shell=True, env=os.environ.copy())
             self.script_path = script_path
@@ -160,7 +165,7 @@ class LaunchButton(QWidget):
             # PIDファイルが作成されるまで待つ
             QTimer.singleShot(1500, self.load_pid)
             
-            print(f"起動: {self.name} (Terminatorタブ)")
+            print(f"起動: {self.name} (Terminatorタブ: {self.tab_title})")
             
         except Exception as e:
             QMessageBox.critical(self, "エラー", f"起動に失敗しました: {str(e)}")
@@ -440,6 +445,10 @@ def main():
     
     window = SiriusLauncher()
     window.show()
+    
+    # Ctrl+Cでの終了を処理
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     
     sys.exit(app.exec())
 
