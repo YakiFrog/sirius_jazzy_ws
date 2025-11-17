@@ -23,8 +23,7 @@ alias sim='src && ros2 launch sirius_description sim_with_ui.launch.py'
 # GROUP: ユーティリティ
 
 # install packages （初回のみ実行）
-alias install_packages='\
-sudo apt install ros-jazzy-spatio-temporal-voxel-layer -y  && \
+alias install_packages='sudo apt install ros-jazzy-spatio-temporal-voxel-layer -y  && \
 sudo apt install ros-jazzy-rqt-tf-tree -y && \
 sudo apt-get install libqt5serialport5-dev'
 
