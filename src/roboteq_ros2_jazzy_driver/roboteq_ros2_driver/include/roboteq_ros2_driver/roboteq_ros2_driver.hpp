@@ -96,6 +96,15 @@ class Roboteq : public rclcpp::Node
   int encoder_cpr{};
   double max_amps{};
   int max_rpm{};
+  // odom stream interval (milliseconds) configurable so users can tune
+  // how frequently the Roboteq controller sends encoder data (default 50ms -> 20Hz)
+  int odom_stream_interval_ms{};
+  // last interval value sent to device — used to re-send stream command when
+  // parameter changes at runtime
+  int last_sent_odom_stream_ms{};
+  // publish rate for /odom (Hz). This is the maximum publish frequency; the
+  // actual rate will also depend on the controller stream.
+  double odom_publish_hz{};
   float gear_ratio{};
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};

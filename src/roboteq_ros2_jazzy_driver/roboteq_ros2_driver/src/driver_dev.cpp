@@ -73,6 +73,9 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     gear_ratio = this->declare_parameter("gear_ratio", 1.0); //ギア比
     pulse = this->declare_parameter("pulse", 229); //一周あたりのパルス数
     max_speed = this->declare_parameter("max_speed", 0.5); //最大速度
+    // odom streaming/publish tuning
+    odom_stream_interval_ms = this->declare_parameter("odom_stream_interval_ms", 50);
+    odom_publish_hz = this->declare_parameter("odom_publish_hz", 50.0);
 
     starttime = 0;
     hstimer = 0;
@@ -157,6 +160,22 @@ void Roboteq::update_parameters()
     this->get_parameter("gear_ratio", gear_ratio);
     this->get_parameter("pulse", pulse);
     this->get_parameter("max_speed", max_speed);
+    // read odom timing params
+    int new_stream_ms = odom_stream_interval_ms;
+    this->get_parameter("odom_stream_interval_ms", new_stream_ms);
+    this->get_parameter("odom_publish_hz", odom_publish_hz);
+    // If the stream interval changed while running, re-send the stream
+    // configuration to the device so it starts using the new rate sooner.
+    if (new_stream_ms != odom_stream_interval_ms) {
+        odom_stream_interval_ms = new_stream_ms;
+        try {
+            odom_stream();
+            last_sent_odom_stream_ms = odom_stream_interval_ms;
+            RCLCPP_INFO(this->get_logger(), "Updated odom stream interval to %d ms and re-sent stream command", odom_stream_interval_ms);
+        } catch (const std::exception &e) {
+            RCLCPP_WARN_STREAM(this->get_logger(), "Failed to re-send odom stream config: " << e.what());
+        }
+    }
 }
 
 void Roboteq::connect() {
@@ -534,6 +553,7 @@ void Roboteq::odom_setup()
 
         // start encoder streaming
         odom_stream();
+        last_sent_odom_stream_ms = odom_stream_interval_ms;
     
         odom_last_time = millis();
     }
@@ -555,7 +575,13 @@ void Roboteq::odom_stream()
     // tripling frequency since one value is output at each cycle
     safe_serial_write("# C_?CB_?BA_?V_# 11\r");
 #else
-    safe_serial_write("# C_?CB_# 50\r");  // 50ms
+    // use configured streaming interval (ms) - Roboteq expects the interval
+    // in ms in this command (e.g. 50 -> 20Hz). Make sure value is sane.
+    int stream_ms = odom_stream_interval_ms;
+    if (stream_ms <= 0) stream_ms = 50;
+    std::stringstream ss;
+    ss << "# C_?CB_# " << stream_ms << "\r";
+    safe_serial_write(ss.str());
     
     // オプション: より小さなデータフォーマットを使用
     // 注: お使いのRoboteqコントローラがこのコマンドをサポートしているか確認してください
@@ -694,8 +720,12 @@ void Roboteq::odom_publish()
     rclcpp::Time current_time = this->get_clock()->now();
     
     // Odometryメッセージの発行頻度を制限（リソース節約のため）
-    // 50Hzが一般的なナビゲーションシステムにとって十分
-    if ((current_time - last_publish_time).seconds() < 0.02) {  // 50Hz
+    // Use configured publish hz as a maximum. Default was approx 50Hz.
+    double publish_interval = 0.02; // default 50Hz
+    if (odom_publish_hz > 1e-6) {
+        publish_interval = 1.0 / odom_publish_hz;
+    }
+    if ((current_time - last_publish_time).seconds() < publish_interval) {
         return;
     }
     

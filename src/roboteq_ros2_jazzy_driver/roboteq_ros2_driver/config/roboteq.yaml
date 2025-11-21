@@ -14,3 +14,9 @@ roboteq_ros2_driver:
     max_rpm: 100
     pulse: 325 # もとは295. 325(10m走って10.25mのパラメタ)
     max_speed: 0.5
+    # odometry tuning
+    # request encoder stream every N milliseconds (Roboteq streaming interval)
+    # 50ms -> nominally 20Hz; you can decrease to ~33-40ms to try raising delivery rate
+    odom_stream_interval_ms: 5
+    # maximum publish rate for /odom (Hz)
+    odom_publish_hz: 20.0

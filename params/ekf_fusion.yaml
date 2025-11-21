@@ -18,7 +18,7 @@ ekf_filter_node:
     # NOTE: node was missing update rate (processing took ~0.27s). Lowering
     # the EKF update frequency reduces CPU pressure. If you need higher-rate
     # fusion, instead throttle the sensors to match the EKF frequency.
-    frequency: 10.0  # lowered from 15.0 to reduce CPU load / missed updates
+    frequency: 20.0  # lowered from 15.0 to reduce CPU load / missed updates
     
     # ========================================
     # センサータイムアウト
@@ -61,7 +61,7 @@ ekf_filter_node:
     # ========================================
     # HWT905 IMU設定（AHRS：姿勢計算済み）
     # ========================================
-    imu0: /imu
+    imu0: /imu_throttled
     imu0_config: [false, false, false,  # x, y, z（IMUは位置情報なし）
                   false, false, true,   # 【変更】roll, pitch, yaw（yawのみ使用、2Dモードではroll/pitch不要）
                   false, false, false,  # vx, vy, vz（速度はオドメトリを優先）
