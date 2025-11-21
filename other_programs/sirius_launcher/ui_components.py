@@ -65,19 +65,19 @@ class MainWindowUI:
     """メインウィンドウのUIセットアップ"""
     
     @staticmethod
-    def setup_ui(window):
-        """UIのセットアップ"""
-        from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QFrame
-        
+    def setup_ui(window, tab_names=None):
+        """UIのセットアップ（タブ切り替え対応）"""
+        from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QFrame, QTabWidget
+
         window.setWindowTitle("Sirius ROS2 Launch Manager")
         window.setMinimumSize(800, 600)
-        
+
         central_widget = QWidget()
         window.setCentralWidget(central_widget)
-        
+
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(10, 10, 10, 10)
-        
+
         # タイトル
         title = QLabel("Sirius ROS2 Launch Manager")
         title_font = QFont()
@@ -86,33 +86,36 @@ class MainWindowUI:
         title.setFont(title_font)
         title.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(title)
-        
+
         # 情報ラベル
         info_label = QLabel("ボタンを押すとTerminatorのタブで起動します (--new-tab使用) | 緑●=起動中")
         info_label.setStyleSheet("color: gray; font-style: italic;")
         info_label.setAlignment(Qt.AlignCenter)
         main_layout.addWidget(info_label)
-        
+
         # プリセットセクション
         preset_group = QGroupBox("プリセット")
         preset_group.setStyleSheet("QGroupBox { font-weight: bold; }")
         preset_layout = QHBoxLayout()
         preset_group.setLayout(preset_layout)
         main_layout.addWidget(preset_group)
-        
-        # スクロールエリア
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.NoFrame)
-        
-        scroll_content = QWidget()
-        buttons_layout = QVBoxLayout(scroll_content)
-        buttons_layout.setSpacing(5)
-        
-        scroll.setWidget(scroll_content)
-        main_layout.addWidget(scroll)
-        
-        return preset_layout, buttons_layout
+
+        # タブウィジェット追加
+        tab_widget = QTabWidget()
+        tab_layouts = {}
+        if tab_names is None:
+            tab_names = ["センサー・ハードウェア", "シミュレーション", "ユーティリティ", "ナビゲーション", "Pythonスクリプト", "Sirius Ear関連"]
+        for tab_name in tab_names:
+            tab = QWidget()
+            tab_layout = QVBoxLayout(tab)
+            tab_layout.setContentsMargins(10, 10, 10, 10)
+            tab_layout.setSpacing(5)
+            tab_widget.addTab(tab, tab_name)
+            tab_layouts[tab_name] = tab_layout
+
+        main_layout.addWidget(tab_widget)
+
+        return preset_layout, tab_layouts, tab_widget
     
     @staticmethod
     def create_preset_button(preset_name):

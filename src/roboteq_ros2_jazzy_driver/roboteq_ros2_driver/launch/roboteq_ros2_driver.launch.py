@@ -84,6 +84,13 @@ def generate_launch_description():
         name='static_tf_pub_laser',
         arguments=['0.30', '0', '0.165', '0', '0', '0', 'base_footprint', 'laser']
     )
+    
+    tf2_node4 = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_tf_pub_base',
+        arguments=['0', '0', '0', '0', '0', '0', 'sirius3/base_link', 'velodyne']
+    )
 
     return LaunchDescription([
         # launch args
@@ -95,5 +102,6 @@ def generate_launch_description():
         # tf2_node,
         # tf2_node2,
         # tf2_node3,
+        tf2_node4,
         roboteq_ros2_driver,
     ])

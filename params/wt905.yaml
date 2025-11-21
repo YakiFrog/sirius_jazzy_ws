@@ -24,7 +24,7 @@ witmotion:
     temperature_publisher:
       enabled: false
       topic_name: /temperature
-      frame_id: base_link
+      frame_id: sirius3/base_link
       from_message: magnetometer # acceleration, angular_vel, orientation, magnetometer
       variance: 0.01829
       coefficient: 1.0 # Linear calibration parameters: coefficient
@@ -40,7 +40,7 @@ witmotion:
     barometer_publisher:
       enabled: false
       topic_name: /barometer
-      frame_id: base_link
+      frame_id: sirius3/base_link
       variance: 0.001
       coefficient: 1.0 # Linear calibration parameters: coefficient
       addition: 0.0 # and addendum

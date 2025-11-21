@@ -91,41 +91,52 @@ class SiriusLauncher(QMainWindow):
     
     def setup_ui(self):
         """UIのセットアップ"""
-        self.preset_layout, self.buttons_layout = MainWindowUI.setup_ui(self)
-    
-    def add_group(self, title):
-        """グループボックスを追加"""
+        self.preset_layout, self.tab_layouts, self.tab_widget = MainWindowUI.setup_ui(self)
+
+    def add_group(self, title, tab_name=None):
+        """グループボックスを追加（タブ対応）"""
         group, group_layout = MainWindowUI.create_group(title)
-        self.buttons_layout.addWidget(group)
+        # タブ名指定がなければ最初のタブに追加
+        if tab_name is None:
+            tab_name = list(self.tab_layouts.keys())[0]
+        self.tab_layouts[tab_name].addWidget(group)
         return group_layout
+    
+    # NOTE: previous single-tab add_group kept for reference is removed
     
     def load_aliases(self):
         """エイリアスファイルを読み込んでボタンを作成"""
         alias_file = Path.home() / "sirius_jazzy_ws" / "bash" / ".bash_alias2"
-        
+
         if not alias_file.exists():
             QMessageBox.warning(self, "警告", f"エイリアスファイルが見つかりません: {alias_file}")
             return
-        
+
         groups, presets = parse_bash_aliases(str(alias_file))
         self.presets = presets
-        
+
         if not groups:
             QMessageBox.warning(self, "警告", "エイリアスが見つかりませんでした。")
             return
-        
+
         # プリセットボタンを作成
         for preset_name, items in presets:
             self.add_preset_button(preset_name, items)
-        
-        # 通常のボタンを作成
-        for group_name, aliases in groups.items():
+
+        # タブ名リスト（ui_components.pyのデフォルトと合わせる）
+        tab_names = ["センサー・ハードウェア", "シミュレーション", "ユーティリティ", "ナビゲーション", "Pythonスクリプト", "Sirius Ear関連"]
+
+        # 通常のボタンを作成（タブごとにグループ追加）
+        for i, (group_name, aliases) in enumerate(groups.items()):
             if aliases:
-                group_layout = self.add_group(group_name)
+                tab_name = tab_names[i] if i < len(tab_names) else tab_names[0]
+                group_layout = self.add_group(group_name, tab_name)
                 for alias_name, command, description in aliases:
                     self.add_button(group_layout, alias_name, command, description)
-        
-        self.buttons_layout.addStretch()
+
+        # 各タブのレイアウトにストレッチ追加
+        for layout in self.tab_layouts.values():
+            layout.addStretch()
     
     def add_preset_button(self, preset_name, items):
         """プリセットボタンを追加"""
