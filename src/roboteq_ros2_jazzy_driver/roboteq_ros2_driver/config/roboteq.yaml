@@ -1,8 +1,8 @@
 roboteq_ros2_driver:
   ros__parameters:
     pub_odom_tf: true
-    odom_frame: "odom"
-    base_frame: "base_footprint"
+    odom_frame: "sirius3/odom"
+    base_frame: "sirius3/base_footprint"
     cmdvel_topic: "cmd_vel"
     odom_topic: "odom"
     port: "/dev/roboteq"
