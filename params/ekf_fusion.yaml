@@ -71,9 +71,9 @@ ekf_filter_node:
     # imu0_config: [false, false, false,  # x, y, z（IMUは位置情報なし）
     #               false, false, true,   # 【変更】roll, pitch, yaw（yawのみ使用、2Dモードではroll/pitch不要）
     #               false, false, false,  # vx, vy, vz（速度はオドメトリを優先）
-    #               false, false, true,  # 【重大な変更】vroll, vpitch, vyaw角速度をすべて無効化
+    #               false, false, false,  # 【重大な変更】vroll, vpitch, vyaw角速度をすべて無効化
     #               true, true, false]  # ax, ay, az（加速度は使用しない、ノイズ大）
-    
+
     # keep IMU queue small to avoid processing large backlogs, but allow a
     # few messages to absorb brief timing jitter from the serial port.
     imu0_queue_size: 5  # increased from 1 -> 5
