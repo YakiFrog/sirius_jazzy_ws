@@ -8,7 +8,7 @@ witmotion:
     restart_service_name: /restart_imu
     imu_publisher:
       topic_name: /imu
-      frame_id: imu
+      frame_id: sirius3/imu_link
       use_native_orientation: false
       measurements:
         acceleration:

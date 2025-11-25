@@ -94,6 +94,17 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
 
   /*Initializing ROS fields*/
   node = rclcpp::Node::make_shared("witmotion");
+  // Ensure the use_sim_time parameter exists so the node's clock will
+  // follow simulation time if requested via ros__parameters. Wrap in
+  // try/catch to avoid failing if the parameter is declared earlier
+  // by the launch system or rclcpp itself.
+  try {
+    node->declare_parameter("use_sim_time", false);
+  } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException &ex) {
+    RCLCPP_DEBUG(node->get_logger(),
+                 "use_sim_time parameter already declared: %s",
+                 ex.what());
+  }
 
 
   /*Initializing ROS fields*/
@@ -445,7 +456,13 @@ void ROSWitmotionSensorController::imu_process(
     return;
   static sensor_msgs::msg::Imu msg;
   msg.header.frame_id = imu_frame_id;
-  msg.header.stamp = rclcpp::Clock().now();
+  {
+    rclcpp::Time stamp = Instance().node->now();
+    if (stamp.nanoseconds() == 0) {
+      stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+    }
+    msg.header.stamp = stamp;
+  }
   for (size_t i = 0; i < 9; i++) {
     msg.linear_acceleration_covariance[i] = imu_accel_covariance[i];
     msg.angular_velocity_covariance[i] = imu_velocity_covariance[i];
@@ -521,7 +538,13 @@ void ROSWitmotionSensorController::temp_process(
       (static_cast<witmotion_packet_id>(packet.id_byte) == temp_from)) {
     float x, y, z, t;
     static sensor_msgs::msg::Temperature msg;
-    msg.header.stamp = rclcpp::Clock().now();
+    {
+      rclcpp::Time stamp = Instance().node->now();
+      if (stamp.nanoseconds() == 0) {
+        stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+      }
+      msg.header.stamp = stamp;
+    }
     msg.header.frame_id = temp_frame_id;
     msg.variance = temp_variance;
     switch (temp_from) {
@@ -552,7 +575,13 @@ void ROSWitmotionSensorController::magnetometer_process(
   static sensor_msgs::msg::MagneticField msg;
   static float x, y, z, t;
   msg.header.frame_id = magnetometer_frame_id;
-  msg.header.stamp = rclcpp::Clock().now();
+  {
+    rclcpp::Time stamp = Instance().node->now();
+    if (stamp.nanoseconds() == 0) {
+      stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+    }
+    msg.header.stamp = stamp;
+  }
   for (size_t i = 0; i < 9; i++)
     msg.magnetic_field_covariance[i] = magnetometer_covariance[i];
   decode_magnetometer(packet, x, y, z, t);
@@ -568,7 +597,13 @@ void ROSWitmotionSensorController::altimeter_process(
   decode_altimeter(packet, p, h);
   if (barometer_enable) {
     static sensor_msgs::msg::FluidPressure msg;
-    msg.header.stamp = rclcpp::Clock().now();
+    {
+      rclcpp::Time stamp = Instance().node->now();
+      if (stamp.nanoseconds() == 0) {
+        stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+      }
+      msg.header.stamp = stamp;
+    }
     msg.header.frame_id = barometer_frame_id;
     msg.variance = barometer_variance;
     msg.fluid_pressure = (p * barometer_coeff) + barometer_addition;
@@ -606,7 +641,13 @@ void ROSWitmotionSensorController::gps_process(
     decode_gps(packet, longitude_deg, longitude_min, latitude_deg,
                latitude_min);
     msg.header.frame_id = gps_frame_id;
-    msg.header.stamp = rclcpp::Clock().now();
+    {
+      rclcpp::Time stamp = Instance().node->now();
+      if (stamp.nanoseconds() == 0) {
+        stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+      }
+      msg.header.stamp = stamp;
+    }
     msg.status.service = sensor_msgs::msg::NavSatStatus::SERVICE_GPS;
     msg.status.status = sensor_msgs::msg::NavSatStatus::STATUS_FIX;
     msg.latitude = latitude_deg + (latitude_min / 60.f);

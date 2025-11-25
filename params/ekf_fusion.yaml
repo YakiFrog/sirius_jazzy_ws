@@ -18,12 +18,12 @@ ekf_filter_node:
     # NOTE: node was missing update rate (processing took ~0.27s). Lowering
     # the EKF update frequency reduces CPU pressure. If you need higher-rate
     # fusion, instead throttle the sensors to match the EKF frequency.
-    frequency: 15.0  # lowered from 15.0 to reduce CPU load / missed updates
+    frequency: 20.0  # lowered from 15.0 to reduce CPU load / missed updates
     
     # ========================================
     # センサータイムアウト
     # ========================================
-    sensor_timeout: 1.0  # 【変更】0.3→1.0秒（標準的な値に短縮）
+    sensor_timeout: 0.5  # 【変更】0.3→1.0秒（標準的な値に短縮）
     
     # ========================================
     # 2D/3Dモード
@@ -35,14 +35,14 @@ ekf_filter_node:
     # ========================================
     publish_tf: true  # odom→base_footprintのTFを配信
     publish_acceleration: false  # 加速度情報は配信しない
-    print_diagnostics: true  # 一時的に無効化（診断ログは負荷が高いので必要時に再度有効化）
+    print_diagnostics: false  # 一時的に無効化（診断ログは負荷が高いので必要時に再度有効化）
     
     # ========================================
     # 高度な設定
     # ========================================
     predict_to_current_time: true  # 現在時刻まで予測を実行
     smooth_lagged_data: false  # 遅延データの平滑化を無効（リアルタイム性重視）
-    transform_timeout: 0.1  # TF取得の待機時間（秒）
+    transform_timeout: 0.1 # TF取得の待機時間（秒）
     
     # ========================================
     # オドメトリ設定（ホイールエンコーダ）
@@ -54,7 +54,7 @@ ekf_filter_node:
                    false, false, true,   # vroll, vpitch, vyaw（vyaw角速度を使用）
                    false, false, false]  # ax, ay, az（加速度は使用しない）
     # small queue reduces backlog; a slightly larger queue smooths burst arrivals
-    odom0_queue_size: 10
+    odom0_queue_size: 5
     odom0_differential: false  # 【変更】速度データは既に相対的なのでfalse
     # 【理由】位置は速度の積分値。位置と速度を同時に使うと二重に情報を与えて不安定になる
     
@@ -67,10 +67,17 @@ ekf_filter_node:
                   false, false, false,  # vx, vy, vz（速度はオドメトリを優先）
                   false, false, false,  # 【重大な変更】vroll, vpitch, vyaw角速度をすべて無効化
                   false, false, false]  # ax, ay, az（加速度は使用しない、ノイズ大）
+
+    # imu0_config: [false, false, false,  # x, y, z（IMUは位置情報なし）
+    #               false, false, true,   # 【変更】roll, pitch, yaw（yawのみ使用、2Dモードではroll/pitch不要）
+    #               false, false, false,  # vx, vy, vz（速度はオドメトリを優先）
+    #               false, false, true,  # 【重大な変更】vroll, vpitch, vyaw角速度をすべて無効化
+    #               true, true, false]  # ax, ay, az（加速度は使用しない、ノイズ大）
+    
     # keep IMU queue small to avoid processing large backlogs, but allow a
     # few messages to absorb brief timing jitter from the serial port.
-    imu0_queue_size: 10  # increased from 1 -> 5
-    imu0_differential: true  # 【重大な変更】true→false（HWT905は絶対姿勢を出力するAHRS）
+    imu0_queue_size: 5  # increased from 1 -> 5
+    imu0_differential: false  # 【重大な変更】true→false（HWT905は絶対姿勢を出力するAHRS）
     imu0_remove_gravitational_acceleration: true  # 念のため有効（加速度未使用だが将来対応）
     # 【重要】HWT905は内部でKalmanフィルタを使用して姿勢を計算済み
     # - 差分モード(differential: true)にするとドリフトが蓄積する

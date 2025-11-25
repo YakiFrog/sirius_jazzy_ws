@@ -4,3 +4,5 @@ install
 .vscode
 .venv
 satellite
+
+.fake

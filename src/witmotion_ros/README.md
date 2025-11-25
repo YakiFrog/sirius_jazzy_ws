@@ -37,6 +37,8 @@ Configuration of the node is done by default via the configuration YAML file [`c
 - `polling_interval` - the sensor polling interval in milliseconds. If this parameter is omitted, the default value is set up by the library (50 ms).
 - `timeout_ms` - the sensor timeout period in milliseconds.  If no data is received from the sensor after this period, then an error is raised and the node terminates. If this parameter is omitted, a default value of 3 times the polling interval is used.  If this parameter is zero, the timeout check is disabled.
 - `restart_service_name` - the service name used to restart the sensor connection after an error.
+
+- `use_sim_time` - when true the node will follow ROS simulation time (i.e. /clock) for message timestamps. If set but no /clock publisher exists, the node will fallback to system time.
 - `imu_publisher:`
     - `topic_name` - the topic name for IMU data publisher, `imu` in the node's namespace by default
     - `frame_id` - IMU message header [frame ID](https://wiki.ros.org/tf)
