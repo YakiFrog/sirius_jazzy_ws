@@ -2,7 +2,7 @@
 # HWT905 IMU（姿勢計算済みAHRS）とオドメトリを融合して自己位置推定
 ekf_filter_node:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
     
     # ========================================
     # フレーム設定
@@ -18,7 +18,7 @@ ekf_filter_node:
     # NOTE: node was missing update rate (processing took ~0.27s). Lowering
     # the EKF update frequency reduces CPU pressure. If you need higher-rate
     # fusion, instead throttle the sensors to match the EKF frequency.
-    frequency: 20.0  # lowered from 15.0 to reduce CPU load / missed updates
+    frequency: 15.0  # lowered from 15.0 to reduce CPU load / missed updates
     
     # ========================================
     # センサータイムアウト
@@ -61,7 +61,7 @@ ekf_filter_node:
     # ========================================
     # HWT905 IMU設定（AHRS：姿勢計算済み）
     # ========================================
-    imu0: /imu_throttled
+    imu0: /imu
     imu0_config: [false, false, false,  # x, y, z（IMUは位置情報なし）
                   false, false, true,   # 【変更】roll, pitch, yaw（yawのみ使用、2Dモードではroll/pitch不要）
                   false, false, false,  # vx, vy, vz（速度はオドメトリを優先）
@@ -70,7 +70,7 @@ ekf_filter_node:
     # keep IMU queue small to avoid processing large backlogs, but allow a
     # few messages to absorb brief timing jitter from the serial port.
     imu0_queue_size: 10  # increased from 1 -> 5
-    imu0_differential: false  # 【重大な変更】true→false（HWT905は絶対姿勢を出力するAHRS）
+    imu0_differential: true  # 【重大な変更】true→false（HWT905は絶対姿勢を出力するAHRS）
     imu0_remove_gravitational_acceleration: true  # 念のため有効（加速度未使用だが将来対応）
     # 【重要】HWT905は内部でKalmanフィルタを使用して姿勢を計算済み
     # - 差分モード(differential: true)にするとドリフトが蓄積する
