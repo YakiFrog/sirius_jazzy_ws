@@ -1,6 +1,6 @@
 slam_toolbox:
   ros__parameters:
-    use_sim_time: false
+    use_sim_time: true
 
     # プラグインパラメータ
     solver_plugin: solver_plugins::CeresSolver
@@ -14,7 +14,7 @@ slam_toolbox:
     odom_frame: sirius3/odom
     map_frame: map
     base_frame: sirius3/base_footprint
-    scan_topic: /scan3
+    scan_topic: /scan
     use_map_saver: true
     mode: mapping
 
