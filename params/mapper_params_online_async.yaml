@@ -19,7 +19,8 @@ slam_toolbox:
     mode: mapping
 
     debug_logging: true
-    throttle_scans: 3  # 全スキャンを処理 1 -> 2 間引いた
+    # Reduce input rate and increase buffer to avoid message-filter queue overflows
+    throttle_scans: 5  # process 1 out of 5 scans (increase to lower CPU/load)
     transform_publish_period: 0.02
     map_update_interval: 1.0  # マップ更新を高速化(5.0秒→1.0秒)
     resolution: 0.05
@@ -28,7 +29,8 @@ slam_toolbox:
     
     # TF関連 - より寛容な設定
     transform_timeout: 1.0  # より寛容に
-    tf_buffer_duration: 30.0  # バッファサイズ削減(60→30秒)
+    # Allow longer TF buffering to tolerate transform arrival jitter
+    tf_buffer_duration: 60.0  # increased from 30s
     
     # メッセージ処理関連
     minimum_time_interval: 0.1      # 0.1秒ごとに必ず処理
@@ -42,7 +44,7 @@ slam_toolbox:
     use_scan_barycenter: true
     minimum_travel_distance: 0.1   # 10cmごとに処理(より細かく)
     minimum_travel_heading: 0.1     # 約5.7度ごとに処理
-    scan_buffer_size: 1000  # メモリ使用量
+    scan_buffer_size: 2000  # increase buffer size to absorb short bursts
     scan_buffer_maximum_scan_distance: 10.0  # より厳格に
     link_match_minimum_response_fine: 0.4  # より厳格に(0.1→0.4)
     link_scan_maximum_distance: 2.0  # 探索範囲を広げる
