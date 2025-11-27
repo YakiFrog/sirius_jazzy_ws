@@ -108,3 +108,6 @@ use_sim_time:=false'
 
 # Sensor Fusion起動(実時間)
 alias sf_real='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_sim_time:=false'
+
+# ウェイポイントナビゲーション起動
+alias mv_goal='bash ~/sirius_jazzy_ws/bash/startup_bash/move_goal.sh'

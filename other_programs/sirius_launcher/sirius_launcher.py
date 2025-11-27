@@ -106,7 +106,7 @@ class SiriusLauncher(QMainWindow):
     
     def load_aliases(self):
         """エイリアスファイルを読み込んでボタンを作成"""
-        alias_file = Path.home() / "sirius_jazzy_ws" / "bash" / ".bash_alias2"
+        alias_file = Path.home() / "sirius_jazzy_ws" / "bash" / "bash_alias2.sh"
 
         if not alias_file.exists():
             QMessageBox.warning(self, "警告", f"エイリアスファイルが見つかりません: {alias_file}")
