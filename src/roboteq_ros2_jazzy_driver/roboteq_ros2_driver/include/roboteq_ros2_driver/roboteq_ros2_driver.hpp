@@ -105,6 +105,9 @@ class Roboteq : public rclcpp::Node
   // publish rate for /odom (Hz). This is the maximum publish frequency; the
   // actual rate will also depend on the controller stream.
   double odom_publish_hz{};
+  // user-tunable scale correction applied to odometry distances — useful for
+  // calibrating mismatch between encoder counts and physical distance.
+  double odom_scale{};
   float gear_ratio{};
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};

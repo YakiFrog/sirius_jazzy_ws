@@ -20,3 +20,6 @@ roboteq_ros2_driver:
     odom_stream_interval_ms: 5
     # maximum publish rate for /odom (Hz)
     odom_publish_hz: 20.0
+    # calibration: multiply computed distances/angles by this factor
+    # (set after measuring known motion, e.g. 0.5m -> observed 0.075m => 6.667)
+    odom_scale: 6.667

@@ -76,6 +76,9 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     // odom streaming/publish tuning
     odom_stream_interval_ms = this->declare_parameter("odom_stream_interval_ms", 50);
     odom_publish_hz = this->declare_parameter("odom_publish_hz", 50.0);
+    // optional calibration scale — multiply computed distances/angles by this
+    // factor to adjust odom scale to ground truth (default 1.0 = no scaling)
+    odom_scale = this->declare_parameter("odom_scale", 1.0);
 
     starttime = 0;
     hstimer = 0;
@@ -116,6 +119,9 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
 //  odom publisher
 //
     odom_pub = this->create_publisher<nav_msgs::msg::Odometry>(odom_topic, 1000);
+
+    RCLCPP_INFO(this->get_logger(), "Odometry: wheel_circumference=%.4f pulse=%d gear_ratio=%.3f odom_scale=%.4f",
+                wheel_circumference, pulse, gear_ratio, odom_scale);
 //
 // cmd_vel subscriber
 //
@@ -164,6 +170,7 @@ void Roboteq::update_parameters()
     int new_stream_ms = odom_stream_interval_ms;
     this->get_parameter("odom_stream_interval_ms", new_stream_ms);
     this->get_parameter("odom_publish_hz", odom_publish_hz);
+    this->get_parameter("odom_scale", odom_scale);
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -664,8 +671,17 @@ void Roboteq::odom_loop()
                                         odom_encoder_right = right_val;
                                         odom_encoder_left = left_val;
 
-                                        float right_diff = ((float)odom_encoder_right - odom_encoder_right_old) / pulse;
-                                        float left_diff = ((float)odom_encoder_left - odom_encoder_left_old) / pulse;
+                                        // Compute revolutions from encoder counts.
+                                        // Allow for a gear_ratio: counts-per-wheel-rev = pulse * gear_ratio
+                                        double gr = (gear_ratio <= 0.0f) ? 1.0 : gear_ratio;
+                                        double counts_per_wheel_rev = (double)pulse * gr;
+
+                                        float right_diff = 0.0f;
+                                        float left_diff = 0.0f;
+                                        if (counts_per_wheel_rev > 0.0) {
+                                            right_diff = ((float)odom_encoder_right - odom_encoder_right_old) / (float)counts_per_wheel_rev;
+                                            left_diff = ((float)odom_encoder_left - odom_encoder_left_old) / (float)counts_per_wheel_rev;
+                                        }
 
                                         // 値が大きすぎる場合はスキップ（エラー防止）
                                         if (std::abs(right_diff) > 100.0f || std::abs(left_diff) > 100.0f) {
@@ -685,6 +701,11 @@ void Roboteq::odom_loop()
 
                                         odom_encoder_right_old = (float)odom_encoder_right;
                                         odom_encoder_left_old = (float)odom_encoder_left;
+
+                                        // Diagnostic logging to help calibrate odometry scaling
+                                        RCLCPP_INFO(this->get_logger(), "odom enc R=%d L=%d oldR=%.1f oldL=%.1f deltaR=%.3f deltaL=%.3f countsPerWheelRev=%.2f wheel_circ=%.4f",
+                                                    odom_encoder_right, odom_encoder_left, odom_encoder_right_old, odom_encoder_left_old,
+                                                    right_diff, left_diff, counts_per_wheel_rev, wheel_circumference);
 
                                     }
                                     catch (const std::exception& e) {
@@ -740,10 +761,17 @@ void Roboteq::odom_publish()
     odom_last_time = nowtime;
 
     // determine deltas of distance and angle
-    //前進距離 = (右の車輪の回転数 + 左の車輪の回転数) * タイヤの円周 / 2
+    // forward distance = (avg wheel revolutions) * tire circumference
     float linear = ((float)odom_roll_right + (float)odom_roll_left) * wheel_circumference / 2.0;
-    //旋回角度 = (右の車輪の回転数 - 左の車輪の回転数) * タイヤの円周 / トレッド幅
+    // turning angle = (difference in wheel revolutions) * tire_circumference / track_width
     float angular = ((float)odom_roll_right - (float)odom_roll_left) * wheel_circumference / track_width;
+
+    // Apply user-specified odom scale correction (for calibration). This scales
+    // both linear and angular components consistently.
+    if (std::abs((double)odom_scale - 1.0) > 1e-9) {
+        linear *= (float)odom_scale;
+        angular *= (float)odom_scale;
+    }
     //RCLCPP_INFO_STREAM(this->get_logger(), "linear: " << linear);
     //RCLCPP_INFO_STREAM(this->get_logger(), "angular: " << angular);
     // Update odometry
