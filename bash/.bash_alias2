@@ -50,21 +50,21 @@ sudo apt-get install libqt5serialport5-dev'
 
 # Nav2起動(既存MAP)
 alias nav2='src && ros2 launch nav2_bringup bringup_launch.py \
-params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
+params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim.yaml \
 map:=${HOME}/sirius_jazzy_ws/maps_waypoints/maps/map.yaml \
 use_composition:=False \
 use_sim_time:=True'
 
 # Nav2起動（MAPなし）
 alias nav2slam='src && ros2 launch nav2_bringup bringup_launch.py \
-params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
+params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim.yaml \
 slam:=True \
 use_composition:=False \
 use_sim_time:=true'
 
 # SLAMToolbox起動
 alias slamtoolbox='src && ros2 launch slam_toolbox online_async_launch.py \
-slam_params_file:=${HOME}/sirius_jazzy_ws/params/mapper_params_online_async.yaml \
+slam_params_file:=${HOME}/sirius_jazzy_ws/params/mapper_params_online_async_sim.yaml \
 use_sim_time:=true'
 
 # Sensor Fusion起動

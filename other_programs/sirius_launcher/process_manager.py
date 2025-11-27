@@ -29,7 +29,19 @@ class ProcessManager:
             script_fd, self.script_path = tempfile.mkstemp(suffix='.sh', prefix='sirius_launcher_')
             
             with os.fdopen(script_fd, 'w') as f:
+                # rcfile used by `bash --rcfile` — ensure common shell env is available
                 f.write('#!/bin/bash\n')
+                # Try to source user's ~/.bashrc so any exported vars are loaded
+                f.write('if [ -f "$HOME/.bashrc" ]; then\n')
+                f.write('  # shellcheck disable=SC1090\n')
+                f.write('  source "$HOME/.bashrc" >/dev/null 2>&1\n')
+                f.write('fi\n')
+                # If the launcher process had ROS_DOMAIN_ID set, re-export it explicitly
+                ros_domain = os.environ.get('ROS_DOMAIN_ID')
+                if ros_domain:
+                    # quote in case of spaces or other chars
+                    f.write(f'export ROS_DOMAIN_ID="{ros_domain}"\n')
+
                 f.write(f'echo $BASHPID > {self.pid_file}\n')
                 f.write(f'export PS1="[{self.tab_title}] $ "\n')
                 f.write(f'echo -ne "\\033]0;{self.tab_title}\\007"\n')

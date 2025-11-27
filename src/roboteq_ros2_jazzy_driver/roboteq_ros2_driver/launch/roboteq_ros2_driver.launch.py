@@ -89,7 +89,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_tf_pub_base',
-        arguments=['0', '0', '0', '0', '0', '0', 'sirius3/base_link', 'velodyne']
+        arguments=['0', '0', '0', '0', '0', '0', 'sirius3/lidar_link', 'velodyne']
     )
 
     return LaunchDescription([
