@@ -1,0 +1,9 @@
+waypoints:
+- number: 1
+  x: 5.0
+  y: 0.0
+  angle_radians: 0.0
+- number: 2
+  x: 0.0
+  y: 0.0
+  angle_radians: 0.0
