@@ -84,11 +84,7 @@ alias path='src2 && ros2 run path_listener path_listener_node'
 # GROUP: リアル実験
 
 # Nav2起動(任意MAP、実時間)
-alias nav2_real='src && ros2 launch nav2_bringup bringup_launch.py \
-params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
-map:=${HOME}/sirius_jazzy_ws/maps_waypoints/maps/map.yaml \
-use_composition:=False \
-use_sim_time:=false'
+alias nav2_real='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_real.sh'
 
 # Nav2起動(MAPなし、実時間)
 alias nav2slam_real='src && ros2 launch nav2_bringup bringup_launch.py \
