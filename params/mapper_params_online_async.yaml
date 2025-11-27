@@ -14,7 +14,7 @@ slam_toolbox:
     odom_frame: sirius3/odom
     map_frame: map
     base_frame: sirius3/base_footprint
-    scan_topic: /scan
+    scan_topic: /scan3
     use_map_saver: true
     mode: mapping
 
