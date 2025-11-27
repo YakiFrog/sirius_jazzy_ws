@@ -80,3 +80,28 @@ alias sirius_launcher='cd ${HOME}/sirius_jazzy_ws/other_programs/sirius_launcher
 alias src2='cd ${HOME}/Sirius_ear && source install/setup.bash'
 alias blue='src2 && ros2 run bluetooth bluetooth_node'
 alias path='src2 && ros2 run path_listener path_listener_node'
+
+# TAB: リアル実験
+# GROUP: リアル実験
+
+# Nav2起動(既存MAP、実時間)
+alias nav2_real='src && ros2 launch nav2_bringup bringup_launch.py \
+params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
+map:=${HOME}/sirius_jazzy_ws/maps_waypoints/maps/map.yaml \
+use_composition:=False \
+use_sim_time:=false'
+
+# Nav2起動(MAPなし、実時間)
+alias nav2slam_real='src && ros2 launch nav2_bringup bringup_launch.py \
+params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
+slam:=True \
+use_composition:=False \
+use_sim_time:=false'
+
+# SLAMToolbox起動(実時間)
+alias slamtoolbox_real='src && ros2 launch slam_toolbox online_async_launch.py \
+slam_params_file:=${HOME}/sirius_jazzy_ws/params/mapper_params_online_async.yaml \
+use_sim_time:=false'
+
+# Sensor Fusion起動(実時間)
+alias sf_real='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_sim_time:=false'

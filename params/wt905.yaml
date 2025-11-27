@@ -1,6 +1,6 @@
 witmotion:
   ros__parameters:
-    use_sim_time: true
+    use_sim_time: false
     port: wt905
     baud_rate: 115200 # baud
     polling_interval: 5 # ms
