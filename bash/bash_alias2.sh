@@ -111,3 +111,9 @@ alias sf_real='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_
 
 # ウェイポイントナビゲーション起動
 alias mv_goal='bash ~/sirius_jazzy_ws/bash/startup_bash/move_goal.sh'
+
+# ウェイポイント保存（距離）
+alias get_pos_dis='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_dis.sh'
+
+# ウェイポイント保存（手動）
+alias get_pos_ent='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_ent.sh'
