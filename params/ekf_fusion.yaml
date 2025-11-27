@@ -18,7 +18,7 @@ ekf_filter_node:
     # NOTE: node was missing update rate (processing took ~0.27s). Lowering
     # the EKF update frequency reduces CPU pressure. If you need higher-rate
     # fusion, instead throttle the sensors to match the EKF frequency.
-    frequency: 20.0  # lowered from 15.0 to reduce CPU load / missed updates
+    frequency: 15.0  # lowered from 15.0 to reduce CPU load / missed updates
     
     # ========================================
     # センサータイムアウト
