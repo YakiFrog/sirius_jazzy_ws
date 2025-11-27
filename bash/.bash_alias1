@@ -14,7 +14,7 @@ alias src='ws && source install/setup.bash'
 alias rdep='ws && rosdep install --from-paths src --ignore-src -riy'
 
 # colconのビルドコマンド
-alias bd='ws && colcon build --symlink-install --executor sequential --allow-overriding nav2_costmap_2d'
+alias bd='ws && colcon build --symlink-install --executor sequential --allow-overriding nav2_costmap_2dcolcon build'
 
 # RQTコンソール起動
 alias rqt_console='ros2 run rqt_console rqt_console'

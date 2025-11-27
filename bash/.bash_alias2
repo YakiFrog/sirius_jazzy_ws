@@ -7,6 +7,9 @@
 # PRESET: シミュレータセット（SLAM）
 # PRESET_ITEMS: sim,sf,nav2slam,slamtoolbox
 
+# PRESET: リアル実験セット（MAPなし）
+# PRESET_ITEMS: sf_real,nav2slam_real,slamtoolbox_real,roboteq,velodyne,hokuyo,imu,scn,rviz2desc
+
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
 
