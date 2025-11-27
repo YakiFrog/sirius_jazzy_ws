@@ -210,7 +210,8 @@ local_costmap:
             horizontal_fov_angle: 6.28 # 360度（2π）[web:22]
             decay_acceleration: 0.0    # LiDARは必ず0に設定[web:22]
             model_type: 1              # 3D LiDARは1を指定[web:22]
-            expected_update_rate: 0.1  # 0=更新レートチェックなし[web:22]
+            # Measured velodyne publish ~20-25Hz in hardware; keep sim consistent
+            expected_update_rate: 0.05  # 0=更新レートチェックなし[web:22]
             observation_persistence: 0.5 # 0=最新の測定値のみ使用[web:22]
             inf_is_valid: false
             filter: "voxel"            # CPU負荷が高い場合は"passthrough"に変更[web:22]
