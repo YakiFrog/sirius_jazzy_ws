@@ -24,24 +24,24 @@ class LaunchButtonUI(QWidget):
         """UIのセットアップ"""
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
-        
+
         # 起動ボタン
         self.launch_btn = QPushButton(f"▶ {self.name}")
         self.launch_btn.setMinimumWidth(200)
         layout.addWidget(self.launch_btn)
-        
+
         # ステータス表示
         self.status_label = QLabel("●")
         self.status_label.setStyleSheet("color: gray; font-size: 20px;")
         self.status_label.setFixedWidth(30)
         self.status_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.status_label)
-        
+
         # 説明ラベル
-        desc_label = QLabel(self.description)
-        desc_label.setStyleSheet("color: gray;")
-        layout.addWidget(desc_label, 1)
-        
+        self.desc_label = QLabel(self.description)
+        self.desc_label.setStyleSheet("color: gray;")
+        layout.addWidget(self.desc_label, 1)
+
         # 停止ボタン
         self.stop_btn = QPushButton("■ 停止")
         self.stop_btn.setMaximumWidth(100)

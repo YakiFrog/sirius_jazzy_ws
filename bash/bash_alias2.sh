@@ -49,11 +49,7 @@ sudo apt-get install libqt5serialport5-dev'
 # GROUP: ナビゲーション
 
 # Nav2起動(既存MAP)
-alias nav2='src && ros2 launch nav2_bringup bringup_launch.py \
-params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim.yaml \
-map:=${HOME}/sirius_jazzy_ws/maps_waypoints/maps/map.yaml \
-use_composition:=False \
-use_sim_time:=True'
+alias nav2='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_sim.sh'
 
 # Nav2起動（MAPなし）
 alias nav2slam='src && ros2 launch nav2_bringup bringup_launch.py \
@@ -87,12 +83,8 @@ alias path='src2 && ros2 run path_listener path_listener_node'
 # TAB: リアル実験
 # GROUP: リアル実験
 
-# Nav2起動(既存MAP、実時間)
-alias nav2_real='src && ros2 launch nav2_bringup bringup_launch.py \
-params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
-map:=${HOME}/sirius_jazzy_ws/maps_waypoints/maps/map.yaml \
-use_composition:=False \
-use_sim_time:=false'
+# Nav2起動(任意MAP、実時間)
+alias nav2_real='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_real.sh'
 
 # Nav2起動(MAPなし、実時間)
 alias nav2slam_real='src && ros2 launch nav2_bringup bringup_launch.py \
@@ -108,3 +100,15 @@ use_sim_time:=false'
 
 # Sensor Fusion起動(実時間)
 alias sf_real='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_sim_time:=false'
+
+# ウェイポイントナビゲーション起動
+alias mv_goal='bash ~/sirius_jazzy_ws/bash/startup_bash/move_goal.sh'
+
+# ウェイポイント保存（距離）
+alias get_pos_dis='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_dis.sh'
+
+# ウェイポイント保存（手動）
+alias get_pos_ent='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_ent.sh'
+
+# マップ保存起動
+alias map_save='bash ~/sirius_jazzy_ws/bash/startup_bash/map_save.sh'

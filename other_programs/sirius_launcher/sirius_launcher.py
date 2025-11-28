@@ -10,7 +10,7 @@ import sys
 import signal
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, QEvent
 
 from alias_parser import parse_bash_aliases
 from ui_components import LaunchButtonUI, MainWindowUI
@@ -20,14 +20,20 @@ from process_manager import ProcessManager
 class LaunchButton(LaunchButtonUI):
     """起動ボタンを含むウィジェット（ロジック統合版）"""
     
-    def __init__(self, name, command, description=""):
+    def __init__(self, name, command, description="", tab_widget=None, tab_index=None):
         super().__init__(name, description)
+        # Tab control info
+        self.tab_widget = tab_widget
+        self.tab_index = tab_index
         self.command = command
         self.process_manager = ProcessManager(name, command)
         
         # ボタンのイベント接続
         self.launch_btn.clicked.connect(self.launch)
         self.stop_btn.clicked.connect(self.stop)
+        # クリックでタブ選択（実行中のみ）
+        self.launch_btn.clicked.connect(self.select_tab_if_running)
+        self.stop_btn.clicked.connect(self.select_tab_if_running)
         
         # 起動時に古いPIDファイルをチェック
         self.load_pid()
@@ -36,6 +42,18 @@ class LaunchButton(LaunchButtonUI):
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_process_status)
         self.timer.start(1000)
+        # イベントフィルタをインストールして、ウィジェット全体のクリックを捕まえる
+        self.installEventFilter(self)
+        # 子ウィジェットにもフィルタをインストール
+        try:
+            self.launch_btn.installEventFilter(self)
+            self.stop_btn.installEventFilter(self)
+            self.status_label.installEventFilter(self)
+            # desc_labelはui_componentsでself.desc_labelとして公開済み
+            if hasattr(self, 'desc_label'):
+                self.desc_label.installEventFilter(self)
+        except Exception:
+            pass
     
     def launch(self):
         """コマンドを新しいターミナルタブで起動"""
@@ -77,6 +95,27 @@ class LaunchButton(LaunchButtonUI):
         if is_running != current_state:
             self.update_status(is_running)
 
+    def select_tab(self):
+        """この項目があるタブを選択する"""
+        if self.tab_widget is not None and self.tab_index is not None and self.tab_index >= 0:
+            try:
+                self.tab_widget.setCurrentIndex(self.tab_index)
+            except Exception:
+                pass
+
+    def select_tab_if_running(self):
+        """実行中のときだけタブを選択するユーティリティ"""
+        if self.process_manager.is_running():
+            self.select_tab()
+
+    def eventFilter(self, watched, event):
+        # マウスクリックイベントを捕まえてタブ選択を行う
+        if event.type() == QEvent.MouseButtonPress:
+            # クリックされたとき、実行中ならタブ選択
+            if self.process_manager.is_running():
+                self.select_tab()
+        return super().eventFilter(watched, event)
+
 
 class SiriusLauncher(QMainWindow):
     """Sirius ROS2 Launch Manager メインウィンドウ"""
@@ -100,13 +139,13 @@ class SiriusLauncher(QMainWindow):
         if tab_name is None:
             tab_name = list(self.tab_layouts.keys())[0]
         self.tab_layouts[tab_name].addWidget(group)
-        return group_layout
+        return group_layout, group
     
     # NOTE: previous single-tab add_group kept for reference is removed
     
     def load_aliases(self):
         """エイリアスファイルを読み込んでボタンを作成"""
-        alias_file = Path.home() / "sirius_jazzy_ws" / "bash" / ".bash_alias2"
+        alias_file = Path.home() / "sirius_jazzy_ws" / "bash" / "bash_alias2.sh"
 
         if not alias_file.exists():
             QMessageBox.warning(self, "警告", f"エイリアスファイルが見つかりません: {alias_file}")
@@ -130,9 +169,9 @@ class SiriusLauncher(QMainWindow):
         for i, (group_name, aliases) in enumerate(groups.items()):
             if aliases:
                 tab_name = tab_names[i] if i < len(tab_names) else tab_names[0]
-                group_layout = self.add_group(group_name, tab_name)
+                group_layout, group_widget = self.add_group(group_name, tab_name)
                 for alias_name, command, description in aliases:
-                    self.add_button(group_layout, alias_name, command, description)
+                    self.add_button(group_layout, alias_name, command, description, group_widget)
 
         # 各タブのレイアウトにストレッチ追加
         for layout in self.tab_layouts.values():
@@ -160,9 +199,12 @@ class SiriusLauncher(QMainWindow):
             else:
                 print(f"  エラー: {item} が見つかりません")
     
-    def add_button(self, layout, name, command, description):
+    def add_button(self, layout, name, command, description, group_widget=None):
         """ボタンを追加"""
-        button = LaunchButton(name, command, description)
+        tab_index = None
+        if group_widget is not None and self.tab_widget is not None:
+            tab_index = self.tab_widget.indexOf(group_widget.parentWidget())
+        button = LaunchButton(name, command, description, tab_widget=self.tab_widget, tab_index=tab_index)
         layout.addWidget(button)
         self.buttons.append(button)
         self.button_map[name] = button
