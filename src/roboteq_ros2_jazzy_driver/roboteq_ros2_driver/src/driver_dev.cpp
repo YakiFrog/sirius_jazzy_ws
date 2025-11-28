@@ -806,20 +806,12 @@ void Roboteq::odom_publish()
     }
 
     odom_msg.header.stamp = this->get_clock()->now();
-    // Ensure frame ids are always populated at publish time. Previously they
-    // were only set during setup when pub_odom_tf was true which could leave
-    // the fields empty if parameters changed or the flag was false.
     odom_msg.header.frame_id = odom_frame;
     odom_msg.child_frame_id = base_frame;
-    // pose should be the absolute odometry position (meters). The previous
-    // implementation multiplied by dt which produced near-zero pose values.
     odom_msg.pose.pose.position.x = odom_x;
     odom_msg.pose.pose.position.y = odom_y;
     odom_msg.pose.pose.position.z = 0.0;
     odom_msg.pose.pose.orientation = quat;
-    // linear and angular variables here represent the distance/angle moved
-    // since the last update. To publish velocity (m/s and rad/s) divide by
-    // dt. Protect against dt == 0.
     if (dt > 1e-6f) {
         odom_msg.twist.twist.linear.x = linear / dt;
     } else {
