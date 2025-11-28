@@ -46,6 +46,10 @@ namespace sirius_controller
             bool quit_requested_;
             bool shift_flag;
             int key_file_descriptor_;
+            float target_odom_pose_x;
+            float target_odom_pose_y;
+            float target_odom_orientation_z;
+            float target_odom_orientation_w;
 
             std::mutex cmd_mutex_;
             std::shared_ptr<geometry_msgs::msg::Twist> cmd_;
@@ -53,14 +57,17 @@ namespace sirius_controller
             std::shared_ptr<std_msgs::msg::String> face_;
             std::shared_ptr<std_msgs::msg::Bool> trans_;
             std::shared_ptr<rclcpp::TimerBase> timer_;
+            std::shared_ptr<geometry_msgs::msg::PoseWithCovarianceStamped> initial_pose_;
 
             rclcpp::Subscription<sirius_interfaces::msg::ControllerInput>::SharedPtr keyinput_subscriber_;
+            rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr target_odom_subscription_;
             rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_publisher_;
             rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr velocity_teleop_publisher_;
             rclcpp::Publisher<std_msgs::msg::String>::SharedPtr face_publisher_;
             rclcpp::Publisher<std_msgs::msg::String>::SharedPtr signal_publisher_;
             rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr trans_publisher_;
             rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr bumper_publisher_;
+            rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_pub_;
             rclcpp_action::Client<sirius_interfaces::action::PlayAudio>::SharedPtr play_audio_client;
             rclcpp_action::ClientGoalHandle<sirius_interfaces::action::PlayAudio>::SharedPtr goal_handle_;
             rclcpp_action::Client<nav2_msgs::action::AssistedTeleop>::SharedPtr assisted_teleop_client;
@@ -72,6 +79,7 @@ namespace sirius_controller
 
             void spin();
             void remoteKeyInputReceived(const sirius_interfaces::msg::ControllerInput::SharedPtr key);
+            void odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg);
             void keyboardInputLoop();
             void processKeyboardInput(char c);
             void disable();
@@ -90,6 +98,7 @@ namespace sirius_controller
             void startAssistedTeleop();
             void stopAssistedTeleop();
             void cancelAllNavigationGoals();
+            void publishPoseEstimate();
 
             struct termios original_terminal_state_;
             std::thread thread_;

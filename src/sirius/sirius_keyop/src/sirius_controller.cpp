@@ -10,13 +10,14 @@
 #include <thread>
 #include <utility>
 
-#include <geometry_msgs/msg/twist.hpp>
-#include <std_msgs/msg/bool.hpp>
-#include <std_msgs/msg/string.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp_action/rclcpp_action.hpp>
-#include <rclcpp_components/register_node_macro.hpp>
-
+#include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
+#include "std_msgs/msg/bool.hpp"
+#include "std_msgs/msg/string.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_action/rclcpp_action.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 #include "sirius_interfaces/msg/controller_input.hpp"
 #include "sirius_interfaces/action/play_audio.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
@@ -50,6 +51,8 @@ namespace sirius_controller
 
     keyinput_subscriber_ = this->create_subscription<sirius_interfaces::msg::ControllerInput>("controller", rclcpp::QoS(1), std::bind(&Controller::remoteKeyInputReceived, this, std::placeholders::_1));
 
+    target_odom_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/target_odom", 10, sed::bind(&Controller::odomCallback, this, std::placeholders::_1));
+
     velocity_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 1);
 
     velocity_teleop_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel_teleop", 1);
@@ -61,6 +64,8 @@ namespace sirius_controller
     trans_publisher_ = this->create_publisher<std_msgs::msg::Bool>("trans", 10);
 
     bumper_publisher_ = this->create_publisher<std_msgs::msg::Bool>("stop", 10);
+
+    initial_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 10);
     
     play_audio_client = rclcpp_action::create_client<sirius_interfaces::action::PlayAudio>(
         this, "play_audio"
@@ -83,6 +88,11 @@ namespace sirius_controller
     );
 
     RCLCPP_INFO(get_logger(), "KeyOp : connected.");
+
+    target_odom_pose_x = 0.0;
+    target_odom_pose_y = 0.0;
+    target_odom_orientation_z = 0.0;
+    target_odom_orientation_w = 1.0;
 
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&Controller::spin, this));
 
@@ -199,6 +209,14 @@ namespace sirius_controller
         processKeyboardInput(key->pressed_key);
     }
 
+    void Controller::odomCallback(const nav_msgs::msg::Odometry::SharedPtr msg)
+    {
+        target_odom_pose_x = msg->pose.pose.position.x;
+        target_odom_pose_y = msg->pose.pose.position.y;
+        target_odom_orientation_z = msg->pose.pose.orientation.z;
+        target_odom_orientation_w = msg->pose.pose.orientation.w;
+    }
+
     void Controller::processKeyboardInput(char c)
     {
         std::lock_guard<std::mutex> lk(cmd_mutex_);
@@ -289,6 +307,19 @@ namespace sirius_controller
                 shift_flag = false;
                 break;
             }
+            case 'a':
+            {
+                if (shift_flag)
+                {
+                    publishTrans(false);
+                }
+                else
+                {
+                    publishTrans(true);
+                }
+                shift_flag = false;
+                break;
+            }
             case 'b':
             {
                 if (shift_flag)
@@ -334,28 +365,9 @@ namespace sirius_controller
                 shift_flag = false;
                 break;
             }
-            case 's':
+            case 'i':
             {
-                if (shift_flag)
-                {
-                    shift_flag = false;
-                }
-                else
-                {
-                    shift_flag = true;
-                }
-                break;
-            }
-            case 'a':
-            {
-                if (shift_flag)
-                {
-                    publishTrans(false);
-                }
-                else
-                {
-                    publishTrans(true);
-                }
+                publishPoseEstimate();
                 shift_flag = false;
                 break;
             }
@@ -370,6 +382,18 @@ namespace sirius_controller
                     publishBumpper(true);
                 }
                 shift_flag = false;
+                break;
+            }
+            case 's':
+            {
+                if (shift_flag)
+                {
+                    shift_flag = false;
+                }
+                else
+                {
+                    shift_flag = true;
+                }
                 break;
             }
             case 't': // Toggle Assisted Teleop
@@ -733,6 +757,23 @@ namespace sirius_controller
         }
 
         RCLCPP_INFO(get_logger(), "Controller : All navigation goals cancellation completed");
+    }
+
+    void Controller::publishPoseEstimate()
+    {
+        RCLCPP_INFO(get_logger(), "Controller : Publish pose estimate...");
+
+        initial_pose_.header.stamp = this->now();
+        initial_pose_.header.frame_id = "map";
+        initial_pose_.pose.pose.position.x = target_odom_pose_x;
+        initial_pose_.pose.pose.position.y = target_odom_pose_y;
+        initial_pose_.pose.pose.position.z = 0.0;
+        initial_pose_.pose.pose.orientation.x = 0.0;
+        initial_pose_.pose.pose.orientation.y = 0.0;
+        initial_pose_.pose.pose.orientation.z = target_odom_orientation_z;
+        initial_pose_.pose.pose.orientation.w = target_odom_orientation_w;
+
+        initial_pose_pub_->publish(initial_pose_)
     }
 }
 
