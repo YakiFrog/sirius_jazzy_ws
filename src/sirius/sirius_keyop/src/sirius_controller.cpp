@@ -51,7 +51,7 @@ namespace sirius_controller
 
     keyinput_subscriber_ = this->create_subscription<sirius_interfaces::msg::ControllerInput>("controller", rclcpp::QoS(1), std::bind(&Controller::remoteKeyInputReceived, this, std::placeholders::_1));
 
-    target_odom_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/target_odom", 10, sed::bind(&Controller::odomCallback, this, std::placeholders::_1));
+    target_odom_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>("/target_odom", 10, std::bind(&Controller::odomCallback, this, std::placeholders::_1));
 
     velocity_publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 1);
 
@@ -763,17 +763,17 @@ namespace sirius_controller
     {
         RCLCPP_INFO(get_logger(), "Controller : Publish pose estimate...");
 
-        initial_pose_.header.stamp = this->now();
-        initial_pose_.header.frame_id = "map";
-        initial_pose_.pose.pose.position.x = target_odom_pose_x;
-        initial_pose_.pose.pose.position.y = target_odom_pose_y;
-        initial_pose_.pose.pose.position.z = 0.0;
-        initial_pose_.pose.pose.orientation.x = 0.0;
-        initial_pose_.pose.pose.orientation.y = 0.0;
-        initial_pose_.pose.pose.orientation.z = target_odom_orientation_z;
-        initial_pose_.pose.pose.orientation.w = target_odom_orientation_w;
+        initial_pose_->header.stamp = this->now();
+        initial_pose_->header.frame_id = "map";
+        initial_pose_->pose.pose.position.x = target_odom_pose_x;
+        initial_pose_->pose.pose.position.y = target_odom_pose_y;
+        initial_pose_->pose.pose.position.z = 0.0;
+        initial_pose_->pose.pose.orientation.x = 0.0;
+        initial_pose_->pose.pose.orientation.y = 0.0;
+        initial_pose_->pose.pose.orientation.z = target_odom_orientation_z;
+        initial_pose_->pose.pose.orientation.w = target_odom_orientation_w;
 
-        initial_pose_pub_->publish(initial_pose_)
+        initial_pose_pub_->publish(*initial_pose_);
     }
 }
 
