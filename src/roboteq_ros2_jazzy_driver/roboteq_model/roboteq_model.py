@@ -15,9 +15,9 @@ from typing import Tuple
 class Params:
     wheel_circumference: float = 0.877
     track_width: float = 0.40
-    pulse: int = 229
-    gear_ratio: float = 1.0
-    max_rpm: int = 2500
+    pulse: int = 325
+    gear_ratio: float = 50.0
+    max_rpm: int = 50
     max_speed: float = 0.5
     odom_scale: float = 1.0
 
