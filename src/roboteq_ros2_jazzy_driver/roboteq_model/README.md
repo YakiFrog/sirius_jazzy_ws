@@ -43,6 +43,8 @@ python3 src/roboteq_ros2_jazzy_driver/roboteq_model/cli.py
 フラグ:
 - `--closed-loop` を付けるとオープンループのパワーではなく RPM を計算します
 
+起動時に CLI は現在のパラメータ値（wheel_circumference, track_width, pulse, gear_ratio, max_rpm, max_speed, odom_scale）と動作モード（open-loop/closed-loop）を表示します。
+
 
 補足
 -----

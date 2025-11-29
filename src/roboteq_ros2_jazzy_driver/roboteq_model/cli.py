@@ -18,6 +18,16 @@ from roboteq_model.roboteq_model import Params, compute_cmdvel_results
 def repl(params: Params, open_loop: bool):
     print("Roboteq cmdvel CLI (enter 'q' to quit)")
     print("Format: <linear_x> <angular_z>")
+    # print parameter values on startup for clarity
+    print("Parameters:")
+    print(f"  wheel_circumference: {params.wheel_circumference}")
+    print(f"  track_width: {params.track_width}")
+    print(f"  pulse: {params.pulse}")
+    print(f"  gear_ratio: {params.gear_ratio}")
+    print(f"  max_rpm: {params.max_rpm}")
+    print(f"  max_speed: {params.max_speed}")
+    print(f"  odom_scale: {params.odom_scale}")
+    print(f"  mode: {'open-loop' if open_loop else 'closed-loop'}")
     while True:
         try:
             s = input('> ').strip()
@@ -52,14 +62,14 @@ def main(argv=None):
     group.add_argument('--open-loop', dest='open_loop', action='store_true', help='Use open-loop power (default)')
     group.add_argument('--closed-loop', dest='open_loop', action='store_false', help='Use closed-loop speed (RPM)')
     parser.set_defaults(open_loop=True)
-    parser.add_argument('--pulse', type=int, default=229, help='Encoder pulse per rev (not used directly in cmdvel calc)')
-    parser.add_argument('--wheel-circumference', type=float, default=0.877)
-    parser.add_argument('--track-width', type=float, default=0.40)
-    parser.add_argument('--max-rpm', type=int, default=2500)
-    parser.add_argument('--max-speed', type=float, default=0.5)
+    # parser.add_argument('--pulse', type=int, default=325, help='Encoder pulse per rev (not used directly in cmdvel calc)')
+    # parser.add_argument('--wheel-circumference', type=float, default=0.877)
+    # parser.add_argument('--track-width', type=float, default=0.40)
+    # parser.add_argument('--max-rpm', type=int, default=100)
+    # parser.add_argument('--max-speed', type=float, default=0.5)
     args = parser.parse_args(argv)
 
-    params = Params(wheel_circumference=args.wheel_circumference, track_width=args.track_width, pulse=args.pulse, max_rpm=args.max_rpm, max_speed=args.max_speed)
+    params = Params()
     repl(params, args.open_loop)
 
 
