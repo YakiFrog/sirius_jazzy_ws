@@ -12,7 +12,7 @@ roboteq_ros2_driver:
     track_width: 0.40
     max_amps: 9.0
     max_rpm: 100
-    pulse: 325 # もとは295. 325(10m走って10.25mのパラメタ)
+    pulse: 295 # もとは295. 325(10m走って10.25mのパラメタ)
     max_speed: 0.5
     # odometry tuning
     # request encoder stream every N milliseconds (Roboteq streaming interval)
