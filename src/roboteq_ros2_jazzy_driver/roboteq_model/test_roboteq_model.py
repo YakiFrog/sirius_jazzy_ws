@@ -7,6 +7,11 @@ from roboteq_model.roboteq_model import (
     clamp_to_max,
     compute_power_or_rpm,
     compute_cmdvel_results,
+    compute_displacement_from_twist,
+    predict_pose_from_twist,
+    compute_quantized_displacement_from_twist,
+    counts_for_distance,
+    distance_for_counts,
     parse_encoder_line,
     update_odometry_from_counts,
 )
@@ -101,6 +106,35 @@ def test_odom_rotation():
     assert math.isclose(state.yaw, expected_angular, abs_tol=1e-7)
 
 
+def test_displacement_from_twist_forward_and_rotation():
+    params = Params()
+    # forward 1 second
+    dx, dy, dtheta, new_yaw, vlin, vang = compute_displacement_from_twist(0.5, 0.0, 1.0, 0.0, params)
+    assert math.isclose(dx, -0.5, abs_tol=1e-7)
+    assert math.isclose(dy, 0.0, abs_tol=1e-7)
+    assert math.isclose(dtheta, 0.0, abs_tol=1e-7)
+
+    # rotation 1 second (angular = 1.0), track_width=0.4 => expected dtheta = -1.0 rad
+    dx, dy, dtheta, new_yaw, vlin, vang = compute_displacement_from_twist(0.0, 1.0, 1.0, 0.0, params)
+    assert math.isclose(dx, 0.0, abs_tol=1e-7)
+    assert math.isclose(dy, 0.0, abs_tol=1e-7)
+    assert math.isclose(dtheta, -1.0, abs_tol=1e-7)
+
+
+def test_predict_pose_from_twist():
+    params = Params()
+    # initial pose 0; forward 1 second
+    x1, y1, yaw1, vlin, vang = predict_pose_from_twist(0.0, 0.0, 0.0, 0.5, 0.0, 1.0, params)
+    assert math.isclose(x1, -0.5, abs_tol=1e-7)
+    assert math.isclose(y1, 0.0, abs_tol=1e-7)
+    assert math.isclose(yaw1, 0.0, abs_tol=1e-7)
+
+    # initial pose non-zero, forward 1s
+    x1, y1, yaw1, vlin, vang = predict_pose_from_twist(1.0, 2.0, 0.0, 0.5, 0.0, 1.0, params)
+    assert math.isclose(x1, 0.5, abs_tol=1e-7)
+    assert math.isclose(y1, 2.0, abs_tol=1e-7)
+
+
 def test_compute_cmdvel_results_values():
     params = Params()
     # test forward 0.5 m/s open-loop
@@ -116,4 +150,26 @@ def test_compute_cmdvel_results_values():
     expected_rpm = int((res2['right_speed'] / params.wheel_circumference) * 60.0)
     assert res2['right_value'] == expected_rpm
     assert res2['right_cmd'].startswith('!S 1 ')
+
+
+def test_quantized_displacement_depends_on_pulse():
+    params_low = Params(pulse=10, gear_ratio=1.0)
+    params_high = Params(pulse=1000, gear_ratio=1.0)
+    lin = 0.05
+    ang = 0.0
+    dt = 1.0
+    dx_low, dy_low, dtheta_low, new_yaw_low, cr, cl = compute_quantized_displacement_from_twist(lin, ang, dt, 0.0, params_low)
+    dx_high, dy_high, dtheta_high, new_yaw_high, cr2, cl2 = compute_quantized_displacement_from_twist(lin, ang, dt, 0.0, params_high)
+    # At least counts or dx should differ when pulse is changed
+    assert (dx_low != dx_high) or (cr != cr2) or (cl != cl2)
+
+
+def test_counts_for_distance_and_back():
+    params = Params()
+    d = 0.5
+    counts = counts_for_distance(d, params)
+    expected = int(round((d / params.wheel_circumference) * params.pulse * (params.gear_ratio if params.gear_ratio > 0 else 1.0)))
+    assert counts == expected
+    d_back = distance_for_counts(counts, params)
+    assert math.isclose(d_back, (counts / (params.pulse * (params.gear_ratio if params.gear_ratio > 0 else 1.0))) * params.wheel_circumference, rel_tol=1e-6)
 

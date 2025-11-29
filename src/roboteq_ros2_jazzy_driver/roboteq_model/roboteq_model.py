@@ -15,7 +15,7 @@ from typing import Tuple
 class Params:
     wheel_circumference: float = 0.877
     track_width: float = 0.40
-    pulse: int = 325
+    pulse: int = 48
     gear_ratio: float = 50.0
     max_rpm: int = 50
     max_speed: float = 0.5
@@ -157,6 +157,110 @@ def compute_cmdvel_results(linear_x: float, angular_z: float, params: Params, op
         "right_cmd": right_cmd,
         "left_cmd": left_cmd,
     }
+
+
+def compute_displacement_from_twist(linear_x: float, angular_z: float, dt: float, yaw: float, params: Params):
+    """
+    Compute the expected displacement (dx, dy) and yaw change given a cmd_vel
+    (linear_x, angular_z) applied for duration dt, using the same driver logic
+    (including minimum command and clamping).
+
+    Returns (dx, dy, dtheta, new_yaw, linear_speed, angular_speed)
+    """
+    # Compute wheel speeds and apply same modifications as driver
+    right_speed, left_speed = twist_to_wheel_speeds(linear_x, angular_z, params.track_width)
+    right_speed, left_speed = apply_minimum_command(right_speed, left_speed, linear_x, angular_z)
+    right_speed, left_speed = clamp_to_max(right_speed, left_speed, params.max_speed)
+
+    # linear & angular speeds
+    linear = (right_speed + left_speed) / 2.0
+    angular = (right_speed - left_speed) / params.track_width if params.track_width != 0.0 else 0.0
+
+    dx = linear * dt * math.cos(yaw)
+    dy = linear * dt * math.sin(yaw)
+    dtheta = angular * dt
+    new_yaw = normalize(yaw + dtheta)
+
+    return dx, dy, dtheta, new_yaw, linear, angular
+
+
+def predict_pose_from_twist(x0: float, y0: float, yaw0: float, linear_x: float, angular_z: float, dt: float, params: Params):
+    """
+    Predict the new pose after applying (linear_x, angular_z) for dt seconds starting from (x0,y0,yaw0).
+    Returns (x1, y1, yaw1, linear_speed, angular_speed)
+    """
+    dx, dy, dtheta, new_yaw, linear, angular = compute_displacement_from_twist(linear_x, angular_z, dt, yaw0, params)
+    return x0 + dx, y0 + dy, new_yaw, linear, angular
+
+
+def compute_quantized_displacement_from_twist(linear_x: float, angular_z: float, dt: float, yaw: float, params: Params):
+    """
+    Simulate encoder-based (quantized) odometry for a single dt period using the
+    params.pulse and params.gear_ratio to compute counts. This shows how
+    counts rounding/quantization affects the reconstructed dx/dy/dtheta.
+
+    Returns: dx_q, dy_q, dtheta_q, new_yaw_q, counts_r, counts_l
+    """
+    # continuous wheel linear speeds
+    v_r, v_l = twist_to_wheel_speeds(linear_x, angular_z, params.track_width)
+
+    # compute revolutions during dt
+    if params.wheel_circumference <= 0.0:
+        raise ValueError("wheel_circumference must be > 0")
+    rev_r = (v_r * dt) / params.wheel_circumference
+    rev_l = (v_l * dt) / params.wheel_circumference
+
+    # counts per wheel revolution
+    gr = 1.0 if params.gear_ratio <= 0.0 else params.gear_ratio
+    counts_per_rev = float(params.pulse) * float(gr)
+
+    # convert to integer counts (quantization)
+    counts_r = int(round(rev_r * counts_per_rev))
+    counts_l = int(round(rev_l * counts_per_rev))
+
+    # reconstruct revolutions from quantized counts
+    rev_r_q = counts_r / counts_per_rev if counts_per_rev != 0.0 else 0.0
+    rev_l_q = counts_l / counts_per_rev if counts_per_rev != 0.0 else 0.0
+
+    # compute linear/ang from reconstructed revolutions
+    odom_roll_r = -rev_r_q
+    odom_roll_l = -rev_l_q
+
+    linear_q = (odom_roll_r + odom_roll_l) * params.wheel_circumference / 2.0
+    angular_q = (odom_roll_r - odom_roll_l) * params.wheel_circumference / params.track_width if params.track_width != 0.0 else 0.0
+
+    dx_q = linear_q * math.cos(yaw)
+    dy_q = linear_q * math.sin(yaw)
+    dtheta_q = angular_q
+    new_yaw_q = normalize(yaw + dtheta_q)
+
+    return dx_q, dy_q, dtheta_q, new_yaw_q, counts_r, counts_l
+
+
+def counts_for_distance(distance_m: float, params: Params) -> int:
+    """
+    Return integer encoder counts required on one wheel to travel distance_m meters.
+    Counts are pulse * gear_ratio * (distance / wheel_circumference) rounded to nearest integer.
+    """
+    if params.wheel_circumference <= 0.0:
+        raise ValueError("wheel_circumference must be > 0")
+    gr = 1.0 if params.gear_ratio <= 0.0 else params.gear_ratio
+    counts_per_rev = float(params.pulse) * float(gr)
+    revs = distance_m / params.wheel_circumference
+    counts = int(round(revs * counts_per_rev))
+    return counts
+
+
+def distance_for_counts(counts: int, params: Params) -> float:
+    """
+    Convert encoder counts back to distance (meters) for a single wheel.
+    """
+    gr = 1.0 if params.gear_ratio <= 0.0 else params.gear_ratio
+    counts_per_rev = float(params.pulse) * float(gr)
+    if counts_per_rev == 0:
+        raise ValueError("counts_per_rev must be > 0")
+    revs = float(counts) / counts_per_rev
+    return revs * params.wheel_circumference
 
 
 def parse_encoder_line(line: str) -> Tuple[int, int]:
