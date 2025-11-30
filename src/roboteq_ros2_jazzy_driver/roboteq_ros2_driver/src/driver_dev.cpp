@@ -768,10 +768,10 @@ void Roboteq::odom_publish()
 
     // Apply user-specified odom scale correction (for calibration). This scales
     // both linear and angular components consistently.
-    if (std::abs((double)odom_scale - 1.0) > 1e-9) {
-        linear *= (float)odom_scale;
-        angular *= (float)odom_scale;
-    }
+    // if (std::abs((double)odom_scale - 1.0) > 1e-9) {
+    //     linear *= (float)odom_scale;
+    //     angular *= (float)odom_scale;
+    // }
     //RCLCPP_INFO_STREAM(this->get_logger(), "linear: " << linear);
     //RCLCPP_INFO_STREAM(this->get_logger(), "angular: " << angular);
     // Update odometry

@@ -11,7 +11,8 @@ roboteq_ros2_driver:
     wheel_circumference: 0.877
     track_width: 0.40
     max_amps: 12.0
-    max_rpm: 100
+    max_rpm: 58
+    gear_ratio: 50.0
     pulse: 295 # もとは295. 325(10m走って10.25mのパラメタ)
     max_speed: 0.5
     odom_stream_interval_ms: 5
