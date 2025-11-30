@@ -1,0 +1,7 @@
+image: 1130atc01.pgm
+mode: trinary
+resolution: 0.050
+origin: [-87.374, -187.073, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
