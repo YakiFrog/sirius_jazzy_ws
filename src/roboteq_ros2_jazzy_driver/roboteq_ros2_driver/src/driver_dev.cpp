@@ -753,13 +753,21 @@ void Roboteq::odom_publish()
     // 以降は既存のodom_publish関数と同じ
     geometry_msgs::msg::TransformStamped tf_msg;
 
-    // determine delta time in seconds
-    uint32_t nowtime = millis();
-    float dt = (float)DELTAT(nowtime, odom_last_time) / 1000.0;
-    odom_last_time = nowtime;
+    // determine delta time in seconds - use actual ROS time instead of millis()
+    static rclcpp::Time last_odom_time = this->get_clock()->now();
+    rclcpp::Time now_time = this->get_clock()->now();
+    float dt = (now_time - last_odom_time).seconds();
+    last_odom_time = now_time;
+    
+    // Skip first iteration or if dt is too large (indicates data gap)
+    if (dt <= 0.0f || dt > 1.0f) {
+        dt = 0.02f; // fallback to ~50Hz
+    }
 
     // determine deltas of distance and angle
     // forward distance = (avg wheel revolutions) * tire circumference
+    // NOTE: odom_roll_right/left represent wheel revolutions since last update
+    // This is time-independent - it's the actual distance traveled
     float linear = ((float)odom_roll_right + (float)odom_roll_left) * wheel_circumference / 2.0;
     // turning angle = (difference in wheel revolutions) * tire_circumference / track_width
     float angular = ((float)odom_roll_right - (float)odom_roll_left) * wheel_circumference / track_width;
