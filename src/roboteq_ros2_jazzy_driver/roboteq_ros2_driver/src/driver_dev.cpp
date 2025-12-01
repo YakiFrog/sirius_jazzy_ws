@@ -614,12 +614,15 @@ void Roboteq::odom_loop()
     size_t total_bytes = 0;
     int packet_count = 0;
     
+    // ストリーミング設定再送用のタイミング変数（odom_publishとは別）
+    uint32_t stream_last_time = millis();
+    
     while (running_) {
         // ストリーミング設定の再送間隔を30秒に長く
         uint32_t nowtime = millis();
-        if (DELTAT(nowtime, odom_last_time) >= 30000) {
+        if (DELTAT(nowtime, stream_last_time) >= 30000) {
             odom_stream();
-            odom_last_time = nowtime;
+            stream_last_time = nowtime;
             
             // データレート診断を表示
             float elapsed_secs = DELTAT(nowtime, last_diagnostic_time) / 1000.0f;
@@ -688,8 +691,9 @@ void Roboteq::odom_loop()
                                             continue;
                                         }
 
-                                        odom_roll_right = -1 * right_diff;
-                                        odom_roll_left = -1 * left_diff;
+                                        // 累積で加算（odom_publishでリセットされる）
+                                        odom_roll_right += -1 * right_diff;
+                                        odom_roll_left += -1 * left_diff;
 
                                         if (first_time) {
                                             odom_roll_right = 0.0;
@@ -724,9 +728,9 @@ void Roboteq::odom_loop()
                 RCLCPP_ERROR_STREAM(this->get_logger(), "Exception reading serial data: " << e.what());
             }
         }
-        odom_publish();
-        odom_roll_right = 0.0;
-        odom_roll_left = 0.0;
+        // odom_publish()はメインスレッド(run関数)から呼び出す
+        // 別スレッドからROS2パブリッシャーを呼ぶとクラッシュするため
+        // odom_roll_right/leftのリセットもodom_publish内で行う
 
         // スリープ時間を短縮（CPUの空回しを防ぎつつも、応答性を保つ）
         std::this_thread::sleep_for(std::chrono::microseconds(100));  // 0.1 ms
@@ -735,8 +739,14 @@ void Roboteq::odom_loop()
 
 void Roboteq::odom_publish()
 {
-    static rclcpp::Time last_publish_time = this->get_clock()->now();
+    static rclcpp::Time last_publish_time(0, 0, RCL_ROS_TIME);
+    static bool first_publish = true;
     rclcpp::Time current_time = this->get_clock()->now();
+    
+    if (first_publish) {
+        first_publish = false;
+        last_publish_time = current_time;
+    }
     
     // Odometryメッセージの発行頻度を制限（リソース節約のため）
     // Use configured publish hz as a maximum. Default was approx 50Hz.
@@ -754,15 +764,22 @@ void Roboteq::odom_publish()
     geometry_msgs::msg::TransformStamped tf_msg;
 
     // determine delta time in seconds - use actual ROS time instead of millis()
-    static rclcpp::Time last_odom_time = this->get_clock()->now();
+    static rclcpp::Time last_odom_time(0, 0, RCL_ROS_TIME);
+    static bool first_odom = true;
     rclcpp::Time now_time = this->get_clock()->now();
-    float dt = (now_time - last_odom_time).seconds();
-    last_odom_time = now_time;
     
-    // Skip first iteration or if dt is too large (indicates data gap)
-    if (dt <= 0.0f || dt > 1.0f) {
-        dt = 0.02f; // fallback to ~50Hz
+    float dt = 0.02f; // default fallback
+    if (first_odom) {
+        first_odom = false;
+        last_odom_time = now_time;
+    } else {
+        dt = (now_time - last_odom_time).seconds();
+        // Skip if dt is invalid or too large (indicates data gap)
+        if (dt <= 0.0f || dt > 1.0f) {
+            dt = 0.02f; // fallback to ~50Hz
+        }
     }
+    last_odom_time = now_time;
 
     // determine deltas of distance and angle
     // forward distance = (avg wheel revolutions) * tire circumference
@@ -790,15 +807,16 @@ void Roboteq::odom_publish()
     odom_last_y = odom_y;
     odom_last_yaw = odom_yaw;
 
-    // convert yaw to quat;
+    // convert yaw to quat
     tf2::Quaternion tf2_quat;
     tf2_quat.setRPY(0, 0, odom_yaw);
-    // Convert tf2::Quaternion to geometry_msgs::msg::Quaternion
-    geometry_msgs::msg::Quaternion quat = tf2::toMsg(tf2_quat);
+    geometry_msgs::msg::Quaternion quat;
+    quat.x = tf2_quat.x();
+    quat.y = tf2_quat.y();
+    quat.z = tf2_quat.z();
+    quat.w = tf2_quat.w();
 
     //update odom msg
-
-    quat = tf2::toMsg(tf2::Quaternion(tf2::Vector3(0, 0, 1), odom_yaw));
 
     if(pub_odom_tf)
     {
@@ -808,6 +826,7 @@ void Roboteq::odom_publish()
         tf_msg.transform.translation.x = odom_x;
         tf_msg.transform.translation.y = odom_y;
         tf_msg.transform.translation.z = 0.0;
+        tf_msg.transform.rotation = quat;
         tf_msg.transform.rotation = quat;
         odom_baselink_transform_->sendTransform(tf_msg);
     }
@@ -834,6 +853,10 @@ void Roboteq::odom_publish()
         odom_msg.twist.twist.angular.z = 0.0;
     }
     odom_pub->publish(odom_msg);
+    
+    // パブリッシュ後にリセット（次の周期の累積用）
+    odom_roll_right = 0.0;
+    odom_roll_left = 0.0;
 }
 
 int Roboteq::run() {
@@ -846,6 +869,13 @@ int Roboteq::run() {
         cmdvel_loop();
     } catch (const std::exception &e) {
         RCLCPP_ERROR_STREAM(this->get_logger(), "Exception in cmdvel_loop: " << e.what());
+    }
+    
+    // オドメトリをメインスレッドからパブリッシュ
+    try {
+        odom_publish();
+    } catch (const std::exception &e) {
+        RCLCPP_ERROR_STREAM(this->get_logger(), "Exception in odom_publish: " << e.what());
     }
     
     // デバイスの接続状態をチェック
