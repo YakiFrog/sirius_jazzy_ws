@@ -76,9 +76,10 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     // odom streaming/publish tuning
     odom_stream_interval_ms = this->declare_parameter("odom_stream_interval_ms", 50);
     odom_publish_hz = this->declare_parameter("odom_publish_hz", 50.0);
-    // optional calibration scale — multiply computed distances/angles by this
-    // factor to adjust odom scale to ground truth (default 1.0 = no scaling)
-    odom_scale = this->declare_parameter("odom_scale", 1.0);
+    // Speed scale factor to calibrate actual robot speed to match commanded speed
+    // If robot moves faster than commanded, decrease this value (e.g., 0.625 for 60% faster)
+    // If robot moves slower than commanded, increase this value (e.g., 1.2 for 20% slower)
+    speed_scale = this->declare_parameter("speed_scale", 1.0);
 
     starttime = 0;
     hstimer = 0;
@@ -120,8 +121,8 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
 //
     odom_pub = this->create_publisher<nav_msgs::msg::Odometry>(odom_topic, 1000);
 
-    RCLCPP_INFO(this->get_logger(), "Odometry: wheel_circumference=%.4f pulse=%d gear_ratio=%.3f odom_scale=%.4f",
-                wheel_circumference, pulse, gear_ratio, odom_scale);
+    RCLCPP_INFO(this->get_logger(), "Odometry: wheel_circumference=%.4f pulse=%d gear_ratio=%.3f speed_scale=%.4f",
+                wheel_circumference, pulse, gear_ratio, speed_scale);
 //
 // cmd_vel subscriber
 //
@@ -170,7 +171,7 @@ void Roboteq::update_parameters()
     int new_stream_ms = odom_stream_interval_ms;
     this->get_parameter("odom_stream_interval_ms", new_stream_ms);
     this->get_parameter("odom_publish_hz", odom_publish_hz);
-    this->get_parameter("odom_scale", odom_scale);
+    this->get_parameter("speed_scale", speed_scale);
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -360,25 +361,20 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
         left_speed = max_speed;
     }
 
-
     std::stringstream left_cmd;
     std::stringstream right_cmd;
     
-
     if (open_loop)
     {
         // motor power (scale 0-1000)
-        int32_t right_power = right_speed / wheel_circumference * 60.0 / max_rpm * 1000.0;
-        int32_t left_power = left_speed / wheel_circumference * 60.0 / max_rpm * 1000.0;
-        /*
-        // set minimum to overcome friction if cmd_vel too low
-        if (right_power < 150 && left_power > 0){
-            right_power = 150
-        }
-        if (left_power < 150 && left_power > 0){
-            left_power = 150
-        }
-        */
+        // max_rpm is wheel RPM, so calculate wheel RPM directly
+        // Apply speed_scale to match actual movement with commanded speed
+        float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
+        float wheel_rpm_right = right_speed / wheel_circumference * 60.0 * scale;
+        float wheel_rpm_left = left_speed / wheel_circumference * 60.0 * scale;
+        
+        int32_t right_power = wheel_rpm_right / max_rpm * 1000.0;
+        int32_t left_power = wheel_rpm_left / max_rpm * 1000.0;
         
         right_cmd << "!G 1 " << right_power << "\r";
         left_cmd << "!G 2 " << left_power << "\r";
@@ -386,11 +382,13 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     else
     {
         // motor speed (rpm)
-        int32_t right_rpm = right_speed / wheel_circumference * 60.0;
-        int32_t left_rpm = left_speed / wheel_circumference * 60.0;
+        // Apply speed_scale to match actual movement with commanded speed
+        float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
+        int32_t right_rpm = right_speed / wheel_circumference * 60.0 * scale;
+        int32_t left_rpm = left_speed / wheel_circumference * 60.0 * scale;
 
-        right_rpm_command = right_speed / wheel_circumference * 60.0;
-        left_rpm_command = left_speed / wheel_circumference * 60.0;
+        right_rpm_command = right_speed / wheel_circumference * 60.0 * scale;
+        left_rpm_command = left_speed / wheel_circumference * 60.0 * scale;
 
         right_cmd << "!S 1 " << right_rpm << "\r";
         left_cmd << "!S 2 " << left_rpm << "\r";
@@ -775,8 +773,9 @@ void Roboteq::odom_publish()
     //RCLCPP_INFO_STREAM(this->get_logger(), "linear: " << linear);
     //RCLCPP_INFO_STREAM(this->get_logger(), "angular: " << angular);
     // Update odometry
-    odom_x += linear * cos(odom_yaw);         // m
-    odom_y += linear * sin(odom_yaw);         // m
+    float mid_yaw = odom_yaw + angular / 2.0f;
+    odom_x += linear * cos(mid_yaw);         // m
+    odom_y += linear * sin(mid_yaw);         // m
     odom_yaw = NORMALIZE(odom_yaw + angular); // rad
 
     odom_last_x = odom_x;
