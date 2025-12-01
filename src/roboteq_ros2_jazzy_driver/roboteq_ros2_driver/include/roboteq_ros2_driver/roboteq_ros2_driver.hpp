@@ -108,6 +108,8 @@ class Roboteq : public rclcpp::Node
   // user-tunable scale correction applied to odometry distances — useful for
   // calibrating mismatch between encoder counts and physical distance.
   double odom_scale{};
+  // speed scale factor to calibrate commanded speed to match actual robot speed
+  double speed_scale{};
   float gear_ratio{};
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};
