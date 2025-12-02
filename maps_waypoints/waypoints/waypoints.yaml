@@ -9,22 +9,14 @@ waypoints:
   y: -6.0
   angle_radians: -1.136
 - number: 3
-  x: 2.15
-  y: -11.55
-  angle_radians: -1.144
-- number: 4
-  x: 1.4
-  y: -10.15
-  angle_radians: 2.044
-- number: 5
   x: -2.2
   y: -3.85
   angle_radians: 2.292
-- number: 6
+- number: 4
   x: -4.3
   y: -0.3
   angle_radians: 0.139
-- number: 7
+- number: 5
   x: -0.95
   y: -0.7
   angle_radians: 0.487
