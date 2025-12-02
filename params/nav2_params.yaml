@@ -407,7 +407,7 @@ velocity_smoother:
     max_decel: [-1.5, 0.0, -2.0]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
-    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする
+    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止
     velocity_timeout: 1.0
 
 waypoint_follower:
