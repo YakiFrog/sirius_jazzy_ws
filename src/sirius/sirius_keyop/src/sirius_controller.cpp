@@ -766,7 +766,7 @@ namespace sirius_controller
 
     void Controller::publishPoseEstimate()
     {
-        RCLCPP_INFO(get_logger(), "Controller : Publish pose estimate...");
+        RCLCPP_INFO(get_logger(), "Controller : 次のウェイポイント先を現在位置に設定します。");
 
         initial_pose_->header.stamp = this->now();
         initial_pose_->header.frame_id = "map";
