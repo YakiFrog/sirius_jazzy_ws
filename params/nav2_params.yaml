@@ -282,7 +282,7 @@ controller_server:
       wz_min: -1.5
 
       # これは速度の分散を決めるものであり，低くするとよくある速度が足りなくて動けなくなる
-      vx_std: 0.35
+      vx_std: 0.50
       vy_std: 0.00
       wz_std: 0.60
 
