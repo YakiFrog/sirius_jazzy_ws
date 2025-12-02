@@ -16,6 +16,8 @@
 # Roboteq起動(udevルール設定済み前提)
 alias roboteq='src && ros2 launch roboteq_ros2_driver roboteq_ros2_driver.launch.py pub_odom_tf:=false'
 
+alias roboteq_no_sf='src && ros2 launch roboteq_ros2_driver roboteq_ros2_driver.launch.py pub_odom_tf:=true'
+
 # Velodyne起動
 alias velodyne='src && ros2 launch velodyne velodyne-all-nodes-VLP16-composed-launch.py'
 

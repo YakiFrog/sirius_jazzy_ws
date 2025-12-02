@@ -19,8 +19,8 @@ witmotion:
           covariance: [0.0663, 0.0, 0.0, 0.0, 0.1453, 0.0, 0.0, 0.0, 0.0378]
         orientation:
           enabled: true
-          # covariance: [0.0479, 0.0, 0.0, 0.0, 0.0207, 0.0, 0.0, 0.0, 0.0041]
-          covariance: [0.0479, 0.0, 0.0, 0.0, 0.0207, 0.0, 0.0, 0.0, 0.05] # YAW軸の不確かさを大きく設定(~1.0 rad)
+          covariance: [0.0479, 0.0, 0.0, 0.0, 0.0207, 0.0, 0.0, 0.0, 0.0041]
+          # covariance: [0.0479, 0.0, 0.0, 0.0, 0.0207, 0.0, 0.0, 0.0, 0.05] # YAW軸の不確かさを大きく設定(~1.0 rad)
     temperature_publisher:
       enabled: false
       topic_name: /temperature
