@@ -356,19 +356,29 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     {
         right_speed = max_speed;
     }
+    else if (right_speed < -max_speed)
+    {
+        right_speed = -max_speed;
+    }
     if (left_speed > max_speed)
     {
         left_speed = max_speed;
+    }
+    else if (left_speed < -max_speed)
+    {
+        left_speed = -max_speed;
     }
 
     std::stringstream left_cmd;
     std::stringstream right_cmd;
     
+    // ログ出力用の変数
+    int32_t right_power_or_rpm = 0;
+    int32_t left_power_or_rpm = 0;
+    
     if (open_loop)
     {
         // motor power (scale 0-1000)
-        // max_rpm is wheel RPM, so calculate wheel RPM directly
-        // Apply speed_scale to match actual movement with commanded speed
         float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
         float wheel_rpm_right = right_speed / wheel_circumference * 60.0 * scale;
         float wheel_rpm_left = left_speed / wheel_circumference * 60.0 * scale;
@@ -376,13 +386,15 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
         int32_t right_power = wheel_rpm_right / max_rpm * 1000.0;
         int32_t left_power = wheel_rpm_left / max_rpm * 1000.0;
         
+        right_power_or_rpm = right_power;
+        left_power_or_rpm = left_power;
+        
         right_cmd << "!G 1 " << right_power << "\r";
         left_cmd << "!G 2 " << left_power << "\r";
     }
     else
     {
         // motor speed (rpm)
-        // Apply speed_scale to match actual movement with commanded speed
         float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
         int32_t right_rpm = right_speed / wheel_circumference * 60.0 * scale;
         int32_t left_rpm = left_speed / wheel_circumference * 60.0 * scale;
@@ -390,21 +402,29 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
         right_rpm_command = right_speed / wheel_circumference * 60.0 * scale;
         left_rpm_command = left_speed / wheel_circumference * 60.0 * scale;
 
+        right_power_or_rpm = right_rpm;
+        left_power_or_rpm = left_rpm;
+
         right_cmd << "!S 1 " << right_rpm << "\r";
         left_cmd << "!S 2 " << left_rpm << "\r";
     }
-//write cmd to motor controller
-#ifndef _CMDVEL_FORCE_RUN
-    safe_serial_write(right_cmd.str());
-    safe_serial_write(left_cmd.str());
-    try {
-        if (controller.isOpen()) {
-            controller.flush();
+    //write cmd to motor controller
+    #ifndef _CMDVEL_FORCE_RUN
+        safe_serial_write(right_cmd.str());
+        safe_serial_write(left_cmd.str());
+        try {
+            if (controller.isOpen()) {
+                controller.flush();
+            }
+        } catch (const std::exception &e) {
+            RCLCPP_ERROR_STREAM(this->get_logger(), "Exception in cmdvel_callback flush: " << e.what());
         }
-    } catch (const std::exception &e) {
-        RCLCPP_ERROR_STREAM(this->get_logger(), "Exception in cmdvel_callback flush: " << e.what());
-    }
-#endif
+        
+        // 送信したモーターコマンドをログ出力
+        // RCLCPP_INFO(this->get_logger(), "cmdvel: linear=%.3f angular=%.3f -> R=%d L=%d (%s)",
+        //             linear_x, angular_z, right_power_or_rpm, left_power_or_rpm,
+        //             open_loop ? "power" : "rpm");
+    #endif
 }
 void Roboteq::cmdvel_setup()
 {
@@ -704,11 +724,6 @@ void Roboteq::odom_loop()
                                         odom_encoder_right_old = (float)odom_encoder_right;
                                         odom_encoder_left_old = (float)odom_encoder_left;
 
-                                        // Diagnostic logging to help calibrate odometry scaling
-                                        RCLCPP_INFO(this->get_logger(), "odom enc R=%d L=%d oldR=%.1f oldL=%.1f deltaR=%.3f deltaL=%.3f countsPerWheelRev=%.2f wheel_circ=%.4f",
-                                                    odom_encoder_right, odom_encoder_left, odom_encoder_right_old, odom_encoder_left_old,
-                                                    right_diff, left_diff, counts_per_wheel_rev, wheel_circumference);
-
                                     }
                                     catch (const std::exception& e) {
                                         // データ解析エラーの無視 - ログに記録しない（頻度が高すぎるため）
@@ -789,12 +804,6 @@ void Roboteq::odom_publish()
     // turning angle = (difference in wheel revolutions) * tire_circumference / track_width
     float angular = ((float)odom_roll_right - (float)odom_roll_left) * wheel_circumference / track_width;
 
-    // Apply user-specified odom scale correction (for calibration). This scales
-    // both linear and angular components consistently.
-    // if (std::abs((double)odom_scale - 1.0) > 1e-9) {
-    //     linear *= (float)odom_scale;
-    //     angular *= (float)odom_scale;
-    // }
     //RCLCPP_INFO_STREAM(this->get_logger(), "linear: " << linear);
     //RCLCPP_INFO_STREAM(this->get_logger(), "angular: " << angular);
     // Update odometry
@@ -853,6 +862,28 @@ void Roboteq::odom_publish()
         odom_msg.twist.twist.angular.z = 0.0;
     }
     odom_pub->publish(odom_msg);
+    
+    // 指令速度と実速度の達成率をログ出力
+    // linear_x, angular_z はcmd_velからの指令値（メンバ変数）
+    float actual_linear = odom_msg.twist.twist.linear.x;
+    float actual_angular = odom_msg.twist.twist.angular.z;
+    
+    // 指令値がある場合のみ達成率を計算・表示
+    if (std::abs(linear_x) > 0.01f || std::abs(angular_z) > 0.01f) {
+        float linear_ratio = 0.0f;
+        float angular_ratio = 0.0f;
+        
+        if (std::abs(linear_x) > 0.01f) {
+            linear_ratio = (actual_linear / linear_x) * 100.0f;
+        }
+        if (std::abs(angular_z) > 0.01f) {
+            angular_ratio = (actual_angular / angular_z) * 100.0f;
+        }
+        
+        RCLCPP_INFO(this->get_logger(), 
+            "Speed: cmd(lin=%.3f ang=%.3f) actual(lin=%.3f ang=%.3f) ratio(lin=%.1f%% ang=%.1f%%)",
+            linear_x, angular_z, actual_linear, actual_angular, linear_ratio, angular_ratio);
+    }
     
     // パブリッシュ後にリセット（次の周期の累積用）
     odom_roll_right = 0.0;
