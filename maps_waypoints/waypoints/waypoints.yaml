@@ -25,6 +25,6 @@ waypoints:
   y: -0.3
   angle_radians: 0.139
 - number: 7
-  x: 0.15
-  y: -0.2
-  angle_radians: 0.556
+  x: -0.95
+  y: -0.7
+  angle_radians: 0.487
