@@ -114,3 +114,6 @@ alias get_pos_ent='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_ent.sh'
 
 # マップ保存起動
 alias map_save='bash ~/sirius_jazzy_ws/bash/startup_bash/map_save.sh'
+
+# マップ切り替え（Nav2実行中に地図を変更）
+alias change_map='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map.sh'
