@@ -278,20 +278,20 @@ controller_server:
       vx_min: -1.0 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
-      wz_max: 2.0
-      wz_min: -2.0
+      wz_max: 1.5
+      wz_min: -1.5
 
       # これは速度の分散を決めるものであり，低くするとよくある速度が足りなくて動けなくなる
       vx_std: 0.35
       vy_std: 0.00
       wz_std: 0.60
 
-      ax_max: 2.5
-      ax_min: -2.5 # 急ブレーキのために(無根拠)
+      ax_max: 1.5
+      ax_min: -1.5 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 3.2 # これはax_maxより高めのほうが滑らか．
-      az_min: -3.2
+      az_max: 2.5 # これはax_maxより高めのほうが滑らか．
+      az_min: -2.5
 
       iteration_count: 1
       prune_distance: 3.5 # より遠くまで軌道を維持
@@ -403,12 +403,8 @@ velocity_smoother:
     feedback: "OPEN_LOOP"
     max_velocity: [1.0, 0.0, 2.0]
     min_velocity: [-1.0, 0.0, -2.0]
-    max_accel: [2.5, 0.0, 3.2]
-    max_decel: [-2.5, 0.0, -3.2]
-    # max_velocity: [1.0, 0.0, 2.0]
-    # min_velocity: [-0.80, 0.0, -2.0]
-    # max_accel: [0.70, 0.0, 0.80] # 加速度を減らすことで急停止を防止した．なめらかになったが完璧ではない．だが，バッテリーが停止するのは避けれそう．
-    # max_decel: [-0.80, 0.0, -0.80]
+    max_accel: [1.5, 0.0, 2.5]
+    max_decel: [-1.5, 0.0, -2.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする
