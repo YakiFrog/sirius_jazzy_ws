@@ -582,7 +582,11 @@ namespace sirius_controller
         bumper.data = state;
         bumper_publisher_->publish(bumper);
 
-        RCLCPP_INFO(get_logger(), "Controller : Publish bumper topic.");
+        if (state) {
+            RCLCPP_INFO(get_logger(), "Controller : 緊急停止オン");
+        } else {
+            RCLCPP_INFO(get_logger(), "Controller : 緊急停止オフ");
+        }
     }
 
     void Controller::startAssistedTeleop()
