@@ -12,4 +12,5 @@ waypoints:
   x: 0.3
   y: -2.8
   angle_radians: 2.428
+  stop: true
   change_map: 1203sim02
