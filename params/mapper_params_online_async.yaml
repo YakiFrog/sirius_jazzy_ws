@@ -27,9 +27,9 @@ slam_toolbox:
     transform_publish_period: 0.02  # オドメトリの変換を発行する周期（秒）（デフォルト：0.02秒）0.02 -> 0.01
     map_update_interval: 3.0  # マップ更新のインターバル（秒）（デフォルト：５秒 -> 3 -> 1.5 -> ✕1.0（テレオペで停止したりする））
     resolution: 0.05  # 地図の解像度（メートル単位）
-    min_laser_range: 0.0  # 最小レーザー範囲（ラスター化するための設定）
+    min_laser_range: 1.0  # 最小レーザー範囲（1m以内を無視して押している人を除外）
     max_laser_range: 100.0  # 最大レーザー範囲（ラスター化するための設定）
-    minimum_time_interval: 0.15  # 最小時間間隔（スキャン間の時間間隔）（デフォルト：0.5秒 -> 0.3 -> 0.15）
+    minimum_time_interval: 0.10  # 最小時間間隔（スキャン間の時間間隔）（デフォルト：0.5秒 -> 0.3 -> 0.15）
     transform_timeout: 0.2  # 変換のタイムアウト時間（秒）
     tf_buffer_duration: 30.0  # TFバッファの保存期間（秒）
     stack_size_to_use: 100000000  # 大きな地図をシリアライズするために必要なスタックサイズ（デフォルト：40MB）
@@ -40,7 +40,7 @@ slam_toolbox:
     use_scan_barycenter: true  # スキャンの重心を使用するか
     minimum_travel_distance: 0.3  # 最小移動距離（メートル）(デフォルト：0.5m)
     minimum_travel_heading: 0.3  # 最小移動方向変更（ラジアン）(デフォルト：0.5rad)
-    scan_buffer_size: 20  # スキャンデータのバッファサイズ(デフォルト：10)
+    scan_buffer_size: 10  # スキャンデータのバッファサイズ(デフォルト：10)
     scan_buffer_maximum_scan_distance: 20.0  # スキャンデータの最大距離（メートル）(デフォルト：10m)
     link_match_minimum_response_fine: 0.1  # 細かいリンクマッチングの最小反応値
     link_scan_maximum_distance: 1.5  # リンクスキャンの最大距離
