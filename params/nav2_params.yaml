@@ -133,9 +133,9 @@ global_costmap:
 planner_server:
   ros__parameters:
     use_sim_time: false
-    expected_planner_frequency: 5.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
+    expected_planner_frequency: 10.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
     planner_plugins: ["GridBased"]
-    costmap_update_timeout: 3.0  # 1.0 -> 3.0 (タイムアウトを延長)
+    costmap_update_timeout: 1.0  # 1.0 -> 3.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
@@ -235,7 +235,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
-        inflation_radius: 0.70 # ロボットが近づけない距離
+        inflation_radius: 0.75 # ロボットが近づけない距離
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: False  # True -> False (フィルター情報がない場合は無効化)
@@ -247,11 +247,11 @@ controller_server:
   ros__parameters:
     use_sim_time: false
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
-    costmap_update_timeout: 1.0  # 0.30 -> 1.0 (タイムアウトを延長)
+    costmap_update_timeout: 0.30  # 0.30 -> 1.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
-    min_x_velocity_threshold: 0.1
+    min_x_velocity_threshold: 0.01
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.1
+    min_theta_velocity_threshold: 0.01
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
@@ -373,7 +373,7 @@ controller_server:
         cost_power: 1
         cost_weight: 2.0         # 経路追従の重視度 5.0 -> 10.0 !!!! めっちゃきく。これがパス追従になる
         offset_from_furthest: 8        # 先読み距離[points]（パス上の何点先を見るか） 5 -> 8
-        threshold_to_consider: 1.0     # この距離[m]以内で追従評価 1.4 -> 2.0
+        threshold_to_consider: 2.0     # この距離[m]以内で追従評価 1.4 -> 2.0
       
       # PathAngleCritic: 経路角度評価
       # パスの向きと軌道の向きの一致度（滑らかな追従）
@@ -398,17 +398,17 @@ velocity_smoother:
     smoothing_frequency: 20.0 # コントローラサーバと同じにする
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    # max_velocity: [1.0, 0.0, 2.0]
-    # min_velocity: [-1.0, 0.0, -2.0]
-    # max_accel: [2.5, 0.0, 3.2]
-    # max_decel: [-2.5, 0.0, -3.2]
     max_velocity: [1.0, 0.0, 2.0]
-    min_velocity: [-0.80, 0.0, -2.0]
-    max_accel: [0.70, 0.0, 0.80] # 加速度を減らすことで急停止を防止した．なめらかになったが完璧ではない．だが，バッテリーが停止するのは避けれそう．
-    max_decel: [-0.80, 0.0, -0.80]
+    min_velocity: [-1.0, 0.0, -2.0]
+    max_accel: [2.5, 0.0, 3.2]
+    max_decel: [-2.5, 0.0, -3.2]
+    # max_velocity: [1.0, 0.0, 2.0]
+    # min_velocity: [-0.80, 0.0, -2.0]
+    # max_accel: [0.70, 0.0, 0.80] # 加速度を減らすことで急停止を防止した．なめらかになったが完璧ではない．だが，バッテリーが停止するのは避けれそう．
+    # max_decel: [-0.80, 0.0, -0.80]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
-    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする
+    deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする
     velocity_timeout: 1.0
 
 waypoint_follower:
