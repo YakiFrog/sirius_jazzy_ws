@@ -33,7 +33,6 @@ amcl:
     # センサーモデルパラメータ
     lambda_short: 0.1                      # 短距離測定の指数分布パラメータ
     laser_likelihood_max_dist: 5.0        # 尤度計算の最大距離[m] 下げていいことはなかった。
-    laser_likelihood_max_dist: 5.0        # 尤度計算の最大距離[m] 下げていいことはなかった。
     laser_max_range: 100.0                 # レーザーの最大測定距離[m]
     laser_min_range: -1.0                  # レーザーの最小測定距離[m]（-1は自動設定）
     laser_model_type: "likelihood_field"   # センサーモデルタイプ
@@ -135,9 +134,7 @@ planner_server:
   ros__parameters:
     use_sim_time: false
     expected_planner_frequency: 10.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
-    expected_planner_frequency: 10.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
     planner_plugins: ["GridBased"]
-    costmap_update_timeout: 1.0  # 1.0 -> 3.0 (タイムアウトを延長)
     costmap_update_timeout: 1.0  # 1.0 -> 3.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
     GridBased:
@@ -251,12 +248,9 @@ controller_server:
     use_sim_time: false
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
     costmap_update_timeout: 0.30  # 0.30 -> 1.0 (タイムアウトを延長)
-    costmap_update_timeout: 0.30  # 0.30 -> 1.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
     min_x_velocity_threshold: 0.05
-    min_x_velocity_threshold: 0.05
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.05
     min_theta_velocity_threshold: 0.05
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
@@ -383,7 +377,6 @@ controller_server:
         cost_weight: 2.0         # 経路追従の重視度 5.0 -> 10.0 !!!! めっちゃきく。これがパス追従になる
         offset_from_furthest: 8        # 先読み距離[points]（パス上の何点先を見るか） 5 -> 8
         threshold_to_consider: 2.0     # この距離[m]以内で追従評価 1.4 -> 2.0
-        threshold_to_consider: 2.0     # この距離[m]以内で追従評価 1.4 -> 2.0
       
       # PathAngleCritic: 経路角度評価
       # パスの向きと軌道の向きの一致度（滑らかな追従）
@@ -406,20 +399,14 @@ velocity_smoother:
   ros__parameters:
     use_sim_time: false
     smoothing_frequency: 20.0 # コントローラサーバと同じにする
-    smoothing_frequency: 20.0 # コントローラサーバと同じにする
     scale_velocities: False
     feedback: "OPEN_LOOP"
     max_velocity: [1.0, 0.0, 1.5]
     min_velocity: [-1.0, 0.0, -1.5]
     max_accel: [1.5, 0.0, 2.0]
     max_decel: [-1.5, 0.0, -2.0]
-    max_velocity: [1.0, 0.0, 1.5]
-    min_velocity: [-1.0, 0.0, -1.5]
-    max_accel: [1.5, 0.0, 2.0]
-    max_decel: [-1.5, 0.0, -2.0]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
-    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止
     deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止
     velocity_timeout: 1.0
 
