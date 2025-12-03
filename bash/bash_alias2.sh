@@ -78,9 +78,10 @@ alias sirius_launcher='cd ${HOME}/sirius_jazzy_ws/other_programs/sirius_launcher
 
 # TAB: Sirius Ear関連
 # GROUP: Sirius Ear関連
-alias src2='cd ${HOME}/Sirius_ear && source install/setup.bash'
+alias src2='cd ${HOME}/miura_ws && source install/setup.bash'
 alias blue='src2 && ros2 run bluetooth bluetooth_node'
 alias path='src2 && ros2 run path_listener path_listener_node'
+alias curve='src2 && ros2 run curvature curvature_node'
 
 # TAB: リアル実験
 # GROUP: リアル実験
