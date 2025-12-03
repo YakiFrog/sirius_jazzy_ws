@@ -1,0 +1,12 @@
+format_version: '1.0'
+waypoints:
+- number: 1
+  x: -0.05
+  y: -0.35
+  angle_radians: 1.606
+  stop: false
+- number: 2
+  x: 0.0
+  y: 2.55
+  angle_radians: 1.576
+  change_map: 1203sim01

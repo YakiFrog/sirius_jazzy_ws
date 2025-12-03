@@ -38,6 +38,7 @@ namespace sirius_controller
     signal_ = std::make_shared<std_msgs::msg::String>();
     face_ = std::make_shared<std_msgs::msg::String>();
     trans_ = std::make_shared<std_msgs::msg::Bool>();
+    initial_pose_ = std::make_shared<geometry_msgs::msg::PoseWithCovarianceStamped>();
 
     double linear_vel_step = this->declare_parameter("linear_vel_step", 0.1);
     double linear_vel_max = this->declare_parameter("linear_vel_max", 2.0);
@@ -581,7 +582,11 @@ namespace sirius_controller
         bumper.data = state;
         bumper_publisher_->publish(bumper);
 
-        RCLCPP_INFO(get_logger(), "Controller : Publish bumper topic.");
+        if (state) {
+            RCLCPP_INFO(get_logger(), "Controller : 緊急停止オン");
+        } else {
+            RCLCPP_INFO(get_logger(), "Controller : 緊急停止オフ");
+        }
     }
 
     void Controller::startAssistedTeleop()
@@ -761,7 +766,7 @@ namespace sirius_controller
 
     void Controller::publishPoseEstimate()
     {
-        RCLCPP_INFO(get_logger(), "Controller : Publish pose estimate...");
+        RCLCPP_INFO(get_logger(), "Controller : 次のウェイポイント先を現在位置に設定します。");
 
         initial_pose_->header.stamp = this->now();
         initial_pose_->header.frame_id = "map";
@@ -772,6 +777,11 @@ namespace sirius_controller
         initial_pose_->pose.pose.orientation.y = 0.0;
         initial_pose_->pose.pose.orientation.z = target_odom_orientation_z;
         initial_pose_->pose.pose.orientation.w = target_odom_orientation_w;
+
+        // 共分散を設定（初期位置の不確かさ）
+        initial_pose_->pose.covariance[0] = 0.25;   // x の分散 0.5m
+        initial_pose_->pose.covariance[7] = 0.25;   // y の分散 0.5m
+        initial_pose_->pose.covariance[35] = 0.14;  // yaw の分散 0.3rad
 
         initial_pose_pub_->publish(*initial_pose_);
     }

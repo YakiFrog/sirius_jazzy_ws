@@ -24,3 +24,10 @@ alias tftree='ros2 run rqt_tf_tree rqt_tf_tree'
 
 # すべてのプロセスを終了するコマンド
 alias restart='pkill -f "ros2|gz|gazebo" && ros2 daemon stop && ros2 daemon start'
+
+# foxglove
+# sudo apt install ros-$ROS_DISTRO-foxglove-bridge
+alias foxglove='ros2 launch foxglove_bridge foxglove_bridge_launch.xml'
+
+# Gazebo用リソースパス（STLメッシュなど）
+export GZ_SIM_RESOURCE_PATH=$HOME/sirius_jazzy_ws/src/sirius/sirius_description/meshes:$GZ_SIM_RESOURCE_PATH

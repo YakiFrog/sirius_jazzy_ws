@@ -14,7 +14,7 @@ roboteq_ros2_driver:
     max_rpm: 58
     gear_ratio: 1.0  # pulseが既に車輪1回転あたりのカウント数を表す場合は1.0に設定
     pulse: 475  # エンコーダのパルス数（車輪1回転あたり）
-    max_speed: 0.5
+    max_speed: 0.8 # 最大速度(m/s)
     odom_stream_interval_ms: 10
     odom_publish_hz: 20.0
     speed_scale: 0.50 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
