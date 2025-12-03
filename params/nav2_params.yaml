@@ -296,7 +296,7 @@ controller_server:
       iteration_count: 1
       prune_distance: 3.5 # より遠くまで軌道を維持
       transform_tolerance: 0.1
-      temperature: 0.25 # 軌道選択のランダム性
+      temperature: 0.30 # 軌道選択のランダム性
       gamma: 0.050 # 減衰率(未来のコストをどれだけ重視するか)
       motion_model: "DiffDrive"
       visualize: true
@@ -403,11 +403,11 @@ velocity_smoother:
     feedback: "OPEN_LOOP"
     max_velocity: [1.0, 0.0, 1.5]
     min_velocity: [-1.0, 0.0, -1.5]
-    max_accel: [1.5, 0.0, 2.0]
-    max_decel: [-1.5, 0.0, -2.0]
+    max_accel: [1.5, 0.0, 1.5]
+    max_decel: [-1.5, 0.0, -1.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
-    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止
+    deadband_velocity: [0.03, 0.0, 0.03] # これ以下の速度は0にする. 微小速度でのジタつきを防止
     velocity_timeout: 1.0
 
 waypoint_follower:
