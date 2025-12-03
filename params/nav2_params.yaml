@@ -286,8 +286,8 @@ controller_server:
       vy_std: 0.00
       wz_std: 0.70
 
-      ax_max: 1.5
-      ax_min: -1.5 # 急ブレーキのために(無根拠)
+      ax_max: 1.0
+      ax_min: -1.0 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
       az_max: 2.0 # これはax_maxより高めのほうが滑らか．
@@ -403,8 +403,8 @@ velocity_smoother:
     feedback: "OPEN_LOOP"
     max_velocity: [1.0, 0.0, 1.5]
     min_velocity: [-1.0, 0.0, -1.5]
-    max_accel: [1.5, 0.0, 1.5]
-    max_decel: [-1.5, 0.0, -1.5]
+    max_accel: [1.0, 0.0, 1.5]
+    max_decel: [-1.0, 0.0, -1.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
     deadband_velocity: [0.03, 0.0, 0.03] # これ以下の速度は0にする. 微小速度でのジタつきを防止

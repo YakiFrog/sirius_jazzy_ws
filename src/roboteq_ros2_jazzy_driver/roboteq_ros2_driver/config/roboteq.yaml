@@ -17,6 +17,6 @@ roboteq_ros2_driver:
     max_speed: 0.8 # 最大速度(m/s)
     odom_stream_interval_ms: 10
     odom_publish_hz: 20.0
-    speed_scale: 0.50 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
+    speed_scale: 0.52 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
     # 55% はやすぎる
     # 45% おそすぎる
