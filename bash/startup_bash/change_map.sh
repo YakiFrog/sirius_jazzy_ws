@@ -1,6 +1,9 @@
 #!/bin/bash
+# 地図切り替えスクリプト
+# 使い方: ./change_map.sh
+#         一覧から地図を選択して切り替え
+
 trap 'echo ""; echo "Ctrl + Cが押されましたが、ウィンドウは閉じません"' 2
-cd ~/sirius_jazzy_ws
 
 MAPS_DIR="${HOME}/sirius_jazzy_ws/maps_waypoints/maps"
 
@@ -41,21 +44,43 @@ select_map() {
     echo ""
 }
 
-while : ;do
-    read -p "Press [Enter] key to start nav2 bringup..."
-    source install/setup.bash
+# 地図を切り替え
+change_map() {
+    local map_path="$1"
+    
+    echo "地図を切り替え中..."
+    echo "  パス: $map_path"
+    echo ""
+    
+    # map_server サービスを呼び出し（出力を簡潔に）
+    result=$(ros2 service call /map_server/load_map nav2_msgs/srv/LoadMap "{map_url: '$map_path'}" 2>&1)
+    exit_code=$?
+    
+    # 成功判定: exit_code が 0 かつ result に "result:" が含まれる
+    if [ $exit_code -eq 0 ]; then
+        echo "✓ 地図の切り替えが完了しました"
+    else
+        echo "✗ 地図の切り替えに失敗しました"
+        echo "  Nav2が起動しているか確認してください"
+        echo "  エラー: $result"
+    fi
+}
+
+# メイン処理（ループ）
+cd ~/sirius_jazzy_ws
+source install/setup.bash
+
+while : ; do
+    echo ""
+    read -p "Press [Enter] key to change map..."
     
     selected_map=""
     select_map
     
-    if [ $? -ne 0 ] || [ -z "$selected_map" ]; then
-        echo "地図の選択がキャンセルされました"
-        continue
+    if [ $? -eq 0 ] && [ -n "$selected_map" ]; then
+        change_map "$selected_map"
     fi
     
-    ros2 launch nav2_bringup bringup_launch.py \
-    use_sim_time:=False \
-    map:=$selected_map \
-    params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
-    use_composition:=False
+    echo ""
+    echo "-----------------------------------------"
 done

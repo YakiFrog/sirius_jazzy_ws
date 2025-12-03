@@ -5,4 +5,4 @@ install
 .venv
 satellite
 
-.fake
+.fakeother_programs/pgm_to_sdf/output/
