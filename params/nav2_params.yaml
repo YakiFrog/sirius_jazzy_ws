@@ -249,9 +249,9 @@ controller_server:
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
     costmap_update_timeout: 0.30  # 0.30 -> 1.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
-    min_x_velocity_threshold: 0.05
+    min_x_velocity_threshold: 0.10 # 溝にハマって動けなくなるのを防止
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.05
+    min_theta_velocity_threshold: 0.10
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
@@ -282,12 +282,12 @@ controller_server:
       wz_min: -1.5
 
       # これは速度の分散を決めるもの
-      vx_std: 0.70
+      vx_std: 0.80
       vy_std: 0.00
-      wz_std: 0.70
+      wz_std: 0.60
 
-      ax_max: 1.0
-      ax_min: -1.0 # 急ブレーキのために(無根拠)
+      ax_max: 1.5
+      ax_min: -1.5 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
       az_max: 2.0 # これはax_maxより高めのほうが滑らか．
@@ -343,7 +343,7 @@ controller_server:
       PreferForwardCritic:
         enabled: true
         cost_power: 1 # 前進優先度
-        cost_weight: 8.0          # 前進を強く優先 10 -> 8.0 ちょっと柔軟にしている方がいい。これ以上は下げたらぶつかる
+        cost_weight: 10.0          # 前進を強く優先 10 -> 8.0 ちょっと柔軟にしている方がいい。これ以上は下げたらぶつかる
         threshold_to_consider: 2.5 # この距離[m]以内で前進優先評価
       
       # CostCritic: コストマップ（障害物）評価
@@ -407,7 +407,7 @@ velocity_smoother:
     max_decel: [-1.0, 0.0, -1.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
-    deadband_velocity: [0.03, 0.0, 0.03] # これ以下の速度は0にする. 微小速度でのジタつきを防止
+    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止
     velocity_timeout: 1.0
 
 waypoint_follower:
