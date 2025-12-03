@@ -31,6 +31,72 @@ from roboteq_commands import (
 )
 
 
+def setup_closed_loop_speed(handler: RoboteqHandler, max_rpm: int = 3000):
+    """クローズドループ速度モードのセットアップ"""
+    print("\n" + "=" * 50)
+    print("【クローズドループ速度モード設定】")
+    print("=" * 50)
+    
+    # 現在の設定を確認
+    print("\n現在の設定を確認中...")
+    mmod1 = handler.request_handler("~MMOD 1")
+    mmod2 = handler.request_handler("~MMOD 2")
+    print(f"モーター1 モード: {mmod1}")
+    print(f"モーター2 モード: {mmod2}")
+    
+    mxrpm1 = handler.request_handler("~MXRPM 1")
+    mxrpm2 = handler.request_handler("~MXRPM 2")
+    print(f"モーター1 最大RPM: {mxrpm1}")
+    print(f"モーター2 最大RPM: {mxrpm2}")
+    
+    print("\n" + "-" * 50)
+    print("クローズドループ速度モードに設定します...")
+    print("-" * 50)
+    
+    # Operating Mode を Closed-loop Speed (1) に設定
+    # ^MMOD cc nn : cc=channel, nn=mode (0=Open-loop, 1=Closed-loop speed, etc)
+    print("\n1. Operating Mode を Closed-loop Speed に設定")
+    handler.request_handler("^MMOD 1 1")
+    handler.request_handler("^MMOD 2 1")
+    time.sleep(0.1)
+    
+    # 最大RPMを設定
+    print(f"2. 最大RPM を {max_rpm} に設定")
+    handler.request_handler(f"^MXRPM 1 {max_rpm}")
+    handler.request_handler(f"^MXRPM 2 {max_rpm}")
+    time.sleep(0.1)
+    
+    # フィードバックセンサーをブラシレスセンサー（ホールセンサー/エンコーダ）に設定
+    # ^BLFB cc nn : nn=0:None, 1:Hall, 2:Encoder, 3:SinCos, etc.
+    print("3. フィードバックセンサーを設定")
+    handler.request_handler("^BLFB 1 1")  # Hall sensors
+    handler.request_handler("^BLFB 2 1")
+    time.sleep(0.1)
+    
+    # 設定をEEPROMに保存
+    print("4. 設定をEEPROMに保存")
+    handler.request_handler("%EESAV")
+    time.sleep(0.5)
+    
+    # 設定確認
+    print("\n" + "-" * 50)
+    print("設定後の確認:")
+    print("-" * 50)
+    mmod1 = handler.request_handler("~MMOD 1")
+    mmod2 = handler.request_handler("~MMOD 2")
+    print(f"モーター1 モード: {mmod1} (1=Closed-loop speed)")
+    print(f"モーター2 モード: {mmod2} (1=Closed-loop speed)")
+    
+    mxrpm1 = handler.request_handler("~MXRPM 1")
+    mxrpm2 = handler.request_handler("~MXRPM 2")
+    print(f"モーター1 最大RPM: {mxrpm1}")
+    print(f"モーター2 最大RPM: {mxrpm2}")
+    
+    print("\n✓ 設定完了！")
+    print("  !S コマンドで速度制御が可能になりました。")
+    print("  例: !S 1 500 (モーター1を最大RPMの50%で回転)")
+
+
 def demo_basic_connection(handler: RoboteqHandler):
     """基本的な接続とステータス確認のデモ"""
     print("\n" + "=" * 50)
@@ -114,6 +180,44 @@ def demo_motor_control(handler: RoboteqHandler, power: int = 100):
     handler.dual_motor_control(left_motor=0, right_motor=0)
 
 
+def demo_speed_control(handler: RoboteqHandler, speed: int = 100):
+    """速度制御モード (!S) のデモ (注意: モーターが動きます！)"""
+    print("\n" + "=" * 50)
+    print("【速度制御デモ (!S コマンド)】")
+    print(f"速度: {speed} (-1000〜1000)")
+    print("=" * 50)
+    print("\n※ 速度制御モードはクローズドループ制御です。")
+    print("  エンコーダのフィードバックを使用してRPMを維持します。")
+    
+    print("\n3秒後にモーターが動きます。安全を確認してください...")
+    for i in range(3, 0, -1):
+        print(f"  {i}...")
+        time.sleep(1)
+    
+    # SET_SPEED コマンド (クローズドループ速度制御)
+    # !S <channel> <speed>  speed: -1000 〜 +1000 (最大RPMに対する割合)
+    print(f"\n[SET_SPEED] モーター1,2に速度 {speed} を送信")
+    handler.send_command("!S", "1", str(speed))
+    handler.send_command("!S", "2", str(speed))
+    
+    # RPMをモニタリング
+    print("\nRPMをモニタリング中 (3秒間)...")
+    for _ in range(30):
+        rpm1 = handler.read_value("?BS", "1")
+        rpm2 = handler.read_value("?BS", "2")
+        print(f"\rRPM: モーター1={rpm1:>6s}  モーター2={rpm2:>6s}", end="", flush=True)
+        time.sleep(0.1)
+    print()
+    
+    # 停止
+    print("\n[停止] 速度 0 を送信")
+    handler.send_command("!S", "1", "0")
+    handler.send_command("!S", "2", "0")
+    time.sleep(1)
+    
+    print("速度制御デモ完了")
+
+
 def demo_encoder_monitoring(handler: RoboteqHandler, duration: float = 5.0):
     """エンコーダ値のモニタリングデモ"""
     print("\n" + "=" * 50)
@@ -193,11 +297,13 @@ def main():
     parser.add_argument("--debug", "-d", action="store_true",
                         help="デバッグモードを有効化")
     parser.add_argument("--mode", "-m", 
-                        choices=["all", "sensors", "motor", "encoder", "interactive"],
+                        choices=["all", "sensors", "motor", "speed", "encoder", "interactive", "setup"],
                         default="sensors",
                         help="実行モード (デフォルト: sensors)")
     parser.add_argument("--power", type=int, default=100,
                         help="モーターテスト時のパワー値 (デフォルト: 100)")
+    parser.add_argument("--max-rpm", type=int, default=3000,
+                        help="クローズドループモードの最大RPM (デフォルト: 3000)")
     
     args = parser.parse_args()
     
@@ -239,12 +345,30 @@ def main():
                 demo_motor_control(handler, args.power)
             else:
                 print("キャンセルしました")
+        
+        elif args.mode == "speed":
+            print("\n⚠️  警告: モーターが動きます！")
+            print("速度制御モード (!S) - クローズドループ制御")
+            confirm = input("続行しますか？ (yes/no): ")
+            if confirm.lower() == "yes":
+                demo_speed_control(handler, args.power)
+            else:
+                print("キャンセルしました")
                 
         elif args.mode == "encoder":
             demo_encoder_monitoring(handler, duration=10.0)
             
         elif args.mode == "interactive":
             interactive_mode(handler)
+        
+        elif args.mode == "setup":
+            print("\n⚠️  Roboteqの設定を変更します")
+            print("クローズドループ速度モードに設定し、EEPROMに保存します。")
+            confirm = input("続行しますか？ (yes/no): ")
+            if confirm.lower() == "yes":
+                setup_closed_loop_speed(handler, args.max_rpm)
+            else:
+                print("キャンセルしました")
     
     except KeyboardInterrupt:
         print("\n\n中断されました")
@@ -254,6 +378,8 @@ def main():
         print("\n停止コマンドを送信...")
         handler.send_command("!G", "1", "0")
         handler.send_command("!G", "2", "0")
+        handler.send_command("!S", "1", "0")
+        handler.send_command("!S", "2", "0")
         print("終了")
 
 
