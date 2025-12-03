@@ -234,8 +234,8 @@ local_costmap:
           obstacle_min_range: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
-        inflation_radius: 0.70 # ロボットが近づけない距離
+        cost_scaling_factor: 8.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
+        inflation_radius: 0.75 # ロボットが近づけない距離
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: False  # True -> False (フィルター情報がない場合は無効化)
@@ -249,9 +249,9 @@ controller_server:
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
     costmap_update_timeout: 0.50  # 0.30 -> 1.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
-    min_x_velocity_threshold: 0.10 # 溝にハマって動けなくなるのを防止
+    min_x_velocity_threshold: 0.05 # 溝にハマって動けなくなるのを防止
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.10
+    min_theta_velocity_threshold: 0.05
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
@@ -267,7 +267,7 @@ controller_server:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.50
-      yaw_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.50
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
       time_steps: 60  # 80 -> 60 60*0.1 = 6.0秒先まで予測
@@ -282,7 +282,7 @@ controller_server:
       wz_min: -1.0
 
       # これは速度の分散を決めるもの
-      vx_std: 0.50 # sagesugiruto dansa muri. kamo > 0.50
+      vx_std: 0.55 # sagesugiruto dansa muri. kamo > 0.50
       vy_std: 0.00
       wz_std: 0.50
 
