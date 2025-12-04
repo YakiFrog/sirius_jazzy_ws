@@ -234,8 +234,8 @@ local_costmap:
           obstacle_min_range: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 8.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
-        inflation_radius: 0.75 # ロボットが近づけない距離
+        cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
+        inflation_radius: 0.70 # ロボットが近づけない距離
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: False  # True -> False (フィルター情報がない場合は無効化)
@@ -249,14 +249,14 @@ controller_server:
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
     costmap_update_timeout: 0.50  # 0.30 -> 1.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
-    min_x_velocity_threshold: 0.05 # 溝にハマって動けなくなるのを防止
+    min_x_velocity_threshold: 0.1 # 溝にハマって動けなくなるのを防止
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.05
+    min_theta_velocity_threshold: 0.1
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
-    use_realtime_priority: false
+    use_realtime_priority: true
 
     # ロボットが指定時間内に指定距離動けない場合に失敗と判定
     progress_checker:
@@ -270,7 +270,7 @@ controller_server:
       yaw_goal_tolerance: 0.50
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 60  # 80 -> 60 60*0.1 = 6.0秒先まで予測
+      time_steps: 50  # 80 -> 60 60*0.1 = 6.0秒先まで予測 -> 40
       model_dt: 0.10 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 2000  
 
@@ -278,20 +278,20 @@ controller_server:
       vx_min: -1.0 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
-      wz_max: 1.0
-      wz_min: -1.0
+      wz_max: 1.5
+      wz_min: -1.5
 
       # これは速度の分散を決めるもの
-      vx_std: 0.55 # sagesugiruto dansa muri. kamo > 0.50
+      vx_std: 0.35 # 0.35 が追従限界かも。
       vy_std: 0.00
-      wz_std: 0.50
+      wz_std: 0.60
 
       ax_max: 1.5
       ax_min: -1.5 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 1.5 # これはax_maxより高めのほうが滑らか．
-      az_min: -1.5
+      az_max: 2.5 # これはax_maxより高めのほうが滑らか．
+      az_min: -2.5
 
       iteration_count: 1
       prune_distance: 3.5 # より遠くまで軌道を維持
@@ -305,7 +305,7 @@ controller_server:
         trajectory_step: 5
         time_step: 3
       AckermannConstraints:
-        min_turning_r: 0.0 # default 0.2 あったほうがいいのかも
+        min_turning_r: 0.2 # default 0.2 あったほうがいいのかも
       
       # Critics: 軌道評価基準のリスト（複数の基準でベスト軌道を選択）
       # 各criticがコストを計算し、合計コストが最小の軌道を選ぶ
@@ -398,16 +398,17 @@ controller_server:
 velocity_smoother:
   ros__parameters:
     use_sim_time: false
-    smoothing_frequency: 20.0 # コントローラサーバと同じにする
-    scale_velocities: False
+    smoothing_frequency: 20.0 # Odom以上の周波数にしてはだめ
+    scale_velocities: false
     feedback: "OPEN_LOOP"
+    # これはハードウェア上の速度・加速度の制限（頻繁に変える値ではない）
     max_velocity: [1.0, 0.0, 1.5]
     min_velocity: [-1.0, 0.0, -1.5]
-    max_accel: [1.0, 0.0, 1.5]
-    max_decel: [-1.0, 0.0, -1.5]
+    max_accel: [1.5, 0.0, 2.5]
+    max_decel: [-1.5, 0.0, -2.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
-    odom_duration: 0.1
-    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止
+    odom_duration: 0.2 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
+    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止（切り捨て）
     velocity_timeout: 1.0
 
 waypoint_follower:
@@ -595,7 +596,7 @@ loopback_simulator:
     base_frame_id: "sirius3/base_footprint"
     odom_frame_id: "sirius3/odom"
     map_frame_id: "map"
-    scan_frame_id: "sirius3/base_link/lidar_link"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
+    scan_frame_id: "sirius3/lidar_link"  # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
     update_duration: 0.02
     scan_range_min: 0.05
     scan_range_max: 30.0

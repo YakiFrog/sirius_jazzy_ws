@@ -250,9 +250,9 @@ controller_server:
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
     costmap_update_timeout: 1.0  # 0.30 -> 1.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
-    min_x_velocity_threshold: 0.01
+    min_x_velocity_threshold: 0.1
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.01
+    min_theta_velocity_threshold: 0.1
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
@@ -271,7 +271,7 @@ controller_server:
       yaw_goal_tolerance: 0.50
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 60  # 80 -> 60
+      time_steps: 40  # 80 -> 60
       model_dt: 0.10 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 2000  
 
@@ -279,25 +279,25 @@ controller_server:
       vx_min: -1.0 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
-      wz_max: 1.5
-      wz_min: -1.5
+      wz_max: 1.0
+      wz_min: -1.0
 
       # これは速度の分散を決めるものであり，低くするとよくある速度が足りなくて動けなくなる
-      vx_std: 0.80
+      vx_std: 0.55
       vy_std: 0.00
-      wz_std: 0.80
+      wz_std: 0.50
 
       ax_max: 1.5
       ax_min: -1.5 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 2.0 # これはax_maxより高めのほうが滑らか．
-      az_min: -2.0
+      az_max: 1.5 # これはax_maxより高めのほうが滑らか．
+      az_min: -1.5
 
       iteration_count: 1
       prune_distance: 3.5 # より遠くまで軌道を維持
       transform_tolerance: 0.1
-      temperature: 0.25 # 軌道選択のランダム性
+      temperature: 0.30 # 軌道選択のランダム性
       gamma: 0.050 # 減衰率(未来のコストをどれだけ重視するか)
       motion_model: "DiffDrive"
       visualize: true
@@ -404,11 +404,11 @@ velocity_smoother:
     feedback: "OPEN_LOOP"
     max_velocity: [1.0, 0.0, 1.5]
     min_velocity: [-1.0, 0.0, -1.5]
-    max_accel: [1.5, 0.0, 2.0]
-    max_decel: [-1.5, 0.0, -2.0]
+    max_accel: [1.5, 0.0, 1.5]
+    max_decel: [-1.5, 0.0, -1.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.1
-    deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする
+    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする
     velocity_timeout: 1.0
 
 waypoint_follower:
