@@ -305,7 +305,7 @@ controller_server:
         trajectory_step: 5
         time_step: 3
       AckermannConstraints:
-        min_turning_r: 0.2 # default 0.2 あったほうがいいのかも
+        min_turning_r: 0.0 # default 0.2 あったほうがいいのかも
       
       # Critics: 軌道評価基準のリスト（複数の基準でベスト軌道を選択）
       # 各criticがコストを計算し、合計コストが最小の軌道を選ぶ
@@ -407,8 +407,8 @@ velocity_smoother:
     max_accel: [1.5, 0.0, 2.5]
     max_decel: [-1.5, 0.0, -2.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
-    odom_duration: 0.2 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
-    deadband_velocity: [0.05, 0.0, 0.05] # これ以下の速度は0にする. 微小速度でのジタつきを防止（切り捨て）
+    odom_duration: 0.3 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
+    deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする. ０にしたほうがいい。微小速度をカットされるため
     velocity_timeout: 1.0
 
 waypoint_follower:
