@@ -54,7 +54,7 @@ while : ;do
     fi
     
     ros2 launch nav2_bringup bringup_launch.py \
-    use_sim_time:=True \
+    use_sim_time:=true \
     map:=$selected_map \
     params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim.yaml \
     use_composition:=False

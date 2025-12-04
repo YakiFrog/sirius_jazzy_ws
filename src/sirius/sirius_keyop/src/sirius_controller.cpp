@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string>
 #include <chrono>
+#include <cmath>
 #include <cstring>
 #include <functional>
 #include <memory>
@@ -31,7 +32,7 @@ using std::string;
 
 namespace sirius_controller
 {
-    Controller::Controller(const rclcpp::NodeOptions & options) : rclcpp::Node("sirius_controller", options), last_zero_vel_sent_(true), quit_requested_(false), shift_flag(false), key_file_descriptor_(0), assisted_teleop_active_(false)
+    Controller::Controller(const rclcpp::NodeOptions & options) : rclcpp::Node("sirius_controller", options), last_zero_vel_sent_(true), quit_requested_(false), shift_flag(false), assisted_teleop_active_(false), key_file_descriptor_(0), target_linear_vel_(0.0), target_angular_vel_(0.0), linear_accel_rate_(1.0), angular_accel_rate_(1.0)
     {
     tcgetattr(key_file_descriptor_, &original_terminal_state_);
     cmd_ = std::make_shared<geometry_msgs::msg::Twist>();
@@ -44,11 +45,15 @@ namespace sirius_controller
     double linear_vel_max = this->declare_parameter("linear_vel_max", 2.0);
     double angular_vel_step = this->declare_parameter("angular_vel_step", 0.157);
     double angular_vel_max = this->declare_parameter("angular_vel_max", 3.14);
+    linear_accel_rate_ = this->declare_parameter("linear_accel_rate", 0.5);    // 並進加速度/減速度 [m/s^2]
+    angular_accel_rate_ = this->declare_parameter("angular_accel_rate", 1.0);  // 旋回加速度/減速度 [rad/s^2]
 
     RCLCPP_INFO(get_logger(), "KeyOp : using linear vel step [%f].", linear_vel_step);
     RCLCPP_INFO(get_logger(), "KeyOp : using linear vel max [%f].", linear_vel_max);
     RCLCPP_INFO(get_logger(), "KeyOp : using angular vel step [%f].", angular_vel_step);
     RCLCPP_INFO(get_logger(), "KeyOp : using angular vel max [%f].", angular_vel_max);
+    RCLCPP_INFO(get_logger(), "KeyOp : using linear accel rate [%f].", linear_accel_rate_);
+    RCLCPP_INFO(get_logger(), "KeyOp : using angular accel rate [%f].", angular_accel_rate_);
 
     keyinput_subscriber_ = this->create_subscription<sirius_interfaces::msg::ControllerInput>("controller", rclcpp::QoS(1), std::bind(&Controller::remoteKeyInputReceived, this, std::placeholders::_1));
 
@@ -118,6 +123,9 @@ namespace sirius_controller
     void Controller::spin()
     {
         std::lock_guard<std::mutex> lk(cmd_mutex_);
+
+        // 滑らかな速度更新を実行
+        smoothVelocityUpdate();
 
         if((cmd_->linear.x != 0.0) || (cmd_->angular.z != 0.0))
         {
@@ -434,12 +442,12 @@ namespace sirius_controller
         double linear_vel_max = get_parameter("linear_vel_max").get_value<double>();
         double linear_vel_step = get_parameter("linear_vel_step").get_value<double>();
 
-        if (cmd_->linear.x <= linear_vel_max)
+        if (target_linear_vel_ <= linear_vel_max)
         {
-            cmd_->linear.x += linear_vel_step;
+            target_linear_vel_ += linear_vel_step;
         }
 
-        RCLCPP_INFO(get_logger(), "Controller : Linear velocity incremented [%f|%f]", cmd_->linear.x, cmd_->angular.z);
+        RCLCPP_INFO(get_logger(), "Controller : Linear velocity incremented [target: %f | current: %f]", target_linear_vel_, cmd_->linear.x);
     }
 
     void Controller::decrementLinearVelocity()
@@ -447,12 +455,12 @@ namespace sirius_controller
         double linear_vel_max = get_parameter("linear_vel_max").get_value<double>();
         double linear_vel_step = get_parameter("linear_vel_step").get_value<double>();
 
-        if (cmd_->linear.x >= -linear_vel_max)
+        if (target_linear_vel_ >= -linear_vel_max)
         {
-            cmd_->linear.x -= linear_vel_step;
+            target_linear_vel_ -= linear_vel_step;
         }
 
-        RCLCPP_INFO(get_logger(), "Controller : Linear velocity decremented [%f|%f]", cmd_->linear.x, cmd_->angular.z);
+        RCLCPP_INFO(get_logger(), "Controller : Linear velocity decremented [target: %f | current: %f]", target_linear_vel_, cmd_->linear.x);
     }
 
     void Controller::incrementAngularVelocity()
@@ -460,12 +468,12 @@ namespace sirius_controller
         double angular_vel_max = get_parameter("angular_vel_max").get_value<double>();
         double angular_vel_step = get_parameter("angular_vel_step").get_value<double>();
 
-        if (cmd_->angular.z <= angular_vel_max)
+        if (target_angular_vel_ <= angular_vel_max)
         {
-            cmd_->angular.z += angular_vel_step;
+            target_angular_vel_ += angular_vel_step;
         }
 
-        RCLCPP_INFO(get_logger(), "Controller : Angular velocity incremented [%f|%f]", cmd_->linear.x, cmd_->angular.z);
+        RCLCPP_INFO(get_logger(), "Controller : Angular velocity incremented [target: %f | current: %f]", target_angular_vel_, cmd_->angular.z);
     }
 
     void Controller::decrementAngularVelocity()
@@ -473,26 +481,61 @@ namespace sirius_controller
         double angular_vel_max = get_parameter("angular_vel_max").get_value<double>();
         double angular_vel_step = get_parameter("angular_vel_step").get_value<double>();
 
-        if (cmd_->angular.z >= -angular_vel_max)
+        if (target_angular_vel_ >= -angular_vel_max)
         {
-            cmd_->angular.z -= angular_vel_step;
+            target_angular_vel_ -= angular_vel_step;
         }
 
-        RCLCPP_INFO(get_logger(), "Controller : Angular velocity decrement [%f|%f]", cmd_->linear.x, cmd_->angular.z);
+        RCLCPP_INFO(get_logger(), "Controller : Angular velocity decrement [target: %f | current: %f]", target_angular_vel_, cmd_->angular.z);
     }
 
     void Controller::resetLinearVelocity()
     {
-        cmd_->linear.x = 0.0;
+        target_linear_vel_ = 0.0;
 
-        RCLCPP_INFO(get_logger(), "Controller : Reset linear velocity.");
+        RCLCPP_INFO(get_logger(), "Controller : Reset linear velocity (smooth deceleration).");
     }
 
     void Controller::resetAngularVelocity()
     {
-        cmd_->angular.z = 0.0;
+        target_angular_vel_ = 0.0;
 
-        RCLCPP_INFO(get_logger(), "Controller : Reset angular velocity.");
+        RCLCPP_INFO(get_logger(), "Controller : Reset angular velocity (smooth deceleration).");
+    }
+
+    void Controller::smoothVelocityUpdate()
+    {
+        // タイマー周期: 100ms = 0.1秒
+        const double dt = 0.1;
+        
+        // 並進速度の最大変化量 = 並進加速度 * 時間
+        const double max_linear_delta = linear_accel_rate_ * dt;
+        // 旋回速度の最大変化量 = 旋回加速度 * 時間
+        const double max_angular_delta = angular_accel_rate_ * dt;
+        
+        // 線形速度の滑らかな更新
+        double linear_diff = target_linear_vel_ - cmd_->linear.x;
+        if (std::abs(linear_diff) > max_linear_delta)
+        {
+            // 差分が大きい場合は、加速度制限で更新
+            cmd_->linear.x += (linear_diff > 0 ? max_linear_delta : -max_linear_delta);
+        }
+        else
+        {
+            // 差分が小さい場合は目標に到達
+            cmd_->linear.x = target_linear_vel_;
+        }
+        
+        // 角速度の滑らかな更新
+        double angular_diff = target_angular_vel_ - cmd_->angular.z;
+        if (std::abs(angular_diff) > max_angular_delta)
+        {
+            cmd_->angular.z += (angular_diff > 0 ? max_angular_delta : -max_angular_delta);
+        }
+        else
+        {
+            cmd_->angular.z = target_angular_vel_;
+        }
     }
 
     void Controller::cancelGoal()

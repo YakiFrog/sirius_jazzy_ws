@@ -45,11 +45,18 @@ namespace sirius_controller
             bool last_zero_vel_sent_;
             bool quit_requested_;
             bool shift_flag;
+            bool assisted_teleop_active_;
             int key_file_descriptor_;
             float target_odom_pose_x;
             float target_odom_pose_y;
             float target_odom_orientation_z;
             float target_odom_orientation_w;
+            
+            // 滑らかな減速用の目標速度
+            double target_linear_vel_;
+            double target_angular_vel_;
+            double linear_accel_rate_;   // 並進加速度/減速度 [m/s^2]
+            double angular_accel_rate_;  // 旋回加速度/減速度 [rad/s^2]
 
             std::mutex cmd_mutex_;
             std::shared_ptr<geometry_msgs::msg::Twist> cmd_;
@@ -75,7 +82,6 @@ namespace sirius_controller
             rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr navigate_to_pose_client;
             rclcpp_action::Client<nav2_msgs::action::NavigateThroughPoses>::SharedPtr navigate_through_poses_client;
             rclcpp_action::Client<nav2_msgs::action::FollowWaypoints>::SharedPtr follow_waypoints_client;
-            bool assisted_teleop_active_;
 
             void spin();
             void remoteKeyInputReceived(const sirius_interfaces::msg::ControllerInput::SharedPtr key);
@@ -89,6 +95,7 @@ namespace sirius_controller
             void decrementAngularVelocity();
             void resetLinearVelocity();
             void resetAngularVelocity();
+            void smoothVelocityUpdate();  // 滑らかな速度更新
             void cancelGoal();
             void publishFace(const std::string &msg);
             void publishAudio(const std::string &file_name);
