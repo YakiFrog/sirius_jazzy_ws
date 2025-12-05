@@ -119,6 +119,9 @@ alias map_save='bash ~/sirius_jazzy_ws/bash/startup_bash/map_save.sh'
 # マップ切り替え（Nav2実行中に地図を変更）
 alias change_map='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map.sh'
 
+# ROS2 bag記録起動
+alias record_rosbag='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag.sh'
+
 # # マップ切り替え（プログラム呼び出し用、引数に地図名を指定）
 # # 例: change_map_simple 1202-15f
 # alias change_map_simple='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map_simple.sh'
