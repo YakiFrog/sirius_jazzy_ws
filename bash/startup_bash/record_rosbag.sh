@@ -43,7 +43,7 @@ input_filename() {
     echo "保存先: $ROSBAG_DIR"
     echo ""
     echo "記録対象トピック:"
-    echo "  - /scan3, /hokuyo_scan (2D LiDAR)"
+    echo "  - /scan3 (2D LiDAR)"
     echo "  - /odom, /odom/filtered (オドメトリ)"
     echo "  - /imu, /magnetometer (IMU)"
     echo "  - /tf, /tf_static (座標変換)"
@@ -95,7 +95,6 @@ start_recording() {
     
     ros2 bag record -o "$CURRENT_BAG_PATH" \
         /scan3 \
-        /hokuyo_scan \
         /odom \
         /odom/filtered \
         /imu \
