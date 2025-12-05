@@ -249,9 +249,9 @@ controller_server:
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
     costmap_update_timeout: 0.50  # 0.30 -> 1.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
-    min_x_velocity_threshold: 0.1 # 溝にハマって動けなくなるのを防止
+    min_x_velocity_threshold: 0.10 # 溝にハマって動けなくなるのを防止
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.1
+    min_theta_velocity_threshold: 0.10
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
@@ -270,7 +270,7 @@ controller_server:
       yaw_goal_tolerance: 0.50
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 50  # 80 -> 60 60*0.1 = 6.0秒先まで予測 -> 40
+      time_steps: 60  # 80 -> 60 60*0.1 = 6.0秒先まで予測 -> 40
       model_dt: 0.10 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 2000  
 
