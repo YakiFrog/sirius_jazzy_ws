@@ -286,67 +286,31 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     linear_x = twist_msg->linear.x;
     angular_z = twist_msg->angular.z;
 
-    //指令値が小さすぎる場合
-    if ((std::abs(right_speed) < 0.08) && (std::abs(left_speed) < 0.08) && ((linear_x != 0.0) || (angular_z != 0.0)))
+    constexpr float MIN_SPEED_THRESHOLD = 0.1f;  // 最小速度閾値
+    constexpr float EPSILON = 1e-6f;
+
+    // 指令値がゼロでない場合のみ底上げ処理
+    if ((std::abs(linear_x) > EPSILON) || (std::abs(angular_z) > EPSILON))
     {
-        //ゆっくり直進する場合
-        if (std::abs(angular_z) == 0.0)
+        // 両輪の最大絶対値を取得
+        float max_abs_speed = std::max(std::abs(right_speed), std::abs(left_speed));
+        
+        // 最大速度が閾値未満の場合、比率を保って底上げ
+        if (max_abs_speed > EPSILON && max_abs_speed < MIN_SPEED_THRESHOLD)
         {
-            if (linear_x > 0)
-            {
-                right_speed = -0.08;
-                left_speed = -0.08;
-            }
-            else
-            {
-                right_speed = 0.08;
-                left_speed = 0.08;
-            }
+            float scale_factor = MIN_SPEED_THRESHOLD / max_abs_speed;
+            right_speed *= scale_factor;
+            left_speed *= scale_factor;
         }
-
-        //超信地旋回(左右のスピード差が小さい場合)
-        else if (std::abs(std::abs(right_speed) - std::abs(left_speed)) < 0.01)
+        // 両輪がほぼゼロの場合（直進のみ）
+        else if (max_abs_speed < EPSILON)
         {
-            if (right_speed > 0)
-            {
-                right_speed = 0.1;
-                left_speed = -0.1;
-            }
-            else
-            {
-                right_speed = -0.1;
-                left_speed = 0.1;
-            }
-        }
-
-        //信地旋回
-        else
-        {
-            if (std::abs(right_speed) > std::abs(left_speed))
-            {
-                if (right_speed > 0)
-                {
-                    right_speed = 0.1;
-                    left_speed = 0.0;
-                }
-                else
-                {
-                    right_speed = -0.1;
-                    left_speed = 0.0;
-                }
-            }
-            else
-            {
-                if (left_speed > 0.0)
-                {
-                    right_speed = 0.0;
-                    left_speed = 0.1;
-                }
-                else
-                {
-                    right_speed = 0.0;
-                    left_speed = -0.1;
-                }
+            if (linear_x > 0) {
+                right_speed = -MIN_SPEED_THRESHOLD;
+                left_speed = -MIN_SPEED_THRESHOLD;
+            } else {
+                right_speed = MIN_SPEED_THRESHOLD;
+                left_speed = MIN_SPEED_THRESHOLD;
             }
         }
     }
