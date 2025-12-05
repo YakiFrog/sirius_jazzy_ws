@@ -50,7 +50,7 @@ input_filename() {
     echo "  - /cmd_vel, /cmd_vel_nav (速度指令)"
     echo "  - /amcl_pose, /initialpose (位置推定)"
     echo "  - /map, /plan, /optimal_trajectory (地図・経路)"
-    echo "  - /global_costmap/costmap, /local_costmap/costmap"
+    echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
     echo ""
     echo "※ /velodyne_points (3D点群) は除外されます"
     echo ""
@@ -111,6 +111,7 @@ start_recording() {
         /optimal_trajectory \
         /global_costmap/costmap \
         /local_costmap/costmap \
+        /local_costmap/published_footprint \
         /roboteq/odom \
         /joint_states &
     
