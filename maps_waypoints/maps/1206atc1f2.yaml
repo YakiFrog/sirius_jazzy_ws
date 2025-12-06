@@ -1,7 +1,7 @@
+free_thresh: 0.25
 image: 1206atc1f2.pgm
 mode: trinary
-resolution: 0.050
-origin: [-95.860, 43.770, 0]
 negate: 0
 occupied_thresh: 0.65
-free_thresh: 0.196
+origin: [-95.85000000000001, 43.75, 0]
+resolution: 0.05

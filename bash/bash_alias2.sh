@@ -82,6 +82,7 @@ alias src2='cd ${HOME}/miura_ws && source install/setup.bash'
 alias blue='src2 && ros2 run bluetooth bluetooth_node'
 alias path='src2 && ros2 run path_listener path_listener_node'
 alias curve='src2 && ros2 run curvature curvature_node'
+alias curve2='src2 && ros2 run curvature_new curvature_new_node'
 
 # TAB: リアル実験
 # GROUP: リアル実験
