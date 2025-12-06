@@ -45,7 +45,7 @@ namespace sirius_controller
     double linear_vel_max = this->declare_parameter("linear_vel_max", 2.0);
     double angular_vel_step = this->declare_parameter("angular_vel_step", 0.157);
     double angular_vel_max = this->declare_parameter("angular_vel_max", 3.14);
-    linear_accel_rate_ = this->declare_parameter("linear_accel_rate", 0.5);    // 並進加速度/減速度 [m/s^2]
+    linear_accel_rate_ = this->declare_parameter("linear_accel_rate", 0.8);    // 並進加速度/減速度 [m/s^2]
     angular_accel_rate_ = this->declare_parameter("angular_accel_rate", 1.0);  // 旋回加速度/減速度 [rad/s^2]
 
     RCLCPP_INFO(get_logger(), "KeyOp : using linear vel step [%f].", linear_vel_step);
