@@ -271,38 +271,29 @@ bool Roboteq::safe_serial_write(const std::string &cmd) {
     }
 }
 
-void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_msg) // const???
+void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_msg)
 {
-    
-    //std::cout << motor_param << std::endl;
-    //RCLCPP_INFO(this->get_logger(),"motor_param:%f",motor_param);
-
     // wheel speed (m/s)
-    // 右の車輪の回転速度 = 直進速度 + トレッド幅 * 回転速度 / 2 
     float right_speed = (twist_msg->linear.x + track_width * twist_msg->angular.z / 2.0) * -1;
-    // 左の車輪の回転速度 = 直進速度 - トレッド幅 * 回転速度 / 2
     float left_speed = (twist_msg->linear.x - track_width * twist_msg->angular.z / 2.0) * -1;
 
     linear_x = twist_msg->linear.x;
     angular_z = twist_msg->angular.z;
 
-    constexpr float MIN_SPEED_THRESHOLD = 0.1f;  // 最小速度閾値
+    constexpr float MIN_SPEED_THRESHOLD = 0.1f;
     constexpr float EPSILON = 1e-6f;
 
     // 指令値がゼロでない場合のみ底上げ処理
     if ((std::abs(linear_x) > EPSILON) || (std::abs(angular_z) > EPSILON))
     {
-        // 両輪の最大絶対値を取得
         float max_abs_speed = std::max(std::abs(right_speed), std::abs(left_speed));
         
-        // 最大速度が閾値未満の場合、比率を保って底上げ
         if (max_abs_speed > EPSILON && max_abs_speed < MIN_SPEED_THRESHOLD)
         {
             float scale_factor = MIN_SPEED_THRESHOLD / max_abs_speed;
             right_speed *= scale_factor;
             left_speed *= scale_factor;
         }
-        // 両輪がほぼゼロの場合（直進のみ）
         else if (max_abs_speed < EPSILON)
         {
             if (linear_x > 0) {
@@ -315,19 +306,25 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
         }
     }
 
-    //制限速度適用処理
-    if (right_speed > max_speed)
+    // ★ 修正: 比率を保って制限速度を適用
+    float max_abs = std::max(std::abs(right_speed), std::abs(left_speed));
+    if (max_abs > max_speed)
     {
-        right_speed = max_speed;
+        // 比率を保ったままスケールダウン
+        float scale = max_speed / max_abs;
+        right_speed *= scale;
+        left_speed *= scale;
+        
+        RCLCPP_DEBUG(this->get_logger(), 
+            "Speed limited: scale=%.2f, R=%.3f L=%.3f", 
+            scale, right_speed, left_speed);
     }
-    else if (right_speed < -max_speed)
-    {
-        right_speed = -max_speed;
-    }
-    if (left_speed > max_speed)
-    {
-        left_speed = max_speed;
-    }
+
+    // ★ 削除: 以下の個別制限は不要になる
+    // if (right_speed > max_speed) { right_speed = max_speed; }
+    // else if (right_speed < -max_speed) { right_speed = -max_speed; }
+    // if (left_speed > max_speed) { left_speed = max_speed; }
+    // else if (left_speed < -max_speed) { left_speed = -max_speed; }
 
     std::stringstream left_cmd;
     std::stringstream right_cmd;

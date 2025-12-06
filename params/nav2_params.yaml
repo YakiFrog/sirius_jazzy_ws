@@ -278,8 +278,8 @@ controller_server:
       vx_min: -1.0 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
-      wz_max: 1.5
-      wz_min: -1.5
+      wz_max: 1.0 # めったに１を超えない。また、1.5rad/s, 2.5rad/s^2だと追従できてないときがあった
+      wz_min: -1.0
 
       # これは速度の分散を決めるもの
       vx_std: 0.35 # 0.35 が追従限界かも。
@@ -290,8 +290,8 @@ controller_server:
       ax_min: -1.0 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 2.0 # これはax_maxより高めのほうが滑らか．
-      az_min: -2.0
+      az_max: 1.0 # これはax_maxより高めのほうが滑らか．
+      az_min: -1.0
 
       iteration_count: 1
       prune_distance: 6.0 # より遠くまで軌道を維持
@@ -410,14 +410,14 @@ velocity_smoother:
     use_sim_time: false
     smoothing_frequency: 20.0 # Odom以上の周波数にしてはだめ
     scale_velocities: false
-    feedback: "OPEN_LOOP"
+    feedback: "CLOSED_LOOP"
     # これはハードウェア上の速度・加速度の制限（頻繁に変える値ではない）
-    max_velocity: [1.0, 0.0, 1.5]
-    min_velocity: [-1.0, 0.0, -1.5]
-    max_accel: [1.5, 0.0, 2.5]
-    max_decel: [-1.5, 0.0, -2.5]
+    max_velocity: [1.0, 0.0, 1.0]
+    min_velocity: [-1.0, 0.0, -1.0]
+    max_accel: [1.0, 0.0, 1.0]
+    max_decel: [-1.0, 0.0, -1.0]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
-    odom_duration: 0.2 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
+    odom_duration: 0.3 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
     deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする. ０にしたほうがいい。微小速度をカットされるため
     velocity_timeout: 1.0
 
