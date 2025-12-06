@@ -1,14 +1,14 @@
 format_version: '1.0'
 waypoints:
 - number: 1
-  x: -40.55
-  y: 143.35
-  angle_radians: -3.091
-  stop: false
+  x: -40.25
+  y: 143.2
+  angle_radians: 0.034
 - number: 2
-  x: -44.6
-  y: 143.25
+  x: -43.2
+  y: 143.15
   angle_radians: -3.13
+  stop: false
 - number: 3
   x: -45.9
   y: 143.15
