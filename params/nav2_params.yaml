@@ -274,7 +274,7 @@ controller_server:
       model_dt: 0.10 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 2000  
 
-      vx_max: 0.60
+      vx_max: 0.60 # 現状、これ以上出すとRoboteqのリミッターにかかるのか、速度がいびつになる
       vx_min: -0.60 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
@@ -282,15 +282,15 @@ controller_server:
       wz_min: -0.8
 
       # これは速度の分散を決めるもの
-      vx_std: 0.35 # 0.35 が追従限界かも。
+      vx_std: 0.50 # 0.35 が追従限界かも。
       vy_std: 0.00
-      wz_std: 0.60
+      wz_std: 0.50
 
-      ax_max: 1.0
-      ax_min: -1.0 # 急ブレーキのために(無根拠)
+      ax_max: 0.8
+      ax_min: -0.8 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 1.8 # > 1.8
+      az_max: 1.8 # > 1.8 さげたら追従が遅くなるのが目立つ。逆に触れやすい。
       az_min: -1.8
 
       iteration_count: 1
@@ -409,15 +409,15 @@ velocity_smoother:
   ros__parameters:
     use_sim_time: false
     smoothing_frequency: 20.0 # Odom以上の周波数にしてはだめ
-    scale_velocities: false
-    feedback: "OPEN_LOOP"
+    scale_velocities: false # trueにするとガタつく。だめ
+    feedback: "OPEN_LOOP" # "CLOSED_LOOP" だと全く動かなくなる
     # これはハードウェア上の速度・加速度の制限（頻繁に変える値ではない）
     max_velocity: [1.0, 0.0, 1.0]
     min_velocity: [-1.0, 0.0, -1.0]
     max_accel: [1.0, 0.0, 1.8]
     max_decel: [-1.0, 0.0, -1.8]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
-    odom_duration: 0.2 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
+    odom_duration: 0.3 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
     deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする. ０にしたほうがいい。微小速度をカットされるため
     velocity_timeout: 1.0
 

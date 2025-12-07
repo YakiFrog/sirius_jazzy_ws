@@ -280,7 +280,7 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     linear_x = twist_msg->linear.x;
     angular_z = twist_msg->angular.z;
 
-    constexpr float MIN_SPEED_THRESHOLD = 0.05f;
+    constexpr float MIN_SPEED_THRESHOLD = 0.10f;
     constexpr float EPSILON = 1e-6f;
 
     // 指令値がゼロでない場合のみ底上げ処理
