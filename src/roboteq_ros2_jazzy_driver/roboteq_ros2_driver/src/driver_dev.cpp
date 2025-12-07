@@ -280,7 +280,7 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     linear_x = twist_msg->linear.x;
     angular_z = twist_msg->angular.z;
 
-    constexpr float MIN_SPEED_THRESHOLD = 0.1f;
+    constexpr float MIN_SPEED_THRESHOLD = 0.05f;
     constexpr float EPSILON = 1e-6f;
 
     // 指令値がゼロでない場合のみ底上げ処理
@@ -305,26 +305,6 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
             }
         }
     }
-
-    // ★ 修正: 比率を保って制限速度を適用
-    float max_abs = std::max(std::abs(right_speed), std::abs(left_speed));
-    if (max_abs > max_speed)
-    {
-        // 比率を保ったままスケールダウン
-        float scale = max_speed / max_abs;
-        right_speed *= scale;
-        left_speed *= scale;
-        
-        RCLCPP_DEBUG(this->get_logger(), 
-            "Speed limited: scale=%.2f, R=%.3f L=%.3f", 
-            scale, right_speed, left_speed);
-    }
-
-    // ★ 削除: 以下の個別制限は不要になる
-    // if (right_speed > max_speed) { right_speed = max_speed; }
-    // else if (right_speed < -max_speed) { right_speed = -max_speed; }
-    // if (left_speed > max_speed) { left_speed = max_speed; }
-    // else if (left_speed < -max_speed) { left_speed = -max_speed; }
 
     std::stringstream left_cmd;
     std::stringstream right_cmd;
