@@ -275,24 +275,24 @@ controller_server:
       model_dt: 0.10 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 2000  
 
-      vx_max: 1.0
-      vx_min: -1.0 # 後退は控えめに
+      vx_max: 0.60
+      vx_min: -0.60 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
-      wz_max: 1.5
-      wz_min: -1.5
+      wz_max: 0.8
+      wz_min: -0.8
 
       # これは速度の分散を決めるものであり，低くするとよくある速度が足りなくて動けなくなる
       vx_std: 0.35
       vy_std: 0.00
-      wz_std: 0.60
+      wz_std: 0.40
 
-      ax_max: 1.0
-      ax_min: -1.0 # 急ブレーキのために(無根拠)
+      ax_max: 0.6
+      ax_min: -0.6 # 急ブレーキのために(無根拠)
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 2.0 # これはax_maxより高めのほうが滑らか．
-      az_min: -2.0
+      az_max: 1.8 # これはax_maxより高めのほうが滑らか．
+      az_min: -1.8
 
       iteration_count: 1
       prune_distance: 6.0 # より遠くまで軌道を維持
@@ -400,14 +400,14 @@ velocity_smoother:
   ros__parameters:
     use_sim_time: true
     smoothing_frequency: 20.0 # コントローラサーバ
-    scale_velocities: False
+    scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [1.0, 0.0, 1.5]
-    min_velocity: [-1.0, 0.0, -1.5]
-    max_accel: [1.5, 0.0, 2.5]
-    max_decel: [-1.5, 0.0, -2.5]
+    max_velocity: [1.0, 0.0, 1.0]
+    min_velocity: [-1.0, 0.0, -1.0]
+    max_accel: [1.0, 0.0, 1.8]
+    max_decel: [-1.0, 0.0, -1.8]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
-    odom_duration: 0.2
+    odom_duration: 0.3
     deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする
     velocity_timeout: 1.0
 
