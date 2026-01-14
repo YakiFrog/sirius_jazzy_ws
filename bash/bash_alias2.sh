@@ -42,6 +42,9 @@ alias rte='bash ~/sirius_jazzy_ws/bash/startup_bash/start_ros_tcp.sh'
 # Rviz2起動
 alias rviz2desc='src && ros2 launch sirius_description display.launch.py'
 
+# Unity同期用Rviz2起動
+alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
+
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
 
