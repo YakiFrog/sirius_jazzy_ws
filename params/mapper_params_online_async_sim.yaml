@@ -14,17 +14,17 @@ slam_toolbox:
     odom_frame: sirius3/odom
     map_frame: map
     base_frame: sirius3/base_footprint
-    scan_topic: /scan
+    scan_topic: /scan3
     use_map_saver: true
     mode: mapping
 
     debug_logging: true
     # Reduce input rate in sim to better match hardware test and lower processing
-    throttle_scans: 5  # process 1 out of 5 scans
+    throttle_scans: 0  # process 1 out of 5 scans
     transform_publish_period: 0.02
-    map_update_interval: 1.0  # マップ更新を高速化(5.0秒→1.0秒)
+    map_update_interval: 3.0  # マップ更新を高速化(5.0秒→1.0秒)
     resolution: 0.05
-    min_laser_range: 0.0
+    min_laser_range: 1.0
     max_laser_range: 100.0
     
     # TF関連 - より寛容な設定
@@ -42,12 +42,12 @@ slam_toolbox:
     # 一般的なパラメータ
     use_scan_matching: true
     use_scan_barycenter: true
-    minimum_travel_distance: 0.1   # 10cmごとに処理(より細かく)
-    minimum_travel_heading: 0.1     # 約5.7度ごとに処理
-    scan_buffer_size: 2000  # increase buffer size to absorb short bursts
-    scan_buffer_maximum_scan_distance: 10.0  # より厳格に
-    link_match_minimum_response_fine: 0.4  # より厳格に(0.1→0.4)
-    link_scan_maximum_distance: 2.0  # 探索範囲を広げる
+    minimum_travel_distance: 0.3   # 10cmごとに処理(より細かく)
+    minimum_travel_heading: 0.3     # 約5.7度ごとに処理
+    scan_buffer_size: 10  # increase buffer size to absorb short bursts
+    scan_buffer_maximum_scan_distance: 20.0  # より厳格に
+    link_match_minimum_response_fine: 0.1  # より厳格に(0.1→0.4)
+    link_scan_maximum_distance: 1.5  # 探索範囲を広げる
     loop_search_maximum_distance: 3.0
     do_loop_closing: true
     loop_match_minimum_chain_size: 10
@@ -56,9 +56,9 @@ slam_toolbox:
     loop_match_minimum_response_fine: 0.45
 
     # 相関パラメータ
-    correlation_search_space_dimension: 1.0  # ±1.0mに拡大
-    correlation_search_space_resolution: 0.005  # 5mm単位でより高精度に
-    correlation_search_space_smear_deviation: 0.05  # よりシャープな探索
+    correlation_search_space_dimension: 0.5  # ±1.0mに拡大
+    correlation_search_space_resolution: 0.01  # 5mm単位でより高精度に
+    correlation_search_space_smear_deviation: 0.1  # よりシャープな探索
 
     # ループクロージャパラメータ
     loop_search_space_dimension: 8.0

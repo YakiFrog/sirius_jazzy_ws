@@ -46,12 +46,12 @@ amcl:
     #   - レイトレーシングで障害物を検出
     #   - 屋外や複雑な環境向き
     max_beams: 120                         # 使用する最大ビーム数（多いほど精度高・負荷大）120 -> 180 (効果はあまりわからない)
-    scan_topic: scan                      # 購読するレーザースキャントピック名
+    scan_topic: scan3                      # 購読するレーザースキャントピック名
     
     # パーティクルフィルタ設定
     max_particles: 3000  # 最大パーティクル数（多いほど精度高・計算量大）3000 -> 2000
-    min_particles: 600  # 最小パーティクル数（少ないと精度低・計算量小）700 -> 500
-    pf_err: 0.10        # 位置推定の許容誤差（小さいほど高精度だが計算量増）
+    min_particles: 700  # 最小パーティクル数（少ないと精度低・計算量小）700 -> 500
+    pf_err: 0.10         # 位置推定の許容誤差（小さいほど高精度だが計算量増）
     pf_z: 0.99           # パーティクルフィルタの信頼度（0.99推奨）
     
     # リカバリー機能（ロボットロスト時の回復）
@@ -109,7 +109,7 @@ global_costmap:
         enabled: True
         observation_sources: scan
         scan:
-          topic: /scan
+          topic: /scan3
           max_obstacle_height: 2.0
           clearing: true
           marking: true
@@ -530,7 +530,7 @@ collision_monitor:
     observation_sources: ["scan"]
     scan:
       type: "scan"
-      topic: "scan"
+      topic: "scan3"
       min_height: 0.15
       max_height: 2.0
       enabled: True
