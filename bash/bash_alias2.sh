@@ -36,6 +36,9 @@ alias imu='src && ros2 launch sirius_navigation witmotion_hwt905.launch.py'
 # Simulation起動
 alias sim='src && ros2 launch sirius_description sim_with_ui.launch.py'
 
+# Unity ROS-TCP Endpoint起動
+alias rte='bash ~/sirius_jazzy_ws/bash/startup_bash/start_ros_tcp.sh'
+
 # Rviz2起動
 alias rviz2desc='src && ros2 launch sirius_description display.launch.py'
 
