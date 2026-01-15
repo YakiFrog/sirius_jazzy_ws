@@ -42,43 +42,44 @@ graph TD
     end
 
     %% Data Flow
-    Roboteq -- "/odom" (Wheel Odometry) --> EKF
-    IMU -- "/imu" (AHRS Data) --> EKF
+    Roboteq -- "/odom" (Wheel Rotation Speed) --> EKF
+    IMU -- "/imu" (Heading/Orientation) --> EKF
     
-    URG -- "/hokuyo_scan" --> Nav2
+    URG -- "/hokuyo_scan" (Near Obstacles) --> Nav2
 
-    Velodyne -- "/velodyne_points" (3D) --> VelScan
-    Velodyne -- "/velodyne_points" (3D) --> Nav2
+    Velodyne -- "/velodyne_points" (Raw 3D Pointcloud) --> VelScan
+    Velodyne -- "/velodyne_points" (Raw 3D Pointcloud) --> Nav2
     
-    VelScan -- "/scan3" (2.5D) --> AMCL
-    VelScan -- "/scan3" (2.5D) --> Nav2
+    VelScan -- "/scan3" (2.5D Obstacle Map) --> AMCL
+    VelScan -- "/scan3" (2.5D Obstacle Map) --> Nav2
 
-    URDF -- "Robot Description" --> RSP
-    RSP -- "/tf" (Static TFs: base_link -> sensors) --> TfTree[("TF Tree")]
-    EKF -- "/tf" (Dynamic: odom -> base_footprint) --> TfTree
-    AMCL -- "/tf" (Dynamic: map -> odom) --> TfTree
+    URDF -- "Physical Structure" --> RSP
+    RSP -- "/tf" (Sensor/Link Positions) --> TfTree[("TF Tree")]
+    EKF -- "/tf" (Estimated Movement: odom->base) --> TfTree
+    AMCL -- "/tf" (Loc. Correction: map->odom) --> TfTree
 
-    TfTree -- "odom -> base_footprint" --> AMCL
-    TfTree -- "map -> base_footprint" --> MoveGoal
-    TfTree -- "all TFs" --> Nav2
-    TfTree -- "all TFs" --> RViz
+    TfTree -- "Odometry for Prediction" --> AMCL
+    TfTree -- "Coordinate Context" --> MoveGoal
+    TfTree -- "Full Transform Tree" --> Nav2
+    TfTree -- "Full Transform Tree" --> RViz
 
-    MapServer -- "/map" --> AMCL
-    MapServer -- "/map" --> Nav2
-    MapServer -- "/map" --> RViz
+    MapServer -- "/map" (Global Environment) --> AMCL
+    MapServer -- "/map" (Global Environment) --> Nav2
+    MapServer -- "/map" (Global Environment) --> RViz
 
-    Waypoints -- "Load" --> MoveGoal
-    MoveGoal -- "Action: navigate_to_pose" --> Nav2
-    MoveGoal -- "/target_odom" --> RViz
-    MoveGoal -- "Shell: change_map.sh" --> MapServer
+    Waypoints -- "Goal Sequence" --> MoveGoal
+    MoveGoal -- "Next Navigation Goal" --> Nav2
+    MoveGoal -- "/target_odom" (Target Visualizer) --> RViz
+    MoveGoal -- "Automatic Map Change" --> MapServer
 
-    RViz -- "/initialpose" --> AMCL
-    RViz -- "/initialpose" --> EKFPoseInit
-    EKFPoseInit -- "set_pose (Service)" --> EKF
-    RViz -- "/goal_pose" --> Nav2
+    RViz -- "/initialpose" (Localization Reset) --> AMCL
+    RViz -- "/initialpose" (Localization Reset) --> EKFPoseInit
+    EKFPoseInit -- "Sync Initial Pose" --> EKF
+    RViz -- "/goal_pose" (User Input Goal) --> Nav2
 
     %% Control Flow
-    Nav2 -- "/cmd_vel" --> Roboteq
+    Nav2 -- "/cmd_vel" (Velocity Command) --> Roboteq
+    MoveGoal -- "/stop" (Emergency/Pause) --> Roboteq
 
     %% Styles
     %% Dark Red for Drivers
@@ -132,7 +133,7 @@ graph TD
 ### データ処理 (Processing)
 - **velodyne_laserscan**: 3D点群を2次元（2.5次元）のレーザースキャンデータに変換します。
   - **Subscribes**: `/velodyne_points`
-  - **Publishes**: `/scan3`
+  - **Publishes**: `/scan3`（AMCLが自己位置を見失わないよう、特徴的な高さを抽出した仮想スキャン）
 - **ekf_pose_initializer**: RVizからの初期位置（/initialpose）をEKFに同期させる橋渡しをします。
   - **Subscribes**: `/initialpose`
   - **Calls**: `/ekf_filter_node/set_pose` (Service)
@@ -151,6 +152,8 @@ graph TD
   - **Inputs**: 
     - `waypoints.yaml` (目標地点のリスト)
     - `/tf` (ロボットの現在位置を確認)
+  - **Outputs**:
+    - `/target_odom`: **目標地点の可視化。** RViz上で「次にどこへ向かおうとしているか」をゴーストとして表示するために使用します。
   - **Actions**: `navigate_to_pose` (Nav2へ目標地点を送信)
   - **Features**: 到着判定後の次地点送信、地図切り替えの自動化。
 
