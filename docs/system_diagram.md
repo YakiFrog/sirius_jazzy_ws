@@ -4,59 +4,59 @@ This diagram represents the node interactions when running `sirius_jazzy_ws` on 
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#000000', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#ffffff', 'lineColor': '#ffffff', 'tertiaryColor': '#ffffff', 'clusterBkg': '#222222', 'clusterBorder': '#666666', 'titleColor': '#ffffff'}}}%%
-graph TD
-    subgraph HW ["Drivers (20-200Hz)"]
-        Roboteq[("Roboteq")]
-        URG[("URG")]
-        Velo[("Velodyne")]
-        IMU[("IMU")]
+graph LR
+    subgraph HW ["Hardware Drivers"]
+        witmotion_ros_node[("witmotion_ros_node (200Hz)")]
+        velodyne_driver_node[("velodyne_driver_node (20Hz)")]
+        urg_node2[("urg_node2 (10Hz)")]
+        roboteq_ros2_driver[("roboteq_ros2_driver (Actuator)")]
     end
 
-    subgraph Core ["Processing & Fusion (20Hz)"]
-        EKF[("EKF")]
-        VScan[("VeloScan")]
-        RSP[("Robot State Publisher (URDF)")]
+    subgraph Core ["Processing & Sensor Fusion"]
+        ekf_filter_node[("ekf_filter_node (20Hz)")]
+        velodyne_laserscan_node[("velodyne_laserscan_node (20Hz)")]
+        robot_state_publisher[("robot_state_publisher")]
+        TfTree[("TF Tree")]
     end
 
-    subgraph Nav ["Navigation & Mission (1-10Hz)"]
-        Nav2[("Nav2 Stack")]
-        AMCL[("AMCL")]
-        Map[("Map Server")]
-        Move[("Move Goal")]
+    subgraph Nav ["Navigation & Mission"]
+        amcl[("amcl (Dynamic)")]
+        nav2_stack[("Nav2 Stack (10Hz)")]
+        map_server[("map_server")]
+        move_goal[("move_goal")]
     end
 
     subgraph UI ["User Interface"]
-        RViz[("RViz2 / UI")]
+        rviz2[("rviz2")]
     end
 
-    %% Data Flow
-    Roboteq -- "/odom (20Hz)" --> EKF
-    IMU -- "/imu (200Hz)" --> EKF
-    URG -- "/hokuyo_scan (10Hz)" --> Nav2
-    Velo -- "/velodyne_points (20Hz)" --> VScan
-    Velo -- "/velodyne_points (20Hz)" --> Nav2
-    VScan -- "/scan3 (20Hz)" --> AMCL
-    VScan -- "/scan3 (20Hz)" --> Nav2
+    %% Drivers to Processing/Fusion
+    witmotion_ros_node -- "/imu (200Hz)" --> ekf_filter_node
+    velodyne_driver_node -- "/velodyne_points (20Hz)" --> velodyne_laserscan_node & nav2_stack
+    urg_node2 -- "/hokuyo_scan (10Hz)" --> nav2_stack
+    roboteq_ros2_driver -- "/odom (20Hz)" --> ekf_filter_node
 
-    RSP -- "/tf (Static)" --> TfTree[("TF Tree")]
-    EKF -- "/tf (20Hz)" --> TfTree
-    AMCL -- "/tf (5Hz)" --> TfTree
+    %% Internal Processing Flows
+    robot_state_publisher -- "/tf (Static)" --> TfTree
+    ekf_filter_node -- "/odom/filtered (20Hz)" --> nav2_stack
+    ekf_filter_node -- "/tf (20Hz: odom->base)" --> TfTree
+    amcl -- "/tf (Dynamic: map->odom)" --> TfTree
+    velodyne_laserscan_node -- "/scan3 (20Hz)" --> amcl & nav2_stack
 
-    TfTree -- "Odom (20Hz)" --> AMCL
-    TfTree -- "Pose (2-20Hz)" --> Move
-    TfTree -- "Transforms" --> Nav2 & RViz
+    %% Navigation Inputs
+    TfTree -- "/tf" --> nav2_stack & rviz2 & move_goal
+    TfTree -- "/tf (odom->base)" --> amcl
+    map_server -- "/map (Latch)" --> amcl & nav2_stack & rviz2
+    
+    %% Mission & UI
+    move_goal -- "Action: navigate_to_pose" --> nav2_stack
+    move_goal -- "/stop (Event)" --> roboteq_ros2_driver
+    move_goal -- "/target_odom" --> rviz2
+    rviz2 -- "/initialpose" --> amcl & ekf_filter_node
+    rviz2 -- "/goal_pose" --> nav2_stack
 
-    Map -- "/map" --> AMCL & Nav2 & RViz
-    Move -- "Goal Action" --> Nav2
-    Move -- "/target_odom" --> RViz
-    Move -- "Change Map" --> Map
-
-    RViz -- "/initialpose" --> AMCL & EKF
-    RViz -- "/goal_pose" --> Nav2
-
-    %% Control Flow
-    Nav2 -- "/cmd_vel (10Hz)" --> Roboteq
-    Move -- "/stop" --> Roboteq
+    %% Control Output
+    nav2_stack -- "/cmd_vel (10Hz)" --> roboteq_ros2_driver
 
     %% Styles
     style HW fill:#330000,stroke:#f99,color:#fff
@@ -68,12 +68,13 @@ graph TD
 
 ## ノードの詳細説明
 
-- **Roboteq**: 20Hzでオドメトリを配信、10Hzで速度指令を受信。
-- **URG**: 約10Hzで周辺スキャンを配信。
-- **Velodyne**: 約20Hzで3D点群を配信。
-- **IMU**: 200Hzの高周期で姿勢情報を配信。
-- **VeloScan**: 20Hzで3D点群を仮想2.5Dスキャンに変換。
-- **EKF**: 20Hzでセンサーを統合。
-- **AMCL**: 5Hz程度（移動時）で自己位置を補正。
-- **Nav2**: 10Hzの制御ループで動作。
-- **Move Goal**: 0.5Hz（2秒周期）で到達判定と次目標送信。
+- **roboteq_ros2_driver**: 20Hzでオドメトリ配信、10Hzで速度指令受信。
+- **urg_node2**: 約10Hzで `/hokuyo_scan` を配信。
+- **velodyne_driver_node**: 約20Hzで `/velodyne_points` を配信。
+- **witmotion_ros_node**: 200Hzの高周期で `/imu` を配信。
+- **velodyne_laserscan_node**: 20Hzで点群を `/scan3` に変換。
+- **ekf_filter_node**: 20Hzでセンサを統合し `/odom/filtered` を出力。
+- **robot_state_publisher**: URDFから静的な `/tf` を配信。
+- **amcl**: 移動時のみ補正を実施。
+- **nav2_stack**: 10Hz周期でパス追従と制御を実施。
+- **move_goal**: 2秒周期でウェイポイント巡回を管理。
