@@ -6,7 +6,7 @@ This version is optimized for white-background publications (papers, reports). I
 %%{init: {
   'theme': 'base', 
   'themeVariables': { 
-    'fontSize': '24px',
+    'fontSize': '32px',
     'fontFamily': 'arial',
     'primaryColor': '#ffffff', 
     'primaryTextColor': '#000000', 
@@ -16,56 +16,40 @@ This version is optimized for white-background publications (papers, reports). I
     'clusterBkg': '#ffffff', 
     'clusterBorder': '#000000', 
     'titleColor': '#000000',
-    'edgeLabelBackground':'#ffffff'
+    'edgeLabelBackground':'#ffffff',
+    'nodeSpacing': 100,
+    'rankSpacing': 150
   }
 }}%%
 graph LR
-    subgraph HW ["Hardware Drivers"]
-        WIMU[("witmotion_node")]
-        VELO[("velodyne_node")]
-        URG[("urg_node")]
-        MCTRL[("roboteq_driver")]
+    subgraph HW ["Sensors & Actuators"]
+        SENSORS["LiDAR / IMU"]
+        DRIVE["Motor Driver"]
     end
 
-    subgraph Core ["Processing Layer"]
-        EKF[("ekf_filter")]
-        VSCAN[("velodyne_scan")]
-        RSP[("state_publisher")]
-        TFT[("TF Tree")]
-    end
-
-    subgraph Nav ["Navigation Layer"]
-        AMCL[("amcl")]
-        NAV2[("nav2_stack")]
-        MAP[("map_server")]
-        MOVE[("move_goal")]
+    subgraph CORE ["Processing & Navigation"]
+        EKF["EKF Fusion"]
+        NAV2["Navigation (Nav2)"]
+        MAP["Map Server"]
     end
 
     %% Data Flow
-    WIMU -- "/imu" --> EKF
-    VELO -- "/points" --> VSCAN & NAV2
-    URG -- "/scan" --> NAV2
-    MCTRL -- "/odom" --> EKF
-
-    RSP -- "static_tf" --> TFT
-    EKF -- "filtered_odom" --> NAV2
-    EKF -- "odom->base" --> TFT
-    AMCL -- "map->odom" --> TFT
-    VSCAN -- "/scan(2.5D)" --> AMCL & NAV2
-
-    TFT -- "tf" --> NAV2 & MOVE
-    MAP -- "/map" --> AMCL & NAV2
+    SENSORS -- "/scan, /imu" --> CORE
+    DRIVE -- "/odom" --> EKF
     
-    MOVE -- "goal" --> NAV2
-    MOVE -- "/stop" --> MCTRL
+    EKF -- "Filtered Odom" --> NAV2
+    MAP -- "/map" --> NAV2
     
-    NAV2 -- "/cmd_vel" --> MCTRL
+    NAV2 -- "/cmd_vel" --> DRIVE
 
     %% Minimalistic styles
-    style HW fill:#eee,stroke:#000,stroke-width:2px
-    style Core fill:#eee,stroke:#000,stroke-width:2px
-    style Nav fill:#eee,stroke:#000,stroke-width:2px
-    style TFT fill:#fff,stroke:#000,stroke-width:2px
+    style HW fill:#eee,stroke:#000,stroke-width:3px
+    style CORE fill:#fff,stroke:#000,stroke-width:3px
+    style SENSORS fill:#fff,stroke:#000,stroke-width:2px
+    style DRIVE fill:#fff,stroke:#000,stroke-width:2px
+    style EKF fill:#fff,stroke:#000,stroke-width:2px
+    style NAV2 fill:#fff,stroke:#000,stroke-width:2px
+    style MAP fill:#fff,stroke:#000,stroke-width:2px
 ```
 
 ## 論文・レポート用設定
