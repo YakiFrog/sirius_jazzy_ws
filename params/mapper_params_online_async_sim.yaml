@@ -42,8 +42,8 @@ slam_toolbox:
     # 一般的なパラメータ
     use_scan_matching: true
     use_scan_barycenter: true
-    minimum_travel_distance: 0.1   # Unityでの連続性を高めるため0.3から短縮
-    minimum_travel_heading: 0.1     # Unityでの連続性を高めるため0.3から短縮
+    minimum_travel_distance: 0.2   # Unityでの連続性を高めるため0.3から短縮
+    minimum_travel_heading: 0.2     # Unityでの連続性を高めるため0.3から短縮
     scan_buffer_size: 20  # 通信ジッタ対策のため10から増加
     scan_buffer_maximum_scan_distance: 20.0  # より厳格に
     link_match_minimum_response_fine: 0.1  # より厳格に(0.1→0.4)
