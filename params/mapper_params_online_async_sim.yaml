@@ -25,7 +25,7 @@ slam_toolbox:
     map_update_interval: 3.0  # マップ更新を高速化(5.0秒→1.0秒)
     resolution: 0.05
     min_laser_range: 1.0
-    max_laser_range: 100.0
+    max_laser_range: 30.0  # Unityでの不安定な遠方点を除外するため100mから短縮
     
     # TF関連 - より寛容な設定
     transform_timeout: 1.0  # より寛容に
@@ -42,9 +42,9 @@ slam_toolbox:
     # 一般的なパラメータ
     use_scan_matching: true
     use_scan_barycenter: true
-    minimum_travel_distance: 0.3   # 10cmごとに処理(より細かく)
-    minimum_travel_heading: 0.3     # 約5.7度ごとに処理
-    scan_buffer_size: 10  # increase buffer size to absorb short bursts
+    minimum_travel_distance: 0.1   # Unityでの連続性を高めるため0.3から短縮
+    minimum_travel_heading: 0.1     # Unityでの連続性を高めるため0.3から短縮
+    scan_buffer_size: 20  # 通信ジッタ対策のため10から増加
     scan_buffer_maximum_scan_distance: 20.0  # より厳格に
     link_match_minimum_response_fine: 0.1  # より厳格に(0.1→0.4)
     link_scan_maximum_distance: 1.5  # 探索範囲を広げる
@@ -56,7 +56,7 @@ slam_toolbox:
     loop_match_minimum_response_fine: 0.45
 
     # 相関パラメータ
-    correlation_search_space_dimension: 0.5  # ±1.0mに拡大
+    correlation_search_space_dimension: 0.6  # 探索範囲を0.5から微増し、マッチングの堅牢性を向上
     correlation_search_space_resolution: 0.01  # 5mm単位でより高精度に
     correlation_search_space_smear_deviation: 0.1  # よりシャープな探索
 
