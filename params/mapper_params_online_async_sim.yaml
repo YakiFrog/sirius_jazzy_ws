@@ -48,12 +48,12 @@ slam_toolbox:
     scan_buffer_maximum_scan_distance: 20.0  # より厳格に
     link_match_minimum_response_fine: 0.1  # より厳格に(0.1→0.4)
     link_scan_maximum_distance: 1.5  # 探索範囲を広げる
-    loop_search_maximum_distance: 3.0
+    loop_search_maximum_distance: 5.0
     do_loop_closing: true
     loop_match_minimum_chain_size: 10
     loop_match_maximum_variance_coarse: 3.0
     loop_match_minimum_response_coarse: 0.35
-    loop_match_minimum_response_fine: 0.45
+    loop_match_minimum_response_fine: 0.45 # 0.45 -> 0.55 より確信度が高い
 
     # 相関パラメータ
     correlation_search_space_dimension: 0.6  # 探索範囲を0.5から微増し、マッチングの堅牢性を向上
