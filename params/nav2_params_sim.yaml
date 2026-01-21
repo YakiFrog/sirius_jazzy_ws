@@ -2,6 +2,8 @@
 amcl:
   ros__parameters:
     use_sim_time: true
+    set_initial_pose: true
+    initial_pose: [0.0, 0.0, 0.0, 0.0]
 
     # 自己位置ぶっとびやすいのは、ここの値。シミュレータ上のオドメトリはずれやすい
     # 点群と環境情報が一致していないときは、ここの値を高くする（LiDARの信頼度を上げる）ことで、ビッタリ合うはず。
@@ -136,7 +138,7 @@ planner_server:
     use_sim_time: true
     expected_planner_frequency: 10.0 # 10.0 -> 1.0 (頻繁な経路更新を抑制)
     planner_plugins: ["GridBased"]
-    costmap_update_timeout: 1.0  # 1.0 -> 3.0 (タイムアウトを延長)
+    costmap_update_timeout: 5.0  # 1.0 -> 5.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
@@ -248,7 +250,7 @@ controller_server:
   ros__parameters:
     use_sim_time: true
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
-    costmap_update_timeout: 0.50  # 0.30 -> 1.0 (タイムアウトを延長)
+    costmap_update_timeout: 5.0  # 0.50 -> 5.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
     min_x_velocity_threshold: 0.05
     min_y_velocity_threshold: 0.0
