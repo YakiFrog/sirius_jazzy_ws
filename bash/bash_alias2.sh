@@ -45,6 +45,9 @@ alias rviz2desc='src && ros2 launch sirius_description display.launch.py'
 # Unity同期用Rviz2起動
 alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
 
+# Rosbridge Web Socket起動
+alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
+
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
 
