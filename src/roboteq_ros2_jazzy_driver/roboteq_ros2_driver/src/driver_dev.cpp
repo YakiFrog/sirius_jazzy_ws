@@ -801,23 +801,43 @@ void Roboteq::odom_publish()
     odom_msg.pose.pose.position.y = odom_y;
     odom_msg.pose.pose.position.z = 0.0;
     odom_msg.pose.pose.orientation = quat;
+
+    // 速度（Twist）の計算
+    float raw_v = 0.0f;
+    float raw_w = 0.0f;
     if (dt > 1e-6f) {
-        odom_msg.twist.twist.linear.x = linear / dt;
-    } else {
-        odom_msg.twist.twist.linear.x = 0.0;
+        raw_v = linear / dt;
+        raw_w = angular / dt;
     }
+
+    // 5サンプルの移動平均フィルタでジグザグ（量子化ノイズ）を軽減
+    static std::vector<float> v_history, w_history;
+    v_history.push_back(raw_v);
+    w_history.push_back(raw_w);
+    
+    // 直近5サンプルを維持
+    if (v_history.size() > 5) {
+        v_history.erase(v_history.begin());
+        w_history.erase(w_history.begin());
+    }
+    
+    // 平均値を算出
+    float avg_v = 0, avg_w = 0;
+    for(float v : v_history) avg_v += v;
+    for(float w : w_history) avg_w += w;
+    avg_v /= v_history.size();
+    avg_w /= w_history.size();
+
+    odom_msg.twist.twist.linear.x = avg_v;
     odom_msg.twist.twist.linear.y = 0.0;
     odom_msg.twist.twist.linear.z = 0.0;
     odom_msg.twist.twist.angular.x = 0.0;
     odom_msg.twist.twist.angular.y = 0.0;
-    if (dt > 1e-6f) {
-        odom_msg.twist.twist.angular.z = angular / dt;
-    } else {
-        odom_msg.twist.twist.angular.z = 0.0;
-    }
+    odom_msg.twist.twist.angular.z = avg_w;
+
     odom_pub->publish(odom_msg);
-    
-    // 指令速度と実速度の達成率をログ出力
+
+    // 指令速度と実速度の達成率をログ出力（デバッグ用）
     // linear_x, angular_z はcmd_velからの指令値（メンバ変数）
     float actual_linear = odom_msg.twist.twist.linear.x;
     float actual_angular = odom_msg.twist.twist.angular.z;
