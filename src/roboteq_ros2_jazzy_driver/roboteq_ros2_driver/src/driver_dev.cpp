@@ -80,6 +80,7 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     // If robot moves faster than commanded, decrease this value (e.g., 0.625 for 60% faster)
     // If robot moves slower than commanded, increase this value (e.g., 1.2 for 20% slower)
     speed_scale = this->declare_parameter("speed_scale", 1.0);
+    kp_soft = this->declare_parameter("kp_soft", 0.0);
 
     starttime = 0;
     hstimer = 0;
@@ -172,6 +173,7 @@ void Roboteq::update_parameters()
     this->get_parameter("odom_stream_interval_ms", new_stream_ms);
     this->get_parameter("odom_publish_hz", odom_publish_hz);
     this->get_parameter("speed_scale", speed_scale);
+    this->get_parameter("kp_soft", kp_soft);
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -769,6 +771,29 @@ void Roboteq::odom_publish()
     odom_last_x = odom_x;
     odom_last_y = odom_y;
     odom_last_yaw = odom_yaw;
+
+    // ソフトウェアP制御 (方法2)
+    if (open_loop && kp_soft > 0.001) {
+        float actual_rpm_r = (odom_roll_right / dt) * 60.0f;
+        float actual_rpm_l = (odom_roll_left / dt) * 60.0f;
+        
+        float error_r = right_rpm_command - actual_rpm_r;
+        float error_l = left_rpm_command - actual_rpm_l;
+        
+        int32_t power_r = static_cast<int32_t>((right_rpm_command / max_rpm * 1000.0f) + (kp_soft * error_r));
+        int32_t power_l = static_cast<int32_t>((left_rpm_command / max_rpm * 1000.0f) + (kp_soft * error_l));
+        
+        power_r = std::max(-1000, std::min(1000, power_r));
+        power_l = std::max(-1000, std::min(1000, power_l));
+        
+        if (std::abs(right_rpm_command) > 0.1f || std::abs(left_rpm_command) > 0.1f) {
+            std::stringstream r_cmd, l_cmd;
+            r_cmd << "!G 1 " << power_r << "\r";
+            l_cmd << "!G 2 " << power_l << "\r";
+            safe_serial_write(r_cmd.str());
+            safe_serial_write(l_cmd.str());
+        }
+    }
 
     // convert yaw to quat
     tf2::Quaternion tf2_quat;

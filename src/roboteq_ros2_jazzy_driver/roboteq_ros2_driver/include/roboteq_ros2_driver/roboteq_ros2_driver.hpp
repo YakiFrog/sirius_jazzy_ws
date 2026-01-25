@@ -111,6 +111,10 @@ class Roboteq : public rclcpp::Node
   // speed scale factor to calibrate commanded speed to match actual robot speed
   double speed_scale{};
   float gear_ratio{};
+  
+  // ソフトウェアP制御用のゲイン
+  double kp_soft{};
+
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};
   nav_msgs::msg::Odometry odom_msg{};
