@@ -36,8 +36,17 @@ alias imu='src && ros2 launch sirius_navigation witmotion_hwt905.launch.py'
 # Simulation起動
 alias sim='src && ros2 launch sirius_description sim_with_ui.launch.py'
 
+# Unity ROS-TCP Endpoint起動
+alias rte='bash ~/sirius_jazzy_ws/bash/startup_bash/start_ros_tcp.sh'
+
 # Rviz2起動
 alias rviz2desc='src && ros2 launch sirius_description display.launch.py'
+
+# Unity同期用Rviz2起動
+alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
+
+# Rosbridge Web Socket起動
+alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
 
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
@@ -83,6 +92,7 @@ alias blue='src2 && ros2 run bluetooth bluetooth_node'
 alias path='src2 && ros2 run path_listener path_listener_node'
 alias curve='src2 && ros2 run curvature curvature_node'
 alias curve2='src2 && ros2 run curvature_new curvature_new_node'
+alias pos='src2 && ros2 run position position_node'
 
 # TAB: リアル実験
 # GROUP: リアル実験
