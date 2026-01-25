@@ -273,7 +273,7 @@ bool Roboteq::safe_serial_write(const std::string &cmd) {
 
 void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_msg)
 {
-    // wheel speed (m/s)
+    // 車輪速度の計算 (m/s)
     float right_speed = (twist_msg->linear.x + track_width * twist_msg->angular.z / 2.0) * -1;
     float left_speed = (twist_msg->linear.x - track_width * twist_msg->angular.z / 2.0) * -1;
 
@@ -282,26 +282,43 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
 
     constexpr float MIN_SPEED_THRESHOLD = 0.10f;
     constexpr float EPSILON = 1e-6f;
+    float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
 
-    // 指令値がゼロでない場合のみ底上げ処理
+    // speed_scaleを先に適用する。
+    // これにより、不感帯（デッドバンド）の判定を実際にモーターへ送る最終的な指令値ベースで行える。
+    right_speed *= scale;
+    left_speed *= scale;
+
+    // 指令値がゼロでない場合のみ、低速時の底上げ処理を行う
     if ((std::abs(linear_x) > EPSILON) || (std::abs(angular_z) > EPSILON))
     {
         float max_abs_speed = std::max(std::abs(right_speed), std::abs(left_speed));
         
+        // 最大速度がしきい値未満かつゼロでない場合、比率を維持したまま底上げ
         if (max_abs_speed > EPSILON && max_abs_speed < MIN_SPEED_THRESHOLD)
         {
-            float scale_factor = MIN_SPEED_THRESHOLD / max_abs_speed;
-            right_speed *= scale_factor;
-            left_speed *= scale_factor;
+            float boost_factor = MIN_SPEED_THRESHOLD / max_abs_speed;
+            right_speed *= boost_factor;
+            left_speed *= boost_factor;
         }
+        // 指令はあるが計算上の車輪速度がほぼゼロになる場合（例：低速旋回のみなど）
         else if (max_abs_speed < EPSILON)
         {
-            if (linear_x > 0) {
+            if (linear_x > EPSILON) {
                 right_speed = -MIN_SPEED_THRESHOLD;
                 left_speed = -MIN_SPEED_THRESHOLD;
-            } else {
+            } else if (linear_x < -EPSILON) {
                 right_speed = MIN_SPEED_THRESHOLD;
                 left_speed = MIN_SPEED_THRESHOLD;
+            } else {
+                // 旋回指令のみの場合
+                if (angular_z > 0) {
+                    right_speed = -MIN_SPEED_THRESHOLD;
+                    left_speed = MIN_SPEED_THRESHOLD;
+                } else {
+                    right_speed = MIN_SPEED_THRESHOLD;
+                    left_speed = -MIN_SPEED_THRESHOLD;
+                }
             }
         }
     }
@@ -309,36 +326,37 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     std::stringstream left_cmd;
     std::stringstream right_cmd;
     
+    float rpm_r = right_speed / wheel_circumference * 60.0;
+    float rpm_l = left_speed / wheel_circumference * 60.0;
+
     if (open_loop)
     {
-        // motor power (scale 0-1000)
-        // max_rpm is wheel RPM, so calculate wheel RPM directly
-        // Apply speed_scale to match actual movement with commanded speed
-        float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
-        float wheel_rpm_right = right_speed / wheel_circumference * 60.0 * scale;
-        float wheel_rpm_left = left_speed / wheel_circumference * 60.0 * scale;
-        
-        int32_t right_power = wheel_rpm_right / max_rpm * 1000.0;
-        int32_t left_power = wheel_rpm_left / max_rpm * 1000.0;
+        // モーター出力指令 (0-1000 スケール)
+        int32_t right_power = rpm_r / max_rpm * 1000.0;
+        int32_t left_power = rpm_l / max_rpm * 1000.0;
         
         right_cmd << "!G 1 " << right_power << "\r";
         left_cmd << "!G 2 " << left_power << "\r";
+
+        // RCLCPP_INFO(this->get_logger(), "cmdvel(open): lin=%.3f ang=%.3f -> Power R=%d L=%d (scale=%.2f)",
+        //             linear_x, angular_z, right_power, left_power, scale);
     }
     else
     {
-        // motor speed (rpm)
-        // Apply speed_scale to match actual movement with commanded speed
-        float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
-        int32_t right_rpm = right_speed / wheel_circumference * 60.0 * scale;
-        int32_t left_rpm = left_speed / wheel_circumference * 60.0 * scale;
+        // モーター回転数指令 (rpm)
+        int32_t right_rpm = (int32_t)rpm_r;
+        int32_t left_rpm = (int32_t)rpm_l;
 
-        right_rpm_command = right_speed / wheel_circumference * 60.0 * scale;
-        left_rpm_command = left_speed / wheel_circumference * 60.0 * scale;
+        right_rpm_command = rpm_r;
+        left_rpm_command = rpm_l;
 
         right_cmd << "!S 1 " << right_rpm << "\r";
         left_cmd << "!S 2 " << left_rpm << "\r";
+
+        // RCLCPP_INFO(this->get_logger(), "cmdvel(closed): lin=%.3f ang=%.3f -> RPM R=%d L=%d (scale=%.2f)",
+        //             linear_x, angular_z, right_rpm, left_rpm, scale);
     }
-    //write cmd to motor controller
+    // モーターコントローラへコマンドを送信
     #ifndef _CMDVEL_FORCE_RUN
         safe_serial_write(right_cmd.str());
         safe_serial_write(left_cmd.str());
@@ -783,23 +801,43 @@ void Roboteq::odom_publish()
     odom_msg.pose.pose.position.y = odom_y;
     odom_msg.pose.pose.position.z = 0.0;
     odom_msg.pose.pose.orientation = quat;
+
+    // 速度（Twist）の計算
+    float raw_v = 0.0f;
+    float raw_w = 0.0f;
     if (dt > 1e-6f) {
-        odom_msg.twist.twist.linear.x = linear / dt;
-    } else {
-        odom_msg.twist.twist.linear.x = 0.0;
+        raw_v = linear / dt;
+        raw_w = angular / dt;
     }
+
+    // 5サンプルの移動平均フィルタでジグザグ（量子化ノイズ）を軽減
+    static std::vector<float> v_history, w_history;
+    v_history.push_back(raw_v);
+    w_history.push_back(raw_w);
+    
+    // 直近5サンプルを維持
+    if (v_history.size() > 5) {
+        v_history.erase(v_history.begin());
+        w_history.erase(w_history.begin());
+    }
+    
+    // 平均値を算出
+    float avg_v = 0, avg_w = 0;
+    for(float v : v_history) avg_v += v;
+    for(float w : w_history) avg_w += w;
+    avg_v /= v_history.size();
+    avg_w /= w_history.size();
+
+    odom_msg.twist.twist.linear.x = avg_v;
     odom_msg.twist.twist.linear.y = 0.0;
     odom_msg.twist.twist.linear.z = 0.0;
     odom_msg.twist.twist.angular.x = 0.0;
     odom_msg.twist.twist.angular.y = 0.0;
-    if (dt > 1e-6f) {
-        odom_msg.twist.twist.angular.z = angular / dt;
-    } else {
-        odom_msg.twist.twist.angular.z = 0.0;
-    }
+    odom_msg.twist.twist.angular.z = avg_w;
+
     odom_pub->publish(odom_msg);
-    
-    // 指令速度と実速度の達成率をログ出力
+
+    // 指令速度と実速度の達成率をログ出力（デバッグ用）
     // linear_x, angular_z はcmd_velからの指令値（メンバ変数）
     float actual_linear = odom_msg.twist.twist.linear.x;
     float actual_angular = odom_msg.twist.twist.angular.z;
