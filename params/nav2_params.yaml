@@ -106,7 +106,7 @@ global_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan
+        observation_sources: scan sam3_cloud
         scan:
           topic: /scan3
           max_obstacle_height: 2.0
@@ -116,6 +116,17 @@ global_costmap:
           raytrace_max_range: 20.0
           raytrace_min_range: 0.0
           obstacle_max_range: 18.0
+          obstacle_min_range: 0.0
+          expected_update_rate: 1.0
+          observation_persistence: 0.0
+        sam3_cloud:
+          topic: /sam3/obstacles
+          max_obstacle_height: 2.0
+          min_obstacle_height: 0.0
+          clearing: true
+          marking: true
+          data_type: "PointCloud2"
+          obstacle_max_range: 10.0
           obstacle_min_range: 0.0
           expected_update_rate: 1.0
           observation_persistence: 0.0
@@ -221,7 +232,7 @@ local_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan
+        observation_sources: scan sam3_cloud
         scan:
           topic: /hokuyo_scan
           max_obstacle_height: 2.0
@@ -232,6 +243,17 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 10.0
           obstacle_min_range: 0.0
+        sam3_cloud:
+          topic: /sam3/obstacles
+          max_obstacle_height: 2.0
+          min_obstacle_height: 0.0
+          clearing: true
+          marking: true
+          data_type: "PointCloud2"
+          obstacle_max_range: 5.0
+          obstacle_min_range: 0.0
+          expected_update_rate: 1.0
+          observation_persistence: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
