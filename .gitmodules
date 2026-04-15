@@ -4,3 +4,6 @@
 [submodule "src/sirius/sirius_navigation"]
 	path = src/sirius/sirius_navigation
 	url = https://github.com/YakiFrog/sirius_navigation.git
+[submodule "src/ros_tcp_endpoint"]
+	path = src/ros_tcp_endpoint
+	url = https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
