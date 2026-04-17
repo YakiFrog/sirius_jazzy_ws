@@ -49,7 +49,7 @@ alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
 alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
 
 # Unity上のZEDカメラのトピックをROS2に流す
-alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py`
+alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py'
 
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
