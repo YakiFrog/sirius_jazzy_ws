@@ -39,11 +39,14 @@ alias sim='src && ros2 launch sirius_description sim_with_ui.launch.py'
 # Unity ROS-TCP Endpoint起動
 alias rte='bash ~/sirius_jazzy_ws/bash/startup_bash/start_ros_tcp.sh'
 
-# Rviz2起動
-alias rviz2desc='src && ros2 launch sirius_description display.launch.py'
+# Rviz2起動(シミュレーション)
+alias rviz2sim='src && ros2 launch sirius_description display.launch.py use_sim_time:=true'
+
+# Rviz2起動(互換用)
+alias rviz2desc='rviz2sim'
 
 # Unity同期用Rviz2起動
-alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
+# alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
 
 # Rosbridge Web Socket起動
 alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
@@ -77,11 +80,13 @@ alias slamtoolbox='src && ros2 launch slam_toolbox online_async_launch.py \
 slam_params_file:=${HOME}/sirius_jazzy_ws/params/mapper_params_online_async_sim.yaml \
 use_sim_time:=true'
 
-# Sensor Fusion起動
-alias sf='src && ros2 launch sirius_navigation sensor_fusion.launch.py'
+# Sensor Fusion起動(シミュレーション)
+alias sf_sim='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_sim_time:=true'
+alias sf='sf_sim'
 
-# Sensor Fusion + IMU起動
-alias sfimu='src && ros2 launch sirius_navigation sensor_fusion.launch.py start_hwt905:=true'
+# Sensor Fusion + IMU起動(シミュレーション)
+alias sfimu_sim='src && ros2 launch sirius_navigation sensor_fusion.launch.py start_hwt905:=true use_sim_time:=true'
+alias sfimu='sfimu_sim'
 
 # TAB: Pythonスクリプト
 # GROUP: Pythonスクリプト
@@ -132,6 +137,9 @@ alias get_pos_ent='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_ent.sh'
 
 # マップ保存起動
 alias map_save='bash ~/sirius_jazzy_ws/bash/startup_bash/map_save.sh'
+
+# Rviz2起動(実時間)
+alias rviz2real='src && ros2 launch sirius_description display.launch.py use_sim_time:=false'
 
 # マップ切り替え（Nav2実行中に地図を変更）
 alias change_map='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map.sh'
