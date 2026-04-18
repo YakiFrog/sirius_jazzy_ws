@@ -49,7 +49,7 @@ alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
 alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
 
 # Unity上のZEDカメラのトピックをROS2に流す
-alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py'
+alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
 
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
@@ -117,6 +117,9 @@ use_sim_time:=false'
 
 # Sensor Fusion起動(実時間)
 alias sf_real='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_sim_time:=false'
+
+# SAM3 ZEDカメラのトピックをROS2に流す(実時間)
+alias sam3_bridge_real='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=false'
 
 # ウェイポイントナビゲーション起動
 alias mv_goal='bash ~/sirius_jazzy_ws/bash/startup_bash/move_goal.sh'
