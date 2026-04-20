@@ -109,7 +109,7 @@ global_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan
+        observation_sources: scan sam3_obstacles
         scan:
           topic: /scan3
           max_obstacle_height: 2.0
@@ -122,6 +122,17 @@ global_costmap:
           obstacle_min_range: 0.0
           expected_update_rate: 1.0
           observation_persistence: 0.0
+        sam3_obstacles:
+          enabled: true                 # このセンサーソースを有効にするか（true=有効）
+          data_type: PointCloud2        # データの種類（点群。sam3_zed_serverから配信される形式）
+          topic: /sam3/obstacles        # 購読するトピック名
+          marking: true                 # 観測した場所を「障害物あり」としてコストマップに書き込むか
+          clearing: true                # センサーが透過した場所を「障害物なし（空き地）」として消去するか
+          obstacle_range: 5.0           # 障害物として認識する最大距離（メートル）
+          min_obstacle_height: -0.1     # 障害物として認識する最小の高さ（最近の変更にあわせて -0.1）
+          max_obstacle_height: 2.0      # 障害物として認識する最大の高さ
+          expected_update_rate: 0.0     # 期待される更新頻度
+          observation_persistence: 3.0  # 残像の時間（秒）
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0 # ここをゆるくしておかないと、頑張れば通れそうなところで立ち往生しちゃう。
@@ -199,17 +210,17 @@ local_costmap:
         map_save_duration: 60.0 # マップの自動保存間隔（秒）、デフォルトは60秒
         observation_sources: velodyne_points sam3_obstacles
         sam3_obstacles:
-            enabled: true
-            data_type: PointCloud2
-            topic: /sam3/obstacles
-            marking: true
-            clearing: true
-            obstacle_range: 5.0
-            min_obstacle_height: 0.1
-            max_obstacle_height: 2.0
-            expected_update_rate: 0.0
-            observation_persistence: 0.0
-            voxel_filter: false
+            enabled: true                 # このセンサーソースを有効にするか（true=有効）
+            data_type: PointCloud2        # データの種類（点群。sam3_zed_serverから配信される形式）
+            topic: /sam3/obstacles        # 購読するトピック名
+            marking: true                 # 観測した場所を「障害物あり」としてコストマップに書き込むか
+            clearing: true                # センサーが透過した場所を「障害物なし（空き地）」として消去するか
+            obstacle_range: 5.0           # 障害物として認識する最大距離（メートル）
+            min_obstacle_height: -0.1      # 障害物として認識する最小の高さ（地面のノイズ除去用）
+            max_obstacle_height: 2.0      # 障害物として認識する最大の高さ（天井などを無視する用）
+            expected_update_rate: 0.0     # 期待される更新頻度（0.0はチェックなし）
+            observation_persistence: 3.0  # 観測情報を保持する時間（秒）。数値が大きいほど「残像」が残る
+            voxel_filter: false           # ボクセルフィルタ（軽量化）を適用するか
         velodyne_points:
             enabled: true
             data_type: PointCloud2
