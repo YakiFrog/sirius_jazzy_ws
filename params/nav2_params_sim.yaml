@@ -128,11 +128,11 @@ global_costmap:
           topic: /sam3/obstacles        # 購読するトピック名
           marking: true                 # 観測した場所を「障害物あり」としてコストマップに書き込むか
           clearing: true                # センサーが透過した場所を「障害物なし（空き地）」として消去するか
-          obstacle_range: 5.0           # 障害物として認識する最大距離（メートル）
+          obstacle_range: 10.0           # 障害物として認識する最大距離（メートル）
           min_obstacle_height: -0.1     # 障害物として認識する最小の高さ（最近の変更にあわせて -0.1）
           max_obstacle_height: 2.0      # 障害物として認識する最大の高さ
           expected_update_rate: 0.0     # 期待される更新頻度
-          observation_persistence: 3.0  # 残像の時間（秒）
+          observation_persistence: 6.0  # 残像の時間（秒）
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0 # ここをゆるくしておかないと、頑張れば通れそうなところで立ち往生しちゃう。
@@ -180,8 +180,8 @@ local_costmap:
       global_frame: sirius3/odom # ✅ 短距離・リアルタイム制御用, MapだとAMCLのジャンプで軌道が乱れる
       robot_base_frame: sirius3/base_footprint
       rolling_window: true
-      width: 5
-      height: 5
+      width: 7
+      height: 7
       resolution: 0.05
       # footprint: "[ [0.30, 0.30], [0.30, -0.30], [-0.50, -0.30], [-0.50, 0.30] ]" # ロボットの形状（ぴったりサイズ）
       footprint: "[ [0.40, 0.30], [0.40, -0.30], [-0.60, -0.30], [-0.60, 0.30] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
@@ -215,11 +215,11 @@ local_costmap:
             topic: /sam3/obstacles        # 購読するトピック名
             marking: true                 # 観測した場所を「障害物あり」としてコストマップに書き込むか
             clearing: true                # センサーが透過した場所を「障害物なし（空き地）」として消去するか
-            obstacle_range: 5.0           # 障害物として認識する最大距離（メートル）
+            obstacle_range: 7.0           # 障害物として認識する最大距離（メートル）
             min_obstacle_height: -0.1      # 障害物として認識する最小の高さ（地面のノイズ除去用）
             max_obstacle_height: 2.0      # 障害物として認識する最大の高さ（天井などを無視する用）
             expected_update_rate: 0.0     # 期待される更新頻度（0.0はチェックなし）
-            observation_persistence: 3.0  # 観測情報を保持する時間（秒）。数値が大きいほど「残像」が残る
+            observation_persistence: 6.0  # 観測情報を保持する時間（秒）。数値が大きいほど「残像」が残る
             voxel_filter: false           # ボクセルフィルタ（軽量化）を適用するか
         velodyne_points:
             enabled: true
