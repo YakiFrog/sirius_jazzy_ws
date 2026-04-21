@@ -141,31 +141,15 @@ PYEOF
         echo "ERROR: 3Dマップの保存に失敗しました。RTAB-Mapが停止しているか、局在化していない可能性があります。"
     fi
 
-    # 3. カラーインデックス地図の保存トリガー
-    echo "[3/3] カラーインデックス地図 (GIF-Quantized PGM) を保存中..."
-    COLOR_MAP_NAME="rtabmap_$map_name"
-    # より確実にトピックを届けるためのループ
-    echo "  -> 保存リクエストを送信中..."
-    for i in {1..5}; do
-        ros2 topic pub --once /sam3/save_indexed_map std_msgs/msg/String "{data: '$COLOR_MAP_NAME'}" > /dev/null 2>&1
-        sleep 0.2
-    done
+    # 3. カラー地図の生成 (ポストプロセシング)
+    echo "[3/3] カラー地図を生成中 (PGM + PLY 統合)..."
+    COLORIZER_SCRIPT="$HOME/sirius_jazzy_ws/src/sirius/sirius_navigation/sirius_navigation/sam3_map_colorizer.py"
+    MAP_BASE_PATH="$MAP_DIR/rtabmap_$map_name"
     
-    # K-Meansに時間がかかるため待機。進捗を確認しながら最大30秒待つ
-    echo "  -> カラー量子化(K-Means)および保存プロセスを待機中 (最大30秒)..."
-    count=0
-    while [ $count -lt 30 ]; do
-        if [ -f "$MAP_DIR/${COLOR_MAP_NAME}.pgm" ]; then
-            echo "SUCCESS: カラーインデックス地図を保存しました: $MAP_DIR/${COLOR_MAP_NAME}.pgm"
-            break
-        fi
-        sleep 1
-        count=$((count+1))
-        [ $((count % 5)) -eq 0 ] && echo "     ...待機中 ($count秒 経過)"
-    done
-
-    if [ ! -f "$MAP_DIR/${COLOR_MAP_NAME}.pgm" ]; then
-        echo "WARNING: PGM地図の生成に失敗しました（タイムアウト、またはノードが立ち上がっていない可能性があります）。"
+    if [ -f "$COLORIZER_SCRIPT" ]; then
+        python3 "$COLORIZER_SCRIPT" "$MAP_BASE_PATH"
+    else
+        echo "エラー: 着色スクリプトが見つかりません: $COLORIZER_SCRIPT"
     fi
     
     echo "------------------------------------------------"
