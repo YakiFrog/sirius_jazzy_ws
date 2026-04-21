@@ -56,6 +56,9 @@ alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py us
 
 # RTAB-MAP, sam3_bridgeも起動する
 alias rtab_bridge='src && ros2 launch sirius_navigation sam3_rtabmap.launch.py use_sim_time:=true'
+
+alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
+
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
 
@@ -139,6 +142,7 @@ alias get_pos_ent='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_ent.sh'
 
 # マップ保存起動
 alias map_save='bash ~/sirius_jazzy_ws/bash/startup_bash/map_save.sh'
+
 alias rtabmap_save='bash ~/sirius_jazzy_ws/bash/startup_bash/rtabmap_save.sh'
 
 # Rviz2起動(実時間)
@@ -152,4 +156,4 @@ alias record_rosbag='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag.sh'
 
 # # マップ切り替え（プログラム呼び出し用、引数に地図名を指定）
 # # 例: change_map_simple 1202-15f
-# alias change_map_simple='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map_simple.sh'
+# alias change_map_simple='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map_simple.sh'alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
