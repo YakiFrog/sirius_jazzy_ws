@@ -31,7 +31,7 @@ while : ;do
 
     # 1. 2Dグリッドマップの保存
     echo "[1/3] 2Dグリッドマップ (Nav2形式) を保存中..."
-    ros2 run nav2_map_server map_saver_cli -f "$MAP_DIR/rtabmap_$map_name" --ros-args -r map:=/rtabmap/grid_map
+    ros2 run nav2_map_server map_saver_cli -f "$MAP_DIR/rtabmap_$map_name" --ros-args -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
     
     # 2. 3D点群マップの保存 (トピック /rtabmap/cloud_map から直接保存)
     echo "[2/3] 3D点群マップ (PLY/Color) を保存中..."
