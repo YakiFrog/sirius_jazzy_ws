@@ -54,6 +54,8 @@ alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.
 # Unity上のZEDカメラのトピックをROS2に流す
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
 
+# RTAB-MAP, sam3_bridgeも起動する
+alias rtab_bridge='src && ros2 launch sirius_navigation sam3_rtabmap.launch.py use_sim_time:=true'
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
 
@@ -137,6 +139,7 @@ alias get_pos_ent='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_ent.sh'
 
 # マップ保存起動
 alias map_save='bash ~/sirius_jazzy_ws/bash/startup_bash/map_save.sh'
+alias rtabmap_save='bash ~/sirius_jazzy_ws/bash/startup_bash/rtabmap_save.sh'
 
 # Rviz2起動(実時間)
 alias rviz2real='src && ros2 launch sirius_description display.launch.py use_sim_time:=false'
