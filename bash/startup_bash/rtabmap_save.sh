@@ -61,8 +61,9 @@ class CloudToPly(Node):
         self.subscription = self.create_subscription(PointCloud2, self.topic_name, self.listener_callback, qos_profile)
         self.get_logger().info(f'Waiting for {self.topic_name} to save to {self.output_path} (Timeout: 10s)...')
         
-        # Add a timeout timer to exit if no message arrives
-        self.timer = self.create_timer(10.0, self.timeout_callback)
+        # Use Steady Clock (Wall Time) for the timeout to avoid issues with Sim Time jumps
+        from rclpy.clock import Clock, ClockType
+        self.timer = self.create_timer(10.0, self.timeout_callback, clock=Clock(clock_type=ClockType.STEADY_TIME))
 
     def timeout_callback(self):
         self.get_logger().error(f'Timeout: No message received on {self.topic_name} after 10 seconds.')
