@@ -55,7 +55,7 @@ alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
 
 # RTAB-MAP, sam3_bridgeも起動する
-alias rtab_bridge='src && ros2 launch sirius_navigation sam3_rtabmap.launch.py use_sim_time:=true'
+alias rtab_bridge='src && ros2 launch sirius_navigation sam3_rtabmap.launch.py use_sim_time:=true include_background:=true'
 
 alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
 
