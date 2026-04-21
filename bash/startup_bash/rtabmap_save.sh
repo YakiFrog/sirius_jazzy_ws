@@ -3,9 +3,9 @@ trap 'echo ""; echo "Ctrl + Cが押されましたが、ウィンドウは閉じ
 cd ~/sirius_jazzy_ws
 while : ;do
     echo "------------------------------------------------"
-    echo "RTAB-Map 保存スクリプト"
+    echo "RTAB-Map 統合保存スクリプト (Grid/PLY/Color)"
     echo "------------------------------------------------"
-    read -p "Press [Enter] key to start RTAB-Map save..."
+    read -p "Press [Enter] key to start export process..."
     
     # ROS環境の読み込み
     if [ -f "install/setup.bash" ]; then
@@ -25,31 +25,30 @@ while : ;do
 
     MAP_DIR="$HOME/sirius_jazzy_ws/maps_waypoints/maps"
     mkdir -p "$MAP_DIR"
+    
+    # 定義
+    PLY_OUT="$MAP_DIR/rtabmap_${map_name}.ply"
 
-    # 1. 2Dグリッドマップの保存 (/rtabmap/grid_map を指定)
-    echo "[1/2] 2Dグリッドマップを保存中..."
+    # 1. 2Dグリッドマップの保存
+    echo "[1/3] 2Dグリッドマップ (Nav2形式) を保存中..."
     ros2 run nav2_map_server map_saver_cli -f "$MAP_DIR/rtabmap_$map_name" --ros-args -r map:=/rtabmap/grid_map
     
-        # 3D点群マップの保存 (トピック /rtabmap/cloud_map から直接保存)
-        # これにより、RTAB-Mapによって最適化・フィルタリングされた「完成版」の点群が得られる
-        echo "[2/2] 3D点群マップ (PLY) をトピックから保存中..."
-        SAM3_PLY_OUT="$PLY_OUT" python3 << 'PYEOF'
+    # 2. 3D点群マップの保存 (トピック /rtabmap/cloud_map から直接保存)
+    echo "[2/3] 3D点群マップ (PLY/Color) を保存中..."
+    SAM3_PLY_OUT="$PLY_OUT" python3 << 'PYEOF'
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
-import struct, os, sys, math
+import struct, os, sys, math, numpy as np
 
 class CloudToPly(Node):
     def __init__(self, output_path):
         super().__init__('cloud_to_ply_saver')
-        # シミュレーション時間対応
         from rclpy.parameter import Parameter
         self.set_parameters([Parameter('use_sim_time', Parameter.Type.BOOL, True)])
-        
         self.output_path = output_path
         
-        # QoS設定: RTAB-Mapの地図トピックに合わせて Transient Local / Reliable にする
         from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy, HistoryPolicy
         qos_profile = QoSProfile(
             durability=DurabilityPolicy.TRANSIENT_LOCAL,
@@ -57,53 +56,48 @@ class CloudToPly(Node):
             history=HistoryPolicy.KEEP_LAST,
             depth=1
         )
-        
-        self.subscription = self.create_subscription(
-            PointCloud2,
-            '/cloud_map',
-            self.listener_callback,
-            qos_profile)
-        self.get_logger().info('Waiting for /cloud_map topic (Transient Local)...')
+        self.subscription = self.create_subscription(PointCloud2, '/cloud_map', self.listener_callback, qos_profile)
+        self.get_logger().info(f'Waiting for /cloud_map to save to {self.output_path}...')
 
     def listener_callback(self, msg):
-        self.get_logger().info(f'Received cloud with {msg.width * msg.height} points.')
+        self.get_logger().info(f'Received cloud: {msg.width * msg.height} points.')
+        
+        # Color field detection
+        fields = {f.name: f for f in msg.fields}
+        color_field = None
+        for cf in ["rgb", "rgba", "colors"]:
+            if cf in fields:
+                color_field = cf
+                break
         
         points = []
-        # フィールド: x, y, z, rgb (または rgba) を取得
-        fields = [f.name for f in msg.fields]
-        color_field = "rgb" if "rgb" in fields else ("rgba" if "rgba" in fields else None)
-        
-        if not color_field:
-            self.get_logger().warn("No color field (rgb/rgba) found in point cloud.")
-
         try:
-            for p in pc2.read_points(msg, field_names=("x", "y", "z", color_field) if color_field else ("x", "y", "z"), skip_nans=True):
+            # Efficiently read points
+            read_fields = ("x", "y", "z")
+            if color_field: read_fields += (color_field,)
+            
+            for p in pc2.read_points(msg, field_names=read_fields, skip_nans=True):
                 x, y, z = p[0], p[1], p[2]
+                if not (math.isfinite(x) and math.isfinite(y) and math.isfinite(z)): continue
                 
-                # 座標が有効か最終チェック
-                if not (math.isfinite(x) and math.isfinite(y) and math.isfinite(z)):
-                    continue
-
-                # 色データのデコード
-                r, g, b = 127, 127, 127 # デフォルト
+                r, g, b = 150, 150, 150 # Default gray
                 if color_field:
-                    rgb_val = p[3]
-                    if rgb_val is None or not math.isfinite(rgb_val):
-                        continue
-                        
-                    # PointCloud2のrgbはfloatとしてパックされている場合がある
-                    if isinstance(rgb_val, float):
-                        packed = struct.unpack('I', struct.pack('f', rgb_val))[0]
-                    else:
-                        packed = int(rgb_val)
-                    
-                    r = (packed >> 16) & 0xFF
-                    g = (packed >> 8) & 0xFF
-                    b = packed & 0xFF
-                
+                    val = p[3]
+                    # Robust Color Decoding (handling float/int packed variants)
+                    try:
+                        if isinstance(val, (float, np.float32)):
+                            packed = struct.unpack('I', struct.pack('f', val))[0]
+                        else:
+                            packed = int(val)
+                        # RTAB-Map convention: usually BGRA or RGBA in a 32-bit int
+                        # We try to extract R, G, B
+                        r = (packed >> 16) & 0xFF
+                        g = (packed >> 8) & 0xFF
+                        b = packed & 0xFF
+                    except: pass
                 points.append((x, y, z, r, g, b))
         except Exception as e:
-            self.get_logger().error(f"Error parsing points: {e}")
+            self.get_logger().error(f"Error: {e}")
             sys.exit(1)
 
         if points:
@@ -117,38 +111,40 @@ class CloudToPly(Node):
                 f.write(header.encode())
                 for (px, py, pz, pr, pg, pb) in points:
                     f.write(struct.pack('<fffBBB', px, py, pz, pr, pg, pb))
-            print(f'SUCCESS: Exported {len(points)} optimized points to {self.output_path}')
+            print(f'SUCCESS: Exported {len(points)} points with colors.')
+            sys.exit(0)
         else:
-            print('ERROR: Resulting point cloud is empty.')
             sys.exit(1)
-            
-        # キャプチャしたら終了
-        sys.exit(0)
 
 def main():
     rclpy.init()
-    ply_out = os.environ.get('SAM3_PLY_OUT', '/tmp/cloud.ply')
-    node = CloudToPly(ply_out)
-    try:
-        # トピックが来るまで最大30秒待機
-        rclpy.spin(node)
-    except SystemExit:
-        pass
-    except Exception as e:
-        print(f"Node execution error: {e}")
-    finally:
-        rclpy.shutdown()
+    node = CloudToPly(os.environ.get('SAM3_PLY_OUT', '/tmp/map.ply'))
+    try: rclpy.spin(node)
+    except SystemExit: pass
+    finally: rclpy.shutdown()
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__main__': main()
 PYEOF
 
     if [ -f "$PLY_OUT" ]; then
-        echo "SUCCESS: 3Dマップを保存しました: $PLY_OUT"
+        echo "SUCCESS: 3Dマップ (PLY) を保存しました: $PLY_OUT"
     else
-        echo "WARNING: 3Dマップの書き出しに失敗しました。"
+        echo "ERROR: 3Dマップの保存に失敗しました。RTAB-Mapが停止しているか、局在化していない可能性があります。"
+    fi
+
+    # 3. カラーインデックス地図の保存トリガー
+    echo "[3/3] カラーインデックス地図 (GIF-Quantized PGM) を保存中..."
+    COLOR_MAP_NAME="rtabmap_$map_name"
+    ros2 topic pub --once /sam3/save_indexed_map std_msgs/msg/String "{data: '$COLOR_MAP_NAME'}" > /dev/null 2>&1
+    
+    # K-Meansに時間がかかるため少し待機
+    sleep 2
+    if [ -f "$MAP_DIR/${COLOR_MAP_NAME}.pgm" ]; then
+        echo "SUCCESS: カラーインデックス地図を保存しました: $MAP_DIR/${COLOR_MAP_NAME}.pgm"
+    else
+        echo "WARNING: PGM地図の生成に失敗しました（ノードが立ち上がっていない可能性があります）。"
     fi
     
     echo "------------------------------------------------"
-    echo "保存プロセスが完了しました。"
+    echo "完了しました。RVizなどのプロセスはCtrl+Cで停止しないでください。"
 done

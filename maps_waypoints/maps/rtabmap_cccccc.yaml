@@ -1,7 +1,7 @@
-image: rtabmap_0421map.pgm
+image: rtabmap_cccccc.pgm
 mode: trinary
 resolution: 0.050
-origin: [-2.171, -6.098, 0]
+origin: [-0.988, -4.984, 0]
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196
