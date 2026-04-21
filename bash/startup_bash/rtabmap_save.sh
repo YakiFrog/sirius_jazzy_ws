@@ -56,8 +56,17 @@ class CloudToPly(Node):
             history=HistoryPolicy.KEEP_LAST,
             depth=1
         )
-        self.subscription = self.create_subscription(PointCloud2, '/cloud_map', self.listener_callback, qos_profile)
-        self.get_logger().info(f'Waiting for /cloud_map to save to {self.output_path}...')
+        # Try /cloud_map first, then /rtabmap/cloud_map if no publisher
+        self.topic_name = '/cloud_map'
+        self.subscription = self.create_subscription(PointCloud2, self.topic_name, self.listener_callback, qos_profile)
+        self.get_logger().info(f'Waiting for {self.topic_name} to save to {self.output_path} (Timeout: 10s)...')
+        
+        # Add a timeout timer to exit if no message arrives
+        self.timer = self.create_timer(10.0, self.timeout_callback)
+
+    def timeout_callback(self):
+        self.get_logger().error(f'Timeout: No message received on {self.topic_name} after 10 seconds.')
+        sys.exit(1)
 
     def listener_callback(self, msg):
         self.get_logger().info(f'Received cloud: {msg.width * msg.height} points.')
@@ -135,14 +144,28 @@ PYEOF
     # 3. カラーインデックス地図の保存トリガー
     echo "[3/3] カラーインデックス地図 (GIF-Quantized PGM) を保存中..."
     COLOR_MAP_NAME="rtabmap_$map_name"
-    ros2 topic pub --once /sam3/save_indexed_map std_msgs/msg/String "{data: '$COLOR_MAP_NAME'}" > /dev/null 2>&1
+    # より確実にトピックを届けるためのループ
+    echo "  -> 保存リクエストを送信中..."
+    for i in {1..5}; do
+        ros2 topic pub --once /sam3/save_indexed_map std_msgs/msg/String "{data: '$COLOR_MAP_NAME'}" > /dev/null 2>&1
+        sleep 0.2
+    done
     
-    # K-Meansに時間がかかるため少し待機
-    sleep 2
-    if [ -f "$MAP_DIR/${COLOR_MAP_NAME}.pgm" ]; then
-        echo "SUCCESS: カラーインデックス地図を保存しました: $MAP_DIR/${COLOR_MAP_NAME}.pgm"
-    else
-        echo "WARNING: PGM地図の生成に失敗しました（ノードが立ち上がっていない可能性があります）。"
+    # K-Meansに時間がかかるため待機。進捗を確認しながら最大30秒待つ
+    echo "  -> カラー量子化(K-Means)および保存プロセスを待機中 (最大30秒)..."
+    count=0
+    while [ $count -lt 30 ]; do
+        if [ -f "$MAP_DIR/${COLOR_MAP_NAME}.pgm" ]; then
+            echo "SUCCESS: カラーインデックス地図を保存しました: $MAP_DIR/${COLOR_MAP_NAME}.pgm"
+            break
+        fi
+        sleep 1
+        count=$((count+1))
+        [ $((count % 5)) -eq 0 ] && echo "     ...待機中 ($count秒 経過)"
+    done
+
+    if [ ! -f "$MAP_DIR/${COLOR_MAP_NAME}.pgm" ]; then
+        echo "WARNING: PGM地図の生成に失敗しました（タイムアウト、またはノードが立ち上がっていない可能性があります）。"
     fi
     
     echo "------------------------------------------------"
