@@ -67,6 +67,17 @@ install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}
 )
 
+# Executable for version 2 (Twist Mux mode)
+add_executable(sirius_keyop_v2 src/sirius_keyop_v2.cpp)
+ament_target_dependencies(sirius_keyop_v2
+  "geometry_msgs"
+  "rclcpp"
+)
+
+install(TARGETS sirius_keyop_v2
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )

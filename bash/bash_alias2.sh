@@ -89,6 +89,12 @@ use_sim_time:=true'
 alias sf_sim='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_sim_time:=true'
 alias sf='sf_sim'
 
+# 優先順位制御（twist_mux）起動
+alias twist_mux='src && ros2 launch sirius_navigation twist_mux.launch.py'
+
+# 手動操作 V2（優先順位対応版）
+alias keyop2='src && ros2 run sirius_keyop sirius_keyop_v2'
+
 # Sensor Fusion + IMU起動(シミュレーション)
 alias sfimu_sim='src && ros2 launch sirius_navigation sensor_fusion.launch.py start_hwt905:=true use_sim_time:=true'
 alias sfimu='sfimu_sim'
