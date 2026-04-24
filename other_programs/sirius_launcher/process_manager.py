@@ -74,7 +74,7 @@ class ProcessManager:
         try:
             # 効率化のため最後の方だけ読むのではなく、grepでチェック
             # ROS2の標準的なエラー表示 [ERROR], [FATAL] または Pythonの Traceback
-            error_keywords = ["[ERROR]", "[FATAL]", "Traceback (most recent call last):", "error:"]
+            error_keywords = ["[ERROR]", "[FATAL]", "Traceback (most recent call last):"]
             with open(self.log_file, 'r', errors='ignore') as f:
                 # ファイルが大きくなりすぎる可能性を考慮し、最後から64KB程度をチェック
                 f.seek(0, os.SEEK_END)
