@@ -18,6 +18,7 @@ class ProcessManager:
         self.command = command
         self.process = None
         self.pid_file = f"/tmp/sirius_launcher_{name}.pid"
+        self.log_file = f"/tmp/sirius_launcher_{name}.log"
         self.tab_title = name
         self.script_path = None
         self.pid_file_content = None
@@ -25,6 +26,10 @@ class ProcessManager:
     def launch(self):
         """コマンドを新しいターミナルタブで起動"""
         try:
+            # ログファイルを初期化
+            if os.path.exists(self.log_file):
+                os.remove(self.log_file)
+            
             # 一時スクリプトファイルを作成
             script_fd, self.script_path = tempfile.mkstemp(suffix='.sh', prefix='sirius_launcher_')
             
@@ -45,7 +50,8 @@ class ProcessManager:
                 f.write(f'echo $BASHPID > {self.pid_file}\n')
                 f.write(f'export PS1="[{self.tab_title}] $ "\n')
                 f.write(f'echo -ne "\\033]0;{self.tab_title}\\007"\n')
-                f.write(f'{self.command}\n')
+                # ログに出力内容を保存しながら実行
+                f.write(f'{self.command} 2>&1 | tee {self.log_file}\n')
             
             os.chmod(self.script_path, 0o755)
             
@@ -59,6 +65,29 @@ class ProcessManager:
         except Exception as e:
             print(f"起動エラー: {e}")
             return False
+
+    def check_for_errors(self):
+        """ログファイルからエラーをチェック"""
+        if not os.path.exists(self.log_file):
+            return False
+        
+        try:
+            # 効率化のため最後の方だけ読むのではなく、grepでチェック
+            # ROS2の標準的なエラー表示 [ERROR], [FATAL] または Pythonの Traceback
+            error_keywords = ["[ERROR]", "[FATAL]", "Traceback (most recent call last):", "error:"]
+            with open(self.log_file, 'r', errors='ignore') as f:
+                # ファイルが大きくなりすぎる可能性を考慮し、最後から64KB程度をチェック
+                f.seek(0, os.SEEK_END)
+                size = f.tell()
+                f.seek(max(0, size - 65536))
+                content = f.read()
+                
+                for kw in error_keywords:
+                    if kw in content:
+                        return True
+        except Exception as e:
+            print(f"エラーチェック中エラー: {e}")
+        return False
     
     def load_pid(self, retry_count=0):
         """PIDファイルからプロセスIDを読み込む"""

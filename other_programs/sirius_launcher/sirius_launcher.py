@@ -42,6 +42,8 @@ class LaunchButton(LaunchButtonUI):
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_process_status)
         self.timer.start(1000)
+        
+        self.has_error = False
         # イベントフィルタをインストールして、ウィジェット全体のクリックを捕まえる
         self.installEventFilter(self)
         # 子ウィジェットにもフィルタをインストール
@@ -91,9 +93,14 @@ class LaunchButton(LaunchButtonUI):
     def check_process_status(self):
         """プロセスの状態を定期的にチェック"""
         is_running = self.process_manager.is_running()
-        current_state = self.launch_btn.isEnabled() == False
-        if is_running != current_state:
-            self.update_status(is_running)
+        self.has_error = self.process_manager.check_for_errors() if is_running else False
+        
+        self.update_status(is_running, self.has_error)
+        
+        # メインウィンドウに通知してタブの状態を更新させる
+        main_win = self.window()
+        if hasattr(main_win, 'update_tab_error_status'):
+            main_win.update_tab_error_status()
 
     def select_tab(self):
         """この項目があるタブを選択する"""
@@ -125,6 +132,7 @@ class SiriusLauncher(QMainWindow):
         self.buttons = []
         self.button_map = {}
         self.presets = []
+        self.original_tab_names = {} # index -> name
         self.setup_ui()
         self.load_aliases()
     
@@ -163,12 +171,14 @@ class SiriusLauncher(QMainWindow):
             self.add_preset_button(preset_name, items)
 
         # タブ名リスト（ui_components.pyのデフォルトと合わせる）
-        tab_names = ["センサー・ハードウェア", "シミュレーション", "ユーティリティ", "ナビゲーション", "Pythonスクリプト", "Sirius Ear関連"]
+        tab_names_list = ["センサー・ハードウェア", "シミュレーション", "ユーティリティ", "ナビゲーション", "Pythonスクリプト", "Sirius Ear関連"]
+        for i, name in enumerate(tab_names_list):
+            self.original_tab_names[i] = name
 
         # 通常のボタンを作成（タブごとにグループ追加）
         for i, (group_name, aliases) in enumerate(groups.items()):
             if aliases:
-                tab_name = tab_names[i] if i < len(tab_names) else tab_names[0]
+                tab_name = tab_names_list[i] if i < len(tab_names_list) else tab_names_list[0]
                 group_layout, group_widget = self.add_group(group_name, tab_name)
                 for alias_name, command, description in aliases:
                     self.add_button(group_layout, alias_name, command, description, group_widget)
@@ -214,6 +224,32 @@ class SiriusLauncher(QMainWindow):
         layout.addWidget(button)
         self.buttons.append(button)
         self.button_map[name] = button
+
+    def update_tab_error_status(self):
+        """全てのタブのエラー状況をスキャンして表示を更新"""
+        tab_errors = {} # index -> bool
+        
+        # 各タブにエラーがあるかチェック
+        for button in self.buttons:
+            if button.tab_index is not None:
+                if button.tab_index not in tab_errors:
+                    tab_errors[button.tab_index] = False
+                if button.has_error:
+                    tab_errors[button.tab_index] = True
+        
+        # タブの表示（テキスト）を更新
+        for idx, original_name in self.original_tab_names.items():
+            if idx < self.tab_widget.count():
+                has_error = tab_errors.get(idx, False)
+                current_text = self.tab_widget.tabText(idx)
+                
+                if has_error:
+                    new_text = "⚠️ " + original_name
+                    if current_text != new_text:
+                        self.tab_widget.setTabText(idx, new_text)
+                else:
+                    if current_text != original_name:
+                        self.tab_widget.setTabText(idx, original_name)
 
 
 def main():

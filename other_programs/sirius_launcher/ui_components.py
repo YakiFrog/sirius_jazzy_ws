@@ -48,12 +48,15 @@ class LaunchButtonUI(QWidget):
         self.stop_btn.setEnabled(False)
         layout.addWidget(self.stop_btn)
     
-    def update_status(self, is_running):
+    def update_status(self, is_running, has_error=False):
         """ステータス表示を更新"""
         self.launch_btn.setEnabled(not is_running)
         self.stop_btn.setEnabled(is_running)
         
-        if is_running:
+        if has_error:
+            self.status_label.setStyleSheet("color: #dc3545; font-size: 16px; font-weight: bold;") # 赤
+            self.status_label.setText("!")
+        elif is_running:
             self.status_label.setStyleSheet("color: #28a745; font-size: 16px;")  # 緑
             self.status_label.setText("●")
         else:
