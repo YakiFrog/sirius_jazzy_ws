@@ -106,11 +106,17 @@ class MainWindowUI:
         if tab_names is None:
             tab_names = ["センサー・ハードウェア", "シミュレーション", "ユーティリティ", "ナビゲーション", "Pythonスクリプト", "Sirius Ear関連"]
         for tab_name in tab_names:
-            tab = QWidget()
-            tab_layout = QVBoxLayout(tab)
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setFrameShape(QFrame.NoFrame)
+            
+            tab_content = QWidget()
+            tab_layout = QVBoxLayout(tab_content)
             tab_layout.setContentsMargins(10, 10, 10, 10)
             tab_layout.setSpacing(5)
-            tab_widget.addTab(tab, tab_name)
+            
+            scroll.setWidget(tab_content)
+            tab_widget.addTab(scroll, tab_name)
             tab_layouts[tab_name] = tab_layout
 
         main_layout.addWidget(tab_widget)

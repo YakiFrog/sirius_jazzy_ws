@@ -203,7 +203,13 @@ class SiriusLauncher(QMainWindow):
         """ボタンを追加"""
         tab_index = None
         if group_widget is not None and self.tab_widget is not None:
-            tab_index = self.tab_widget.indexOf(group_widget.parentWidget())
+            # 親を辿ってTabのインデックスを探す（ScrollArea導入に対応）
+            parent = group_widget.parentWidget()
+            while parent:
+                tab_index = self.tab_widget.indexOf(parent)
+                if tab_index >= 0:
+                    break
+                parent = parent.parentWidget()
         button = LaunchButton(name, command, description, tab_widget=self.tab_widget, tab_index=tab_index)
         layout.addWidget(button)
         self.buttons.append(button)
