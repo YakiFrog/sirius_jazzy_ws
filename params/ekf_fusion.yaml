@@ -1,6 +1,6 @@
 ### EKF Sensor Fusion Configuration (HWT905 AHRS対応版) ###
 # HWT905 IMU（姿勢計算済みAHRS）とオドメトリを融合して自己位置推定
-ekf_filter_node:
+ekf_node:
   ros__parameters:
     use_sim_time: true
     
