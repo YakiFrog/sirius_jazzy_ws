@@ -53,14 +53,11 @@ alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.
 
 # Unity上のZEDカメラのトピックをROS2に流す
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
-<<<<<<< HEAD
 
 # RTAB-MAP, sam3_bridgeも起動する
 alias rtab_bridge='src && ros2 launch sirius_navigation sam3_rtabmap.launch.py use_sim_time:=true include_background:=true'
 
 alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
-=======
->>>>>>> 654ac6c6105b712ccbba49dfe07a69850f3136f4
 
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
@@ -99,15 +96,12 @@ use_sim_time:=true'
 alias sf_sim='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_sim_time:=true'
 alias sf='sf_sim'
 
-<<<<<<< HEAD
 # 優先順位制御（twist_mux）起動
 alias twist_mux='src && ros2 launch sirius_navigation twist_mux.launch.py'
 
 # 手動操作 V2（優先順位対応版）
 alias keyop2='src && ros2 run sirius_keyop sirius_keyop_v2'
 
-=======
->>>>>>> 654ac6c6105b712ccbba49dfe07a69850f3136f4
 # Sensor Fusion + IMU起動(シミュレーション)
 alias sfimu_sim='src && ros2 launch sirius_navigation sensor_fusion.launch.py start_hwt905:=true use_sim_time:=true'
 alias sfimu='sfimu_sim'
@@ -162,11 +156,8 @@ alias get_pos_ent='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_ent.sh'
 # マップ保存起動
 alias map_save='bash ~/sirius_jazzy_ws/bash/startup_bash/map_save.sh'
 
-<<<<<<< HEAD
 alias rtabmap_save='bash ~/sirius_jazzy_ws/bash/startup_bash/rtabmap_save.sh'
 
-=======
->>>>>>> 654ac6c6105b712ccbba49dfe07a69850f3136f4
 # Rviz2起動(実時間)
 alias rviz2real='src && ros2 launch sirius_description display.launch.py use_sim_time:=false'
 
