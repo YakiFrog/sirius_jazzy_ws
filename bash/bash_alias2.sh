@@ -68,7 +68,7 @@ sudo apt install ros-jazzy-rqt-tf-tree -y && \
 sudo apt-get install libqt5serialport5-dev'
 
 # Behavior Tree 可視化ツール Groot2 起動
-alias groot2='/home/kotantu-desktop/Groot2/groot2.sh'
+alias groot2='$HOME/Groot2/groot2.sh'
 
 # Behavior Tree Docker 操作
 alias bt_start='xhost +local:docker > /dev/null 2>&1 && cd ~/sirius_jazzy_ws/bt_jazzy_docker && docker compose run --rm --name bt_dev_container bt_dev'
