@@ -106,7 +106,7 @@ global_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan sam3_cloud
+        observation_sources: scan #sam3_cloud
         scan:
           topic: /scan3
           max_obstacle_height: 2.0
@@ -232,7 +232,7 @@ local_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan sam3_cloud
+        observation_sources: scan #sam3_cloud
         scan:
           topic: /hokuyo_scan
           max_obstacle_height: 2.0
