@@ -74,6 +74,13 @@ alias groot2='$HOME/Groot2/groot2.sh'
 alias bt_start='xhost +local:docker > /dev/null 2>&1 && cd ~/sirius_jazzy_ws/bt_jazzy_docker && docker compose run --rm --name bt_dev_container bt_dev'
 alias bt_enter='docker exec -it bt_dev_container bash'
 
+# SAM3 Dockerサーバー起動（ZEDなし）ポート8000
+alias sam3_docker_start='cd ~/DA3_SAM3_Project/sam3_da3_3d/sam3_server_export && docker compose up sam3-server'
+
+# SAM3 + ZED Dockerサーバー起動 ポート8080
+alias sam3_zed_docker_start='cd ~/DA3_SAM3_Project/sam3_da3_3d/sam3_server_export && docker compose up sam3-zed-merged'
+
+
 # TAB: ナビゲーション
 # GROUP: ナビゲーション
 

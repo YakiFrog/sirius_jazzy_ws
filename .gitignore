@@ -6,3 +6,7 @@ install
 satellite
 
 .fakeother_programs/pgm_to_sdf/output/
+
+__pycache__/
+*.pyc
+*.pyo
