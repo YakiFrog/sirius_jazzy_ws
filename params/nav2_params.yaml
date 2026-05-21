@@ -462,7 +462,7 @@ bt_navigator:
     robot_base_frame: sirius3/base_footprint
     odom_topic: /odom/filtered # EKFセンサフュージョン後のオドメトリを使用
     bt_loop_duration: 10
-    default_server_timeout: 20
+    default_server_timeout: 1000
     wait_for_service_timeout: 1000
     action_server_result_timeout: 900.0
     navigators: ["navigate_to_pose", "navigate_through_poses"]
