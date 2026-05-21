@@ -34,7 +34,6 @@ Found 1 Solix device(s):
 ./run.sh --mac XX:XX:XX:XX:XX:XX
 ```
 5秒おきにステータス（バッテリー残量 %、AC/DC 出力、入力電力、温度など）を自動更新して表示します。
-
 ```
 2台目のバッテリーの MAC Address: F4:9D:8A:57:90:E8
 1台目のバッテリーの MAC Address: 
