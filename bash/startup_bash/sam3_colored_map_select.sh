@@ -6,7 +6,6 @@ if [ -f "$HOME/sirius_jazzy_ws/install/setup.bash" ]; then
 else
     source /opt/ros/jazzy/setup.bash
 fi
-export ROS_DOMAIN_ID=56
 
 MAP_DIR="$HOME/sirius_jazzy_ws/maps_waypoints/maps"
 

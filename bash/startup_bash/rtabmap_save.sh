@@ -13,7 +13,6 @@ while : ;do
     else
         source /opt/ros/jazzy/setup.bash
     fi
-    export ROS_DOMAIN_ID=56
 
     echo "保存するマップ名を入力してください (例: my_map): "
     read map_name
