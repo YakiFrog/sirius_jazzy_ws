@@ -4,7 +4,15 @@ import sys  # システム関連
 import argparse  # コマンドライン引数解析
 import logging  # ロギング
 from bleak import BleakScanner  # BLEスキャナ
-from SolixBLE import C300, discover_devices  # Anker SOLIX C300用BLEライブラリ
+from SolixBLE import C300, discover_devices, LightStatus, DisplayTimeout  # Anker SOLIX C300用BLEライブラリとステータス
+from SolixBLE.device import SolixBLEDevice
+
+# C300の再接続時に暗号化交渉状態が正しくリセットされないバグを修正するモンキーパッチ
+original_reset_session = SolixBLEDevice._reset_session
+def patched_reset_session(self, reset_data=True):
+    original_reset_session(self, reset_data)
+    self._c300_negotiated = False
+SolixBLEDevice._reset_session = patched_reset_session
 
 async def scan_solix_devices(timeout=10):
     """
@@ -30,12 +38,44 @@ async def scan_solix_devices(timeout=10):
         print(f"Error during BLE scanning: {e}", file=sys.stderr)
         return []
 
-async def monitor_device(mac_address, interval=5, single_shot=False):
+async def wake_device(power_station):
+    """
+    デバイスを目覚めさせるために、複数の方法（画面ON、ライト点滅など）を試みる関数
+    """
+    print("Attempting to wake device via display ON command...")
+    try:
+        await power_station.turn_display_on()
+        print("Display ON command sent successfully.")
+    except Exception as e:
+        print(f"Warning: Failed to send Display ON command: {e}", file=sys.stderr)
+        
+    await asyncio.sleep(1)
+    
+    # LEDライトを点滅させることで、内蔵マイコンを強制的にアクティブにさせる試み
+    try:
+        print("Toggling LED light bar to force wake microcontroller...")
+        await power_station.set_light_mode(LightStatus.LOW)
+        await asyncio.sleep(1)
+        await power_station.set_light_mode(LightStatus.OFF)
+        print("LED light toggled successfully.")
+    except Exception as e:
+        print(f"Warning: Failed to toggle LED light bar: {e}", file=sys.stderr)
+
+    print("Waiting 5 seconds for telemetry subsystem to boot up...")
+    await asyncio.sleep(4)
+
+async def monitor_device(mac_address, interval=5, single_shot=False, display=None, ac=None, dc=None, light=None, timeout=None, auto_wake=False):
     """
     指定したMACアドレスのSOLIX C300に接続し、状態を監視する関数
     :param mac_address: 接続するデバイスのMACアドレス
     :param interval: 更新間隔（秒）
     :param single_shot: 1回だけ取得して終了する場合はTrue
+    :param display: ディスプレイ制御 ('on' または 'off')
+    :param ac: AC出力制御 ('on' または 'off')
+    :param dc: DC出力制御 ('on' または 'off')
+    :param light: ライトモード設定 ('off', 'low', 'medium', 'high', 'sos')
+    :param timeout: 自動消灯時間 (20, 30, 60, 300, 1800)
+    :param auto_wake: タイムアウトエラー時に自動ディスプレイONによる復旧を試みる
     """
     print(f"Scanning to resolve BLE Device with address {mac_address}...")
     ble_device = await BleakScanner.find_device_by_address(mac_address, timeout=5.0)  # BLEデバイスをスキャン
@@ -73,8 +113,52 @@ async def monitor_device(mac_address, interval=5, single_shot=False):
         if not await power_station.connect():  # BLE接続と鍵交換
             print("Failed to connect/negotiate with the device. Exiting.")
             return
-        print("Connected successfully! Waiting for initial telemetry data...")
-        
+        print("Connected successfully!")
+
+        # コマンドの送信処理
+        if display is not None:
+            if display == "on":
+                print("Sending command: Turn Display ON")
+                await power_station.turn_display_on()
+            elif display == "off":
+                print("Sending command: Turn Display OFF")
+                await power_station.turn_display_off()
+
+        if ac is not None:
+            if ac == "on":
+                print("Sending command: Turn AC Output ON")
+                await power_station.turn_ac_on()
+            elif ac == "off":
+                print("Sending command: Turn AC Output OFF")
+                await power_station.turn_ac_off()
+
+        if dc is not None:
+            if dc == "on":
+                print("Sending command: Turn DC Output ON")
+                await power_station.turn_dc_on()
+            elif dc == "off":
+                print("Sending command: Turn DC Output OFF")
+                await power_station.turn_dc_off()
+
+        if light is not None:
+            try:
+                light_enum = LightStatus[light.upper()]
+                print(f"Sending command: Set Light Mode to {light_enum.name}")
+                await power_station.set_light_mode(light_enum)
+            except KeyError:
+                print(f"Error: Invalid light mode '{light}'. Choose from: off, low, medium, high, sos", file=sys.stderr)
+
+        if timeout is not None:
+            try:
+                timeout_val = int(timeout)
+                timeout_enum = DisplayTimeout(timeout_val)
+                print(f"Sending command: Set Display Timeout to {timeout_val} seconds")
+                await power_station.set_display_timeout(timeout_enum)
+            except ValueError:
+                print(f"Error: Invalid display timeout '{timeout}'. Choose from: 20, 30, 60, 300, 1800", file=sys.stderr)
+
+        print("Waiting for initial telemetry data...")
+
         # 監視ループ
         while True:
             # バッテリーの状態更新を要求
@@ -82,6 +166,17 @@ async def monitor_device(mac_address, interval=5, single_shot=False):
                 await power_station.get_status_update()
             except Exception as e:
                 print(f"Error requesting update: {e}", file=sys.stderr)
+                if auto_wake and (isinstance(e, TimeoutError) or "timeout" in str(e).lower() or "timed out" in str(e).lower()):
+                    print("Attempting to wake device to restore telemetry...")
+                    try:
+                        await wake_device(power_station)
+                        print("Retrying status update...")
+                        await power_station.get_status_update()
+                    except Exception as wake_err:
+                        print(f"Failed to wake device or retry update: {wake_err}", file=sys.stderr)
+                        print("\n[ヒント] デバイスが深いスリープ状態（Deep Sleep）になっている可能性があります。", file=sys.stderr)
+                        print("1. SOLIX C300 本体のボタン（電源またはIoTボタン）を物理的に押してスリープを解除してください。", file=sys.stderr)
+                        print("2. 公式 Anker アプリの「機器設定」->「自動消灯時間（または省電力モード設定）」を「オフ / なし（Never）」に設定することで、遠隔監視時もスリープしなくなります。", file=sys.stderr)
 
             # ステータス情報を表示
             print("\n==========================================")
@@ -131,6 +226,15 @@ async def main():
     parser.add_argument("--interval", type=int, default=5, help="更新間隔（秒、デフォルト: 5）")
     parser.add_argument("--once", action="store_true", help="1回だけ状態を表示して終了")
     parser.add_argument("--debug", action="store_true", help="デバッグログを有効化")
+    
+    # 追加：制御コマンド
+    parser.add_argument("--display", choices=["on", "off"], help="ディスプレイをON/OFFする")
+    parser.add_argument("--ac", choices=["on", "off"], help="AC出力をON/OFFする")
+    parser.add_argument("--dc", choices=["on", "off"], help="DC出力をON/OFFする")
+    parser.add_argument("--light", choices=["off", "low", "medium", "high", "sos"], help="LEDライトのモードを設定する")
+    parser.add_argument("--timeout", type=int, choices=[20, 30, 60, 300, 1800], help="ディスプレイの自動消灯時間（秒）を設定する")
+    parser.add_argument("--auto-wake", action="store_true", help="タイムアウトエラー発生時に自動でディスプレイONコマンドを送信して復旧を試みる")
+    
     args = parser.parse_args()
 
     if args.debug:
@@ -154,7 +258,17 @@ async def main():
             print("\nヒント: '--mac <address>' オプションで特定のデバイスに接続できます。")
             print("例: ./solix_monitor.py --mac " + devices[0].address)
     else:
-        await monitor_device(args.mac, interval=args.interval, single_shot=args.once)
+        await monitor_device(
+            args.mac,
+            interval=args.interval,
+            single_shot=args.once,
+            display=args.display,
+            ac=args.ac,
+            dc=args.dc,
+            light=args.light,
+            timeout=args.timeout,
+            auto_wake=args.auto_wake
+        )
 
 if __name__ == "__main__":
     # スクリプトが直接実行された場合のエントリーポイント
