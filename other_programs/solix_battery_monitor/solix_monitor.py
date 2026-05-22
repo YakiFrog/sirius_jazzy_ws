@@ -66,11 +66,11 @@ async def monitor_device(mac_address, interval=5, single_shot=False):
         # Immediately start active polling and status reporting
 
         while True:
-            # Skip active polling, rely on passive notification stream
-            # try:
-            #     await power_station.get_status_update()
-            # except Exception:
-            #     pass
+            # Send status update request to the battery
+            try:
+                await power_station.get_status_update()
+            except Exception as e:
+                print(f"Error requesting update: {e}", file=sys.stderr)
 
             # Output the status
             print("\n==========================================")
