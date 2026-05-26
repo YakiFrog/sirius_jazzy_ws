@@ -154,6 +154,9 @@ alias sam3_bridge_real='src && ros2 launch sirius_navigation sam3_bridge.launch.
 # ウェイポイントナビゲーション起動
 alias mv_goal='bash ~/sirius_jazzy_ws/bash/startup_bash/move_goal.sh'
 
+# ターゲット追従制御（NPC追従）
+alias target_follow='bash ~/sirius_jazzy_ws/bash/startup_bash/target_follow.sh'
+
 # ウェイポイント保存（距離）
 alias get_pos_dis='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_dis.sh'
 
