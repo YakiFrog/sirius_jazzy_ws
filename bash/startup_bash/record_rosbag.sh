@@ -51,6 +51,7 @@ input_filename() {
     echo "  - /amcl_pose, /initialpose (位置推定)"
     echo "  - /map, /plan, /optimal_trajectory (地図・経路)"
     echo "  - /blinker_led_command (ウインカー)"
+    echo "  - /npc/odom (NPC Odometry)"
     echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
     echo ""
     echo "※ /velodyne_points (3D点群) は除外されます"
@@ -114,6 +115,7 @@ start_recording() {
         /local_costmap/published_footprint \
         /roboteq/odom \
         /blinker_led_command \
+        /npc/odom \
         /joint_states &
     
     ROSBAG_PID=$!
