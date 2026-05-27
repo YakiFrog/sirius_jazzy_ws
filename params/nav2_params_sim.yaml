@@ -185,7 +185,7 @@ local_costmap:
       resolution: 0.05
       # footprint: "[ [0.30, 0.30], [0.30, -0.30], [-0.50, -0.30], [-0.50, 0.30] ]" # ロボットの形状（ぴったりサイズ）
       footprint: "[ [0.40, 0.30], [0.40, -0.30], [-0.60, -0.30], [-0.60, 0.30] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
-      plugins: ["stvl_layer", "inflation_layer"]
+      plugins: ["stvl_layer", "obstacle_layer", "inflation_layer"]
       # filters: ["keepout_filter"]
       track_unknown_space: false # falseにすることで、UNKNOWN領域を通過可能として扱う
       static_layer:
@@ -208,7 +208,7 @@ local_costmap:
         transform_tolerance: 1.0 # 変換許容時間（秒）
         mapping_mode: false # マッピングモード（デフォルトはオフ、ナビゲーション以外の用途でマップを保存）
         map_save_duration: 60.0 # マップの自動保存間隔（秒）、デフォルトは60秒
-        observation_sources: velodyne_points sam3_obstacles scan
+        observation_sources: velodyne_points sam3_obstacles
         sam3_obstacles:
             enabled: true                 # このセンサーソースを有効にするか（true=有効）
             data_type: PointCloud2        # データの種類（点群。sam3_zed_serverから配信される形式）
@@ -243,17 +243,20 @@ local_costmap:
             filter: "voxel"            # CPU負荷が高い場合は"passthrough"に変更[web:22]
             voxel_min_points: 0        # フィルタの最小点数[web:22]
             clear_after_reading: true
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
         scan:
-            enabled: true
-            data_type: LaserScan
-            topic: /hokuyo_scan
-            marking: true
-            clearing: true
-            obstacle_range: 15.0
-            min_obstacle_height: -0.1
-            max_obstacle_height: 2.0
-            expected_update_rate: 0.0
-            observation_persistence: 0.0
+          topic: /hokuyo_scan
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 15.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 10.0
+          obstacle_min_range: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる)
