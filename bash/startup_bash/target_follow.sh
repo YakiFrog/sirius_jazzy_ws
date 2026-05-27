@@ -1,5 +1,15 @@
 #!/bin/bash
 trap 'echo ""; echo "Ctrl + Cが押されましたが、終了します"' 2
+
+# ===== 多重起動防止 =====
+LOCK_FILE="/tmp/sirius_target_follow.lock"
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+    echo "[ERROR] target_follow.sh はすでに別のターミナルで起動中です。二重起動をブロックします。"
+    exit 1
+fi
+# ========================
+
 cd ~/sirius_jazzy_ws
 source install/setup.bash
 
