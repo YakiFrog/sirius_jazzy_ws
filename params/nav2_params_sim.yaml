@@ -272,11 +272,11 @@ controller_server:
   ros__parameters:
     use_sim_time: true
     controller_frequency: 10.0 # 20.0 -> 15.0 -> 10.0 制御ループの周波数（高いほど応答性良・負荷大）15Hzで文句言われた
-    costmap_update_timeout: 5.0  # 0.50 -> 5.0 (タイムアウトを延長)
+    costmap_update_timeout: 0.50  # 0.50 -> 5.0 (タイムアウトを延長)
     action_server_result_timeout: 10.0  # アクションサーバーの結果待ち時間
-    min_x_velocity_threshold: 0.02
+    min_x_velocity_threshold: 0.05
     min_y_velocity_threshold: 0.0
-    min_theta_velocity_threshold: 0.02
+    min_theta_velocity_threshold: 0.05
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
@@ -292,7 +292,7 @@ controller_server:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.50
-      yaw_goal_tolerance: 0.80
+      yaw_goal_tolerance: 0.50
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
       time_steps: 60  # 80 -> 60
@@ -352,7 +352,7 @@ controller_server:
       GoalCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 8.0           # ゴール到達を重視（高め） 5.0 -> 8.0 なんか移動速度が少し上がった
+        cost_weight: 3.0           # ゴール到達を重視（高め） 5.0 -> 8.0 なんか移動速度が少し上がった
         threshold_to_consider: 1.5 # この距離[m]以内でゴール評価開始
       
       # GoalAngleCritic: ゴール時の姿勢（角度）評価
@@ -390,7 +390,7 @@ controller_server:
         cost_weight: 3.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0, 柔軟にしている方が走りやすい
         max_path_occupancy_ratio: 0.20 # パス上の障害物許容率（5% -> 15%に緩和）
         trajectory_point_step: 4       # 評価点間隔 4 -> 3
-        threshold_to_consider: 0.2     # この距離[m]以内でパス整合評価 0.5 -> 1.0
+        threshold_to_consider: 1.0     # この距離[m]以内でパス整合評価 0.5 -> 1.0
         offset_from_furthest: 25       # 最遠点からのオフセット（先読み距離）20 -> 25
         use_path_orientations: false   # パスの向き情報を使うか
       
@@ -401,7 +401,7 @@ controller_server:
         cost_power: 1
         cost_weight: 8.0         # 経路追従の重視度 5.0 -> 10.0 !!!! めっちゃきく。これがパス追従になる
         offset_from_furthest: 5        # 先読み距離[points]（パス上の何点先を見るか） 5 -> 8
-        threshold_to_consider: 0.2     # この距離[m]以内で追従評価 1.4 -> 2.0
+        threshold_to_consider: 0.8     # この距離[m]以内で追従評価 1.4 -> 2.0
       
       # PathAngleCritic: 経路角度評価
       # パスの向きと軌道の向きの一致度（滑らかな追従）
@@ -410,7 +410,7 @@ controller_server:
         cost_power: 1
         cost_weight: 2.0               # 角度一致の重視度（低め）
         offset_from_furthest: 6        # 先読み距離[points] 4 -> 6
-        threshold_to_consider: 0.2     # この距離[m]以内で角度評価 0.5 -> 1.0
+        threshold_to_consider: 1.0     # この距離[m]以内で角度評価 0.5 -> 1.0
         max_angle_to_furthest: 1.2     # 最大許容角度差[rad]（約57度） 1.0 -> 1.2 (寛容に)
         mode: 0    
                             # 評価モード（0=標準）
@@ -533,7 +533,7 @@ collision_monitor:
     base_frame_id: "sirius3/base_footprint"
     odom_frame_id: "sirius3/odom"
     cmd_vel_in_topic: "cmd_vel_smoothed"
-    cmd_vel_out_topic: "cmd_vel_nav"
+    cmd_vel_out_topic: "cmd_vel"
     state_topic: "collision_monitor_state"
     transform_tolerance: 0.2
     source_timeout: 1.0

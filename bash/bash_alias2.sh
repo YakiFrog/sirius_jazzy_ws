@@ -80,6 +80,9 @@ alias sam3_docker_start='cd ~/DA3_SAM3_Project/sam3_da3_3d/sam3_server_export &&
 # SAM3 + ZED Dockerサーバー起動 ポート8080
 alias sam3_zed_docker_start='cd ~/DA3_SAM3_Project/sam3_da3_3d/sam3_server_export && docker compose up sam3-zed-merged'
 
+# PCL 3D点群物体検出ノード起動 (Velodyne等の点群をリアルタイムクラスタリング・バウンディングボックス化します)
+alias pcl_detect='bash ~/sirius_jazzy_ws/bash/startup_bash/pcl_detect.sh'
+
 
 # TAB: ナビゲーション
 # GROUP: ナビゲーション
