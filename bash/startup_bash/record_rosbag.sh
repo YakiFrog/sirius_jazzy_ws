@@ -52,6 +52,7 @@ input_filename() {
     echo "  - /map, /plan, /optimal_trajectory (地図・経路)"
     echo "  - /blinker_led_command (ウインカー)"
     echo "  - /npc/odom (NPC Odometry)"
+    echo "  - /target_detector/target_markers"
     echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
     echo ""
     echo "※ /velodyne_points (3D点群) は除外されます"
@@ -116,6 +117,7 @@ start_recording() {
         /roboteq/odom \
         /blinker_led_command \
         /npc/odom \
+        /target_detector/target_markers \
         /joint_states &
     
     ROSBAG_PID=$!
