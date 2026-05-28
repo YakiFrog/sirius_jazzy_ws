@@ -51,6 +51,9 @@ alias rviz2desc='rviz2sim'
 # Rosbridge Web Socket起動
 alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
 
+# Foxglove Bridge 起動
+alias foxglove='src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml'
+
 # Unity上のZEDカメラのトピックをROS2に流す
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
 
@@ -65,6 +68,7 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 # install packages （初回のみ実行）
 alias install_packages='sudo apt install ros-jazzy-spatio-temporal-voxel-layer -y  && \
 sudo apt install ros-jazzy-rqt-tf-tree -y && \
+sudo apt install ros-jazzy-foxglove-bridge -y && \
 sudo apt-get install libqt5serialport5-dev'
 
 # Behavior Tree 可視化ツール Groot2 起動
