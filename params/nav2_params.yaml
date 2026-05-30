@@ -406,7 +406,7 @@ controller_server:
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 10.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0, 柔軟にしている方が走りやすい
+        cost_weight: 12.0              # パス追従をより強く重視して膨らみを防止（10.0 -> 12.0）
         max_path_occupancy_ratio: 0.20 # パス上の障害物許容率（5% -> 15%に緩和）
         trajectory_point_step: 4       # 評価点間隔 4 -> 3
         threshold_to_consider: 1.0     # この距離[m]以内でパス整合評価 0.5 -> 1.0
@@ -419,7 +419,7 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 8.0         # 経路追従の重視度 5.0 -> 10.0 !!!! めっちゃきく。これがパス追従になる
-        offset_from_furthest: 5        # 先読み距離[points]（パス上の何点先を見るか） 5 -> 8
+        offset_from_furthest: 7        # 先読み距離を微増して減速の滑らかさを向上（5 -> 7）
         # 先読み距離を８から５に減らすことでパスの残りが少なくても評価を機能させる
         threshold_to_consider: 0.8    # この距離[m]以内で追従評価 1.4 -> 2.0
       
@@ -428,8 +428,8 @@ controller_server:
       PathAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 2.0               # 角度一致の重視度（低め）
-        offset_from_furthest: 6        # 先読み距離[points] 4 -> 6
+        cost_weight: 4.0               # コーナー進入時に早めに首を振るよう重みを強化（2.0 -> 4.0）
+        offset_from_furthest: 8        # 先読み距離を伸ばして曲がり角の手前での減速・旋回開始を促進（6 -> 8）
         threshold_to_consider: 1.0     # この距離[m]以内で角度評価 0.5 -> 1.0
         max_angle_to_furthest: 1.2     # 最大許容角度差[rad]（約57度） 1.0 -> 1.2 (寛容に)
         mode: 0    
