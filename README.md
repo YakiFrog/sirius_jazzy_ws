@@ -171,6 +171,53 @@ $$-1.53 \le v \pm 0.20 \omega \le 1.53 \text{ [m/s]}$$
 * **加速度の引き上げ（レスポンス向上）：**
   - `ax_max` や `max_accel` を `1.0` 〜 `1.2 m/s²` 程度に引き上げることで、より機敏に加速できるようになります。
 
+## 走行モード（高速・低速安定）の動的切り替え方法
+
+SIRIUSのナビゲーション実行中に、ロボットやROS 2を再起動することなく、コマンドラインから動的に走行モード（最高速度や加減速度制限）を切り替えることができます。
+
+### 1. 動的パラメータ書き換えコマンド
+
+ターミナルから以下のコマンドを実行することで、実行中のNav2プランナー（MPPI）および速度スムーサー（velocity_smoother）の制限値をリアルタイムに変更できます。
+
+#### ■ ゆっくり・安定走行モード（例: 0.6 m/s, 加減速 0.7 m/s²）
+```bash
+# MPPIプランナー（目標値と加減速）の変更
+ros2 param set /controller_server FollowPath.vx_max 0.6
+ros2 param set /controller_server FollowPath.ax_max 0.7
+ros2 param set /controller_server FollowPath.ax_min -0.7
+
+# 速度スムーサー（加減速フィルタ）の制限値変更
+ros2 param set /velocity_smoother max_velocity "[0.6, 0.0, 1.0]"
+ros2 param set /velocity_smoother max_accel "[0.7, 0.0, 2.0]"
+ros2 param set /velocity_smoother max_decel "[-0.7, 0.0, -2.0]"
+```
+
+#### ■ 通常・高速走行モード（例: 1.0 m/s, 加減速 1.0 m/s²）
+```bash
+# MPPIプランナー（目標値と加減速）の変更
+ros2 param set /controller_server FollowPath.vx_max 1.0
+ros2 param set /controller_server FollowPath.ax_max 1.0
+ros2 param set /controller_server FollowPath.ax_min -1.0
+
+# 速度スムーサー（加減速フィルタ）の制限値変更
+ros2 param set /velocity_smoother max_velocity "[1.0, 0.0, 1.0]"
+ros2 param set /velocity_smoother max_accel "[1.0, 0.0, 2.0]"
+ros2 param set /velocity_smoother max_decel "[-1.0, 0.0, -2.0]"
+```
+
+### 2. エイリアス（ショートカット）による簡単切り替え
+
+`bash_alias2.sh`（または `~/.bashrc`）にエイリアスを定義しておくことで、1コマンドで簡単に切り替えることが可能です。
+
+```bash
+# ゆっくり安定モード
+alias nav_slow='ros2 param set /controller_server FollowPath.vx_max 0.6 && ros2 param set /controller_server FollowPath.ax_max 0.7 && ros2 param set /controller_server FollowPath.ax_min -0.7 && ros2 param set /velocity_smoother max_velocity "[0.6, 0.0, 1.0]" && ros2 param set /velocity_smoother max_accel "[0.7, 0.0, 2.0]" && ros2 param set /velocity_smoother max_decel "[-0.7, 0.0, -2.0]"'
+
+# 通常高速モード
+alias nav_fast='ros2 param set /controller_server FollowPath.vx_max 1.0 && ros2 param set /controller_server FollowPath.ax_max 1.0 && ros2 param set /controller_server FollowPath.ax_min -1.0 && ros2 param set /velocity_smoother max_velocity "[1.0, 0.0, 1.0]" && ros2 param set /velocity_smoother max_accel "[1.0, 0.0, 2.0]" && ros2 param set /velocity_smoother max_decel "[-1.0, 0.0, -2.0]"'
+```
+このエイリアスを実行すると、自律移動中の別のターミナルで `nav_slow` または `nav_fast` と入力するだけで即座に走行モードが切り替わります。
+
 ## 注意事項
 
 - `src`フォルダはgitignoreで除外されているため、パッケージの詳細な更新情報は各パッケージのREADMEを参照してください

@@ -409,6 +409,12 @@ void Roboteq::cmdvel_setup()
         safe_serial_write("^MDEC 1 20000\r");
         safe_serial_write("^MDEC 2 20000\r");
 
+        // set open-loop acceleration and deceleration ramps (value in 0.1s to go from 0 to 100% power)
+        safe_serial_write("^MXACC 1 8\r");
+        safe_serial_write("^MXACC 2 8\r");
+        safe_serial_write("^MXDEC 1 8\r");
+        safe_serial_write("^MXDEC 2 8\r");
+
         // set PID parameters (gain * 10)
         safe_serial_write("^KP 1 0\r");
         safe_serial_write("^KP 2 0\r");

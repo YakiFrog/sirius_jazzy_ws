@@ -177,8 +177,8 @@ local_costmap:
       global_frame: sirius3/odom # ✅ 短距離・リアルタイム制御用, MapだとAMCLのジャンプで軌道が乱れる
       robot_base_frame: sirius3/base_footprint
       rolling_window: true
-      width: 5
-      height: 5
+      width: 6
+      height: 6
       resolution: 0.05
       # footprint: "[ [0.30, 0.30], [0.30, -0.30], [-0.50, -0.30], [-0.50, 0.30] ]" # ロボットの形状（ぴったりサイズ）
       footprint: "[ [0.40, 0.30], [0.40, -0.30], [-0.60, -0.30], [-0.60, 0.30] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
@@ -296,24 +296,24 @@ controller_server:
       model_dt: 0.10 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 2000  
 
-      vx_max: 0.60 # 現状、これ以上出すとRoboteqのリミッターにかかるのか、速度がいびつになる
+      vx_max: 1.00 # バグ修正により1.0m/sまで安定して出力可能になりました
       vx_min: -0.60 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
-      wz_max: 0.8 # めったに１を超えない。また、1.5rad/s, 2.5rad/s^2だと追従できてないときがあった
-      wz_min: -0.8
+      wz_max: 1.00 # 旋回上限を1.0rad/sへ引き下げ（蛇行防止）
+      wz_min: -1.00
 
       # これは速度の分散を決めるもの
       vx_std: 0.35 # 0.35 が追従限界かも。
       vy_std: 0.00
       wz_std: 0.40
 
-      ax_max: 0.6
-      ax_min: -0.6 # 急ブレーキのために(無根拠)
+      ax_max: 1.0 # 加減速の対称性を維持しつつ機敏に走るため 1.0 に設定
+      ax_min: -1.0 # 急ブレーキ防止とカーブの旋回性のバランス点
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 1.8 # > 1.8 さげたら追従が遅くなるのが目立つ。逆に触れやすい。
-      az_min: -1.8
+      az_max: 2.0 # 旋回加速度を2.0rad/s^2へ引き上げ
+      az_min: -2.0
 
       iteration_count: 1
       prune_distance: 6.0 # より遠くまで軌道を維持
@@ -393,7 +393,7 @@ controller_server:
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0, 柔軟にしている方が走りやすい
+        cost_weight: 10.0              # パス追従を強く重視（最も高い重み） 14.0 -> 20.0, 柔軟にしている方が走りやすい
         max_path_occupancy_ratio: 0.20 # パス上の障害物許容率（5% -> 15%に緩和）
         trajectory_point_step: 4       # 評価点間隔 4 -> 3
         threshold_to_consider: 1.0     # この距離[m]以内でパス整合評価 0.5 -> 1.0
@@ -436,8 +436,8 @@ velocity_smoother:
     # これはハードウェア上の速度・加速度の制限（頻繁に変える値ではない）
     max_velocity: [1.0, 0.0, 1.0]
     min_velocity: [-1.0, 0.0, -1.0]
-    max_accel: [1.0, 0.0, 1.8]
-    max_decel: [-1.0, 0.0, -1.8]
+    max_accel: [1.0, 0.0, 2.0]
+    max_decel: [-1.0, 0.0, -2.0]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.3 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
     deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする. ０にしたほうがいい。微小速度をカットされるため
