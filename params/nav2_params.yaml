@@ -304,12 +304,12 @@ controller_server:
       #    ウェイポイント間の距離が L_min より短いと、加速途中で減速に入り動作がギクシャクする。
       #    例: v=1.0, a=1.0 => L_min=1.0m (1m以上の間隔で最高速に到達可能)
       #        v=1.0, a=0.5 => L_min=2.0m (2m必要。狭い場所では速度も0.7m/sに下げるのが良い)
-      vx_max: 1.00 # バグ修正により1.0m/sまで安定して出力可能になりました
+      vx_max: 0.90 # バグ修正により1.0m/sまで安定して出力可能になりました
       vx_min: -0.60 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
-      wz_max: 1.00 # 旋回上限を1.0rad/sへ引き下げ（蛇行防止）
-      wz_min: -1.00
+      wz_max: 0.90 # 旋回上限を0.9rad/sへ引き下げ（線速度0.9m/sに同調）
+      wz_min: -0.90
 
       # これは速度の分散を決めるもの
       vx_std: 0.35 # 0.35 が追従限界かも。
@@ -320,8 +320,8 @@ controller_server:
       ax_min: -0.9 # 減速度制限を-0.9に調整
       ay_max: 0.0
       ay_min: 0.0
-      az_max: 2.0 # 旋回加速度を2.0rad/s^2へ引き上げ
-      az_min: -2.0
+      az_max: 1.5 # 旋回加速度を1.5rad/s^2へ引き下げ（急な首振りを抑制）
+      az_min: -1.5
 
       iteration_count: 1
       prune_distance: 6.0 # より遠くまで軌道を維持
@@ -442,10 +442,10 @@ velocity_smoother:
     scale_velocities: false # trueにするとガタつく。だめ
     feedback: "OPEN_LOOP" # "CLOSED_LOOP" だと全く動かなくなる
     # これはハードウェア上の速度・加速度の制限（頻繁に変える値ではない）
-    max_velocity: [1.0, 0.0, 1.0]
-    min_velocity: [-1.0, 0.0, -1.0]
-    max_accel: [0.9, 0.0, 2.0]
-    max_decel: [-0.9, 0.0, -2.0]
+    max_velocity: [0.9, 0.0, 0.9]
+    min_velocity: [-0.9, 0.0, -0.9]
+    max_accel: [0.9, 0.0, 1.5]
+    max_decel: [-0.9, 0.0, -1.5]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.3 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
     deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする. ０にしたほうがいい。微小速度をカットされるため
