@@ -304,7 +304,7 @@ controller_server:
       #    ウェイポイント間の距離が L_min より短いと、加速途中で減速に入り動作がギクシャクする。
       #    例: v=1.0, a=1.0 => L_min=1.0m (1m以上の間隔で最高速に到達可能)
       #        v=1.0, a=0.5 => L_min=2.0m (2m必要。狭い場所では速度も0.7m/sに下げるのが良い)
-      vx_max: 0.90 # バグ修正により1.0m/sまで安定して出力可能になりましたが、加速度0.8に合わせて0.90m/sへ調整
+      vx_max: 1.00 # バグ修正により1.0m/sまで安定して出力可能になりました
       vx_min: -0.60 # 後退は控えめに
       vy_max: 0.0
       vy_min: 0.0   
@@ -442,8 +442,8 @@ velocity_smoother:
     scale_velocities: false # trueにするとガタつく。だめ
     feedback: "OPEN_LOOP" # "CLOSED_LOOP" だと全く動かなくなる
     # これはハードウェア上の速度・加速度の制限（頻繁に変える値ではない）
-    max_velocity: [0.9, 0.0, 1.0]
-    min_velocity: [-0.9, 0.0, -1.0]
+    max_velocity: [1.0, 0.0, 1.0]
+    min_velocity: [-1.0, 0.0, -1.0]
     max_accel: [0.8, 0.0, 2.0]
     max_decel: [-0.8, 0.0, -2.0]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
