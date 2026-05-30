@@ -52,7 +52,7 @@ alias rviz2desc='rviz2sim'
 alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
 
 # Foxglove Bridge 起動
-alias foxglove='src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml'
+alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml'
 
 # Unity上のZEDカメラのトピックをROS2に流す
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
