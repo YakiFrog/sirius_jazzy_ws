@@ -331,33 +331,15 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     float rpm_r = right_speed / wheel_circumference * 60.0;
     float rpm_l = left_speed / wheel_circumference * 60.0;
 
-    if (open_loop)
-    {
-        // モーター出力指令 (0-1000 スケール)
-        int32_t right_power = rpm_r / max_rpm * 1000.0;
-        int32_t left_power = rpm_l / max_rpm * 1000.0;
-        
-        right_cmd << "!G 1 " << right_power << "\r";
-        left_cmd << "!G 2 " << left_power << "\r";
-
-        // RCLCPP_INFO(this->get_logger(), "cmdvel(open): lin=%.3f ang=%.3f -> Power R=%d L=%d (scale=%.2f)",
-        //             linear_x, angular_z, right_power, left_power, scale);
-    }
-    else
-    {
-        // モーター回転数指令 (rpm)
-        int32_t right_rpm = (int32_t)rpm_r;
-        int32_t left_rpm = (int32_t)rpm_l;
-
-        right_rpm_command = rpm_r;
-        left_rpm_command = rpm_l;
-
-        right_cmd << "!S 1 " << right_rpm << "\r";
-        left_cmd << "!S 2 " << left_rpm << "\r";
-
-        // RCLCPP_INFO(this->get_logger(), "cmdvel(closed): lin=%.3f ang=%.3f -> RPM R=%d L=%d (scale=%.2f)",
-        //             linear_x, angular_z, right_rpm, left_rpm, scale);
-    }
+    // モーター出力指令 (0-1000 スケール)
+    int32_t right_power = rpm_r / max_rpm * 1000.0;
+    int32_t left_power = rpm_l / max_rpm * 1000.0;
+    
+    right_rpm_command = rpm_r;
+    left_rpm_command = rpm_l;
+    
+    right_cmd << "!G 1 " << right_power << "\r";
+    left_cmd << "!G 2 " << left_power << "\r";
     // モーターコントローラへコマンドを送信
     #ifndef _CMDVEL_FORCE_RUN
         safe_serial_write(right_cmd.str());
@@ -399,19 +381,9 @@ void Roboteq::cmdvel_setup()
         // enable watchdog timer (1000 ms)
         safe_serial_write("^RWD 1000\r");
 
-        // set motor operating mode (1 for closed-loop speed)
-        if (open_loop)
-        {
-            // open-loop speed mode
-            safe_serial_write("^MMOD 1 0\r");
-            safe_serial_write("^MMOD 2 0\r");
-        }
-        else
-        {
-            // closed-loop speed mode
-            safe_serial_write("^MMOD 1 1\r");
-            safe_serial_write("^MMOD 2 1\r");
-        }
+        // set motor operating mode (0 for open-loop speed)
+        safe_serial_write("^MMOD 1 0\r");
+        safe_serial_write("^MMOD 2 0\r");
 
         // set motor amps limit (A * 10)
         std::stringstream right_ampcmd;
@@ -773,7 +745,7 @@ void Roboteq::odom_publish()
     odom_last_yaw = odom_yaw;
 
     // ソフトウェアP制御 (方法2)
-    if (open_loop && kp_soft > 0.001) {
+    if (!open_loop && kp_soft > 0.001) {
         float actual_rpm_r = (odom_roll_right / dt) * 60.0f;
         float actual_rpm_l = (odom_roll_left / dt) * 60.0f;
         

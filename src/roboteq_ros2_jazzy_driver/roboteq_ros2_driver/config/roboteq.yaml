@@ -7,7 +7,7 @@ roboteq_ros2_driver:
     odom_topic: "odom"
     port: "/dev/roboteq"
     baud: 230400
-    open_loop: true
+    open_loop: false
     wheel_circumference: 0.825 # タイヤを紐で一周した長さ(m)
     track_width: 0.40
     max_amps: 12.0
@@ -20,4 +20,6 @@ roboteq_ros2_driver:
     speed_scale: 0.52 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
     # 55% はやすぎる
     # 45% おそすぎる
-    kp_soft: 1.0  # ソフトウェアP制御用のゲイン
+    kp_soft: 0.6  # ソフトウェアP制御用のゲイン
+
+    
