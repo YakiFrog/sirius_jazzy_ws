@@ -48,7 +48,6 @@ select_waypoints() {
 }
 
 while : ;do
-    read -p "Press [Enter] key to start waypoint_nav..."
     source install/setup.bash
     
     # ウェイポイントファイルを選択
