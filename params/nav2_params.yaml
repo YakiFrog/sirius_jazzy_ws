@@ -316,8 +316,8 @@ controller_server:
       vy_std: 0.00
       wz_std: 0.40
 
-      ax_max: 0.8 # 加速度制限を0.8に調整
-      ax_min: -0.8 # 減速度制限を-0.8に調整
+      ax_max: 0.9 # 加速度制限を0.9に調整
+      ax_min: -0.9 # 減速度制限を-0.9に調整
       ay_max: 0.0
       ay_min: 0.0
       az_max: 2.0 # 旋回加速度を2.0rad/s^2へ引き上げ
@@ -444,8 +444,8 @@ velocity_smoother:
     # これはハードウェア上の速度・加速度の制限（頻繁に変える値ではない）
     max_velocity: [1.0, 0.0, 1.0]
     min_velocity: [-1.0, 0.0, -1.0]
-    max_accel: [0.8, 0.0, 2.0]
-    max_decel: [-0.8, 0.0, -2.0]
+    max_accel: [0.9, 0.0, 2.0]
+    max_decel: [-0.9, 0.0, -2.0]
     odom_topic: "/odom/filtered"  # EKFセンサフュージョン後のオドメトリを使用
     odom_duration: 0.3 # 0.1 -> 0.3 保持時間を延長して平滑化を強化
     deadband_velocity: [0.0, 0.0, 0.0] # これ以下の速度は0にする. ０にしたほうがいい。微小速度をカットされるため
