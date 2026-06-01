@@ -87,6 +87,10 @@ alias sam3_zed_docker_start='cd ~/DA3_SAM3_Project/sam3_da3_3d/sam3_server_expor
 # PCL 3D点群物体検出ノード起動 (Velodyne等の点群をリアルタイムクラスタリング・バウンディングボックス化します)
 alias pcl_detect='bash ~/sirius_jazzy_ws/bash/startup_bash/pcl_detect.sh'
 
+# 走行軌跡可視化パスパブリッシャー
+alias odom_path='src && ros2 run sirius_navigation odom_path_publisher --ros-args -p use_sim_time:=true'
+alias odom_path_real='src && ros2 run sirius_navigation odom_path_publisher --ros-args -p use_sim_time:=false'
+
 
 # TAB: ナビゲーション
 # GROUP: ナビゲーション
