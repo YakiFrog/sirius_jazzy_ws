@@ -579,9 +579,92 @@ RT-2 や初期の VLA でよく使われる、**座標を文字として出力�
 * **フェーズ4（SmolVLA本格導入）**: 
   LeRobot等のライブラリを使ってSmolVLAをファインチューニングする場合は、ライブラリ側が自動的に**「アプローチB（連続数値ベクトル）」**でデータセットを読み込んで処理する仕組みを提供しているため、それに従います。
 
+* **LM Studio（現在のGemmaプロンプト検証）**: JSONなどの**「文字列テキスト（アプローチA）」**としてやり取りします。
+* **SmolVLA（今後の本格学習）**: PyTorchで数値ベクトルを扱うため、データの読み込みは**「連続数値テンソル（アプローチB）」**を使用します（LeRobotのデータローダーが標準でサポートしています）。
+
 ---
 
-## 19. Foxglove Studio や RViz2 での「走行軌跡」の可視化方法
+## 19. SmolVLA のファインチューニング手順 (LeRobot を用いた実装例)
+
+Hugging Face が開発するロボット学習ライブラリ **LeRobot** を用いて、収集したデータで SmolVLA をファインチューニングする具体的な手順です。
+
+### Step 1: 収集データのフォーマット変換（LeRobot Dataset化）
+ROS 2 bag などで記録した画像・座標データを、LeRobot が読み込める形式に変換します。
+
+LeRobot は PyTorch の `Dataset` 形式（Hugging Face datasets 互換）を使用します。以下のような構成のデータを各フレーム（ステップ）ごとに準備します。
+* `observation.image`: カメラ画像（RGB テンソル）
+* `observation.state`: ロボットの現在の速度またはエンコーダー値（オプション）
+* `action`: 未来の目標ウェイポイント `[(x1, y1), ..., (xN, yN)]` のフラットなテンソル
+* `task`: 言語指示（例: `"砂利道を避けて進んで"`）
+
+**変換用の Python コード例（イメージ）**:
+```python
+from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
+
+# 新規データセットの作成
+dataset = LeRobotDataset.create(
+    repo_id="sirius3_navigation_dataset",
+    fps=10,
+    features={
+        "observation.image": {"dtype": "image", "shape": (3, 224, 224)},
+        "observation.state": {"dtype": "float32", "shape": (3,)}, # x速度, y速度, ヨーレート
+        "action": {"dtype": "float32", "shape": (20,)},            # 10ステップ先までの (x, y) 座標
+        "task": {"dtype": "string"},
+    }
+)
+
+# 各エピソード（走行ログ）のデータを追加
+for episode in recorded_episodes:
+    dataset.start_new_episode()
+    for frame in episode:
+        dataset.add_frame({
+            "observation.image": frame['image'],
+            "observation.state": frame['state'],
+            "action": frame['future_waypoints'],
+            "task": frame['instruction'],
+        })
+dataset.consolidate()
+```
+
+### Step 2: ファインチューニング用の設定（Config）の準備
+LeRobot には、SmolVLA モデルおよび Flow Matching（アクション生成モジュール）の設定ファイルが用意されています。
+
+* **メモリ節約と過学習防止のための設定（推奨）**:
+  GemmaやSigLIPを含む巨大なVLMバックボーンをすべてフルパラメータで学習させると、膨大なGPUメモリ（数十GB〜）が必要になり、一般的な言語能力も失われやすい（カタストロフィック忘却）です。
+  * **対策**: VLMバックボーン部分の重みを**固定（Freeze）**、あるいは **LoRA** を適用し、新規に追加したアクション出力層（**Action Expert / Flow Matching Transformer**）のみを集中して学習させます。
+
+### Step 3: 学習スクリプトの実行
+LeRobot のリポジトリをクローンし、定義したデータセットを指定して以下のコマンドで訓練を開始します。
+
+```bash
+# LeRobot のクローンとインストール
+git clone https://github.com/huggingface/lerobot.git
+cd lerobot
+pip install -e .
+
+# ファインチューニングの実行
+python lerobot/scripts/train.py \
+  policy=smolvla \
+  dataset_repo_id=your_username/sirius3_navigation_dataset \
+  env=none \
+  device=cuda \
+  training.batch_size=32 \
+  training.lr=1e-4 \
+  use_wandb=true
+```
+※ `env=none` はシミュレーション環境でのリアルタイム評価（ロールアウト）を行わず、データセットに対する教師あり学習（Behavior Cloning）のみを行う設定です。
+
+### Step 4: 学習モデルのデプロイ（ROS 2ノード化）
+学習が完了すると、チェックポイント（モデルファイル）が出力されます。
+
+1. 新しく ROS 2 推論ノードを作成し、訓練済みの SmolVLA ポリシーを PyTorch でロードします。
+2. ロボットのカメラ画像トピック（`/camera/image_raw`）と、ユーザーの指示トピックをサブスクライブします。
+3. 推論を実行し、出力されたウェイポイント群 `[(x1, y1), ...]` を `nav_msgs/msg/Path` トピックとしてパブリッシュします。
+4. これを先ほど確認した **Nav2 MPPI** の目標軌道に入力し、安全に追従・走行させます。
+
+---
+
+## 20. Foxglove Studio や RViz2 での「走行軌跡」の可視化方法
 
 保存・パブリッシュしているオドメトリ（`/odom`）を、**Foxglove Studio** や **RViz2** 上で美しい「連続した線（軌跡）」として可視化する具体的なテクニックです。
 
