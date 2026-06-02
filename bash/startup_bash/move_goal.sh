@@ -63,6 +63,10 @@ while : ;do
     read waypoint_number
     count="${waypoint_number:-1}"
     
+    echo -n "到達判定距離閾値 (m, デフォルト: 2.0): "
+    read threshold_input
+    threshold="${threshold_input:-2.0}"
+    
     echo -n "無限ループしますか？ (y/N, デフォルト: N): "
     read loop_selection
     
@@ -74,6 +78,7 @@ while : ;do
     echo ""
     echo "ウェイポイントファイル: $selected_waypoints.yaml"
     echo "開始インデックス: $count"
+    echo "到達判定距離閾値: ${threshold} m"
     if [ -n "$loop_arg" ]; then
         echo "動作モード: 無限ループ"
     else
@@ -81,5 +86,5 @@ while : ;do
     fi
     echo ""
     
-    ros2 run sirius_navigation move_goal --waypoints "$selected_waypoints" --count "$count" $loop_arg
+    ros2 run sirius_navigation move_goal --waypoints "$selected_waypoints" --count "$count" --threshold "$threshold" $loop_arg
 done

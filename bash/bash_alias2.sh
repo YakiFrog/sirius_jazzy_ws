@@ -187,9 +187,12 @@ alias rviz2real='src && ros2 launch sirius_description display.launch.py use_sim
 # マップ切り替え（Nav2実行中に地図を変更）
 alias change_map='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map.sh'
 
-# 走行モード切り替え（安全歩行 / 通常）
+# 走行モード切り替え（安全歩行 / 通常 / パス追従）
 alias nav_safe='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh safe'
 alias nav_normal='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh normal'
+alias nav_strict_normal='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_normal'
+alias nav_strict_safe='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_safe'
+alias nav_strict='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_safe'
 alias nav_mode='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh'
 
 # ROS2 bag記録起動
