@@ -349,7 +349,7 @@ controller_server:
       critics: [
         "ConstraintCritic", "CostCritic", "GoalCritic",
         "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic",
-        "PathAngleCritic", "PreferForwardCritic"]
+        "PathAngleCritic", "PreferForwardCritic", "TwirlingCritic"]
       
       # ConstraintCritic: 物理的制約（速度・加速度制限）の評価
       # ロボットの動力学的制約を満たさない軌道にペナルティを与える
@@ -428,7 +428,7 @@ controller_server:
       PathAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 5.0               # 角度一致の重みを微増して向き合わせを重視（4.0 -> 5.0）
+        cost_weight: 2.0               # 角度一致の重みを下げて不要な方向転換を抑制（5.0 -> 2.0）
         offset_from_furthest: 12       # 先読み距離をさらに伸ばし、コーナー手前での減速・旋回開始を促進（8 -> 12）
         threshold_to_consider: 1.5     # より手前から角度評価を有効化（1.0 -> 1.5）
         max_angle_to_furthest: 1.2     # 最大許容角度差[rad]（約57度） 1.0 -> 1.2 (寛容に)
@@ -436,8 +436,8 @@ controller_server:
                             # 評価モード（0=標準）
       TwirlingCritic:
         enabled: true
-        twirling_cost_power: 1
-        twirling_cost_weight: 1.0
+        cost_power: 1
+        cost_weight: 3.0      # 旋回ペナルティを課して無駄な方向転換を抑制（1.0 -> 3.0）
 
 # コントローラサーバーからの速度指令を滑らかにする
 velocity_smoother:

@@ -439,8 +439,8 @@ controller_server:
         # 評価モード（0=標準）
       TwirlingCritic:
         enabled: true
-        twirling_cost_power: 1
-        twirling_cost_weight: 3.0      # 旋回ペナルティを課して無駄な方向転換を抑制（1.0 -> 3.0）
+        cost_power: 1
+        cost_weight: 3.0      # 旋回ペナルティを課して無駄な方向転換を抑制（1.0 -> 3.0）
 
 # コントローラサーバーからの速度指令を滑らかにする
 velocity_smoother:
