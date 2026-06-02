@@ -48,8 +48,12 @@ class ProcessManager:
                     f.write(f'export ROS_DOMAIN_ID="{ros_domain}"\n')
 
                 f.write(f'echo $BASHPID > {self.pid_file}\n')
+                f.write('unset PROMPT_COMMAND\n')
                 f.write(f'export PS1="[{self.tab_title}] $ "\n')
                 f.write(f'echo -ne "\\033]0;{self.tab_title}\\007"\n')
+                f.write(f'if command -v remotinator >/dev/null 2>&1 && [ -n "$TERMINATOR_UUID" ]; then\n')
+                f.write(f'  remotinator set_tab_title -t "{self.tab_title}" >/dev/null 2>&1\n')
+                f.write(f'fi\n')
                 # ログに出力内容を保存しながら実行
                 f.write(f'{self.command} 2>&1 | tee {self.log_file}\n')
             
@@ -230,6 +234,79 @@ class ProcessManager:
             print(f"タブを閉じるエラー: {e}")
         return False
     
+    def focus_terminator_tab(self):
+        """このプロセスを実行しているTerminatorタブをフォーカスする"""
+        import time
+        if not self.pid_file_content:
+            return False
+            
+        try:
+            # 1. bashプロセスの親プロセス（Terminator）のPIDを取得
+            proc = psutil.Process(self.pid_file_content)
+            parent = proc.parent()
+            if not parent:
+                return False
+                
+            # 親プロセス名が 'terminator' であることを確認
+            terminator_pid = None
+            if parent.name() == 'terminator':
+                terminator_pid = parent.pid
+            else:
+                # 親の親も確認（ラッパースクリプトなどがある場合を考慮）
+                grandparent = parent.parent()
+                if grandparent and grandparent.name() == 'terminator':
+                    terminator_pid = grandparent.pid
+            
+            if not terminator_pid:
+                print(f"TerminatorのPIDが見つかりません (親プロセス: {parent.name()})")
+                return False
+                
+            # 2. wmctrl を使用してそのPIDを持つウィンドウのウィンドウIDを取得
+            # wmctrl がない場合は例外が発生する
+            output = subprocess.check_output(['wmctrl', '-lp'], text=True)
+            window_id = None
+            for line in output.splitlines():
+                parts = line.split()
+                if len(parts) >= 4:
+                    w_id = parts[0]
+                    w_pid = int(parts[2])
+                    if w_pid == terminator_pid:
+                        window_id = w_id
+                        break
+                        
+            if not window_id:
+                print(f"TerminatorのウィンドウIDが見つかりません (PID: {terminator_pid})")
+                return False
+                
+            # 3. ウィンドウをアクティブにする
+            subprocess.run(['wmctrl', '-i', '-a', window_id])
+            time.sleep(0.2) # ウィンドウアクティブ化とタイトルの描画更新を待つ
+            
+            # 4. xdotool を使用して、現在のウィンドウタイトルが一致するまでタブを切り替える
+            max_tabs = 20
+            for i in range(max_tabs):
+                # 現在のアクティブなタブのタイトルを取得
+                title_output = subprocess.check_output(['xdotool', 'getwindowname', window_id], text=True).strip()
+                if self.tab_title.lower() in title_output.lower():
+                    print(f"タブが見つかりました: {self.tab_title} (巡回回数: {i})")
+                    return True
+                
+                # ウィンドウのフォーカスを維持し、グローバルにキー入力を送信 (GTK3のセキュリティ制限対策)
+                subprocess.run(['wmctrl', '-i', '-a', window_id])
+                subprocess.run(['xdotool', 'key', 'ctrl+Page_Down'])
+                time.sleep(0.1) # 反映待ちを少し長めに調整 (0.05 -> 0.1)
+                
+            print(f"タブが見つかりませんでした: {self.tab_title}")
+            return False
+            
+        except FileNotFoundError as e:
+            # wmctrl or xdotool がインストールされていない場合
+            print(f"タブ表示用コマンド（wmctrl / xdotool）が見つかりません: {e}")
+            return False
+        except Exception as e:
+            print(f"タブフォーカス中にエラーが発生しました: {e}")
+            return False
+
     def is_running(self):
         """プロセスが実行中かチェック"""
         if self.pid_file_content and psutil.pid_exists(self.pid_file_content):

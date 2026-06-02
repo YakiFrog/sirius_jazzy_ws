@@ -58,7 +58,31 @@ class LaunchButton(LaunchButtonUI):
             pass
     
     def launch(self):
-        """コマンドを新しいターミナルタブで起動"""
+        """コマンドを新しいターミナルタブで起動。既に起動している場合はそのタブを表示"""
+        if self.process_manager.is_running():
+            print(f"既に起動しています。タブをフォーカスします: {self.name}")
+            import shutil
+            tools_installed = shutil.which('wmctrl') is not None and shutil.which('xdotool') is not None
+            
+            if not self.process_manager.focus_terminator_tab():
+                if not tools_installed:
+                    QMessageBox.information(
+                        self, 
+                        "情報", 
+                        f"「{self.name}」は既に起動しています。\n\n"
+                        "※開いているターミナルタブに自動で切り替えるには、wmctrl と xdotool のインストールが必要です。\n"
+                        "以下のコマンドを実行してください：\n"
+                        "sudo apt install wmctrl xdotool -y"
+                    )
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "警告",
+                        f"「{self.name}」のターミナルタブをフォーカスできませんでした。\n"
+                        "タブが手動で閉じられたか、名前が変更された可能性があります。"
+                    )
+            return
+            
         if self.process_manager.launch():
             QTimer.singleShot(1500, self.load_pid)
             print(f"起動: {self.name}")

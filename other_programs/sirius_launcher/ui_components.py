@@ -50,9 +50,16 @@ class LaunchButtonUI(QWidget):
     
     def update_status(self, is_running, has_error=False):
         """ステータス表示を更新"""
-        self.launch_btn.setEnabled(not is_running)
+        self.launch_btn.setEnabled(True)  # 起動中も有効にし、フォーカスボタンとして機能させる
         self.stop_btn.setEnabled(is_running)
         
+        if is_running:
+            self.launch_btn.setText(f"👁 {self.name}")
+            self.launch_btn.setStyleSheet("background-color: #17a2b8; color: white; font-weight: bold;")
+        else:
+            self.launch_btn.setText(f"▶ {self.name}")
+            self.launch_btn.setStyleSheet("")
+            
         if has_error:
             self.status_label.setStyleSheet("color: #dc3545; font-size: 16px; font-weight: bold;") # 赤
             self.status_label.setText("!")
