@@ -7,7 +7,7 @@ ROSBAG_PID=""
 CURRENT_BAG_PATH=""
 RESULT_SHOWN=false
 
-trap 'echo ""; echo "Ctrl + Cが押されました。記録を停止します..."; kill $ROSBAG_PID 2>/dev/null; wait $ROSBAG_PID 2>/dev/null; show_result' 2
+trap 'echo ""; echo "記録を停止・保存しています..."; kill -INT $ROSBAG_PID 2>/dev/null; wait $ROSBAG_PID 2>/dev/null; show_result; exit 0' INT TERM HUP
 
 ROSBAG_DIR="${HOME}/rosbag2_data"
 
@@ -25,6 +25,23 @@ show_result() {
     echo "========================================="
     echo "✓ 記録が完了しました"
     echo "  保存先: $CURRENT_BAG_PATH"
+    
+    # 未インデックス対策: MCAPファイルを自動修復/インデックス処理する
+    if [ -d "$CURRENT_BAG_PATH" ]; then
+        # フォルダ内の .mcap ファイルを探す
+        local mcap_file=$(find "$CURRENT_BAG_PATH" -name "*.mcap" | head -n 1)
+        if [ -n "$mcap_file" ] && [ -f "$mcap_file" ]; then
+            echo "  [MCAP] インデックスの整合性を自動チェック・修復中..."
+            local tmp_mcap="${mcap_file}.tmp"
+            if "${HOME}/sirius_jazzy_ws/mcap" recover "$mcap_file" -o "$tmp_mcap" >/dev/null 2>&1; then
+                mv "$tmp_mcap" "$mcap_file"
+                echo "  [MCAP] ✓ インデックス処理が正常に完了しました（Foxgloveで開けます）"
+            else
+                rm -f "$tmp_mcap"
+                echo "  [MCAP] ⚠ 自動修復に失敗しました。手動で mcap recover を試してください"
+            fi
+        fi
+    fi
     
     # ファイルサイズ表示
     if [ -d "$CURRENT_BAG_PATH" ]; then
