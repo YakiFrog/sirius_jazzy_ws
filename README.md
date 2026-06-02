@@ -207,16 +207,19 @@ ros2 param set /velocity_smoother max_decel "[-1.0, 0.0, -2.0]"
 
 ### 2. エイリアス（ショートカット）による簡単切り替え
 
-`bash_alias2.sh`（または `~/.bashrc`）にエイリアスを定義しておくことで、1コマンドで簡単に切り替えることが可能です。
+`bash_alias2.sh`に定義されているエイリアスを使用して、以下のコマンドで簡単に切り替えることができます。
 
 ```bash
-# ゆっくり安定モード
-alias nav_slow='ros2 param set /controller_server FollowPath.vx_max 0.6 && ros2 param set /controller_server FollowPath.ax_max 0.7 && ros2 param set /controller_server FollowPath.ax_min -0.7 && ros2 param set /velocity_smoother max_velocity "[0.6, 0.0, 1.0]" && ros2 param set /velocity_smoother max_accel "[0.7, 0.0, 2.0]" && ros2 param set /velocity_smoother max_decel "[-0.7, 0.0, -2.0]"'
+# ゆっくり安全歩行モードに切り替え
+nav_safe
 
-# 通常高速モード
-alias nav_fast='ros2 param set /controller_server FollowPath.vx_max 1.0 && ros2 param set /controller_server FollowPath.ax_max 1.0 && ros2 param set /controller_server FollowPath.ax_min -1.0 && ros2 param set /velocity_smoother max_velocity "[1.0, 0.0, 1.0]" && ros2 param set /velocity_smoother max_accel "[1.0, 0.0, 2.0]" && ros2 param set /velocity_smoother max_decel "[-1.0, 0.0, -2.0]"'
+# 通常走行モード（0.9 m/s）に切り替え
+nav_normal
+
+# メニューを表示して対話的にモードを選択
+nav_mode
 ```
-このエイリアスを実行すると、自律移動中の別のターミナルで `nav_slow` または `nav_fast` と入力するだけで即座に走行モードが切り替わります。
+このエイリアスを実行すると、自律移動中の別のターミナルで `nav_safe` または `nav_normal` と入力するだけで即座に走行モードが切り替わります。
 
 ## ウェイポイント追従（move_goal）の仕様と判定閾値の調整
 
