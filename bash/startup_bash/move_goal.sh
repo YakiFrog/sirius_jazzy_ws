@@ -63,10 +63,23 @@ while : ;do
     read waypoint_number
     count="${waypoint_number:-1}"
     
+    echo -n "無限ループしますか？ (y/N, デフォルト: N): "
+    read loop_selection
+    
+    loop_arg=""
+    if [[ "$loop_selection" =~ ^[yY]$ ]]; then
+        loop_arg="--loop"
+    fi
+    
     echo ""
     echo "ウェイポイントファイル: $selected_waypoints.yaml"
     echo "開始インデックス: $count"
+    if [ -n "$loop_arg" ]; then
+        echo "動作モード: 無限ループ"
+    else
+        echo "動作モード: 通常（1回のみ）"
+    fi
     echo ""
     
-    ros2 run sirius_navigation move_goal --waypoints "$selected_waypoints" --count "$count"
+    ros2 run sirius_navigation move_goal --waypoints "$selected_waypoints" --count "$count" $loop_arg
 done
