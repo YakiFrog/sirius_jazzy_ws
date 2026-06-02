@@ -80,12 +80,21 @@ if [ "$MODE" = "normal" ]; then
     # 前進優先の重み（標準値にリセット）
     ros2 param set /controller_server FollowPath.PreferForwardCritic.cost_weight 15.0
     
+    # ゴールへの進行・向きの重み（標準値にリセット）
+    ros2 param set /controller_server FollowPath.GoalCritic.cost_weight 3.0
+    ros2 param set /controller_server FollowPath.GoalAngleCritic.cost_weight 1.0
+    
     # 速度スムーサーの同期
     if ros2 node list 2>/dev/null | grep "/velocity_smoother" >/dev/null 2>&1; then
         ros2 param set /velocity_smoother max_velocity "[0.9, 0.0, 0.9]"
         ros2 param set /velocity_smoother min_velocity "[-0.9, 0.0, -0.9]"
         ros2 param set /velocity_smoother max_accel "[0.9, 0.0, 1.5]"
         ros2 param set /velocity_smoother max_decel "[-0.9, 0.0, -1.5]"
+    fi
+    
+    # グローバルコストマップの障害物レイヤーを有効化 (回避ルート算出を許可)
+    if ros2 node list 2>/dev/null | grep "/global_costmap" >/dev/null 2>&1; then
+        ros2 param set /global_costmap/global_costmap obstacle_layer.enabled True
     fi
     
 elif [ "$MODE" = "safe" ]; then
@@ -117,12 +126,21 @@ elif [ "$MODE" = "safe" ]; then
     # 前進優先の重み（標準値にリセット）
     ros2 param set /controller_server FollowPath.PreferForwardCritic.cost_weight 15.0
     
+    # ゴールへの進行・向きの重み（標準値にリセット）
+    ros2 param set /controller_server FollowPath.GoalCritic.cost_weight 3.0
+    ros2 param set /controller_server FollowPath.GoalAngleCritic.cost_weight 1.0
+    
     # 速度スムーサーの同期
     if ros2 node list 2>/dev/null | grep "/velocity_smoother" >/dev/null 2>&1; then
         ros2 param set /velocity_smoother max_velocity "[0.50, 0.0, 0.50]"
         ros2 param set /velocity_smoother min_velocity "[-0.20, 0.0, -0.50]"
         ros2 param set /velocity_smoother max_accel "[0.50, 0.0, 1.00]"
         ros2 param set /velocity_smoother max_decel "[-0.50, 0.0, -1.00]"
+    fi
+    
+    # グローバルコストマップの障害物レイヤーを有効化 (回避ルート算出を許可)
+    if ros2 node list 2>/dev/null | grep "/global_costmap" >/dev/null 2>&1; then
+        ros2 param set /global_costmap/global_costmap obstacle_layer.enabled True
     fi
 
 elif [ "$MODE" = "strict_normal" ]; then
@@ -143,13 +161,17 @@ elif [ "$MODE" = "strict_normal" ]; then
     # 障害物回避の重み（しっかり安全に止まる）
     ros2 param set /controller_server FollowPath.CostCritic.cost_weight 15.0
     
-    # パス追従の重みを極限まで高め、パスからの逸脱（回避行動）を抑制
-    ros2 param set /controller_server FollowPath.PathAlignCritic.cost_weight 35.0
-    ros2 param set /controller_server FollowPath.PathFollowCritic.cost_weight 25.0
+    # パス追従の重みを極限まで高め、かつ前進の引っ張り（PathFollow）を抑えて回避行動を抑制
+    ros2 param set /controller_server FollowPath.PathAlignCritic.cost_weight 60.0
+    ros2 param set /controller_server FollowPath.PathFollowCritic.cost_weight 3.0
     ros2 param set /controller_server FollowPath.PathAngleCritic.cost_weight 1.5
     
     # 旋回抑制の重みを高めて無駄な方向転換を抑制
     ros2 param set /controller_server FollowPath.TwirlingCritic.cost_weight 5.0
+    
+    # ゴールへの進行・向きの重みを下げて障害物前での立ち往生/待機を優先
+    ros2 param set /controller_server FollowPath.GoalCritic.cost_weight 0.5
+    ros2 param set /controller_server FollowPath.GoalAngleCritic.cost_weight 0.5
     
     # 前進優先の重みを大幅に高め、バックに非常に重いペナルティを課す（基本は前進）
     ros2 param set /controller_server FollowPath.PreferForwardCritic.cost_weight 25.0
@@ -160,6 +182,11 @@ elif [ "$MODE" = "strict_normal" ]; then
         ros2 param set /velocity_smoother min_velocity "[-0.60, 0.0, -0.90]"
         ros2 param set /velocity_smoother max_accel "[0.90, 0.0, 1.50]"
         ros2 param set /velocity_smoother max_decel "[-0.90, 0.0, -1.50]"
+    fi
+    
+    # グローバルコストマップの障害物レイヤーを無効化 (回避ルートの算出を禁止し立ち往生/待機させる)
+    if ros2 node list 2>/dev/null | grep "/global_costmap" >/dev/null 2>&1; then
+        ros2 param set /global_costmap/global_costmap obstacle_layer.enabled False
     fi
 
 elif [ "$MODE" = "strict_safe" ]; then
@@ -180,13 +207,17 @@ elif [ "$MODE" = "strict_safe" ]; then
     # 障害物回避の重み（しっかり安全に止まる）
     ros2 param set /controller_server FollowPath.CostCritic.cost_weight 15.0
     
-    # パス追従の重みを極限まで高め、パスからの逸脱（回避行動）を抑制
-    ros2 param set /controller_server FollowPath.PathAlignCritic.cost_weight 35.0
-    ros2 param set /controller_server FollowPath.PathFollowCritic.cost_weight 25.0
+    # パス追従の重みを極限まで高め、かつ前進の引っ張り（PathFollow）を抑えて回避行動を抑制
+    ros2 param set /controller_server FollowPath.PathAlignCritic.cost_weight 60.0
+    ros2 param set /controller_server FollowPath.PathFollowCritic.cost_weight 3.0
     ros2 param set /controller_server FollowPath.PathAngleCritic.cost_weight 1.5
     
     # 旋回抑制の重みを高めて無駄な方向転換を抑制
     ros2 param set /controller_server FollowPath.TwirlingCritic.cost_weight 5.0
+    
+    # ゴールへの進行・向きの重みを下げて障害物前での立ち往生/待機を優先
+    ros2 param set /controller_server FollowPath.GoalCritic.cost_weight 0.5
+    ros2 param set /controller_server FollowPath.GoalAngleCritic.cost_weight 0.5
     
     # 前進優先の重みを大幅に高め、バックに非常に重いペナルティを課す（基本は前進）
     ros2 param set /controller_server FollowPath.PreferForwardCritic.cost_weight 25.0
@@ -197,6 +228,11 @@ elif [ "$MODE" = "strict_safe" ]; then
         ros2 param set /velocity_smoother min_velocity "[-0.20, 0.0, -0.50]"
         ros2 param set /velocity_smoother max_accel "[0.50, 0.0, 1.00]"
         ros2 param set /velocity_smoother max_decel "[-0.50, 0.0, -1.00]"
+    fi
+    
+    # グローバルコストマップの障害物レイヤーを無効化 (回避ルートの算出を禁止し立ち往生/待機させる)
+    if ros2 node list 2>/dev/null | grep "/global_costmap" >/dev/null 2>&1; then
+        ros2 param set /global_costmap/global_costmap obstacle_layer.enabled False
     fi
 fi
 
