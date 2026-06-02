@@ -10,7 +10,7 @@ if [ -z "$MODE" ]; then
     echo " 走行モードを選択してください (Select Navigation Mode)"
     echo "========================================="
     echo "1) 通常走行モード (normal) - 0.9 m/s"
-    echo "2) ゆっくり安全歩行モード (safe) - 0.35 m/s"
+    echo "2) ゆっくり安全歩行モード (safe) - 0.5 m/s"
     echo "-----------------------------------------"
     read -p "選択してください [1-2]: " CHOICE
     case "$CHOICE" in
@@ -71,25 +71,25 @@ elif [ "$MODE" = "safe" ]; then
     echo "ゆっくり安全歩行モードに設定中..."
     
     # MPPIコントローラーの速度上限と探索分散の設定（低速・スムーズ）
-    ros2 param set /controller_server FollowPath.vx_max 0.35
-    ros2 param set /controller_server FollowPath.wz_max 0.40
-    ros2 param set /controller_server FollowPath.vx_std 0.15
-    ros2 param set /controller_server FollowPath.wz_std 0.15
+    ros2 param set /controller_server FollowPath.vx_max 0.50
+    ros2 param set /controller_server FollowPath.wz_max 0.50
+    ros2 param set /controller_server FollowPath.vx_std 0.20
+    ros2 param set /controller_server FollowPath.wz_std 0.20
     
     # MPPIコントローラーの加速度制限の設定（緩やかな加減速）
-    ros2 param set /controller_server FollowPath.ax_max 0.40
-    ros2 param set /controller_server FollowPath.ax_min -0.40
-    ros2 param set /controller_server FollowPath.az_max 0.80
+    ros2 param set /controller_server FollowPath.ax_max 0.50
+    ros2 param set /controller_server FollowPath.ax_min -0.50
+    ros2 param set /controller_server FollowPath.az_max 1.00
     
     # 障害物回避の重み（高めて安全性を強化）
-    ros2 param set /controller_server FollowPath.CostCritic.cost_weight 18.0
+    ros2 param set /controller_server FollowPath.CostCritic.cost_weight 15.0
     
     # 速度スムーサーの同期
     if ros2 node list 2>/dev/null | grep "/velocity_smoother" >/dev/null 2>&1; then
-        ros2 param set /velocity_smoother max_velocity "[0.35, 0.0, 0.40]"
-        ros2 param set /velocity_smoother min_velocity "[-0.35, 0.0, -0.40]"
-        ros2 param set /velocity_smoother max_accel "[0.40, 0.0, 0.80]"
-        ros2 param set /velocity_smoother max_decel "[-0.40, 0.0, -0.80]"
+        ros2 param set /velocity_smoother max_velocity "[0.50, 0.0, 0.50]"
+        ros2 param set /velocity_smoother min_velocity "[-0.50, 0.0, -0.50]"
+        ros2 param set /velocity_smoother max_accel "[0.50, 0.0, 1.00]"
+        ros2 param set /velocity_smoother max_decel "[-0.50, 0.0, -1.00]"
     fi
 fi
 
