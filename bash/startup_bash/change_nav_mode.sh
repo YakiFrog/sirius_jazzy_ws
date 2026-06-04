@@ -154,8 +154,8 @@ elif [ "$MODE" = "slow" ]; then
     ros2 param set /controller_server FollowPath.vx_max 0.20
     ros2 param set /controller_server FollowPath.vx_min -0.10
     ros2 param set /controller_server FollowPath.wz_max 0.20
-    ros2 param set /controller_server FollowPath.vx_std 0.05
-    ros2 param set /controller_server FollowPath.wz_std 0.05
+    ros2 param set /controller_server FollowPath.vx_std 0.20
+    ros2 param set /controller_server FollowPath.wz_std 0.20
     
     # MPPIコントローラーの加速度制限の設定（極めて緩やかな加減速）
     ros2 param set /controller_server FollowPath.ax_max 0.20
