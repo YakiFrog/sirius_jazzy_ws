@@ -198,6 +198,17 @@ alias nav_mode='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh'
 # ROS2 bag記録起動
 alias record_rosbag='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag.sh'
 
+# 好きなタイミングで実験メモを送信する関数
+# 使い方: pub_memo "送信したい内容"
+pub_memo() {
+    if [ -z "$1" ]; then
+        echo "使用方法: pub_memo \"送信したいメッセージ\""
+        return 1
+    fi
+    ros2 topic pub --once /experiment_metadata std_msgs/msg/String "data: '$1'"
+}
+
 # # マップ切り替え（プログラム呼び出し用、引数に地図名を指定）
 # # 例: change_map_simple 1202-15f
-# alias change_map_simple='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map_simple.sh'alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
+# alias change_map_simple='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map_simple.sh'
+alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'

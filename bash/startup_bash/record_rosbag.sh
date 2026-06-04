@@ -6,6 +6,7 @@
 ROSBAG_PID=""
 CURRENT_BAG_PATH=""
 RESULT_SHOWN=false
+experiment_memo="No description"
 
 trap 'echo ""; echo "記録を停止・保存しています..."; kill -INT $ROSBAG_PID 2>/dev/null; wait $ROSBAG_PID 2>/dev/null; show_result; exit 0' INT TERM HUP
 
@@ -84,6 +85,14 @@ input_filename() {
         bag_name="rosbag_$(date +%Y%m%d_%H%M%S)"
         echo "デフォルト名を使用: $bag_name"
     fi
+
+    echo -n "実験内容のメモを入力してください (例: SLAM精度検証): "
+    read input_memo
+    if [ -n "$input_memo" ]; then
+        experiment_memo="$input_memo"
+    else
+        experiment_memo="No description"
+    fi
     
     # 既存チェック
     if [ -d "$ROSBAG_DIR/$bag_name" ]; then
@@ -110,11 +119,16 @@ start_recording() {
     echo "========================================="
     echo "記録を開始します..."
     echo "  保存先: $CURRENT_BAG_PATH"
+    echo "  実験メモ: $experiment_memo"
     echo "  停止するには Ctrl+C を押してください"
     echo "========================================="
     echo ""
     
+    # 録画開始の瞬間にのみ実験メタデータを1回パブリッシュ
+    ros2 topic pub --once /experiment_metadata std_msgs/msg/String "data: '$experiment_memo'" >/dev/null 2>&1 &
+
     ros2 bag record -o "$CURRENT_BAG_PATH" \
+        /experiment_metadata \
         /scan3 \
         /odom \
         /odom/filtered \
