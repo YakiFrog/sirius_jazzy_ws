@@ -12,7 +12,7 @@ class ParameterSetter(Node):
     def set_node_parameters(self, node_name, params_dict):
         srv_name = f'{node_name}/set_parameters'
         client = self.create_client(SetParameters, srv_name)
-        if not client.wait_for_service(timeout_sec=0.5):
+        if not client.wait_for_service(timeout_sec=5.0):
             print(f"[Warning] Node '{node_name}' is not running or service not available.")
             return False
             
