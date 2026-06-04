@@ -153,9 +153,9 @@ elif [ "$MODE" = "slow" ]; then
     # MPPIコントローラーの速度上限と探索分散の設定（極めて低速・高精度）
     ros2 param set /controller_server FollowPath.vx_max 0.20
     ros2 param set /controller_server FollowPath.vx_min -0.10
-    ros2 param set /controller_server FollowPath.wz_max 0.30
-    ros2 param set /controller_server FollowPath.vx_std 0.10
-    ros2 param set /controller_server FollowPath.wz_std 0.15
+    ros2 param set /controller_server FollowPath.wz_max 0.20
+    ros2 param set /controller_server FollowPath.vx_std 0.05
+    ros2 param set /controller_server FollowPath.wz_std 0.05
     
     # MPPIコントローラーの加速度制限の設定（極めて緩やかな加減速）
     ros2 param set /controller_server FollowPath.ax_max 0.20
@@ -182,8 +182,8 @@ elif [ "$MODE" = "slow" ]; then
     
     # 速度スムーサーの同期
     if ros2 node list 2>/dev/null | grep "/velocity_smoother" >/dev/null 2>&1; then
-        ros2 param set /velocity_smoother max_velocity "[0.20, 0.0, 0.30]"
-        ros2 param set /velocity_smoother min_velocity "[-0.10, 0.0, -0.30]"
+        ros2 param set /velocity_smoother max_velocity "[0.20, 0.0, 0.20]"
+        ros2 param set /velocity_smoother min_velocity "[-0.10, 0.0, -0.20]"
         ros2 param set /velocity_smoother max_accel "[0.20, 0.0, 0.50]"
         ros2 param set /velocity_smoother max_decel "[-0.20, 0.0, -0.50]"
     fi
@@ -291,9 +291,9 @@ elif [ "$MODE" = "strict_slow" ]; then
     # MPPIコントローラーの速度上限と探索分散の設定（極めて低速・高精度・安全なバックを許可）
     ros2 param set /controller_server FollowPath.vx_max 0.20
     ros2 param set /controller_server FollowPath.vx_min -0.10
-    ros2 param set /controller_server FollowPath.wz_max 0.30
-    ros2 param set /controller_server FollowPath.vx_std 0.10
-    ros2 param set /controller_server FollowPath.wz_std 0.15
+    ros2 param set /controller_server FollowPath.wz_max 0.20
+    ros2 param set /controller_server FollowPath.vx_std 0.05
+    ros2 param set /controller_server FollowPath.wz_std 0.05
     
     # MPPIコントローラーの加速度制限の設定（極めて緩やかな加減速）
     ros2 param set /controller_server FollowPath.ax_max 0.20
@@ -320,8 +320,8 @@ elif [ "$MODE" = "strict_slow" ]; then
     
     # 速度スムーサーの同期
     if ros2 node list 2>/dev/null | grep "/velocity_smoother" >/dev/null 2>&1; then
-        ros2 param set /velocity_smoother max_velocity "[0.20, 0.0, 0.30]"
-        ros2 param set /velocity_smoother min_velocity "[-0.10, 0.0, -0.30]"
+        ros2 param set /velocity_smoother max_velocity "[0.20, 0.0, 0.20]"
+        ros2 param set /velocity_smoother min_velocity "[-0.10, 0.0, -0.20]"
         ros2 param set /velocity_smoother max_accel "[0.20, 0.0, 0.50]"
         ros2 param set /velocity_smoother max_decel "[-0.20, 0.0, -0.50]"
     fi
