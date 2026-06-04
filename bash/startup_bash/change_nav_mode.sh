@@ -1,6 +1,6 @@
 #!/bin/bash
 # change_nav_mode.sh: Nav2 MPPI controller 走行モード動的切り替えスクリプト
-# 使い方: ./change_nav_mode.sh [normal|safe|strict_normal|strict_safe|strict] (未指定の場合はメニューから選択)
+# 使い方: ./change_nav_mode.sh [normal|safe|slow|strict_normal|strict_safe|strict_slow|strict] (未指定の場合はメニューから選択)
 
 MODE=$1
 
@@ -11,15 +11,19 @@ if [ -z "$MODE" ]; then
     echo "========================================="
     echo "1) 通常走行モード (normal) - 0.9 m/s"
     echo "2) ゆっくり安全歩行モード (safe) - 0.4 m/s"
-    echo "3) パス追従優先・通常速度モード (strict_normal) - 0.9 m/s (回避せず待機)"
-    echo "4) パス追従優先・ゆっくり速度モード (strict_safe) - 0.4 m/s (回避せず待機)"
+    echo "3) 超低速安全歩行モード (slow) - 0.2 m/s"
+    echo "4) パス追従優先・通常速度モード (strict_normal) - 0.9 m/s (回避せず待機)"
+    echo "5) パス追従優先・ゆっくり速度モード (strict_safe) - 0.4 m/s (回避せず待機)"
+    echo "6) パス追従優先・超低速速度モード (strict_slow) - 0.2 m/s (回避せず待機)"
     echo "-----------------------------------------"
-    read -p "選択してください [1-4]: " CHOICE
+    read -p "選択してください [1-6]: " CHOICE
     case "$CHOICE" in
         1) MODE="normal" ;;
         2) MODE="safe" ;;
-        3) MODE="strict_normal" ;;
-        4) MODE="strict_safe" ;;
+        3) MODE="slow" ;;
+        4) MODE="strict_normal" ;;
+        5) MODE="strict_safe" ;;
+        6) MODE="strict_slow" ;;
         *) echo "無効な選択です。終了します。"; exit 1 ;;
     esac
 fi
@@ -29,9 +33,9 @@ if [ "$MODE" = "strict" ]; then
     MODE="strict_safe"
 fi
 
-if [ "$MODE" != "normal" ] && [ "$MODE" != "safe" ] && [ "$MODE" != "strict_normal" ] && [ "$MODE" != "strict_safe" ]; then
+if [ "$MODE" != "normal" ] && [ "$MODE" != "safe" ] && [ "$MODE" != "slow" ] && [ "$MODE" != "strict_normal" ] && [ "$MODE" != "strict_safe" ] && [ "$MODE" != "strict_slow" ]; then
     echo "エラー: 走行モードを正しく指定してください。"
-    echo "使い方: $0 [normal|safe|strict_normal|strict_safe]"
+    echo "使い方: $0 [normal|safe|slow|strict_normal|strict_safe|strict_slow]"
     exit 1
 fi
 
@@ -143,6 +147,52 @@ elif [ "$MODE" = "safe" ]; then
         ros2 param set /global_costmap/global_costmap obstacle_layer.enabled True
     fi
 
+elif [ "$MODE" = "slow" ]; then
+    echo "超低速安全歩行モードに設定中..."
+    
+    # MPPIコントローラーの速度上限と探索分散の設定（極めて低速・高精度）
+    ros2 param set /controller_server FollowPath.vx_max 0.20
+    ros2 param set /controller_server FollowPath.vx_min -0.10
+    ros2 param set /controller_server FollowPath.wz_max 0.30
+    ros2 param set /controller_server FollowPath.vx_std 0.10
+    ros2 param set /controller_server FollowPath.wz_std 0.15
+    
+    # MPPIコントローラーの加速度制限の設定（極めて緩やかな加減速）
+    ros2 param set /controller_server FollowPath.ax_max 0.20
+    ros2 param set /controller_server FollowPath.ax_min -0.20
+    ros2 param set /controller_server FollowPath.az_max 0.50
+    
+    # 障害物回避の重み（高めて安全性を最大化）
+    ros2 param set /controller_server FollowPath.CostCritic.cost_weight 20.0
+    
+    # パス追従の重み（標準値にリセット）
+    ros2 param set /controller_server FollowPath.PathAlignCritic.cost_weight 8.0
+    ros2 param set /controller_server FollowPath.PathFollowCritic.cost_weight 8.0
+    ros2 param set /controller_server FollowPath.PathAngleCritic.cost_weight 2.0
+    
+    # 旋回抑制の重み（標準値にリセット）
+    ros2 param set /controller_server FollowPath.TwirlingCritic.cost_weight 3.0
+    
+    # 前進優先の重み（標準値にリセット）
+    ros2 param set /controller_server FollowPath.PreferForwardCritic.cost_weight 15.0
+    
+    # ゴールへの進行・向きの重み（標準値にリセット）
+    ros2 param set /controller_server FollowPath.GoalCritic.cost_weight 3.0
+    ros2 param set /controller_server FollowPath.GoalAngleCritic.cost_weight 1.0
+    
+    # 速度スムーサーの同期
+    if ros2 node list 2>/dev/null | grep "/velocity_smoother" >/dev/null 2>&1; then
+        ros2 param set /velocity_smoother max_velocity "[0.20, 0.0, 0.30]"
+        ros2 param set /velocity_smoother min_velocity "[-0.10, 0.0, -0.30]"
+        ros2 param set /velocity_smoother max_accel "[0.20, 0.0, 0.50]"
+        ros2 param set /velocity_smoother max_decel "[-0.20, 0.0, -0.50]"
+    fi
+    
+    # グローバルコストマップの障害物レイヤーを有効化 (回避ルート算出を許可)
+    if ros2 node list 2>/dev/null | grep "/global_costmap" >/dev/null 2>&1; then
+        ros2 param set /global_costmap/global_costmap obstacle_layer.enabled True
+    fi
+
 elif [ "$MODE" = "strict_normal" ]; then
     echo "パス追従優先・通常速度モードに設定中..."
     
@@ -228,6 +278,52 @@ elif [ "$MODE" = "strict_safe" ]; then
         ros2 param set /velocity_smoother min_velocity "[-0.20, 0.0, -0.40]"
         ros2 param set /velocity_smoother max_accel "[0.40, 0.0, 1.00]"
         ros2 param set /velocity_smoother max_decel "[-0.40, 0.0, -1.00]"
+    fi
+    
+    # グローバルコストマップの障害物レイヤーを無効化 (回避ルートの算出を禁止し立ち往生/待機させる)
+    if ros2 node list 2>/dev/null | grep "/global_costmap" >/dev/null 2>&1; then
+        ros2 param set /global_costmap/global_costmap obstacle_layer.enabled False
+    fi
+
+elif [ "$MODE" = "strict_slow" ]; then
+    echo "パス追従優先・超低速速度モードに設定中..."
+    
+    # MPPIコントローラーの速度上限と探索分散の設定（極めて低速・高精度・安全なバックを許可）
+    ros2 param set /controller_server FollowPath.vx_max 0.20
+    ros2 param set /controller_server FollowPath.vx_min -0.10
+    ros2 param set /controller_server FollowPath.wz_max 0.30
+    ros2 param set /controller_server FollowPath.vx_std 0.10
+    ros2 param set /controller_server FollowPath.wz_std 0.15
+    
+    # MPPIコントローラーの加速度制限の設定（極めて緩やかな加減速）
+    ros2 param set /controller_server FollowPath.ax_max 0.20
+    ros2 param set /controller_server FollowPath.ax_min -0.20
+    ros2 param set /controller_server FollowPath.az_max 0.50
+    
+    # 障害物回避の重み（しっかり安全に止まる）
+    ros2 param set /controller_server FollowPath.CostCritic.cost_weight 20.0
+    
+    # パス追従の重みを極限まで高め、かつ前進の引っ張り（PathFollow）を抑えて回避行動を抑制
+    ros2 param set /controller_server FollowPath.PathAlignCritic.cost_weight 60.0
+    ros2 param set /controller_server FollowPath.PathFollowCritic.cost_weight 3.0
+    ros2 param set /controller_server FollowPath.PathAngleCritic.cost_weight 1.5
+    
+    # 旋回抑制の重みを高めて無駄な方向転換を抑制
+    ros2 param set /controller_server FollowPath.TwirlingCritic.cost_weight 5.0
+    
+    # ゴールへの進行・向きの重みを下げて障害物前での立ち往生/待機を優先
+    ros2 param set /controller_server FollowPath.GoalCritic.cost_weight 0.5
+    ros2 param set /controller_server FollowPath.GoalAngleCritic.cost_weight 0.5
+    
+    # 前進優先の重みを大幅に高め、バックに非常に重いペナルティを課す（基本は前進）
+    ros2 param set /controller_server FollowPath.PreferForwardCritic.cost_weight 25.0
+    
+    # 速度スムーサーの同期
+    if ros2 node list 2>/dev/null | grep "/velocity_smoother" >/dev/null 2>&1; then
+        ros2 param set /velocity_smoother max_velocity "[0.20, 0.0, 0.30]"
+        ros2 param set /velocity_smoother min_velocity "[-0.10, 0.0, -0.30]"
+        ros2 param set /velocity_smoother max_accel "[0.20, 0.0, 0.50]"
+        ros2 param set /velocity_smoother max_decel "[-0.20, 0.0, -0.50]"
     fi
     
     # グローバルコストマップの障害物レイヤーを無効化 (回避ルートの算出を禁止し立ち往生/待機させる)

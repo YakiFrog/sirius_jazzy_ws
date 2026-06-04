@@ -189,9 +189,11 @@ alias change_map='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map.sh'
 
 # 走行モード切り替え（安全歩行 / 通常 / パス追従）
 alias nav_safe='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh safe'
+alias nav_slow='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh slow'
 alias nav_normal='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh normal'
 alias nav_strict_normal='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_normal'
 alias nav_strict_safe='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_safe'
+alias nav_strict_slow='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_slow'
 alias nav_strict='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_safe'
 alias nav_mode='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh'
 
