@@ -10,7 +10,7 @@ if [ -z "$MODE" ]; then
     echo " 走行モードを選択してください (Select Navigation Mode)"
     echo "========================================="
     echo "1) 通常走行モード (normal) - 0.9 m/s"
-    echo "2) 通常走行・探索強化モード (normal_active) - 0.9 m/s (探索広め・安全重視)"
+    echo "2) 通常走行・探索強化モード (normal_active) - 1.0 m/s (探索広め・加速強め・安全重視)"
     echo "3) ゆっくり安全歩行モード (safe) - 0.4 m/s"
     echo "4) 超低速安全歩行モード (slow) - 0.2 m/s"
     echo "5) パス追従優先・通常速度モード (strict_normal) - 0.9 m/s (回避せず待機)"
@@ -107,19 +107,19 @@ elif [ "$MODE" = "normal_active" ]; then
     echo "通常走行・探索強化モードに設定中..."
     
     # MPPIコントローラーの速度上限と探索分散の設定 (探索ノイズを広げて経路開拓能力を強化)
-    ros2 param set /controller_server FollowPath.vx_max 0.90
+    ros2 param set /controller_server FollowPath.vx_max 1.00
     ros2 param set /controller_server FollowPath.vx_min -0.60
-    ros2 param set /controller_server FollowPath.wz_max 0.90
-    ros2 param set /controller_server FollowPath.vx_std 0.38
-    ros2 param set /controller_server FollowPath.wz_std 0.45
+    ros2 param set /controller_server FollowPath.wz_max 1.00
+    ros2 param set /controller_server FollowPath.vx_std 0.40
+    ros2 param set /controller_server FollowPath.wz_std 0.48
     
-    # MPPIコントローラーの加速度制限の設定
-    ros2 param set /controller_server FollowPath.ax_max 0.90
-    ros2 param set /controller_server FollowPath.ax_min -0.90
-    ros2 param set /controller_server FollowPath.az_max 1.50
+    # MPPIコントローラーの加速度制限の設定 (加速・減速の制限を大幅に向上)
+    ros2 param set /controller_server FollowPath.ax_max 1.50
+    ros2 param set /controller_server FollowPath.ax_min -1.50
+    ros2 param set /controller_server FollowPath.az_max 2.20
     
-    # 障害物回避の重み (ノイズが大きくても安全領域を通るように重みを少し高めに設定)
-    ros2 param set /controller_server FollowPath.CostCritic.cost_weight 15.0
+    # 障害物回避の重み (高速走行に耐えうるよう安全ウェイトを強化)
+    ros2 param set /controller_server FollowPath.CostCritic.cost_weight 20.0
     
     # パス追従の重み
     ros2 param set /controller_server FollowPath.PathAlignCritic.cost_weight 8.0
