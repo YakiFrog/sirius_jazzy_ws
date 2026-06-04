@@ -72,6 +72,7 @@ input_filename() {
     echo "  - /npc/odom (NPC Odometry)"
     echo "  - /target_detector/target_markers"
     echo "  - /robot_path"
+    echo "  - /robot_path_marker"
     echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
     echo ""
     echo "※ /velodyne_points (3D点群) は除外されます"
@@ -151,6 +152,7 @@ start_recording() {
         /npc/odom \
         /target_detector/target_markers \
         /robot_path \
+        /robot_path_marker \
         /joint_states &
     
     ROSBAG_PID=$!
