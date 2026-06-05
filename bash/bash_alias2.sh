@@ -120,6 +120,9 @@ alias twist_mux='src && ros2 launch sirius_navigation twist_mux.launch.py'
 # 手動操作 V2（優先順位対応版）
 alias keyop2='src && ros2 run sirius_keyop sirius_keyop_v2'
 
+# ダイナミックゴール手動操作起動
+alias keyop_goal='src && xterm -T "Sirius 360°ダイナミックゴール・キーオペ" -geometry 95x25 -e ros2 run sirius_navigation keyboard_dynamic_goal'
+
 # アシスト付き手動操作（Assisted Teleop）起動
 alias assisted_teleop='src && ros2 launch sirius_navigation assisted_teleop.launch.py'
 alias assisted_teleop_nav2='src && ros2 launch sirius_navigation assisted_teleop_with_nav2.launch.py'
