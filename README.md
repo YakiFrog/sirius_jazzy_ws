@@ -173,56 +173,43 @@ $$-1.53 \le v \pm 0.20 \omega \le 1.53 \text{ [m/s]}$$
 
 ## 走行モード（高速・低速安定）の動的切り替え方法
 
-SIRIUSのナビゲーション実行中に、ロボットやROS 2を再起動することなく、コマンドラインから動的に走行モード（最高速度や加減速度制限）を切り替えることができます。
+SIRIUSのナビゲーション実行中に、ロボットやROS 2を再起動することなく、コマンドラインから動的に走行モード（最高速度や加減速度制限、障害物回避の有無など）を切り替えることができます。
 
-### 1. 動的パラメータ書き換えコマンド
+### 1. 動的パラメータ一括切り替えスクリプト
 
-ターミナルから以下のコマンドを実行することで、実行中のNav2プランナー（MPPI）および速度スムーサー（velocity_smoother）の制限値をリアルタイムに変更できます。
+`change_nav_mode.sh` は内部で Python スクリプト `change_nav_mode_fast.py` を呼び出します。このスクリプトは、ROS 2 の `SetParameters` サービス通信を利用して、実行中の `/controller_server`、`/velocity_smoother`、`/global_costmap/global_costmap` のパラメータを非同期かつ一括で高速に変更します（従来の個別コマンド実行方式と比べて大幅に切り替え時間が短縮されています）。
 
-#### ■ ゆっくり・安定走行モード（例: 0.6 m/s, 加減速 0.7 m/s²）
-```bash
-# MPPIプランナー（目標値と加減速）の変更
-ros2 param set /controller_server FollowPath.vx_max 0.6
-ros2 param set /controller_server FollowPath.ax_max 0.7
-ros2 param set /controller_server FollowPath.ax_min -0.7
+現在、以下の7つのモードが実装されています。
 
-# 速度スムーサー（加減速フィルタ）の制限値変更
-ros2 param set /velocity_smoother max_velocity "[0.6, 0.0, 1.0]"
-ros2 param set /velocity_smoother max_accel "[0.7, 0.0, 2.0]"
-ros2 param set /velocity_smoother max_decel "[-0.7, 0.0, -2.0]"
-```
-
-#### ■ 通常・高速走行モード（例: 1.0 m/s, 加減速 1.0 m/s²）
-```bash
-# MPPIプランナー（目標値と加減速）の変更
-ros2 param set /controller_server FollowPath.vx_max 1.0
-ros2 param set /controller_server FollowPath.ax_max 1.0
-ros2 param set /controller_server FollowPath.ax_min -1.0
-
-# 速度スムーサー（加減速フィルタ）の制限値変更
-ros2 param set /velocity_smoother max_velocity "[1.0, 0.0, 1.0]"
-ros2 param set /velocity_smoother max_accel "[1.0, 0.0, 2.0]"
-ros2 param set /velocity_smoother max_decel "[-1.0, 0.0, -2.0]"
-```
+| モード名 (引数) | 線速度上限 ($v_{\max}$) | 角速度上限 ($\omega_{\max}$) | グローバル障害物回避 (`obstacle_layer`) | 特徴・用途 | 対応エイリアス |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`normal`** | 0.90 m/s | 0.90 rad/s | **有効** | 通常走行モード。標準的な速度と障害物回避を行います。 | `nav_normal` |
+| **`normal_active`** | 1.00 m/s | 1.00 rad/s | **有効** | 通常走行・探索強化モード。最高速度と加速度を少し高めに設定し、応答性を向上。 | `nav_normal_active` |
+| **`safe`** | 0.40 m/s | 0.40 rad/s | **有効** | ゆっくり安全歩行モード。人の歩行速度に合わせ、安全マージンを広く取ります。 | `nav_safe` |
+| **`slow`** | 0.20 m/s | 0.20 rad/s | **有効** | 超低速安全歩行モード。極めて狭い場所や慎重なアプローチ用。 | `nav_slow` |
+| **`strict_normal`** | 0.90 m/s | 0.90 rad/s | **無効** | パス追従優先・通常速度モード。障害物回避をオフにし、高重み（PathAlignCritic=60.0）で正確に経路を追従します。 | `nav_strict_normal` |
+| **`strict_safe`** | 0.40 m/s | 0.40 rad/s | **無効** | パス追従優先・ゆっくり速度モード。経路追従を最優先しつつ、安全速度で走行します。 | `nav_strict_safe` (または `nav_strict`) |
+| **`strict_slow`** | 0.20 m/s | 0.20 rad/s | **無効** | パス追従優先・超低速速度モード。最も精密にグローバルパス上をなぞりたい場合に使用します。 | `nav_strict_slow` |
 
 ### 2. エイリアス（ショートカット）による簡単切り替え
 
-`bash_alias2.sh`に定義されているエイリアスを使用して、以下のコマンドで簡単に切り替えることができます。
+`bash_alias2.sh` に定義されている以下のエイリアスを使用することで、自律移動中の別のターミナルから簡単に走行モードを切り替えることができます。
 
 ```bash
-# ゆっくり安全歩行モードに切り替え
-nav_safe
+# 各種モードへの即時切り替え
+nav_normal           # 通常走行モード (0.9 m/s)
+nav_normal_active    # 通常走行・探索強化モード (1.0 m/s)
+nav_safe             # ゆっくり安全歩行モード (0.4 m/s)
+nav_slow             # 超低速安全歩行モード (0.2 m/s)
+nav_strict_normal    # パス追従優先・通常速度 (0.9 m/s, グローバル障害物回避オフ)
+nav_strict_safe      # パス追従優先・ゆっくり速度 (0.4 m/s, グローバル障害物回避オフ)
+nav_strict_slow      # パス追従優先・超低速速度 (0.2 m/s, グローバル障害物回避オフ)
+nav_strict           # (strict_safe と同等)
 
-# 通常走行モード（0.9 m/s）に切り替え
-nav_normal
-
-# パス追従優先・一時停止モード（0.5 m/s, 回避せず待機）に切り替え
-nav_strict
-
-# メニューを表示して対話的にモードを選択
-nav_mode
+# 対話メニューによる切り替え
+nav_mode             # 選択メニューを表示して数字入力で切り替え
 ```
-このエイリアスを実行すると、自律移動中の別のターミナルで `nav_safe`、`nav_normal`、または `nav_strict` と入力するだけで即座に走行モードが切り替わります。
+このエイリアスを実行すると、自律移動中のロボットのパラメータが即座に動的更新され、加減速や速度限界がスムーズに変化します。
 
 ## ウェイポイント追従（move_goal）の仕様と判定閾値の調整
 
