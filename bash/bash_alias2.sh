@@ -65,8 +65,8 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
 
-# install packages （初回のみ実行）
-alias install_packages='sudo apt install ros-jazzy-spatio-temporal-voxel-layer -y  && \
+alias install_packages='sudo apt update && sudo apt install xterm -y && \
+sudo apt install ros-jazzy-spatio-temporal-voxel-layer -y  && \
 sudo apt install ros-jazzy-rqt-tf-tree -y && \
 sudo apt install ros-jazzy-foxglove-bridge -y && \
 sudo apt-get install libqt5serialport5-dev'
