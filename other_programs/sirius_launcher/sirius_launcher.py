@@ -162,7 +162,8 @@ class SiriusLauncher(QMainWindow):
     
     def setup_ui(self):
         """UIのセットアップ"""
-        self.preset_layout, self.tab_layouts, self.tab_widget = MainWindowUI.setup_ui(self)
+        self.preset_layout, self.tab_layouts, self.tab_widget, self.reload_btn = MainWindowUI.setup_ui(self)
+        self.reload_btn.clicked.connect(self.reload_launcher)
 
     def add_group(self, title, tab_name=None):
         """グループボックスを追加（タブ対応）"""
@@ -210,6 +211,35 @@ class SiriusLauncher(QMainWindow):
         # 各タブのレイアウトにストレッチ追加
         for layout in self.tab_layouts.values():
             layout.addStretch()
+            
+    def clear_layout(self, layout):
+        """レイアウト内のウィジェットを再帰的に削除"""
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+            elif child.layout():
+                self.clear_layout(child.layout())
+                
+    def reload_launcher(self):
+        """エイリアスファイルを再パースしてGUIを再構築（実行中のプロセスはそのまま維持）"""
+        print("🔄 エイリアス設定を再読み込み中...")
+        
+        # 1. 内部のボタンマップ等をクリア
+        self.buttons = []
+        self.button_map = {}
+        self.presets = []
+        
+        # 2. プリセットボタンをUIから削除
+        self.clear_layout(self.preset_layout)
+        
+        # 3. 各タブのグループボックスなどのUI要素を削除
+        for layout in self.tab_layouts.values():
+            self.clear_layout(layout)
+            
+        # 4. 再ロードと再配置
+        self.load_aliases()
+        print("✅ 再読み込み完了。")
     
     def add_preset_button(self, preset_name, items):
         """プリセットボタンを追加"""

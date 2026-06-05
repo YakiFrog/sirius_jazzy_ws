@@ -88,6 +88,10 @@ class MainWindowUI:
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(10, 10, 10, 10)
 
+        # ヘッダーレイアウト（タイトルとリロードボタン）
+        header_layout = QHBoxLayout()
+        header_layout.addStretch(1)
+
         # タイトル
         title = QLabel("Sirius ROS2 Launch Manager")
         title_font = QFont()
@@ -95,7 +99,17 @@ class MainWindowUI:
         title_font.setBold(True)
         title.setFont(title_font)
         title.setAlignment(Qt.AlignCenter)
-        main_layout.addWidget(title)
+        header_layout.addWidget(title)
+        
+        header_layout.addStretch(1)
+
+        # リロードボタン
+        reload_btn = QPushButton("🔄 リロード")
+        reload_btn.setFixedWidth(100)
+        reload_btn.setStyleSheet("background-color: #28a745; color: white; font-weight: bold; border-radius: 4px; padding: 5px;")
+        header_layout.addWidget(reload_btn)
+
+        main_layout.addLayout(header_layout)
 
         # 情報ラベル
         info_label = QLabel("ボタンを押すとTerminatorのタブで起動します (--new-tab使用) | 緑●=起動中")
@@ -131,7 +145,7 @@ class MainWindowUI:
 
         main_layout.addWidget(tab_widget)
 
-        return preset_layout, tab_layouts, tab_widget
+        return preset_layout, tab_layouts, tab_widget, reload_btn
     
     @staticmethod
     def create_preset_button(preset_name):
