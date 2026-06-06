@@ -22,8 +22,11 @@ alias rqt_console='ros2 run rqt_console rqt_console'
 # TFツリー表示
 alias tftree='ros2 run rqt_tf_tree rqt_tf_tree'
 
-# すべてのプロセスを終了するコマンド
-alias restart='pkill -f "ros2|gz|gazebo" && ros2 daemon stop && ros2 daemon start'
+# すべてのプロセスを終了し、キャッシュをクリアして再起動するコマンド
+alias restart='pkill -f "ros2|gz|gazebo" && ros2 daemon stop && ros2 daemon start && sync && sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"'
+
+# メモリキャッシュを解放するコマンド
+alias freemem='sync && sudo sh -c "echo 3 > /proc/sys/vm/drop_caches" && echo "Memory cache cleared!"'
 
 # foxglove
 # sudo apt install ros-$ROS_DISTRO-foxglove-bridge
