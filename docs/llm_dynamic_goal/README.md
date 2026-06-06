@@ -90,10 +90,10 @@ Use the startup script or the launch alias:
 
 ```bash
 # Sourcing the environment
-source /home/kotantu-desktop/sirius_jazzy_ws/install/setup.bash
+source $HOME/sirius_jazzy_ws/install/setup.bash
 
 # Run using script
-bash /home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/llm_dynamic_goal.sh
+bash $HOME/sirius_jazzy_ws/bash/startup_bash/llm_dynamic_goal.sh
 
 # Or run using bash alias (if source bash_alias2.sh is loaded)
 llm_goal
