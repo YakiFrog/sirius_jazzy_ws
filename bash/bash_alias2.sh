@@ -1,14 +1,8 @@
 # PRESET: フルセンサーセット
-# PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,scn
+# PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real
 
 # PRESET: シミュレータセット
-# PRESET_ITEMS: sim,sf,nav2
-
-# PRESET: シミュレータセット（SLAM）
-# PRESET_ITEMS: sim,sf,nav2slam,slamtoolbox
-
-# PRESET: リアル実験セット（MAPなし）
-# PRESET_ITEMS: sf_real,nav2slam_real,slamtoolbox_real,roboteq,velodyne,hokuyo,imu,scn,rviz2desc
+# PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
 
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
