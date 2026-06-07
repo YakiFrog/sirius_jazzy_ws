@@ -117,6 +117,8 @@ alias keyop2='src && ros2 run sirius_keyop sirius_keyop_v2'
 # ダイナミックゴール手動操作起動
 alias keyop_goal='src && xterm -hold -T "Sirius 360°ダイナミックゴール・キーオペ" -geometry 95x25 -e ros2 run sirius_navigation keyboard_dynamic_goal'
 alias llm_goal='src && ros2 run sirius_navigation llm_dynamic_goal'
+alias status_monitor='src && ros2 run sirius_navigation status_monitor'
+alias status_monitor_win='src && xterm -hold -T "Sirius Status Monitor" -geometry 95x28 -e ros2 run sirius_navigation status_monitor'
 
 # アシスト付き手動操作（Assisted Teleop）起動
 alias assisted_teleop='src && ros2 launch sirius_navigation assisted_teleop.launch.py'
