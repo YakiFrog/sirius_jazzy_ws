@@ -120,6 +120,10 @@ alias llm_goal='src && ros2 run sirius_navigation llm_dynamic_goal'
 alias status_monitor='src && ros2 run sirius_navigation status_monitor'
 alias status_monitor_win='src && xterm -hold -T "Sirius Status Monitor" -geometry 95x28 -e ros2 run sirius_navigation status_monitor'
 
+# BLE管理ノード起動
+alias sirius_ble_gateway='bash ~/sirius_jazzy_ws/bash/startup_bash/sirius_ble_gateway.sh'
+alias sirius_ble_gateway_ui='bash ~/sirius_jazzy_ws/bash/startup_bash/sirius_ble_gateway_ui.sh'
+
 # アシスト付き手動操作（Assisted Teleop）起動
 alias assisted_teleop='src && ros2 launch sirius_navigation assisted_teleop.launch.py'
 alias assisted_teleop_nav2='src && ros2 launch sirius_navigation assisted_teleop_with_nav2.launch.py'
