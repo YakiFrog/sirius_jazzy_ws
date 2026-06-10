@@ -1,0 +1,20 @@
+format_version: '1.0'
+map:
+  name: 0422map
+  yaml: 0422map.yaml
+landmarks:
+- name: リビング
+  x: -1.0
+  y: 2.7
+  yaw: 2.116
+  aliases: []
+- name: 庭
+  x: 3.6
+  y: -1.2
+  yaw: 0.742
+  aliases: []
+- name: 充電ステーション
+  x: -2.85
+  y: -1.25
+  yaw: 2.678
+  aliases: []

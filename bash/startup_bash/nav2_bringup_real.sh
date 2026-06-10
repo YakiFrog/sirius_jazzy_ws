@@ -3,6 +3,8 @@ trap 'echo ""; echo "Ctrl + Cが押されましたが、ウィンドウは閉じ
 cd ~/sirius_jazzy_ws
 
 MAPS_DIR="${HOME}/sirius_jazzy_ws/maps_waypoints/maps"
+LANDMARKS_DIR="${HOME}/sirius_jazzy_ws/maps_waypoints/landmarks"
+CURRENT_MAP_STATE="${HOME}/.sirius_nav2_current_map.yaml"
 
 # 地図ファイル一覧を取得
 get_map_list() {
@@ -41,6 +43,54 @@ select_map() {
     echo ""
 }
 
+write_current_map_state() {
+    local map_path="$1"
+    python3 - "$map_path" "$LANDMARKS_DIR" "$CURRENT_MAP_STATE" <<'PY'
+import os
+import sys
+import yaml
+
+map_path, landmarks_dir, state_path = sys.argv[1:4]
+map_yaml = os.path.basename(map_path)
+map_name = os.path.splitext(map_yaml)[0]
+matched_landmark = ""
+
+if os.path.isdir(landmarks_dir):
+    for filename in sorted(os.listdir(landmarks_dir)):
+        if not filename.endswith((".yaml", ".yml")):
+            continue
+        path = os.path.join(landmarks_dir, filename)
+        try:
+            with open(path, "r") as f:
+                data = yaml.safe_load(f) or {}
+        except Exception:
+            continue
+        map_info = data.get("map", {})
+        candidates = {
+            str(map_info.get("yaml", "")),
+            str(map_info.get("name", "")),
+            os.path.basename(str(map_info.get("path", ""))),
+        }
+        if map_yaml in candidates or map_name in candidates:
+            matched_landmark = path
+            break
+
+state = {
+    "current_map": map_path,
+    "current_map_name": map_name,
+    "current_map_yaml": map_yaml,
+    "current_landmarks": matched_landmark,
+}
+with open(state_path, "w") as f:
+    yaml.safe_dump(state, f, allow_unicode=True, sort_keys=False)
+
+if matched_landmark:
+    print(f"対応ランドマーク: {os.path.basename(matched_landmark)}")
+else:
+    print("対応ランドマーク: 未設定")
+PY
+}
+
 while : ;do
     read -p "Press [Enter] key to start nav2 bringup..."
     source install/setup.bash
@@ -52,6 +102,8 @@ while : ;do
         echo "地図の選択がキャンセルされました"
         continue
     fi
+
+    write_current_map_state "$selected_map"
     
     ros2 launch nav2_bringup bringup_launch.py \
     use_sim_time:=False \
