@@ -28,7 +28,7 @@ is_node_running() {
     return $?
 }
 
-start_follower() {
+ensure_follow_nodes() {
     local started_any=false
     
     # 1. 検出ノードの起動
@@ -58,11 +58,11 @@ start_follower() {
         echo ""
     fi
 
-    # 3. パラメータをenableにする
+    # 3. 起動直後は待機状態にする。「ついてきて」またはメニュー操作でONにする。
     if is_node_running "$DETECTOR_NODE" && is_node_running "$FOLLOWER_NODE"; then
-        echo "追従を開始（有効化）しています..."
-        ros2 param set /target_follower enable_following true > /dev/null 2>&1
-        echo "✓ 追従が開始されました。LiDARでの人検出および追従を行います。"
+        echo "追従ノードを待機状態（無効化）にしています..."
+        ros2 param set /target_follower enable_following false > /dev/null 2>&1
+        echo "✓ 検出・追従ノードは起動中です。追従開始は「ついてきて」またはメニュー [2] で行います。"
     else
         echo "✗ ノードの起動確認に失敗しました。ログを確認してください:"
         if ! is_node_running "$DETECTOR_NODE"; then
@@ -74,6 +74,19 @@ start_follower() {
             tail -n 10 "$LOG_FOLLOWER"
         fi
     fi
+}
+
+start_follower() {
+    ensure_follow_nodes
+
+    if ! is_node_running "$DETECTOR_NODE" || ! is_node_running "$FOLLOWER_NODE"; then
+        echo "追従を開始できません。検出ノードまたは追従ノードが起動していません。"
+        return
+    fi
+
+    echo "追従を開始（有効化）しています..."
+    ros2 param set /target_follower enable_following true > /dev/null 2>&1
+    echo "✓ 追従が開始されました。Detectでロックされた対象を追従します。"
 }
 
 pause_follower() {
@@ -99,7 +112,7 @@ stop_node_completely() {
 
 set_distance() {
     if ! is_node_running "$FOLLOWER_NODE"; then
-        echo "エラー: 追従ノードが起動していません。まず [1] で開始してください。"
+        echo "エラー: 追従ノードが起動していません。まず [1] で待機起動してください。"
         return
     fi
     
@@ -161,35 +174,38 @@ show_status() {
     echo "----------------------------------------"
 }
 
-# 起動時に一度ステータスを確認
+# 起動時に検出・追従ノードを待機状態で立ち上げる
+ensure_follow_nodes
 show_status
 
 while :; do
     echo "=== ターゲット追従制御メニュー ==="
-    echo " [1] 追従を開始する (Start Following)"
-    echo " [2] 追従を一時停止・無効化する (Pause / Disable)"
-    echo " [3] 追従距離の変更 (Set Distance)"
-    echo " [4] 追従ノードログの表示 (Tail Follower Log)"
-    echo " [5] 検出ノードログの表示 (Tail Detector Log)"
-    echo " [6] NPC自動移動（徘徊）の有効/無効切り替え"
+    echo " [1] 検出・追従ノードを待機起動する (Start Nodes / Standby)"
+    echo " [2] 追従を開始する (Enable Following)"
+    echo " [3] 追従を一時停止・無効化する (Pause / Disable)"
+    echo " [4] 追従距離の変更 (Set Distance)"
+    echo " [5] 追従ノードログの表示 (Tail Follower Log)"
+    echo " [6] 検出ノードログの表示 (Tail Detector Log)"
+    echo " [7] NPC自動移動（徘徊）の有効/無効切り替え"
     echo " [q] メニュー終了 (ノードも停止)"
     echo "================================="
     echo -n "選択してください: "
     read selection
 
     case "$selection" in
-        1) start_follower ;;
-        2) pause_follower ;;
-        3) set_distance ;;
-        4) 
+        1) ensure_follow_nodes ;;
+        2) start_follower ;;
+        3) pause_follower ;;
+        4) set_distance ;;
+        5) 
             echo "Ctrl+C でログ表示を抜けます..."
             tail -f "$LOG_FOLLOWER"
             ;;
-        5) 
+        6) 
             echo "Ctrl+C でログ表示を抜けます..."
             tail -f "$LOG_DETECTOR"
             ;;
-        6) toggle_npc_mode ;;
+        7) toggle_npc_mode ;;
         q|Q) 
             stop_node_completely
             echo "終了します。"

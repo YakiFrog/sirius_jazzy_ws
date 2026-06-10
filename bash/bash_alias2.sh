@@ -173,10 +173,12 @@ alias sam3_bridge_real='src && ros2 launch sirius_navigation sam3_bridge.launch.
 # ウェイポイントナビゲーション起動
 alias mv_goal='bash ~/sirius_jazzy_ws/bash/startup_bash/move_goal.sh'
 
-# ターゲット追従制御（NPC追従）
+# ターゲット検出・追従制御（対話メニュー）
 alias target_detect_and_follow='bash ~/sirius_jazzy_ws/bash/startup_bash/target_follow.sh'
-alias target_detect='src && ros2 run sirius_navigation target_detector'
-alias target_follower='src && ros2 run sirius_navigation target_follower'
+
+# ターゲット検出・追従ノード単体起動（デバッグ用）
+# alias target_detect='src && ros2 run sirius_navigation target_detector'
+# alias target_follower='src && ros2 run sirius_navigation target_follower'
 
 # ウェイポイント保存（距離）
 alias get_pos_dis='bash ~/sirius_jazzy_ws/bash/startup_bash/get_pos_dis.sh'
