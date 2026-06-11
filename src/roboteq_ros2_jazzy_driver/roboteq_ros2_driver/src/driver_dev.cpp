@@ -285,6 +285,7 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     constexpr float MIN_SPEED_THRESHOLD = 0.10f;
     constexpr float EPSILON = 1e-6f;
     float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
+    float min_threshold = MIN_SPEED_THRESHOLD * scale;
 
     // speed_scaleを先に適用する。
     // これにより、不感帯（デッドバンド）の判定を実際にモーターへ送る最終的な指令値ベースで行える。
@@ -296,10 +297,10 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     {
         float max_abs_speed = std::max(std::abs(right_speed), std::abs(left_speed));
         
-        // 最大速度がしきい値未満かつゼロでない場合、比率を維持したまま底上げ
-        if (max_abs_speed > EPSILON && max_abs_speed < MIN_SPEED_THRESHOLD)
+        // 最大速度がしきい値（スケーリング済み）未満かつゼロでない場合、比率を維持したまま底上げ
+        if (max_abs_speed > EPSILON && max_abs_speed < min_threshold)
         {
-            float boost_factor = MIN_SPEED_THRESHOLD / max_abs_speed;
+            float boost_factor = min_threshold / max_abs_speed;
             right_speed *= boost_factor;
             left_speed *= boost_factor;
         }
@@ -307,19 +308,19 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
         else if (max_abs_speed < EPSILON)
         {
             if (linear_x > EPSILON) {
-                right_speed = -MIN_SPEED_THRESHOLD;
-                left_speed = -MIN_SPEED_THRESHOLD;
+                right_speed = -min_threshold;
+                left_speed = -min_threshold;
             } else if (linear_x < -EPSILON) {
-                right_speed = MIN_SPEED_THRESHOLD;
-                left_speed = MIN_SPEED_THRESHOLD;
+                right_speed = min_threshold;
+                left_speed = min_threshold;
             } else {
                 // 旋回指令のみの場合
                 if (angular_z > 0) {
-                    right_speed = -MIN_SPEED_THRESHOLD;
-                    left_speed = MIN_SPEED_THRESHOLD;
+                    right_speed = -min_threshold;
+                    left_speed = min_threshold;
                 } else {
-                    right_speed = MIN_SPEED_THRESHOLD;
-                    left_speed = -MIN_SPEED_THRESHOLD;
+                    right_speed = min_threshold;
+                    left_speed = -min_threshold;
                 }
             }
         }
