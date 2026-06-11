@@ -1,10 +1,25 @@
 format_version: '1.0'
 landmarks:
-- aliases: []
-  name: 家
-  x: -6.16
-  y: 2.927
+- name: 家
+  x: -6.2
+  y: 2.95
   yaw: -0.213
+  aliases: []
+- name: ドア前
+  x: 0.1
+  y: 0.55
+  yaw: 1.324
+  aliases: []
+- name: 廊下
+  x: 2.7
+  y: 11.65
+  yaw: 1.311
+  aliases: []
+- name: エレベータ前
+  x: 12.05
+  y: 13.15
+  yaw: -0.232
+  aliases: []
 map:
   name: 1207oit15f
   yaml: 1207oit15f.yaml
