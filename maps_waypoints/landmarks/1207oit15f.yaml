@@ -1,0 +1,10 @@
+format_version: '1.0'
+landmarks:
+- aliases: []
+  name: 家
+  x: -6.16
+  y: 2.927
+  yaw: -0.213
+map:
+  name: 1207oit15f
+  yaml: 1207oit15f.yaml
