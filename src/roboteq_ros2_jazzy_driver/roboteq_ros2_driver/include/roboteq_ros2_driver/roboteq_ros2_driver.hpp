@@ -114,6 +114,7 @@ class Roboteq : public rclcpp::Node
   
   // ソフトウェアP制御用のゲイン
   double kp_soft{};
+  double min_speed_threshold{};
 
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};

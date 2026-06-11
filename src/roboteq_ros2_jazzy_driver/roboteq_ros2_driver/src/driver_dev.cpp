@@ -81,6 +81,7 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     // If robot moves slower than commanded, increase this value (e.g., 1.2 for 20% slower)
     speed_scale = this->declare_parameter("speed_scale", 1.0);
     kp_soft = this->declare_parameter("kp_soft", 0.0);
+    min_speed_threshold = this->declare_parameter("min_speed_threshold", 0.10);
 
     starttime = 0;
     hstimer = 0;
@@ -174,6 +175,7 @@ void Roboteq::update_parameters()
     this->get_parameter("odom_publish_hz", odom_publish_hz);
     this->get_parameter("speed_scale", speed_scale);
     this->get_parameter("kp_soft", kp_soft);
+    this->get_parameter("min_speed_threshold", min_speed_threshold);
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -282,10 +284,10 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     linear_x = twist_msg->linear.x;
     angular_z = twist_msg->angular.z;
 
-    constexpr float MIN_SPEED_THRESHOLD = 0.10f;
+    float min_speed_thresh = (min_speed_threshold > 0.0) ? min_speed_threshold : 0.10f;
     constexpr float EPSILON = 1e-6f;
     float scale = (speed_scale > 0.0) ? speed_scale : 1.0;
-    float min_threshold = MIN_SPEED_THRESHOLD * scale;
+    float min_threshold = min_speed_thresh * scale;
 
     // speed_scaleを先に適用する。
     // これにより、不感帯（デッドバンド）の判定を実際にモーターへ送る最終的な指令値ベースで行える。
