@@ -70,9 +70,11 @@ input_filename() {
     echo "  - /map, /plan, /optimal_trajectory (地図・経路)"
     echo "  - /blinker_led_command (ウインカー)"
     echo "  - /npc/odom (NPC Odometry)"
-    echo "  - /target_detector/target_markers"
+    echo "  - /target_detector/target_markers, /target_follower/status"
     echo "  - /robot_path"
     echo "  - /robot_path_marker"
+    echo "  - /llm_instruction, /sirius/command_queue, /sirius/landmark_status, /sirius/landmark_markers"
+    echo "  - /nav_control, /stop, /sirius/battery_status"
     echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
     echo ""
     echo "※ /velodyne_points (3D点群) は除外されます"
@@ -153,6 +155,13 @@ start_recording() {
         /target_detector/target_markers \
         /robot_path \
         /robot_path_marker \
+        /llm_instruction \
+        /sirius/command_queue \
+        /sirius/landmark_status \
+        /sirius/landmark_markers \
+        /nav_control \
+        /stop \
+        /sirius/battery_status \
         /joint_states &
     
     ROSBAG_PID=$!
