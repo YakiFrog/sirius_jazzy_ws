@@ -75,6 +75,7 @@ input_filename() {
     echo "  - /robot_path_marker"
     echo "  - /llm_instruction, /sirius/command_queue, /sirius/landmark_status, /sirius/landmark_markers"
     echo "  - /nav_control, /stop, /sirius/battery_status"
+    echo "  - /cmd_vel_teleop"
     echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
     echo ""
     echo "※ /velodyne_points (3D点群) は除外されます"
@@ -162,6 +163,7 @@ start_recording() {
         /nav_control \
         /stop \
         /sirius/battery_status \
+        /cmd_vel_teleop \
         /joint_states &
     
     ROSBAG_PID=$!
