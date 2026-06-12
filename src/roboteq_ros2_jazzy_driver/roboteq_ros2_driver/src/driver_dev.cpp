@@ -244,7 +244,13 @@ void Roboteq::bumper_callback(const std_msgs::msg::Bool::SharedPtr stop_msg)
     else
     {
         RCLCPP_INFO(this->get_logger(), "Restart!!!");
+        // Releasing emergency stop. Reset command values to 0 to prevent the controller
+        // from resuming previous non-zero velocities from its memory.
+        safe_serial_write("!G 1 0\r");
+        safe_serial_write("!G 2 0\r");
         safe_serial_write("!MG\r");
+        linear_x = 0.0;
+        angular_z = 0.0;
     }
 }
 
