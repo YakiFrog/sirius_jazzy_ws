@@ -412,8 +412,8 @@ controller_server:
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 16.0              # 障害物・セマンティック高コスト回避の重み。内回り侵食を抑える
-        near_collision_cost: 120       # semantic soft costにも早めに強いペナルティをかける
+        cost_weight: 10.0              # 障害物回避の重み(高いほど、パスからそれて避ける) 3.81 -> 3.0
+        near_collision_cost: 150       # 衝突手前のコスト閾値 253 -> 200 
         # ↑この値以上のコストになると警戒モード
         critical_cost: 250.0           # 危険レベルのコスト閾値　300 -> 250 危険判定を厳しく
         # ↑この値以上になると強いペナルティ
