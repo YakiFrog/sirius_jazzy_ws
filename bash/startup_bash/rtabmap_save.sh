@@ -22,7 +22,7 @@ while : ;do
         continue
     fi
 
-    MAP_DIR="$HOME/sirius_jazzy_ws/maps_waypoints/maps"
+    MAP_DIR="$HOME/sirius_jazzy_ws/maps_waypoints/maps/rtabmap_$map_name"
     mkdir -p "$MAP_DIR"
     
     # 定義

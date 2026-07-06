@@ -15,7 +15,7 @@ echo "------------------------------------------------"
 
 # マップファイルのリストを取得
 cd "$MAP_DIR" || exit
-maps=($(ls *.pgm 2>/dev/null | sed 's/\.pgm$//'))
+maps=($(find . -maxdepth 2 -name "*.pgm" ! -name "*.colored.pgm" 2>/dev/null | sed 's|^\./||' | sed 's/\.pgm$//' | sort))
 
 if [ ${#maps[@]} -eq 0 ]; then
     echo "エラー: $MAP_DIR にマップが見つかりません。"
