@@ -52,7 +52,7 @@ alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_brid
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
 
 # RTAB-MAP, sam3_bridgeも起動する
-alias rtab_bridge='src && ros2 launch sirius_navigation sam3_rtabmap.launch.py use_sim_time:=true include_background:=true'
+alias rtab_bridge='bash ~/sirius_jazzy_ws/bash/startup_bash/rtab_bridge.sh'
 
 alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
 
@@ -94,7 +94,7 @@ alias nav2='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_sim.sh'
 
 # Nav2起動（MAPなし）
 alias nav2slam='src && ros2 launch nav2_bringup bringup_launch.py \
-params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim.yaml \
+params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim_slam.yaml \
 slam:=True \
 use_composition:=False \
 use_sim_time:=true'
