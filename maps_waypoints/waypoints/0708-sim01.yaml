@@ -1,0 +1,6 @@
+format_version: '1.0'
+waypoints:
+- number: 1
+  x: 5.1
+  y: 6.5
+  angle_radians: 1.571
