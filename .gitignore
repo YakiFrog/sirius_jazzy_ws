@@ -10,3 +10,6 @@ satellite
 __pycache__/
 *.pyc
 *.pyo
+
+# Local Graphify knowledge graph (rebuild with `graphify extract . --code-only --no-cluster`)
+graphify-out/
