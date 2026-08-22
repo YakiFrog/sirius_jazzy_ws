@@ -20,6 +20,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 
 #include <thread>
+#include <mutex>
 
 namespace Roboteq
 {
@@ -34,8 +35,15 @@ class Roboteq : public rclcpp::Node
   //rclcpp::Node::SharedPtr nh{};
   std::unique_ptr<tf2_ros::TransformBroadcaster> odom_baselink_transform_;
   std::thread odom_thread_;
+  std::mutex odom_mutex_;
 
   bool running_;
+
+  rclcpp::Time last_encoder_time_{0, 0, RCL_ROS_TIME};
+  rclcpp::Time last_odom_update_time_{0, 0, RCL_ROS_TIME};
+  bool has_last_encoder_time_{false};
+  float current_v_{0.0f};
+  float current_w_{0.0f};
 
   uint32_t starttime{};
   uint32_t hstimer{};
@@ -115,6 +123,8 @@ class Roboteq : public rclcpp::Node
   // ソフトウェアP制御用のゲイン
   double kp_soft{};
   double min_speed_threshold{};
+  double encoder_sign_r{};
+  double encoder_sign_l{};
 
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};
@@ -139,6 +149,7 @@ class Roboteq : public rclcpp::Node
   void odom_setup();
   void odom_stream(); 
   void odom_loop();
+  void process_encoder_data(int32_t right_val, int32_t left_val);
   //void odom_hs_run();
   void odom_ms_run();
   void odom_ls_run();

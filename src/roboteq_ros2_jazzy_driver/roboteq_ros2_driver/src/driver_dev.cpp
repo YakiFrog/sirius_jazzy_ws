@@ -82,6 +82,8 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     speed_scale = this->declare_parameter("speed_scale", 1.0);
     kp_soft = this->declare_parameter("kp_soft", 0.0);
     min_speed_threshold = this->declare_parameter("min_speed_threshold", 0.10);
+    encoder_sign_r = this->declare_parameter("encoder_sign_r", -1.0);
+    encoder_sign_l = this->declare_parameter("encoder_sign_l", 1.0);
 
     starttime = 0;
     hstimer = 0;
@@ -176,6 +178,8 @@ void Roboteq::update_parameters()
     this->get_parameter("speed_scale", speed_scale);
     this->get_parameter("kp_soft", kp_soft);
     this->get_parameter("min_speed_threshold", min_speed_threshold);
+    this->get_parameter("encoder_sign_r", encoder_sign_r);
+    this->get_parameter("encoder_sign_l", encoder_sign_l);
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -284,7 +288,9 @@ bool Roboteq::safe_serial_write(const std::string &cmd) {
 void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_msg)
 {
     // 車輪速度の計算 (m/s)
-    float right_speed = (twist_msg->linear.x + track_width * twist_msg->angular.z / 2.0) * -1;
+    // 右モーター(M1): 正(+)の指令で前進
+    // 左モーター(M2): 負(-)の指令で前進
+    float right_speed = (twist_msg->linear.x + track_width * twist_msg->angular.z / 2.0);
     float left_speed = (twist_msg->linear.x - track_width * twist_msg->angular.z / 2.0) * -1;
 
     linear_x = twist_msg->linear.x;
@@ -316,18 +322,18 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
         else if (max_abs_speed < EPSILON)
         {
             if (linear_x > EPSILON) {
-                right_speed = -min_threshold;
+                right_speed = min_threshold;
                 left_speed = -min_threshold;
             } else if (linear_x < -EPSILON) {
-                right_speed = min_threshold;
+                right_speed = -min_threshold;
                 left_speed = min_threshold;
             } else {
                 // 旋回指令のみの場合
                 if (angular_z > 0) {
-                    right_speed = -min_threshold;
+                    right_speed = min_threshold;
                     left_speed = min_threshold;
                 } else {
-                    right_speed = min_threshold;
+                    right_speed = -min_threshold;
                     left_speed = -min_threshold;
                 }
             }
@@ -615,55 +621,20 @@ void Roboteq::odom_loop()
                             if (odom_encoder_toss > 0) {
                                 --odom_encoder_toss;
                             } else {
-                                // データを解析 - より効率的な実装
+                                // データを解析
                                 size_t delimiter_pos = line_buffer.find(':', 3);
                                 if (delimiter_pos != std::string::npos) {
                                     try {
-                                        // stoi()は例外を投げる可能性があるため、try内で実行
                                         std::string right_str = line_buffer.substr(3, delimiter_pos - 3);
                                         std::string left_str = line_buffer.substr(delimiter_pos + 1);
                                         
                                         int32_t right_val = std::stoi(right_str);
                                         int32_t left_val = std::stoi(left_str);
                                         
-                                        odom_encoder_right = right_val;
-                                        odom_encoder_left = left_val;
-
-                                        // Compute revolutions from encoder counts.
-                                        // Allow for a gear_ratio: counts-per-wheel-rev = pulse * gear_ratio
-                                        double gr = (gear_ratio <= 0.0f) ? 1.0 : gear_ratio;
-                                        double counts_per_wheel_rev = (double)pulse * gr;
-
-                                        float right_diff = 0.0f;
-                                        float left_diff = 0.0f;
-                                        if (counts_per_wheel_rev > 0.0) {
-                                            right_diff = ((float)odom_encoder_right - odom_encoder_right_old) / (float)counts_per_wheel_rev;
-                                            left_diff = ((float)odom_encoder_left - odom_encoder_left_old) / (float)counts_per_wheel_rev;
-                                        }
-
-                                        // 値が大きすぎる場合はスキップ（エラー防止）
-                                        if (std::abs(right_diff) > 100.0f || std::abs(left_diff) > 100.0f) {
-                                            odom_encoder_right_old = (float)odom_encoder_right;
-                                            odom_encoder_left_old = (float)odom_encoder_left;
-                                            continue;
-                                        }
-
-                                        // 累積で加算（odom_publishでリセットされる）
-                                        odom_roll_right += -1 * right_diff;
-                                        odom_roll_left += -1 * left_diff;
-
-                                        if (first_time) {
-                                            odom_roll_right = 0.0;
-                                            odom_roll_left = 0.0;
-                                            first_time = false;
-                                        }
-
-                                        odom_encoder_right_old = (float)odom_encoder_right;
-                                        odom_encoder_left_old = (float)odom_encoder_left;
-
+                                        process_encoder_data(right_val, left_val);
                                     }
                                     catch (const std::exception& e) {
-                                        // データ解析エラーの無視 - ログに記録しない（頻度が高すぎるため）
+                                        // データ解析エラーの無視
                                     }
                                 }
                             }
@@ -680,12 +651,89 @@ void Roboteq::odom_loop()
                 RCLCPP_ERROR_STREAM(this->get_logger(), "Exception reading serial data: " << e.what());
             }
         }
-        // odom_publish()はメインスレッド(run関数)から呼び出す
-        // 別スレッドからROS2パブリッシャーを呼ぶとクラッシュするため
-        // odom_roll_right/leftのリセットもodom_publish内で行う
 
         // スリープ時間を短縮（CPUの空回しを防ぎつつも、応答性を保つ）
         std::this_thread::sleep_for(std::chrono::microseconds(100));  // 0.1 ms
+    }
+}
+
+void Roboteq::process_encoder_data(int32_t right_val, int32_t left_val)
+{
+    rclcpp::Time now = this->get_clock()->now();
+
+    odom_encoder_right = right_val;
+    odom_encoder_left = left_val;
+
+    if (!has_last_encoder_time_) {
+        odom_encoder_right_old = static_cast<float>(right_val);
+        odom_encoder_left_old = static_cast<float>(left_val);
+        last_encoder_time_ = now;
+        last_odom_update_time_ = now;
+        has_last_encoder_time_ = true;
+        return;
+    }
+
+    double dt = (now - last_encoder_time_).seconds();
+    if (dt <= 1e-6 || dt > 1.0) {
+        odom_encoder_right_old = static_cast<float>(right_val);
+        odom_encoder_left_old = static_cast<float>(left_val);
+        last_encoder_time_ = now;
+        return;
+    }
+
+    double gr = (gear_ratio <= 0.0f) ? 1.0 : gear_ratio;
+    double counts_per_wheel_rev = static_cast<double>(pulse) * gr;
+    if (counts_per_wheel_rev <= 0.0) {
+        return;
+    }
+
+    float right_diff = (static_cast<float>(odom_encoder_right) - odom_encoder_right_old) / static_cast<float>(counts_per_wheel_rev);
+    float left_diff = (static_cast<float>(odom_encoder_left) - odom_encoder_left_old) / static_cast<float>(counts_per_wheel_rev);
+
+    odom_encoder_right_old = static_cast<float>(odom_encoder_right);
+    odom_encoder_left_old = static_cast<float>(odom_encoder_left);
+    last_encoder_time_ = now;
+
+    // 異常値チェック（ノイズ等で大きな値が飛んだ場合）
+    if (std::abs(right_diff) > 50.0f || std::abs(left_diff) > 50.0f) {
+        return;
+    }
+
+    float d_roll_r = static_cast<float>(encoder_sign_r) * right_diff;
+    float d_roll_l = static_cast<float>(encoder_sign_l) * left_diff;
+
+    // 車輪回転量から実走行距離・旋回角を算出
+    float d_linear = (d_roll_r + d_roll_l) * static_cast<float>(wheel_circumference) / 2.0f;
+    float d_angular = (d_roll_r - d_roll_l) * static_cast<float>(wheel_circumference) / static_cast<float>(track_width);
+
+    // 正確な実受信間隔dtで瞬時速度を計算（通信ジッターによる0割れ・倍速を根絶）
+    float inst_v = d_linear / static_cast<float>(dt);
+    float inst_w = d_angular / static_cast<float>(dt);
+
+    {
+        std::lock_guard<std::mutex> lock(odom_mutex_);
+
+        float mid_yaw = odom_yaw + d_angular / 2.0f;
+        odom_x += d_linear * std::cos(mid_yaw);
+        odom_y += d_linear * std::sin(mid_yaw);
+        odom_yaw = NORMALIZE(odom_yaw + d_angular);
+
+        odom_last_x = odom_x;
+        odom_last_y = odom_y;
+        odom_last_yaw = odom_yaw;
+
+        // 指数移動平均フィルタ（EMA）でエンコーダの量子化ノイズを平滑化
+        constexpr float ALPHA = 0.40f;
+        current_v_ = (1.0f - ALPHA) * current_v_ + ALPHA * inst_v;
+        current_w_ = (1.0f - ALPHA) * current_w_ + ALPHA * inst_w;
+
+        // 停止状態の判定（指令値・移動量がほぼゼロなら素早く0にする）
+        if (std::abs(linear_x) < 1e-4f && std::abs(angular_z) < 1e-4f && std::abs(d_linear) < 1e-4f) {
+            current_v_ = 0.0f;
+            current_w_ = 0.0f;
+        }
+
+        last_odom_update_time_ = now;
     }
 }
 
@@ -700,8 +748,7 @@ void Roboteq::odom_publish()
         last_publish_time = current_time;
     }
     
-    // Odometryメッセージの発行頻度を制限（リソース節約のため）
-    // Use configured publish hz as a maximum. Default was approx 50Hz.
+    // Odometryメッセージの発行頻度を制限
     double publish_interval = 0.02; // default 50Hz
     if (odom_publish_hz > 1e-6) {
         publish_interval = 1.0 / odom_publish_hz;
@@ -712,168 +759,62 @@ void Roboteq::odom_publish()
     
     last_publish_time = current_time;
     
-    // 以降は既存のodom_publish関数と同じ
-    geometry_msgs::msg::TransformStamped tf_msg;
+    float x = 0.0f, y = 0.0f, yaw = 0.0f, v = 0.0f, w = 0.0f;
+    {
+        std::lock_guard<std::mutex> lock(odom_mutex_);
+        x = odom_x;
+        y = odom_y;
+        yaw = odom_yaw;
 
-    // determine delta time in seconds - use actual ROS time instead of millis()
-    static rclcpp::Time last_odom_time(0, 0, RCL_ROS_TIME);
-    static bool first_odom = true;
-    rclcpp::Time now_time = this->get_clock()->now();
-    
-    float dt = 0.02f; // default fallback
-    if (first_odom) {
-        first_odom = false;
-        last_odom_time = now_time;
-    } else {
-        dt = (now_time - last_odom_time).seconds();
-        // Skip if dt is invalid or too large (indicates data gap)
-        if (dt <= 0.0f || dt > 1.0f) {
-            dt = 0.02f; // fallback to ~50Hz
-        }
-    }
-    last_odom_time = now_time;
-
-    // determine deltas of distance and angle
-    // forward distance = (avg wheel revolutions) * tire circumference
-    // NOTE: odom_roll_right/left represent wheel revolutions since last update
-    // This is time-independent - it's the actual distance traveled
-    float linear = ((float)odom_roll_right + (float)odom_roll_left) * wheel_circumference / 2.0;
-    // turning angle = (difference in wheel revolutions) * tire_circumference / track_width
-    float angular = ((float)odom_roll_right - (float)odom_roll_left) * wheel_circumference / track_width;
-
-    // Apply user-specified odom scale correction (for calibration). This scales
-    // both linear and angular components consistently.
-    // if (std::abs((double)odom_scale - 1.0) > 1e-9) {
-    //     linear *= (float)odom_scale;
-    //     angular *= (float)odom_scale;
-    // }
-    //RCLCPP_INFO_STREAM(this->get_logger(), "linear: " << linear);
-    //RCLCPP_INFO_STREAM(this->get_logger(), "angular: " << angular);
-    // Update odometry
-    float mid_yaw = odom_yaw + angular / 2.0f;
-    odom_x += linear * cos(mid_yaw);         // m
-    odom_y += linear * sin(mid_yaw);         // m
-    odom_yaw = NORMALIZE(odom_yaw + angular); // rad
-
-    odom_last_x = odom_x;
-    odom_last_y = odom_y;
-    odom_last_yaw = odom_yaw;
-
-    // ソフトウェアP制御 (方法2)
-    if (!open_loop && kp_soft > 0.001) {
-        float actual_rpm_r = (odom_roll_right / dt) * 60.0f;
-        float actual_rpm_l = (odom_roll_left / dt) * 60.0f;
-        
-        float error_r = right_rpm_command - actual_rpm_r;
-        float error_l = left_rpm_command - actual_rpm_l;
-        
-        int32_t power_r = static_cast<int32_t>((right_rpm_command / max_rpm * 1000.0f) + (kp_soft * error_r));
-        int32_t power_l = static_cast<int32_t>((left_rpm_command / max_rpm * 1000.0f) + (kp_soft * error_l));
-        
-        power_r = std::max(-1000, std::min(1000, power_r));
-        power_l = std::max(-1000, std::min(1000, power_l));
-        
-        if (std::abs(right_rpm_command) > 0.1f || std::abs(left_rpm_command) > 0.1f) {
-            std::stringstream r_cmd, l_cmd;
-            r_cmd << "!G 1 " << power_r << "\r";
-            l_cmd << "!G 2 " << power_l << "\r";
-            safe_serial_write(r_cmd.str());
-            safe_serial_write(l_cmd.str());
+        // エンコーダ受信が0.3秒以上途絶した場合は停止扱いとする
+        if ((current_time - last_odom_update_time_).seconds() > 0.3) {
+            current_v_ = 0.0f;
+            current_w_ = 0.0f;
+            v = 0.0f;
+            w = 0.0f;
+        } else {
+            v = current_v_;
+            w = current_w_;
         }
     }
 
-    // convert yaw to quat
     tf2::Quaternion tf2_quat;
-    tf2_quat.setRPY(0, 0, odom_yaw);
+    tf2_quat.setRPY(0, 0, yaw);
     geometry_msgs::msg::Quaternion quat;
     quat.x = tf2_quat.x();
     quat.y = tf2_quat.y();
     quat.z = tf2_quat.z();
     quat.w = tf2_quat.w();
 
-    //update odom msg
-
-    if(pub_odom_tf)
+    if (pub_odom_tf)
     {
-        tf_msg.header.stamp = this->get_clock()->now();
+        geometry_msgs::msg::TransformStamped tf_msg;
+        tf_msg.header.stamp = current_time;
         tf_msg.header.frame_id = odom_frame;
         tf_msg.child_frame_id = base_frame;
-        tf_msg.transform.translation.x = odom_x;
-        tf_msg.transform.translation.y = odom_y;
+        tf_msg.transform.translation.x = x;
+        tf_msg.transform.translation.y = y;
         tf_msg.transform.translation.z = 0.0;
-        tf_msg.transform.rotation = quat;
         tf_msg.transform.rotation = quat;
         odom_baselink_transform_->sendTransform(tf_msg);
     }
 
-    odom_msg.header.stamp = this->get_clock()->now();
+    odom_msg.header.stamp = current_time;
     odom_msg.header.frame_id = odom_frame;
     odom_msg.child_frame_id = base_frame;
-    odom_msg.pose.pose.position.x = odom_x;
-    odom_msg.pose.pose.position.y = odom_y;
+    odom_msg.pose.pose.position.x = x;
+    odom_msg.pose.pose.position.y = y;
     odom_msg.pose.pose.position.z = 0.0;
     odom_msg.pose.pose.orientation = quat;
 
-    // 速度（Twist）の計算
-    float raw_v = 0.0f;
-    float raw_w = 0.0f;
-    if (dt > 1e-6f) {
-        raw_v = linear / dt;
-        raw_w = angular / dt;
-    }
-
-    // 5サンプルの移動平均フィルタでジグザグ（量子化ノイズ）を軽減
-    static std::vector<float> v_history, w_history;
-    v_history.push_back(raw_v);
-    w_history.push_back(raw_w);
-    
-    // 直近5サンプルを維持
-    if (v_history.size() > 5) {
-        v_history.erase(v_history.begin());
-        w_history.erase(w_history.begin());
-    }
-    
-    // 平均値を算出
-    float avg_v = 0, avg_w = 0;
-    for(float v : v_history) avg_v += v;
-    for(float w : w_history) avg_w += w;
-    avg_v /= v_history.size();
-    avg_w /= w_history.size();
-
-    odom_msg.twist.twist.linear.x = avg_v;
+    odom_msg.twist.twist.linear.x = v;
     odom_msg.twist.twist.linear.y = 0.0;
     odom_msg.twist.twist.linear.z = 0.0;
     odom_msg.twist.twist.angular.x = 0.0;
     odom_msg.twist.twist.angular.y = 0.0;
-    odom_msg.twist.twist.angular.z = avg_w;
+    odom_msg.twist.twist.angular.z = w;
 
     odom_pub->publish(odom_msg);
-
-    // 指令速度と実速度の達成率をログ出力（デバッグ用）
-    // linear_x, angular_z はcmd_velからの指令値（メンバ変数）
-    float actual_linear = odom_msg.twist.twist.linear.x;
-    float actual_angular = odom_msg.twist.twist.angular.z;
-    
-    // 指令値がある場合のみ達成率を計算・表示
-    if (std::abs(linear_x) > 0.01f || std::abs(angular_z) > 0.01f) {
-        float linear_ratio = 0.0f;
-        float angular_ratio = 0.0f;
-        
-        if (std::abs(linear_x) > 0.01f) {
-            linear_ratio = (actual_linear / linear_x) * 100.0f;
-        }
-        if (std::abs(angular_z) > 0.01f) {
-            angular_ratio = (actual_angular / angular_z) * 100.0f;
-        }
-        
-        RCLCPP_INFO(this->get_logger(), 
-            "Speed: cmd(lin=%.3f ang=%.3f) actual(lin=%.3f ang=%.3f) ratio(lin=%.1f%% ang=%.1f%%)",
-            linear_x, angular_z, actual_linear, actual_angular, linear_ratio, angular_ratio);
-    }
-    
-    // パブリッシュ後にリセット（次の周期の累積用）
-    odom_roll_right = 0.0;
-    odom_roll_left = 0.0;
 }
 
 int Roboteq::run() {

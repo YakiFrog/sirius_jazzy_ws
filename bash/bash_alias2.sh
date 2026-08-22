@@ -4,6 +4,9 @@
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
 
+# PRESET: オフラインマッピング録画セット (Unity)
+# PRESET_ITEMS: rte,rviz2sim,sf_sim,record_offline_sim
+
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
 
@@ -219,3 +222,25 @@ alias pub_memo='bash ~/sirius_jazzy_ws/bash/startup_bash/pub_memo.sh'
 # # 例: change_map_simple 1202-15f
 # alias change_map_simple='bash ~/sirius_jazzy_ws/bash/startup_bash/change_map_simple.sh'
 alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
+
+# TAB: オフライン・マッピング
+# GROUP: オフライン・マッピング
+
+# Unityステレオ映像・SLAMデータをRosbagに録画（オフラインマッピング用）
+alias record_offline_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline.sh'
+
+# 記録済みRosbagからSAM3推論+RTAB-Mapで2Dカラー地図を生成・保存
+alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_mapping.sh'
+
+# SAM3 + SGM GPU推論Dockerサーバーを起動 (port 8080)
+alias sam3_docker_gpu='cd ~/sam3_zed_server && docker compose up sam3-zed-merged'
+
+# Unity映像レシーバー単体起動 (HTTP -> ROS2 CompressedImage)
+alias unity_stereo_bridge='src && ros2 run sirius_navigation unity_stereo_bridge'
+
+# 2D/3Dカラー地図の保存 (RTAB-Map & SAM3インデックス地図)
+alias rtabmap_save='bash ~/sirius_jazzy_ws/bash/startup_bash/rtabmap_save.sh'
+
+# 作成済みセマンティックカラー地図の選択・ロード
+alias sam3_colored_map_select='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
+
