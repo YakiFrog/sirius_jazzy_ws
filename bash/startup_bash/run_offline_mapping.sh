@@ -92,11 +92,22 @@ if curl -s -X POST http://localhost:8080/prompt -H "Content-Type: application/js
     echo "✓ SAM3 サーバーのプロンプトを更新しました: $PROMPT_INPUT"
 fi
 
+# 4. RViz2 確認画面の起動選択
+echo ""
+read -p "RViz2 確認画面（リアルタイム描画）を自動起動しますか？ (Y/n) [Y]: " RVIZ_CHOICE
+RVIZ_CHOICE=${RVIZ_CHOICE:-y}
+RVIZ_CHOICE=$(echo "$RVIZ_CHOICE" | tr '[:upper:]' '[:lower:]')
+USE_RVIZ_FLAG="false"
+if [ "$RVIZ_CHOICE" != "n" ] && [ "$RVIZ_CHOICE" != "no" ]; then
+    USE_RVIZ_FLAG="true"
+fi
+
 echo "================================================="
 echo "マッピングパイプラインを起動しています..."
 echo "  Rosbag: $BAG_NAME"
 echo "  再生速度: ${PLAY_RATE}x"
 echo "  プロンプト: $PROMPT_INPUT"
+echo "  RViz2 表示: $USE_RVIZ_FLAG"
 echo "================================================="
 
 # Launch mapping nodes in background
@@ -104,7 +115,8 @@ ros2 launch sirius_navigation sam3_offline_mapping.launch.py \
     use_sim_time:=true \
     include_background:=true \
     use_docker_backend:=true \
-    prompt:="$PROMPT_INPUT" &
+    prompt:="$PROMPT_INPUT" \
+    rviz:="$USE_RVIZ_FLAG" &
 LAUNCH_PID=$!
 
 sleep 5

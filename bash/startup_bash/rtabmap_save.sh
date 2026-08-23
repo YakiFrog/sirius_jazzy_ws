@@ -141,17 +141,36 @@ PYEOF
         echo "ERROR: 3Dマップの保存に失敗しました。RTAB-Mapが停止しているか、局在化していない可能性があります。"
     fi
 
-    # 3. カラー地図の生成 (ポストプロセシング)
-    echo "[3/3] カラー地図を生成中 (PGM + PLY 統合)..."
+    # 3. SAM3 2Dセマンティック地図の保存とカラーPNG生成
+    echo "[3/3] SAM3 2Dセマンティック地図を保存中..."
+    ros2 topic pub --once /sam3/save_indexed_map std_msgs/msg/String "{data: '$MAP_DIR/rtabmap_${map_name}.colored'}" >/dev/null 2>&1
+    sleep 1
+
+    # カラー地図のレンダリング (PGM + PLY および Indexed Grid から PNG 生成)
     COLORIZER_SCRIPT="$HOME/sirius_jazzy_ws/src/sirius/sirius_navigation/sirius_navigation/sam3_map_colorizer.py"
     MAP_BASE_PATH="$MAP_DIR/rtabmap_$map_name"
     
     if [ -f "$COLORIZER_SCRIPT" ]; then
         python3 "$COLORIZER_SCRIPT" "$MAP_BASE_PATH"
-    else
-        echo "エラー: 着色スクリプトが見つかりません: $COLORIZER_SCRIPT"
     fi
-    
+
+    # Indexed Grid から完全なカラーPNGを自動生成
+    python3 -c "
+import cv2, json, os, numpy as np
+pgm_p = '$MAP_DIR/rtabmap_${map_name}.colored.pgm'
+json_p = '$MAP_DIR/rtabmap_${map_name}.colored.json'
+out_p = '$MAP_DIR/rtabmap_${map_name}.semantic_full.png'
+if os.path.exists(pgm_p) and os.path.exists(json_p):
+    pgm = cv2.imread(pgm_p, cv2.IMREAD_GRAYSCALE)
+    with open(json_p) as f: meta = json.load(f)
+    palette = np.array(meta['palette'], dtype=np.uint8)
+    rgb = np.zeros((pgm.shape[0], pgm.shape[1], 3), dtype=np.uint8)
+    for i in range(len(palette)):
+        rgb[pgm == i] = palette[i]
+    cv2.imwrite(out_p, rgb)
+    print(f'✓ 全領域セマンティックカラー画像を保存しました: {out_p}')
+" 2>/dev/null
+
     echo "------------------------------------------------"
-    echo "完了しました。RVizなどのプロセスはCtrl+Cで停止しないでください。"
+    echo "完了しました！"
 done
