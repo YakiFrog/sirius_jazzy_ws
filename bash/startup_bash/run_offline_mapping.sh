@@ -154,6 +154,16 @@ if [ "$RVIZ_CHOICE" != "n" ] && [ "$RVIZ_CHOICE" != "no" ]; then
     USE_RVIZ_FLAG="true"
 fi
 
+START_PAUSED_FLAG="false"
+if [ "$USE_RVIZ_FLAG" = "true" ]; then
+    echo ""
+    read -p "RVizを確認してからRosbag再生を開始しますか？ (Y/n) [Y]: " PAUSED_CHOICE
+    PAUSED_CHOICE=$(echo "${PAUSED_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
+    if [ "$PAUSED_CHOICE" != "n" ] && [ "$PAUSED_CHOICE" != "no" ]; then
+        START_PAUSED_FLAG="true"
+    fi
+fi
+
 echo "================================================="
 echo "マッピングパイプラインを起動しています..."
 echo "  Rosbag: $BAG_NAME"
@@ -188,17 +198,26 @@ echo ""
 echo "================================================="
 echo "Rosbag 再生を開始します..."
 echo "================================================="
+echo "再生中のキー操作: Space=一時停止/再開、→=1メッセージ進む、↑/↓=速度変更"
+if [ "$START_PAUSED_FLAG" = "true" ]; then
+    echo "一時停止状態で起動します。RVizの準備後、この端末でSpaceを押してください。"
+fi
 if [ ! -f "$SELECTED_BAG/metadata.yaml" ]; then
     echo "Rosbag メタデータ (metadata.yaml) を生成・再インデックス中..."
     ros2 bag reindex "$SELECTED_BAG" -s mcap
 fi
 
+PLAY_OPTIONS=(--rate "$PLAY_RATE")
+if [ "$START_PAUSED_FLAG" = "true" ]; then
+    PLAY_OPTIONS+=(--start-paused)
+fi
+
 if ros2 bag info "$SELECTED_BAG" 2>/dev/null | grep -q "Topic: /clock"; then
     echo "✓ 録画データ内の /clock を使用して再生します"
-    ros2 bag play "$SELECTED_BAG" --rate "$PLAY_RATE"
+    ros2 bag play "$SELECTED_BAG" "${PLAY_OPTIONS[@]}"
 else
     echo "✓ --clock オプションを有効にして再生します"
-    ros2 bag play "$SELECTED_BAG" --clock --rate "$PLAY_RATE"
+    ros2 bag play "$SELECTED_BAG" --clock "${PLAY_OPTIONS[@]}"
 fi
 
 echo ""
@@ -212,8 +231,10 @@ save_choice=$(echo "$save_choice" | tr '[:upper:]' '[:lower:]')
 if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
     MAP_SAVE_SCRIPT="$WS_DIR/bash/startup_bash/rtabmap_save.sh"
     if [ -f "$MAP_SAVE_SCRIPT" ]; then
+        AUTO_MAP_NAME="semantic_${BAG_NAME}"
         echo "地図保存スクリプトを実行中..."
-        bash "$MAP_SAVE_SCRIPT"
+        echo "  自動地図名: $AUTO_MAP_NAME"
+        bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME"
     else
         echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
         mkdir -p "$WS_DIR/maps_waypoints"

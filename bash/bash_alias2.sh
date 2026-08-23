@@ -244,8 +244,8 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 # Unityステレオ映像・SLAMデータをRosbagに録画（オフラインマッピング用）
 alias record_offline_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline.sh'
 
-# 実機ZEDの補正済みステレオ画像をROS 2へ配信（CUDA/ZED SDK不要）
-alias zed_offline_recorder='src && ros2 launch sirius_zed_recorder zed_stereo_publisher.launch.py'
+# 実機ZEDの補正済みステレオ画像をROS 2へ指定FPSで配信（既定8 FPS、CUDA/ZED SDK不要）
+alias zed_offline_recorder='bash ~/sirius_jazzy_ws/bash/startup_bash/start_zed_offline_recorder.sh'
 
 # 実機録画の必須トピックと補正TFを検査
 alias check_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/check_offline_real_ready.sh'

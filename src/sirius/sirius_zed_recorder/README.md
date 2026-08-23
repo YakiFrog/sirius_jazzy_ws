@@ -21,8 +21,19 @@ source ~/sirius_jazzy_ws/install/setup.bash
 ros2 launch sirius_zed_recorder zed_stereo_publisher.launch.py
 ```
 
-既定値は片眼1280x720、15 FPS、JPEG品質90です。CPUやディスク帯域が不足する場合は
-`config/zed_offline_recorder.yaml`のFPSまたはJPEG品質を下げてください。
+既定値は片眼1280x720、カメラ取得15 FPS、ROS/rosbag保存目標8 FPS、
+JPEG品質90です。`fps`はZEDが対応する15/30/60/100のいずれか、`record_fps`は
+0より大きく`fps`以下の任意値を指定できます。保存容量やCPU負荷を下げる場合は、
+カメラ取得を安定した15 FPSに保ったまま`record_fps`を下げてください。
+
+起動時に一時的に変更する例：
+
+```bash
+ros2 launch sirius_zed_recorder zed_stereo_publisher.launch.py record_fps:=10.0
+```
+
+Sirius Launcherの`zed_offline_recorder`から起動する場合は保存FPSを尋ねます。
+未入力なら8 FPSです。
 
 ## 出力
 

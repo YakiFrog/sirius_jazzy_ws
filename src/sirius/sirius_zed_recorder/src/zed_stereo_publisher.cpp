@@ -65,10 +65,20 @@ class ZedStereoPublisher : public rclcpp::Node
 {
 public:
   ZedStereoPublisher()
-  : Node("zed_stereo_publisher"), last_frame_timestamp_(0), frame_count_(0)
+  : Node("zed_stereo_publisher"), last_frame_timestamp_(0), next_publish_timestamp_(0),
+    frame_count_(0)
   {
     const auto resolution_name = declare_parameter<std::string>("resolution", "HD720");
     const auto fps = static_cast<int>(declare_parameter<int>("fps", 15));
+    capture_fps_ = fps;
+    record_fps_ = declare_parameter<double>("record_fps", 8.0);
+    if (record_fps_ <= 0.0 || record_fps_ > static_cast<double>(capture_fps_)) {
+      throw std::invalid_argument(
+              "record_fps must be greater than 0 and no greater than capture fps (" +
+              std::to_string(capture_fps_) + ").");
+    }
+    publish_interval_ns_ = static_cast<uint64_t>(
+      std::llround(1000000000.0 / record_fps_));
     jpeg_quality_ = std::clamp(
       static_cast<int>(declare_parameter<int>("jpeg_quality", 90)), 1, 100);
     const auto device_id = static_cast<int>(declare_parameter<int>("device_id", -1));
@@ -137,8 +147,9 @@ public:
 
     RCLCPP_INFO(
       get_logger(),
-      "CUDA-free ZED recorder ready: SN%u, %dx%d per eye, %d FPS, JPEG=%d",
-      serial_number_, width_, height_, fps, jpeg_quality_);
+      "CUDA-free ZED recorder ready: SN%u, %dx%d per eye, capture=%d FPS, "
+      "record target=%.1f FPS, JPEG=%d",
+      serial_number_, width_, height_, capture_fps_, record_fps_, jpeg_quality_);
     RCLCPP_INFO(
       get_logger(), "Publishing rectified SBS JPEG on %s and calibration on %s",
       image_topic.c_str(), params_topic.c_str());
@@ -157,6 +168,8 @@ private:
          << ",\"width\":" << width_
          << ",\"height\":" << height_
          << ",\"serial_number\":" << serial_number_
+         << ",\"capture_fps\":" << capture_fps_
+         << ",\"record_fps\":" << record_fps_
          << ",\"rectified\":true"
          << ",\"source\":\"zed_open_capture\"}";
 
@@ -191,6 +204,21 @@ private:
       return;
     }
     last_frame_timestamp_ = frame.timestamp;
+
+    // Keep the ZED in a supported capture mode (15 FPS for HD720), while
+    // reducing storage and CPU load by rectifying/JPEG-encoding only frames
+    // selected by the requested output rate. Accumulating the target timeline
+    // gives an average of 8 FPS even though the 15 FPS source cannot divide
+    // evenly into 8.
+    if (next_publish_timestamp_ != 0 && frame.timestamp < next_publish_timestamp_) {
+      return;
+    }
+    if (next_publish_timestamp_ == 0) {
+      next_publish_timestamp_ = frame.timestamp;
+    }
+    const auto intervals_elapsed =
+      ((frame.timestamp - next_publish_timestamp_) / publish_interval_ns_) + 1;
+    next_publish_timestamp_ += intervals_elapsed * publish_interval_ns_;
 
     cv::Mat frame_yuv(frame.height, frame.width, CV_8UC2, frame.data);
     cv::Mat frame_bgr;
@@ -227,8 +255,8 @@ private:
     const auto elapsed = std::chrono::duration<double>(current - report_started_at_).count();
     if (elapsed >= 5.0) {
       RCLCPP_INFO(
-        get_logger(), "Recording source active: %.1f FPS",
-        static_cast<double>(frame_count_) / elapsed);
+        get_logger(), "Recording output active: %.1f FPS (target %.1f, capture %d)",
+        static_cast<double>(frame_count_) / elapsed, record_fps_, capture_fps_);
       frame_count_ = 0;
       report_started_at_ = current;
     }
@@ -244,6 +272,8 @@ private:
   cv::Mat right_map_x_;
   cv::Mat right_map_y_;
   std::string frame_id_;
+  int capture_fps_;
+  double record_fps_;
   int jpeg_quality_;
   int width_;
   int height_;
@@ -254,6 +284,8 @@ private:
   double cy_;
   double baseline_m_;
   uint64_t last_frame_timestamp_;
+  uint64_t next_publish_timestamp_;
+  uint64_t publish_interval_ns_;
   std::size_t frame_count_;
   std::chrono::steady_clock::time_point report_started_at_;
 };

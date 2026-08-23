@@ -3,6 +3,8 @@ zed_stereo_publisher:
     # HD720 supports 15/30/60 FPS. 15 FPS limits CPU and bag bandwidth on the NUC.
     resolution: HD720
     fps: 15
+    # Keep camera capture at a supported 15 FPS, but publish/record about 8 FPS.
+    record_fps: 8.0
     jpeg_quality: 90
     device_id: -1
     frame_id: sirius3/zed_camera_link

@@ -1,11 +1,33 @@
 #!/bin/bash
 trap 'echo ""; echo "Ctrl + Cが押されましたが、ウィンドウは閉じません"' 2
 cd ~/sirius_jazzy_ws
+
+REQUESTED_MAP_NAME="${1:-}"
+AUTO_NAME_MODE=false
+if [ -n "$REQUESTED_MAP_NAME" ]; then
+    AUTO_NAME_MODE=true
+fi
+
+make_unique_map_name() {
+    local requested="$1"
+    local sanitized
+    local candidate
+    local suffix=2
+
+    sanitized=$(printf '%s' "$requested" | sed 's/[^A-Za-z0-9._-]/_/g')
+    sanitized=${sanitized:-semantic_map_$(date +%Y%m%d_%H%M%S)}
+    candidate="$sanitized"
+    while [ -e "$HOME/sirius_jazzy_ws/maps_waypoints/maps/rtabmap_${candidate}" ]; do
+        candidate=$(printf '%s_%02d' "$sanitized" "$suffix")
+        suffix=$((suffix + 1))
+    done
+    printf '%s' "$candidate"
+}
+
 while : ;do
     echo "------------------------------------------------"
     echo "RTAB-Map 統合保存スクリプト (Grid/PLY/Color)"
     echo "------------------------------------------------"
-    read -p "Press [Enter] key to start export process..."
     
     # ROS環境の読み込み
     if [ -f "install/setup.bash" ]; then
@@ -14,12 +36,18 @@ while : ;do
         source /opt/ros/jazzy/setup.bash
     fi
 
-    echo "保存するマップ名を入力してください (例: my_map): "
-    read map_name
-    
-    if [ -z "$map_name" ]; then
-        echo "エラー: マップ名が空です。"
-        continue
+    if [ "$AUTO_NAME_MODE" = true ]; then
+        map_name=$(make_unique_map_name "$REQUESTED_MAP_NAME")
+        echo "自動地図名: $map_name"
+    else
+        read -p "Press [Enter] key to start export process..."
+        echo "保存するマップ名を入力してください (例: my_map): "
+        read map_name
+
+        if [ -z "$map_name" ]; then
+            echo "エラー: マップ名が空です。"
+            continue
+        fi
     fi
 
     MAP_DIR="$HOME/sirius_jazzy_ws/maps_waypoints/maps/rtabmap_$map_name"
@@ -173,4 +201,8 @@ if os.path.exists(pgm_p) and os.path.exists(json_p):
 
     echo "------------------------------------------------"
     echo "完了しました！"
+    echo "保存先: $MAP_DIR"
+    if [ "$AUTO_NAME_MODE" = true ]; then
+        break
+    fi
 done
