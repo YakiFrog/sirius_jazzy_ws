@@ -44,6 +44,9 @@ class TestTabSelection(unittest.TestCase):
 
         offline_buttons = {
             'record_offline_sim',
+            'zed_offline_recorder',
+            'check_offline_real',
+            'record_offline_real',
             'run_offline_mapping',
             'sam3_docker_gpu',
         }
@@ -66,6 +69,15 @@ class TestTabSelection(unittest.TestCase):
             offline_preset.index('slamtoolbox'),
             offline_preset.index('record_offline_sim'),
         )
+
+        real_preset = next(
+            items
+            for name, items in window.presets
+            if name.startswith('実機オフライン録画準備')
+        )
+        self.assertIn('slamtoolbox_real', real_preset)
+        self.assertIn('zed_offline_recorder', real_preset)
+        self.assertNotIn('record_offline_real', real_preset)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 # シリウス オフライン SAM3 セマンティックマッピング ガイド
 
-ロボット（NUC）上の計算負荷をゼロにし、母艦 PC の NVIDIA GPU を使って最高精度の **「意味情報付き2次元地図（草地・歩道・車道・点字ブロック等のコストマップ）」** を作成する手順です。
+ロボット（NUC）側では軽量なセンサー収録だけを行い、母艦 PC の NVIDIA GPU を使って高精度の **「意味情報付き2次元地図（草地・歩道・車道・点字ブロック等のコストマップ）」** を作成する手順です。
 
 ---
 
@@ -9,7 +9,7 @@
 ```mermaid
 flowchart LR
     subgraph 1. 録画 (Unity / 実機)
-        Unity[Unity シミュレータ / 実機] -->|SBSステレオ映像 + TF + LiDAR| Rec[record_rosbag_offline.sh]
+        Unity[Unity シミュレータ / 実機] -->|SBSステレオ映像 + TF + LiDAR| Rec[record_rosbag_offline_sim / real]
         Rec --> Bag[(Rosbag2 MCAP)]
     end
 
@@ -77,18 +77,33 @@ cd ~/sirius_jazzy_ws
 
 ---
 
-## 3. 実機ロボット（NUC）での録画手順
+## 3. 実機ロボット（NVIDIAなしNUC）での録画手順
 
-実機でも同様に、NUC 側で以下のトピックを Rosbag に録画し、母艦 PC にコピーして `./run_offline_mapping.sh` を実行するだけで全く同じように高品質なセマンティック地図が作成できます：
+実機PCでSAM3推論やZED SDKは動かしません。CUDA不要の
+[ZED Open Capture](https://github.com/stereolabs/zed-open-capture)でUSBカメラから左右画像を取得し、
+工場キャリブレーションで補正したJPEGだけを録画します。
+
+対応カメラはUSB接続のZED、ZED Mini、ZED 2、ZED 2iです。ZED X系は対応しません。
+
+### 初回セットアップ
 
 ```bash
-ros2 bag record -s mcap -o ~/rosbag2_data/real_robot_01 \
-  /tf \
-  /tf_static \
-  /odom \
-  /odom/filtered \
-  /scan3 \
-  /camera/stereo_sbs/compressed \
-  /clock \
-  /imu
+bash ~/sirius_jazzy_ws/bash/startup_bash/setup_offline_real.sh
 ```
+
+初回ビルドとカメラの工場キャリブレーション取得時にはインターネット接続が必要です。
+取得後は `~/zed/settings/SN<シリアル>.conf` が使われるためオフラインで起動できます。
+
+### 録画手順
+
+Sirius Launcherの「実機オフライン録画準備」は必要ノードだけを起動し、録画は開始しません。
+
+1. 実機センサー、`rviz2real`、`sf_real`、`slamtoolbox_real`、`zed_offline_recorder` を起動します。
+2. `check_offline_real` で画像、`/scan3`、`map → base_footprint`、ZED取付TFを確認します。
+3. 全項目が成功したら `record_offline_real` を起動します。
+4. 走行終了後に `Ctrl+C` で安全にMCAPを保存します。
+
+実機用録画スクリプトは他ノードを自動起動しません。必須トピックや補正TFが不足する場合は、録画を開始せずエラーにします。
+
+保存した `~/rosbag2_data/<実験名>` をGPU搭載PCにコピーし、
+`run_offline_mapping` で再生します。再生時のSLAM Toolboxは不要です。

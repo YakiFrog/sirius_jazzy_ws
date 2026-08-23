@@ -7,6 +7,9 @@
 # PRESET: オフラインマッピング録画セット (Unity・補正TF)
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,slamtoolbox,record_offline_sim
 
+# PRESET: 実機オフライン録画準備 (録画は別ボタン)
+# PRESET_ITEMS: roboteq,velodyne,imu,rviz2real,sf_real,slamtoolbox_real,zed_offline_recorder
+
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
 # GROUP_DESC: 実機のモーター、LiDAR、IMUなどを個別に起動します。デバイス接続とudev設定を確認してから使用してください。
@@ -233,11 +236,24 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 # TAB: オフライン・マッピング
 # GROUP: オフライン・マッピング
 # GROUP_DESC: 【録画時に必要】Unity→rte→rviz2sim→sf_sim→slamtoolbox→record_offline_sim の順で起動。SLAM Toolboxの補正済みTFを /tf としてbagに録画します。
+# GROUP_DESC: 【実機録画】実機センサー→rviz2real→sf_real→slamtoolbox_real→zed_offline_recorder→check_offline_real→record_offline_real。ZED取得にNVIDIA/CUDA/ZED SDKは不要です。
 # GROUP_DESC: 【地図生成時に必要】sam3_docker_gpu→run_offline_mapping の順で起動。SLAM Toolboxは起動せず、bag内の補正済みTFを使います。
 # GROUP_DESC: record_offline_sim が自動起動するのはUnity画像受信用の unity_stereo_bridge だけです。
 
 # Unityステレオ映像・SLAMデータをRosbagに録画（オフラインマッピング用）
 alias record_offline_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline.sh'
+
+# 実機ZEDの補正済みステレオ画像をROS 2へ配信（CUDA/ZED SDK不要）
+alias zed_offline_recorder='src && ros2 launch sirius_zed_recorder zed_stereo_publisher.launch.py'
+
+# 実機録画の必須トピックと補正TFを検査
+alias check_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/check_offline_real_ready.sh'
+
+# 実機用Rosbag録画（事前チェック付き、他ノードの自動起動なし）
+alias record_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_real.sh'
+
+# 実機PCへCUDA不要の録画依存関係を初回セットアップ
+alias setup_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/setup_offline_real.sh'
 
 # 記録済みRosbagからSAM3推論+RTAB-Mapで2Dカラー地図を生成・保存
 alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_mapping.sh'
