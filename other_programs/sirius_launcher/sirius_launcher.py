@@ -165,9 +165,9 @@ class SiriusLauncher(QMainWindow):
         self.preset_layout, self.tab_layouts, self.tab_widget, self.reload_btn = MainWindowUI.setup_ui(self)
         self.reload_btn.clicked.connect(self.reload_launcher)
 
-    def add_group(self, title, tab_name=None):
+    def add_group(self, title, tab_name=None, description=""):
         """グループボックスを追加（タブ対応）"""
-        group, group_layout = MainWindowUI.create_group(title)
+        group, group_layout = MainWindowUI.create_group(title, description)
         # タブ名指定がなければ最初のタブに追加
         if tab_name is None:
             tab_name = list(self.tab_layouts.keys())[0]
@@ -184,7 +184,9 @@ class SiriusLauncher(QMainWindow):
             QMessageBox.warning(self, "警告", f"エイリアスファイルが見つかりません: {alias_file}")
             return
 
-        groups, presets = parse_bash_aliases(str(alias_file))
+        groups, presets, group_descriptions = parse_bash_aliases(
+            str(alias_file), include_group_descriptions=True
+        )
         self.presets = presets
 
         if not groups:
@@ -196,7 +198,16 @@ class SiriusLauncher(QMainWindow):
             self.add_preset_button(preset_name, items)
 
         # タブ名リスト（ui_components.pyのデフォルトと合わせる）
-        tab_names_list = ["センサー・ハードウェア", "シミュレーション", "ユーティリティ", "ナビゲーション", "Pythonスクリプト", "Sirius Ear関連"]
+        tab_names_list = [
+            "センサー・ハードウェア",
+            "シミュレーション",
+            "ユーティリティ",
+            "ナビゲーション",
+            "Pythonスクリプト",
+            "Sirius Ear関連",
+            "リアル実験",
+            "オフライン・マッピング",
+        ]
         for i, name in enumerate(tab_names_list):
             self.original_tab_names[i] = name
 
@@ -204,7 +215,11 @@ class SiriusLauncher(QMainWindow):
         for i, (group_name, aliases) in enumerate(groups.items()):
             if aliases:
                 tab_name = tab_names_list[i] if i < len(tab_names_list) else tab_names_list[0]
-                group_layout, group_widget = self.add_group(group_name, tab_name)
+                group_layout, group_widget = self.add_group(
+                    group_name,
+                    tab_name,
+                    group_descriptions.get(group_name, ""),
+                )
                 for alias_name, command, description in aliases:
                     self.add_button(group_layout, alias_name, command, description, group_widget)
 

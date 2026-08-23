@@ -108,11 +108,13 @@ echo "  Rosbag: $BAG_NAME"
 echo "  再生速度: ${PLAY_RATE}x"
 echo "  プロンプト: $PROMPT_INPUT"
 echo "  RViz2 表示: $USE_RVIZ_FLAG"
+echo "  SLAM Toolbox: 起動しない (bag内の補正済みTFを使用)"
 echo "================================================="
 
 # Launch mapping nodes in background
 ros2 launch sirius_navigation sam3_offline_mapping.launch.py \
     use_sim_time:=true \
+    run_slam_toolbox:=false \
     include_background:=true \
     use_docker_backend:=true \
     prompt:="$PROMPT_INPUT" \

@@ -4,11 +4,12 @@
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
 
-# PRESET: オフラインマッピング録画セット (Unity)
-# PRESET_ITEMS: rte,rviz2sim,sf_sim,record_offline_sim
+# PRESET: オフラインマッピング録画セット (Unity・補正TF)
+# PRESET_ITEMS: rte,rviz2sim,sf_sim,slamtoolbox,record_offline_sim
 
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
+# GROUP_DESC: 実機のモーター、LiDAR、IMUなどを個別に起動します。デバイス接続とudev設定を確認してから使用してください。
 
 # Roboteq起動(udevルール設定済み前提)
 alias roboteq='src && ros2 launch roboteq_ros2_driver roboteq_ros2_driver.launch.py pub_odom_tf:=false'
@@ -29,6 +30,7 @@ alias imu='src && ros2 launch sirius_navigation witmotion_hwt905.launch.py'
 
 # TAB: シミュレーション
 # GROUP: シミュレーション
+# GROUP_DESC: Unity/GazeboとROS 2の通信、シミュレーション用RViz、SAM3/RTAB-Mapを起動する項目です。
 
 # Simulation起動
 alias sim='src && ros2 launch sirius_description sim_with_ui.launch.py'
@@ -61,6 +63,7 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 
 # TAB: ユーティリティ
 # GROUP: ユーティリティ
+# GROUP_DESC: Dockerサーバー、可視化、物体検出などの補助ツールです。必要な項目だけ起動してください。
 
 alias install_packages='sudo apt update && sudo apt install xterm -y && \
 sudo apt install ros-jazzy-spatio-temporal-voxel-layer -y  && \
@@ -91,6 +94,7 @@ alias odom_path_real='src && ros2 run sirius_navigation odom_path_publisher --ro
 
 # TAB: ナビゲーション
 # GROUP: ナビゲーション
+# GROUP_DESC: Nav2、SLAM Toolbox、Sensor Fusion、手動操作などを起動します。シミュレーションでは *_sim、実機では *_real を使います。
 
 # Nav2起動(既存MAP)
 alias nav2='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_sim.sh'
@@ -137,11 +141,13 @@ alias sfimu='sfimu_sim'
 
 # TAB: Pythonスクリプト
 # GROUP: Pythonスクリプト
+# GROUP_DESC: Siriusの運用・開発用Pythonツールを起動します。
 # Siriusランチャー起動
 alias sirius_launcher='cd ${HOME}/sirius_jazzy_ws/other_programs/sirius_launcher && python3 sirius_launcher.py'
 
 # TAB: Sirius Ear関連
 # GROUP: Sirius Ear関連
+# GROUP_DESC: Sirius EarのBluetooth接続、経路、曲率、位置関連ノードを個別に起動します。
 alias src2='cd ${HOME}/miura_ws && source install/setup.bash'
 alias blue='src2 && ros2 run bluetooth bluetooth_node'
 alias path='src2 && ros2 run path_listener path_listener_node'
@@ -151,6 +157,7 @@ alias pos='src2 && ros2 run position position_node'
 
 # TAB: リアル実験
 # GROUP: リアル実験
+# GROUP_DESC: 実機のNav2、SLAM、Sensor Fusion、マップ保存などを実時間（use_sim_time=false）で起動します。
 
 # Nav2起動(任意MAP、実時間)
 alias nav2_real='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_real.sh'
@@ -225,6 +232,9 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 
 # TAB: オフライン・マッピング
 # GROUP: オフライン・マッピング
+# GROUP_DESC: 【録画時に必要】Unity→rte→rviz2sim→sf_sim→slamtoolbox→record_offline_sim の順で起動。SLAM Toolboxの補正済みTFを /tf としてbagに録画します。
+# GROUP_DESC: 【地図生成時に必要】sam3_docker_gpu→run_offline_mapping の順で起動。SLAM Toolboxは起動せず、bag内の補正済みTFを使います。
+# GROUP_DESC: record_offline_sim が自動起動するのはUnity画像受信用の unity_stereo_bridge だけです。
 
 # Unityステレオ映像・SLAMデータをRosbagに録画（オフラインマッピング用）
 alias record_offline_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline.sh'
@@ -243,4 +253,3 @@ alias rtabmap_save='bash ~/sirius_jazzy_ws/bash/startup_bash/rtabmap_save.sh'
 
 # 作成済みセマンティックカラー地図の選択・ロード
 alias sam3_colored_map_select='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
-

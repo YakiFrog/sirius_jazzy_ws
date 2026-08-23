@@ -74,6 +74,7 @@ show_result() {
 echo "========================================="
 echo "  オフライン・セマンティックマッピング 録画ツール"
 echo "========================================="
+echo "※ SLAM Toolboxは自動起動しません。録画前にLauncherから slamtoolbox を起動してください。"
 echo "Unity画像レシーバー (unity_stereo_bridge: port 8080) を起動中..."
 ros2 run sirius_navigation unity_stereo_bridge >/dev/null 2>&1 &
 BRIDGE_PID=$!

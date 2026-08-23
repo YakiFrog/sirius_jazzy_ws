@@ -36,6 +36,10 @@ cd ~/sirius_jazzy_ws
 ---
 
 ### ステップ 2: 走行データの録画
+録画前に `rte` → `rviz2sim` → `sf_sim` → `slamtoolbox` の順で起動します。
+SLAM Toolboxは録画スクリプから自動起動されません。ここで生成した
+補正済みTFが `/tf` としてbagに保存されます。
+
 端末 2 でオフライン録画スクリプトを実行します：
 ```bash
 cd ~/sirius_jazzy_ws
@@ -57,7 +61,7 @@ cd ~/sirius_jazzy_ws
 1. 一覧から先ほど録画した Rosbag の番号を選択します。
 2. 再生速度を選択します（推奨: `0.5`）。
 3. 認識させたい物体/路面のプロンプトを入力します（デフォルト: `grass, tactile paving, roadway, sidewalk`）。
-4. 自動で SAM3 GPU サーバー、RTAB-Map、SlamToolbox、2D カラーインデックスノードが立ち上がり、Rosbag の再生に合わせてセマンティック地図がリアルタイムに構築されます。
+4. SAM3 GPU サーバー、RTAB-Map、2D カラーインデックスノードが立ち上がり、Rosbag の再生に合わせてセマンティック地図が構築されます。再生時はSlamToolboxを起動せず、bag内の補正済みTFを使います。
 5. 再生完了後、保存確認で **`y`** を入力すると、`maps_waypoints/` に 2D カラー地図（`.png`, `.yaml`, `.db`）が保存されます。
 
 ---

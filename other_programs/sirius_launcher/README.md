@@ -7,6 +7,7 @@ ROS2ノードやlaunchファイルをGUIボタンから起動できるランチ�
 - **ワンクリック起動**: エイリアスで定義されたコマンドをボタンで簡単に起動
 - **自動エイリアス読み込み**: `.bash_alias2`ファイルから自動的にエイリアスを読み込み
 - **グループ分け**: `# GROUP: グループ名`コメントでボタンをカテゴリ別に整理
+- **グループ説明**: `# GROUP_DESC: 説明`をセクション上部に表示（複数行指定可）
 - **プロセス管理**: 起動中のプロセスは再起動不可（ボタン無効化）
 - **ウィンドウフォーカス**: 起動中のターミナルウィンドウに切り替え可能
 - **プロセス停止**: 各プロセスを個別に停止、または全停止
@@ -32,6 +33,7 @@ sudo apt install wmctrl
 
 ```bash
 # GROUP: センサー・ハードウェア
+# GROUP_DESC: 実機センサーのドライバーを個別に起動します。
 
 # Roboteq起動(udevルール設定済み前提)
 alias roboteq='src && ros2 launch roboteq_ros2_driver roboteq_ros2_driver.launch.py'
@@ -52,6 +54,7 @@ alias nav2='src && ros2 launch nav2_bringup bringup_launch.py params_file:=...'
 
 **ルール**:
 - `# GROUP: グループ名` でグループを定義
+- `# GROUP_DESC: 説明` でグループ上部の説明を定義（繰り返すと改行で連結）
 - その後のaliasは同じグループに属する
 - alias行の前のコメントが説明として表示される
 - `alias install_packages`など、初回のみ実行するものは自動的に除外される

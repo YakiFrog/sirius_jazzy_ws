@@ -6,8 +6,11 @@
 WS_DIR="${HOME}/sirius_jazzy_ws"
 cd "$WS_DIR"
 
-# 実行中プロセスの ROS_DOMAIN_ID を自動検出（なければデフォルト 42）
-DETECTED_DOMAIN=$(pgrep -a -f "sam3_offline_mapping.launch.py" | head -n 1 | grep -o "ROS_DOMAIN_ID=[0-9]*" | cut -d'=' -f2)
+# 実行中プロセスの ROS_DOMAIN_ID を自動検出（なければ環境変数またはデフォルト 42）
+LAUNCH_PID=$(pgrep -f "sam3_offline_mapping.launch.py" 2>/dev/null | head -n 1)
+if [ -n "$LAUNCH_PID" ] && [ -r "/proc/$LAUNCH_PID/environ" ]; then
+    DETECTED_DOMAIN=$(tr '\0' '\n' < "/proc/$LAUNCH_PID/environ" 2>/dev/null | grep "^ROS_DOMAIN_ID=" | cut -d'=' -f2)
+fi
 export ROS_DOMAIN_ID="${DETECTED_DOMAIN:-${ROS_DOMAIN_ID:-42}}"
 
 source "$WS_DIR/install/setup.bash" 2>/dev/null || source /opt/ros/jazzy/setup.bash

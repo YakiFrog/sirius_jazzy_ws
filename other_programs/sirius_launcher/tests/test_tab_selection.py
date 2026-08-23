@@ -7,7 +7,7 @@ import unittest
 sys.path.insert(0, str(Path.cwd()))
 sys.path.insert(0, str(Path.cwd().joinpath('other_programs', 'sirius_launcher')))
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QLabel
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtCore import Qt, QPoint
 
@@ -33,6 +33,39 @@ class TestTabSelection(unittest.TestCase):
         btn.launch_btn.event(event)
 
         self.assertEqual(window.tab_widget.currentIndex(), btn.tab_index)
+
+    def test_offline_mapping_has_own_tab_and_instructions(self):
+        window = SiriusLauncher()
+        tab_names = [
+            window.tab_widget.tabText(index)
+            for index in range(window.tab_widget.count())
+        ]
+        self.assertIn('オフライン・マッピング', tab_names)
+
+        offline_buttons = {
+            'record_offline_sim',
+            'run_offline_mapping',
+            'sam3_docker_gpu',
+        }
+        offline_index = tab_names.index('オフライン・マッピング')
+        for button_name in offline_buttons:
+            self.assertEqual(window.button_map[button_name].tab_index, offline_index)
+
+        offline_tab = window.tab_widget.widget(offline_index)
+        description_labels = offline_tab.findChildren(QLabel, "groupDescription")
+        descriptions = "\n".join(label.text() for label in description_labels)
+        self.assertIn('slamtoolbox', descriptions)
+        self.assertIn('bag内の補正済みTF', descriptions)
+
+        offline_preset = next(
+            items
+            for name, items in window.presets
+            if name.startswith('オフラインマッピング録画セット')
+        )
+        self.assertLess(
+            offline_preset.index('slamtoolbox'),
+            offline_preset.index('record_offline_sim'),
+        )
 
 
 if __name__ == '__main__':

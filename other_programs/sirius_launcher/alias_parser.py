@@ -6,9 +6,15 @@ bash_alias2ファイルのパーサー
 import re
 
 
-def parse_bash_aliases(alias_file_path):
-    """bash_alias2ファイルからエイリアスとプリセットを解析（複数行対応）"""
+def parse_bash_aliases(alias_file_path, include_group_descriptions=False):
+    """bash_alias2からエイリアス、プリセット、グループ説明を解析する。
+
+    ``include_group_descriptions`` は旧呼び出しとの互換性を保つため
+    デフォルトで無効。有効時は3つ目の戻り値に
+    ``# GROUP_DESC:`` の内容を返す。
+    """
     groups = {}
+    group_descriptions = {}
     presets = []
     current_group = "その他"
     current_description = ""
@@ -47,6 +53,16 @@ def parse_bash_aliases(alias_file_path):
                 current_group = line.replace('# GROUP:', '').strip()
                 if current_group not in groups:
                     groups[current_group] = []
+                current_description = ""
+                i += 1
+                continue
+
+            if line.startswith('# GROUP_DESC:'):
+                description = line.replace('# GROUP_DESC:', '', 1).strip()
+                if current_group in group_descriptions and description:
+                    group_descriptions[current_group] += "\n" + description
+                else:
+                    group_descriptions[current_group] = description
                 current_description = ""
                 i += 1
                 continue
@@ -91,4 +107,6 @@ def parse_bash_aliases(alias_file_path):
     except Exception as e:
         print(f"エイリアスファイルの読み込みエラー: {e}")
     
+    if include_group_descriptions:
+        return groups, presets, group_descriptions
     return groups, presets

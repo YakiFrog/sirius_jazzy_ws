@@ -128,7 +128,16 @@ class MainWindowUI:
         tab_widget = QTabWidget()
         tab_layouts = {}
         if tab_names is None:
-            tab_names = ["センサー・ハードウェア", "シミュレーション", "ユーティリティ", "ナビゲーション", "Pythonスクリプト", "Sirius Ear関連"]
+            tab_names = [
+                "センサー・ハードウェア",
+                "シミュレーション",
+                "ユーティリティ",
+                "ナビゲーション",
+                "Pythonスクリプト",
+                "Sirius Ear関連",
+                "リアル実験",
+                "オフライン・マッピング",
+            ]
         for tab_name in tab_names:
             scroll = QScrollArea()
             scroll.setWidgetResizable(True)
@@ -156,9 +165,21 @@ class MainWindowUI:
         return preset_btn
     
     @staticmethod
-    def create_group(title):
+    def create_group(title, description=""):
         """グループボックスを作成"""
         group = QGroupBox(title)
         group_layout = QVBoxLayout()
         group.setLayout(group_layout)
+        if description:
+            description_label = QLabel(description)
+            description_label.setObjectName("groupDescription")
+            description_label.setWordWrap(True)
+            description_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            description_label.setStyleSheet(
+                "QLabel#groupDescription {"
+                " color: #495057; background-color: #f1f3f5;"
+                " border: 1px solid #dee2e6; border-radius: 4px;"
+                " padding: 7px; margin-bottom: 3px; }"
+            )
+            group_layout.addWidget(description_label)
         return group, group_layout
