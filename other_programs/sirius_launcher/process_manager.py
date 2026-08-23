@@ -4,6 +4,7 @@ Sirius ROS2 Launch Manager - Process Management
 """
 
 import os
+import signal
 import subprocess
 import tempfile
 import psutil
@@ -135,6 +136,63 @@ class ProcessManager:
         except:
             pass
         return pids
+
+    @staticmethod
+    def _is_rosbag_record_command(cmdline):
+        """Return True for the ros2 CLI process that owns an active bag recording."""
+        return "ros2" in [os.path.basename(part) for part in cmdline] and all(
+            token in cmdline for token in ("bag", "record")
+        )
+
+    @staticmethod
+    def _is_offline_recorder_script(cmdline):
+        return any(
+            os.path.basename(part) in {
+                "record_rosbag_offline.sh",
+                "record_rosbag_offline_real.sh",
+            }
+            for part in cmdline
+        )
+
+    def _gracefully_finish_rosbag(self, pids):
+        """Finalize MCAP before the normal process-tree shutdown continues."""
+        recorder_processes = []
+        recorder_scripts = []
+        for pid in pids:
+            try:
+                proc = psutil.Process(pid)
+                cmdline = proc.cmdline()
+                if self._is_rosbag_record_command(cmdline):
+                    recorder_processes.append(proc)
+                if self._is_offline_recorder_script(cmdline):
+                    recorder_scripts.append(proc)
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        if not recorder_processes:
+            return
+
+        print("Rosbagを安全に停止し、MCAP索引の保存完了を待機します...")
+        for proc in recorder_processes:
+            try:
+                proc.send_signal(signal.SIGINT)
+                print(f"  SIGINT: PID {proc.pid} ({proc.name()})")
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+
+        _, alive = psutil.wait_procs(recorder_processes, timeout=30)
+        if alive:
+            print("  警告: ros2 bag recordが30秒以内に終了しませんでした")
+            return
+
+        # record_rosbag_offline*.sh performs MCAP recovery, reindexing, validation,
+        # and Docker restoration after the ros2 recorder exits. Do not terminate it
+        # until those finalizers have completed.
+        _, alive_scripts = psutil.wait_procs(recorder_scripts, timeout=60)
+        if alive_scripts:
+            print("  警告: 録画後処理が60秒以内に終了しませんでした")
+        else:
+            print("  ✓ Rosbagの保存と検証が完了しました")
     
     def stop(self):
         """プロセスを停止"""
@@ -143,6 +201,12 @@ class ProcessManager:
                 print(f"停止対象なし: {self.name}")
                 return False
             
+            pids = self.get_process_tree_pids(self.pid_file_content)
+
+            # A rosbag2 MCAP file needs a clean SIGINT and enough time to write its
+            # summary/footer. Killing descendants first leaves a large but unreadable
+            # file, so recording workflows are finalized before the generic shutdown.
+            self._gracefully_finish_rosbag(pids)
             pids = self.get_process_tree_pids(self.pid_file_content)
             
             if len(pids) > 1:

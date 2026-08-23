@@ -45,10 +45,22 @@ SLAM Toolboxは録画スクリプから自動起動されません。ここで�
 cd ~/sirius_jazzy_ws
 ./bash/startup_bash/record_rosbag_offline.sh
 ```
+- SAM3 Dockerが8080番ポートを使用中なら、録画中だけ自動停止し、録画終了時に元の起動状態へ戻します。
+- 録画開始前に、ステレオ画像、カメラパラメータ、`/scan3`、`/odom/filtered`、`/clock`、補正済みTF、カメラ取付TFを実メッセージで検査します。不足時はbagを作らず停止します。
 - ファイル名を入力（例: `sim_test_01`）
 - キーボード操作（`keyboard_teleop_ja` 等）でシリウスロボットを動かし、地図を作成したいエリアを隈なく走行します。
-- 走行が終わったら **Ctrl + C** を押して録画を停止・保存します。
+- 録画中は10秒ごとに経過時間とbagサイズを表示します。走行が終わったら **Ctrl + Cを1回だけ** 押して録画を停止・保存します。
+- `Ctrl+C`後は、Rosbag終了、MCAP索引、メタデータ、必須トピック検証の現在段階と経過秒数を表示します。
+- Launcherの「停止」ボタンでも、rosbagへ先にSIGINTを送り、MCAP索引・検証の完了を待ってから終了します。「Rosbagの保存と検証が完了しました」と表示されるまでPCを終了しないでください。
+- 保存直後にもbag内の件数とTF構成を再検査し、欠損があればエラーを表示します。
 - データは `~/rosbag2_data/<ファイル名>` に保存されます。
+
+保存済みbagだけを再検査する場合：
+
+```bash
+python3 ~/sirius_jazzy_ws/bash/startup_bash/validate_offline_mapping_bag.py \
+  ~/rosbag2_data/<ファイル名> --require-clock
+```
 
 ---
 
@@ -58,7 +70,7 @@ cd ~/sirius_jazzy_ws
 cd ~/sirius_jazzy_ws
 ./bash/startup_bash/run_offline_mapping.sh
 ```
-1. 一覧から先ほど録画した Rosbag の番号を選択します。
+1. 一覧から先ほど録画した Rosbag の番号を選択します。必須画像または補正TFがないbagは自動的に拒否されます。
 2. 再生速度を選択します（推奨: `0.5`）。
 3. 認識させたい物体/路面のプロンプトを入力します（デフォルト: `grass, tactile paving, roadway, sidewalk`）。
 4. SAM3 GPU サーバー、RTAB-Map、2D カラーインデックスノードが立ち上がり、Rosbag の再生に合わせてセマンティック地図が構築されます。再生時はSlamToolboxを起動せず、bag内の補正済みTFを使います。
@@ -107,3 +119,25 @@ Sirius Launcherの「実機オフライン録画準備」は必要ノードだ�
 
 保存した `~/rosbag2_data/<実験名>` をGPU搭載PCにコピーし、
 `run_offline_mapping` で再生します。再生時のSLAM Toolboxは不要です。
+
+### オンライン実験とのSAM3設定一致
+
+`run_offline_mapping`は開始前に、オンライン実験と同じSAM3設定をサーバーへ
+明示的に適用します。
+
+設定を確認・変更する場合はSirius Launcherの`sam3_settings_ui`を起動します。
+ブラウザの専用画面（`http://localhost:8080/`）からプロンプト、Confidence、
+SAM3解像度、深度方式、深度解像度、最大距離などを変更できます。
+
+| 設定 | オンライン | オフライン |
+| :--- | :---: | :---: |
+| SAM3モデル／チェックポイント | `sam3.pt` | 同一 |
+| SAM3入力解像度 | 512×512 | 512×512 |
+| Confidence | 0.5 | 0.5 |
+| 色モード | semantic | semantic |
+| ROSブリッジ点群間引き | 2 | 2 |
+| 背景点群 | 有効 | 有効 |
+
+画像入力元はオンラインのカメラに対してオフラインはrosbag、深度入力は実機PCで
+ZED SDKを使えないためオフラインではFastStereoになります。この2点以外のSAM3
+認識条件は共通です。

@@ -49,6 +49,7 @@ class TestTabSelection(unittest.TestCase):
             'record_offline_real',
             'run_offline_mapping',
             'sam3_docker_gpu',
+            'sam3_settings_ui',
         }
         offline_index = tab_names.index('オフライン・マッピング')
         for button_name in offline_buttons:

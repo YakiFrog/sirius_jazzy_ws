@@ -85,7 +85,8 @@ alias bt_enter='docker exec -it bt_dev_container bash'
 alias sam3_docker_start='cd ~/DA3_SAM3_Project/sam3_da3_3d/sam3_server_export && docker compose up sam3-server'
 
 # SAM3 + ZED Dockerサーバー起動 ポート8080
-alias sam3_zed_docker_start='cd ~/DA3_SAM3_Project/sam3_da3_3d/sam3_server_export && docker compose up sam3-zed-merged'
+# オンライン・オフラインで同じ実装、モデル、既定推論設定を使用
+alias sam3_zed_docker_start='cd ~/sam3_zed_server && docker compose up sam3-zed-merged'
 
 # PCL 3D点群物体検出ノード起動 (Velodyne等の点群をリアルタイムクラスタリング・バウンディングボックス化します)
 alias pcl_detect='bash ~/sirius_jazzy_ws/bash/startup_bash/pcl_detect.sh'
@@ -237,8 +238,8 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 # GROUP: オフライン・マッピング
 # GROUP_DESC: 【録画時に必要】Unity→rte→rviz2sim→sf_sim→slamtoolbox→record_offline_sim の順で起動。SLAM Toolboxの補正済みTFを /tf としてbagに録画します。
 # GROUP_DESC: 【実機録画】実機センサー→rviz2real→sf_real→slamtoolbox_real→zed_offline_recorder→check_offline_real→record_offline_real。ZED取得にNVIDIA/CUDA/ZED SDKは不要です。
-# GROUP_DESC: 【地図生成時に必要】sam3_docker_gpu→run_offline_mapping の順で起動。SLAM Toolboxは起動せず、bag内の補正済みTFを使います。
-# GROUP_DESC: record_offline_sim が自動起動するのはUnity画像受信用の unity_stereo_bridge だけです。
+# GROUP_DESC: 【地図生成時に必要】sam3_docker_gpu→sam3_settings_ui（設定確認）→run_offline_mapping の順で起動。SLAM Toolboxは起動せず、bag内の補正済みTFを使います。
+# GROUP_DESC: record_offline_sim はSAM3 Dockerとの8080競合を自動回避し、画像・LiDAR・補正TFを確認できた場合だけ録画します。終了後にもbagを検証します。
 
 # Unityステレオ映像・SLAMデータをRosbagに録画（オフラインマッピング用）
 alias record_offline_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline.sh'
@@ -260,6 +261,9 @@ alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_
 
 # SAM3 + SGM GPU推論Dockerサーバーを起動 (port 8080)
 alias sam3_docker_gpu='cd ~/sam3_zed_server && docker compose up sam3-zed-merged'
+
+# SAM3のプロンプト、閾値、解像度、深度設定を変更する専用Web UI
+alias sam3_settings_ui='bash ~/sirius_jazzy_ws/bash/startup_bash/open_sam3_settings_ui.sh'
 
 # Unity映像レシーバー単体起動 (HTTP -> ROS2 CompressedImage)
 alias unity_stereo_bridge='src && ros2 run sirius_navigation unity_stereo_bridge'

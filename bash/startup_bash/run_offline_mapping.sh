@@ -76,6 +76,20 @@ SELECTED_BAG="${BAG_LIST[$index]}"
 BAG_NAME=$(basename "$SELECTED_BAG")
 echo "選択された Rosbag: $SELECTED_BAG"
 
+# カメラや補正済みTFが欠けたbagを再生すると、SAM3サーバーに残った古いフレームで
+# 誤った地図を生成する可能性があるため、推論設定を変更する前に拒否します。
+BAG_VALIDATOR="$WS_DIR/bash/startup_bash/validate_offline_mapping_bag.py"
+if [ -f "$BAG_VALIDATOR" ]; then
+    echo ""
+    echo "Rosbagの必須情報を検証中..."
+    if ! python3 "$BAG_VALIDATOR" "$SELECTED_BAG"; then
+        echo ""
+        echo "エラー: 必須情報が不足しているため、このRosbagは再生しません。"
+        echo "別のRosbagを選ぶか、RECORDOFFLINESIMで再録画してください。"
+        exit 1
+    fi
+fi
+
 # 2. 再生速度の選択
 echo ""
 read -p "再生速度を選択してください (例: 0.5, 1.0) [0.5]: " PLAY_RATE
@@ -87,9 +101,47 @@ DEFAULT_PROMPT="grass, tactile paving, roadway, sidewalk"
 read -p "SAM3 認識プロンプト (カンマ区切り) [$DEFAULT_PROMPT]: " PROMPT_INPUT
 PROMPT_INPUT=${PROMPT_INPUT:-$DEFAULT_PROMPT}
 
-# サーバー側プロンプトをHTTP POSTで更新
-if curl -s -X POST http://localhost:8080/prompt -H "Content-Type: application/json" -d "{\"prompt\": \"$PROMPT_INPUT\"}" >/dev/null 2>&1; then
-    echo "✓ SAM3 サーバーのプロンプトを更新しました: $PROMPT_INPUT"
+# オンライン実験と同じSAM3推論設定を明示的に適用します。入力元と深度方式だけは
+# rosbag SBS画像用にnetwork/FastStereoへ切り替えます。
+SAM3_PROMPT_JSON=$(python3 -c 'import json,sys; print(json.dumps({"prompt":sys.argv[1]}))' "$PROMPT_INPUT")
+SAM3_SETTING_FAILURES=0
+
+post_sam3_setting() {
+    local endpoint="$1"
+    local payload="$2"
+    local label="$3"
+    if curl -fsS -X POST "http://localhost:8080/${endpoint}" \
+        -H "Content-Type: application/json" -d "$payload" >/dev/null; then
+        echo "  ✓ $label"
+    else
+        echo "  ✗ $label の設定に失敗"
+        SAM3_SETTING_FAILURES=$((SAM3_SETTING_FAILURES + 1))
+    fi
+}
+
+echo "オンライン実験と同じSAM3設定を適用中..."
+post_sam3_setting prompt "$SAM3_PROMPT_JSON" "prompt=$PROMPT_INPUT"
+post_sam3_setting threshold '{"threshold":0.5}' "confidence=0.5"
+post_sam3_setting sam3_resolution '{"resolution":512}' "resolution=512"
+post_sam3_setting color_mode '{"mode":"semantic"}' "color_mode=semantic"
+post_sam3_setting fast_iters '{"iters":4}' "FastStereo iterations=4"
+post_sam3_setting depth_downsample '{"downsample":4}' "depth downsample=4"
+post_sam3_setting max_distance '{"distance":15.0}' "max distance=15.0m"
+post_sam3_setting depth_mode '{"mode":"fast_stereo"}' "offline depth=FastStereo"
+post_sam3_setting source_mode '{"mode":"network"}' "source=rosbag network"
+
+if [ "$SAM3_SETTING_FAILURES" -ne 0 ]; then
+    echo "エラー: SAM3設定を適用できないため、条件不一致の実験は開始しません。"
+    exit 1
+fi
+
+echo ""
+read -p "SAM3専用UIで設定を確認・変更しますか？ (y/N) [N]: " SAM3_UI_CHOICE
+SAM3_UI_CHOICE=$(echo "${SAM3_UI_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
+if [ "$SAM3_UI_CHOICE" = "y" ] || [ "$SAM3_UI_CHOICE" = "yes" ]; then
+    bash "$WS_DIR/bash/startup_bash/open_sam3_settings_ui.sh"
+    echo "ブラウザで設定を変更できます。変更内容は今回の再生に使用されます。"
+    read -p "設定が完了したら Enter を押してください: " _SAM3_UI_DONE
 fi
 
 # 4. RViz2 確認画面の起動選択
