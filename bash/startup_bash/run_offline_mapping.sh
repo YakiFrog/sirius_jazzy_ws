@@ -178,8 +178,8 @@ DEFAULT_PROMPT="grass, tactile paving, roadway, sidewalk"
 read -p "SAM3 認識プロンプト (カンマ区切り) [$DEFAULT_PROMPT]: " PROMPT_INPUT
 PROMPT_INPUT=${PROMPT_INPUT:-$DEFAULT_PROMPT}
 
-# オンライン実験と同じSAM3推論設定を明示的に適用します。入力元と深度方式だけは
-# rosbag SBS画像用にnetwork/FastStereoへ切り替えます。
+# オンライン実験と同じSAM3推論設定を明示的に適用します。入力元と深度方式は
+# rosbag SBS画像用、点群色だけはテクスチャ保存用の実RGBへ切り替えます。
 SAM3_PROMPT_JSON=$(python3 -c 'import json,sys; print(json.dumps({"prompt":sys.argv[1]}))' "$PROMPT_INPUT")
 SAM3_SETTING_FAILURES=0
 
@@ -196,11 +196,14 @@ post_sam3_setting() {
     fi
 }
 
-echo "オンライン実験と同じSAM3設定を適用中..."
+echo "オンライン実験と同じSAM3推論設定を適用中（点群色のみ実RGB）..."
 post_sam3_setting prompt "$SAM3_PROMPT_JSON" "prompt=$PROMPT_INPUT"
 post_sam3_setting threshold '{"threshold":0.5}' "confidence=0.5"
 post_sam3_setting sam3_resolution '{"resolution":512}' "resolution=512"
-post_sam3_setting color_mode '{"mode":"semantic"}' "color_mode=semantic"
+# Keep inference/class IDs identical to online mapping, but carry the original
+# camera RGB in the point cloud. The semantic map is built from semantic_id,
+# while the separate texture map can robustly fuse real floor colors.
+post_sam3_setting color_mode '{"mode":"real"}' "color_mode=real (実RGBテクスチャ用)"
 post_sam3_setting fast_iters '{"iters":4}' "FastStereo iterations=4"
 post_sam3_setting depth_downsample '{"downsample":4}' "depth downsample=4"
 post_sam3_setting max_distance '{"distance":15.0}' "max distance=15.0m"
