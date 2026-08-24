@@ -1,0 +1,7 @@
+image: rtabmap_semantic_offline_real_20260824_180620_recovered.pgm
+mode: trinary
+resolution: 0.050
+origin: [-18.037, -19.941, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196

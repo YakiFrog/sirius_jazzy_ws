@@ -17,19 +17,26 @@ echo "================================================="
 echo "  SAM3 オフライン・セマンティックマッピング (Domain: $ROS_DOMAIN_ID)"
 echo "================================================="
 
-# 0. SAM3 GPU サーバー (Docker) の状態確認
+# 0. SAM3 GPU サーバー (Docker) をクリーンな状態で起動
 if [ -d "$SAM3_SERVER_DIR" ]; then
-    echo "SAM3 GPU サーバー (Docker: port 8080) の状態を確認中..."
-    if ! docker ps | grep -q "sam3_zed_container"; then
-        echo "SAM3 コンテナが起動していません。起動します..."
-        docker start sam3_zed_container 2>/dev/null || (cd "$SAM3_SERVER_DIR" && docker compose up -d sam3-zed-merged)
+    echo "SAM3 GPU サーバー (Docker: port 8080) を初期化中..."
+    if docker container inspect sam3_zed_container >/dev/null 2>&1; then
+        echo "前回の画像・点群・GPU状態を消去するため、SAM3コンテナを再起動します..."
+        if ! docker restart sam3_zed_container >/dev/null; then
+            echo "エラー: SAM3コンテナを再起動できませんでした。"
+            exit 1
+        fi
     else
-        echo "✓ SAM3 GPU サーバー (sam3_zed_container) は稼働中です。"
+        echo "SAM3コンテナを新規起動します..."
+        if ! (cd "$SAM3_SERVER_DIR" && docker compose up -d sam3-zed-merged); then
+            echo "エラー: SAM3コンテナを起動できませんでした。"
+            exit 1
+        fi
     fi
 
     echo -n "SAM3 サーバーの準備完了を待機中..."
     READY=false
-    for i in {1..30}; do
+    for i in {1..60}; do
         if curl -s -m 1 http://localhost:8080/ >/dev/null 2>&1; then
             READY=true
             break
@@ -41,8 +48,25 @@ if [ -d "$SAM3_SERVER_DIR" ]; then
     if [ "$READY" = true ]; then
         echo "✓ SAM3 サーバーの準備が完了しました！"
     else
-        echo "⚠️ 警告: SAM3 サーバーの起動待機がタイムアウトしました。ログを確認してください。"
+        echo "エラー: SAM3 サーバーの起動待機がタイムアウトしました。"
+        echo "docker logs sam3_zed_container を確認してください。"
+        exit 1
     fi
+
+    # A restarted backend must not contain a frame from an earlier Unity run.
+    # Refuse to continue if another sender has already populated the buffer.
+    if ! curl -fsS -m 2 http://localhost:8080/debug_state | python3 -c '
+import json
+import sys
+
+state = json.load(sys.stdin)
+raise SystemExit(1 if state.get("has_network_frame", False) else 0)
+'; then
+        echo "エラー: SAM3に再起動後のrosbag以外の画像入力を検出しました。"
+        echo "Unityなど、port 8080へ画像を送信するプログラムを停止してください。"
+        exit 1
+    fi
+    echo "✓ SAM3の前回フレームが消去されていることを確認しました。"
 fi
 
 # 1. 録画データ (Rosbag) の選択
