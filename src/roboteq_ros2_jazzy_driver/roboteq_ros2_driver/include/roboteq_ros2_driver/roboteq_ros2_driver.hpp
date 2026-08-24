@@ -123,6 +123,8 @@ class Roboteq : public rclcpp::Node
   // ソフトウェアP制御用のゲイン
   double kp_soft{};
   double min_speed_threshold{};
+  double motor_sign_r{};
+  double motor_sign_l{};
   double encoder_sign_r{};
   double encoder_sign_l{};
 

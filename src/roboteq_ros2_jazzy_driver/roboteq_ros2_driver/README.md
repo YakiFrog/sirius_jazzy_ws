@@ -34,6 +34,31 @@ Sample launch files in roboteq_ros2_driver/launch, or run `ros2 run roboteq_ros2
 
 This driver assumes right motor is connected to channel 1 (M1) of motor controller, and left motor is connected to channel 2 (M2). It also assumes a positive speed command will result in forward motion of each motor. Best to test motor directions using the roboteq utility software.
 
+## Per-robot direction profile
+
+Motor wiring and encoder polarity can be selected without changing the shared
+driver code. The four direction parameters accept `1.0` or `-1.0`:
+
+| Parameter | Purpose | Shared default |
+| --- | --- | ---: |
+| `motor_sign_r` | Right motor (M1) command direction | `1.0` |
+| `motor_sign_l` | Left motor (M2) command direction | `-1.0` |
+| `encoder_sign_r` | Right encoder odometry direction | `-1.0` |
+| `encoder_sign_l` | Left encoder odometry direction | `1.0` |
+
+The workspace launcher reads an optional machine-local profile from
+`~/.config/sirius/roboteq_profile.sh`. For example, a robot whose two motors and
+two encoders both use the negative direction can use:
+
+```bash
+export SIRIUS_MOTOR_SIGN_R=-1.0
+export SIRIUS_MOTOR_SIGN_L=-1.0
+export SIRIUS_ENCODER_SIGN_R=-1.0
+export SIRIUS_ENCODER_SIGN_L=-1.0
+```
+
+Robots without this local profile keep the shared defaults above.
+
 
 ## TODO
 

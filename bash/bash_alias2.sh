@@ -15,9 +15,9 @@
 # GROUP_DESC: 実機のモーター、LiDAR、IMUなどを個別に起動します。デバイス接続とudev設定を確認してから使用してください。
 
 # Roboteq起動(udevルール設定済み前提)
-alias roboteq='src && ros2 launch roboteq_ros2_driver roboteq_ros2_driver.launch.py pub_odom_tf:=false'
+alias roboteq='bash ~/sirius_jazzy_ws/bash/startup_bash/start_roboteq.sh false'
 
-alias roboteq_no_sf='src && ros2 launch roboteq_ros2_driver roboteq_ros2_driver.launch.py pub_odom_tf:=true'
+alias roboteq_no_sf='bash ~/sirius_jazzy_ws/bash/startup_bash/start_roboteq.sh true'
 
 # Velodyne起動
 alias velodyne='src && ros2 launch velodyne velodyne-all-nodes-VLP16-composed-launch.py'

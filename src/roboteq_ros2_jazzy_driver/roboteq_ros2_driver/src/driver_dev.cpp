@@ -82,6 +82,8 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     speed_scale = this->declare_parameter("speed_scale", 1.0);
     kp_soft = this->declare_parameter("kp_soft", 0.0);
     min_speed_threshold = this->declare_parameter("min_speed_threshold", 0.10);
+    motor_sign_r = this->declare_parameter("motor_sign_r", 1.0);
+    motor_sign_l = this->declare_parameter("motor_sign_l", -1.0);
     encoder_sign_r = this->declare_parameter("encoder_sign_r", -1.0);
     encoder_sign_l = this->declare_parameter("encoder_sign_l", 1.0);
 
@@ -125,8 +127,12 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
 //
     odom_pub = this->create_publisher<nav_msgs::msg::Odometry>(odom_topic, 1000);
 
-    RCLCPP_INFO(this->get_logger(), "Odometry: wheel_circumference=%.4f pulse=%d gear_ratio=%.3f speed_scale=%.4f",
-                wheel_circumference, pulse, gear_ratio, speed_scale);
+    RCLCPP_INFO(
+        this->get_logger(),
+        "Drive config: wheel_circumference=%.4f pulse=%d gear_ratio=%.3f speed_scale=%.4f "
+        "motor_sign=(R=%.0f,L=%.0f) encoder_sign=(R=%.0f,L=%.0f)",
+        wheel_circumference, pulse, gear_ratio, speed_scale,
+        motor_sign_r, motor_sign_l, encoder_sign_r, encoder_sign_l);
 //
 // cmd_vel subscriber
 //
@@ -178,6 +184,8 @@ void Roboteq::update_parameters()
     this->get_parameter("speed_scale", speed_scale);
     this->get_parameter("kp_soft", kp_soft);
     this->get_parameter("min_speed_threshold", min_speed_threshold);
+    this->get_parameter("motor_sign_r", motor_sign_r);
+    this->get_parameter("motor_sign_l", motor_sign_l);
     this->get_parameter("encoder_sign_r", encoder_sign_r);
     this->get_parameter("encoder_sign_l", encoder_sign_l);
     // If the stream interval changed while running, re-send the stream
@@ -287,11 +295,12 @@ bool Roboteq::safe_serial_write(const std::string &cmd) {
 
 void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_msg)
 {
-    // 車輪速度の計算 (m/s)
-    // 右モーター(M1): 正(+)の指令で前進
-    // 左モーター(M2): 負(-)の指令で前進
-    float right_speed = (twist_msg->linear.x + track_width * twist_msg->angular.z / 2.0);
-    float left_speed = (twist_msg->linear.x - track_width * twist_msg->angular.z / 2.0) * -1;
+    // 機体座標系での左右車輪速度 (m/s)。モーター結線の方向は
+    // motor_sign_r/l で機体ごとに変換する。
+    float right_wheel_speed =
+        twist_msg->linear.x + track_width * twist_msg->angular.z / 2.0;
+    float left_wheel_speed =
+        twist_msg->linear.x - track_width * twist_msg->angular.z / 2.0;
 
     linear_x = twist_msg->linear.x;
     angular_z = twist_msg->angular.z;
@@ -303,42 +312,48 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
 
     // speed_scaleを先に適用する。
     // これにより、不感帯（デッドバンド）の判定を実際にモーターへ送る最終的な指令値ベースで行える。
-    right_speed *= scale;
-    left_speed *= scale;
+    right_wheel_speed *= scale;
+    left_wheel_speed *= scale;
 
     // 指令値がゼロでない場合のみ、低速時の底上げ処理を行う
     if ((std::abs(linear_x) > EPSILON) || (std::abs(angular_z) > EPSILON))
     {
-        float max_abs_speed = std::max(std::abs(right_speed), std::abs(left_speed));
+        float max_abs_speed =
+            std::max(std::abs(right_wheel_speed), std::abs(left_wheel_speed));
         
         // 最大速度がしきい値（スケーリング済み）未満かつゼロでない場合、比率を維持したまま底上げ
         if (max_abs_speed > EPSILON && max_abs_speed < min_threshold)
         {
             float boost_factor = min_threshold / max_abs_speed;
-            right_speed *= boost_factor;
-            left_speed *= boost_factor;
+            right_wheel_speed *= boost_factor;
+            left_wheel_speed *= boost_factor;
         }
         // 指令はあるが計算上の車輪速度がほぼゼロになる場合（例：低速旋回のみなど）
         else if (max_abs_speed < EPSILON)
         {
             if (linear_x > EPSILON) {
-                right_speed = min_threshold;
-                left_speed = -min_threshold;
+                right_wheel_speed = min_threshold;
+                left_wheel_speed = min_threshold;
             } else if (linear_x < -EPSILON) {
-                right_speed = -min_threshold;
-                left_speed = min_threshold;
+                right_wheel_speed = -min_threshold;
+                left_wheel_speed = -min_threshold;
             } else {
                 // 旋回指令のみの場合
                 if (angular_z > 0) {
-                    right_speed = min_threshold;
-                    left_speed = min_threshold;
+                    right_wheel_speed = min_threshold;
+                    left_wheel_speed = -min_threshold;
                 } else {
-                    right_speed = -min_threshold;
-                    left_speed = -min_threshold;
+                    right_wheel_speed = -min_threshold;
+                    left_wheel_speed = min_threshold;
                 }
             }
         }
     }
+
+    const float right_speed =
+        static_cast<float>(motor_sign_r) * right_wheel_speed;
+    const float left_speed =
+        static_cast<float>(motor_sign_l) * left_wheel_speed;
 
     std::stringstream left_cmd;
     std::stringstream right_cmd;

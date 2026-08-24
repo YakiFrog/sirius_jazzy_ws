@@ -27,6 +27,7 @@ from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -49,8 +50,27 @@ def generate_launch_description():
         description='Whether the driver should publish odom->base TF (true/false)'
     )
 
+    sign_defaults = {
+        'motor_sign_r': '1.0',
+        'motor_sign_l': '-1.0',
+        'encoder_sign_r': '-1.0',
+        'encoder_sign_l': '1.0',
+    }
+    sign_args = [
+        DeclareLaunchArgument(
+            name,
+            default_value=value,
+            description=f'{name} direction multiplier (+1.0 or -1.0)',
+        )
+        for name, value in sign_defaults.items()
+    ]
+
     config = LaunchConfiguration('config')
     pub_odom_tf = LaunchConfiguration('pub_odom_tf')
+    sign_parameters = {
+        name: ParameterValue(LaunchConfiguration(name), value_type=float)
+        for name in sign_defaults
+    }
 
     # Nodes
     roboteq_ros2_driver = Node(
@@ -60,7 +80,7 @@ def generate_launch_description():
         output='screen',
         respawn = True,
         # load parameters from the provided config file and allow overriding pub_odom_tf via launch arg
-        parameters=[config, {'pub_odom_tf': pub_odom_tf}],
+        parameters=[config, {'pub_odom_tf': pub_odom_tf}, sign_parameters],
     )
     
     # tf
@@ -96,6 +116,7 @@ def generate_launch_description():
         # launch args
         config_arg,
         pub_odom_tf_arg,
+        *sign_args,
 
         # Nodes
         #velodyne,
