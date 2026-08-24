@@ -118,7 +118,11 @@ def main() -> int:
                 if parent == "map":
                     corrected_tf_count += 1
     except Exception as exc:
-        failures.append(f"TF内容を読み取れません: {exc}")
+        # Keep storage/read failures distinct from a readable bag that merely
+        # lacks required topics. run_offline_mapping uses exit code 2 to invoke
+        # the non-destructive MCAP recovery path.
+        print(f"✗ Rosbagデータを最後まで読み取れません: {exc}")
+        return 2
 
     print("TF構成:")
     if corrected_tf_count > 0:

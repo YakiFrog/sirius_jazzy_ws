@@ -82,10 +82,63 @@ BAG_VALIDATOR="$WS_DIR/bash/startup_bash/validate_offline_mapping_bag.py"
 if [ -f "$BAG_VALIDATOR" ]; then
     echo ""
     echo "Rosbagの必須情報を検証中..."
-    if ! python3 "$BAG_VALIDATOR" "$SELECTED_BAG"; then
+    VALIDATION_STATUS=0
+
+    # metadata.yaml can still look healthy when the MCAP footer or final chunk
+    # is incomplete. Check the complete MCAP structure before trusting topic
+    # counts from metadata or starting a long offline mapping run.
+    if [ -x "$WS_DIR/mcap" ]; then
+        mapfile -d '' SELECTED_MCAP_FILES < <(
+            find "$SELECTED_BAG" -maxdepth 1 -type f -name '*.mcap' -print0 | sort -z
+        )
+        if [ "${#SELECTED_MCAP_FILES[@]}" -gt 0 ]; then
+            echo "MCAPファイル構造を確認中..."
+            for mcap_file in "${SELECTED_MCAP_FILES[@]}"; do
+                if ! "$WS_DIR/mcap" doctor "$mcap_file" >/dev/null 2>&1; then
+                    echo "✗ MCAP破損または未完了を検出: $(basename "$mcap_file")"
+                    VALIDATION_STATUS=2
+                    break
+                fi
+            done
+        fi
+    fi
+
+    if [ "$VALIDATION_STATUS" -eq 0 ]; then
+        python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
+        VALIDATION_STATUS=$?
+    fi
+
+    # Exit code 2 means that rosbag2 could not open the storage. This commonly
+    # happens when recording was interrupted before MCAP wrote its footer. In
+    # that case only, recover into a new directory and validate it again. Exit
+    # code 1 means readable data with missing inputs and must not be repaired.
+    if [ "$VALIDATION_STATUS" -eq 2 ]; then
+        RECOVERY_SCRIPT="$WS_DIR/bash/startup_bash/recover_mcap_rosbag.sh"
+        if [ ! -f "$RECOVERY_SCRIPT" ]; then
+            echo "エラー: MCAP自動復旧スクリプトがありません: $RECOVERY_SCRIPT"
+            exit 1
+        fi
+
+        echo ""
+        echo "Rosbagを開けないため、MCAP自動復旧を試します..."
+        if ! RECOVERED_BAG=$(bash "$RECOVERY_SCRIPT" "$SELECTED_BAG"); then
+            echo ""
+            echo "エラー: MCAPを自動復旧できませんでした。元のRosbagは変更していません。"
+            exit 1
+        fi
+
+        SELECTED_BAG="$RECOVERED_BAG"
+        BAG_NAME=$(basename "$SELECTED_BAG")
+        echo ""
+        echo "復旧したRosbagを再検証中: $SELECTED_BAG"
+        python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
+        VALIDATION_STATUS=$?
+    fi
+
+    if [ "$VALIDATION_STATUS" -ne 0 ]; then
         echo ""
         echo "エラー: 必須情報が不足しているため、このRosbagは再生しません。"
-        echo "別のRosbagを選ぶか、RECORDOFFLINESIMで再録画してください。"
+        echo "別のRosbagを選ぶか、録画機能で再録画してください。"
         exit 1
     fi
 fi

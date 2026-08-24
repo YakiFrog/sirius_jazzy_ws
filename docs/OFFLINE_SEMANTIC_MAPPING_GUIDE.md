@@ -121,6 +121,12 @@ Sirius Launcherの「実機オフライン録画準備」は必要ノードだ�
 保存した `~/rosbag2_data/<実験名>` をGPU搭載PCにコピーし、
 `run_offline_mapping` で再生します。再生時のSLAM Toolboxは不要です。
 
+MCAP録画が電源断や強制終了で未完了になりRosbagを開けない場合、
+`run_offline_mapping` は自動的に `mcap recover` と再インデックスを実行します。
+元データは上書きせず、同じディレクトリ階層に `_recovered` 付きのRosbagを
+作成して必須トピックとTFを再検証してから再生します。復旧できても必要な
+データが欠けている場合は、安全のため再生を開始しません。
+
 ### オンライン実験とのSAM3設定一致
 
 `run_offline_mapping`は開始前に、オンライン実験と同じSAM3設定をサーバーへ
