@@ -59,6 +59,11 @@ export SIRIUS_ENCODER_SIGN_L=-1.0
 
 Robots without this local profile keep the shared defaults above.
 
+`max_encoder_step_revolutions` limits the accepted wheel movement from one
+Roboteq encoder sample (default `0.25` revolutions). A controller counter reset
+or discontinuity beyond this limit is ignored instead of being published as a
+large odometry jump.
+
 
 ## TODO
 

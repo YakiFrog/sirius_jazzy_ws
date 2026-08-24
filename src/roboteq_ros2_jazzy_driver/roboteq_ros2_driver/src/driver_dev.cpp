@@ -86,6 +86,8 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     motor_sign_l = this->declare_parameter("motor_sign_l", -1.0);
     encoder_sign_r = this->declare_parameter("encoder_sign_r", -1.0);
     encoder_sign_l = this->declare_parameter("encoder_sign_l", 1.0);
+    max_encoder_step_revolutions =
+        this->declare_parameter("max_encoder_step_revolutions", 0.25);
 
     starttime = 0;
     hstimer = 0;
@@ -188,6 +190,8 @@ void Roboteq::update_parameters()
     this->get_parameter("motor_sign_l", motor_sign_l);
     this->get_parameter("encoder_sign_r", encoder_sign_r);
     this->get_parameter("encoder_sign_l", encoder_sign_l);
+    this->get_parameter(
+        "max_encoder_step_revolutions", max_encoder_step_revolutions);
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -680,19 +684,11 @@ void Roboteq::process_encoder_data(int32_t right_val, int32_t left_val)
     odom_encoder_left = left_val;
 
     if (!has_last_encoder_time_) {
-        odom_encoder_right_old = static_cast<float>(right_val);
-        odom_encoder_left_old = static_cast<float>(left_val);
+        odom_encoder_right_old = right_val;
+        odom_encoder_left_old = left_val;
         last_encoder_time_ = now;
         last_odom_update_time_ = now;
         has_last_encoder_time_ = true;
-        return;
-    }
-
-    double dt = (now - last_encoder_time_).seconds();
-    if (dt <= 1e-6 || dt > 1.0) {
-        odom_encoder_right_old = static_cast<float>(right_val);
-        odom_encoder_left_old = static_cast<float>(left_val);
-        last_encoder_time_ = now;
         return;
     }
 
@@ -702,31 +698,63 @@ void Roboteq::process_encoder_data(int32_t right_val, int32_t left_val)
         return;
     }
 
-    float right_diff = (static_cast<float>(odom_encoder_right) - odom_encoder_right_old) / static_cast<float>(counts_per_wheel_rev);
-    float left_diff = (static_cast<float>(odom_encoder_left) - odom_encoder_left_old) / static_cast<float>(counts_per_wheel_rev);
+    // Keep the absolute counters as integers. Converting a long-running 32-bit
+    // counter to float loses single-count precision and creates pose jumps.
+    auto wrapped_count_delta = [](int32_t current, int32_t previous) {
+        int64_t delta =
+            static_cast<int64_t>(current) - static_cast<int64_t>(previous);
+        constexpr int64_t COUNTER_RANGE = (int64_t{1} << 32);
+        if (delta > INT32_MAX) {
+            delta -= COUNTER_RANGE;
+        } else if (delta < INT32_MIN) {
+            delta += COUNTER_RANGE;
+        }
+        return delta;
+    };
 
-    odom_encoder_right_old = static_cast<float>(odom_encoder_right);
-    odom_encoder_left_old = static_cast<float>(odom_encoder_left);
+    const int64_t right_count_delta =
+        wrapped_count_delta(odom_encoder_right, odom_encoder_right_old);
+    const int64_t left_count_delta =
+        wrapped_count_delta(odom_encoder_left, odom_encoder_left_old);
+
+    odom_encoder_right_old = odom_encoder_right;
+    odom_encoder_left_old = odom_encoder_left;
     last_encoder_time_ = now;
 
-    // 異常値チェック（ノイズ等で大きな値が飛んだ場合）
-    if (std::abs(right_diff) > 50.0f || std::abs(left_diff) > 50.0f) {
+    const double right_diff =
+        static_cast<double>(right_count_delta) / counts_per_wheel_rev;
+    const double left_diff =
+        static_cast<double>(left_count_delta) / counts_per_wheel_rev;
+
+    // A discontinuous controller counter must not teleport the robot or inject
+    // an extreme velocity into robot_localization.
+    const double max_step =
+        max_encoder_step_revolutions > 0.0 ?
+        max_encoder_step_revolutions : 0.25;
+    if (std::abs(right_diff) > max_step || std::abs(left_diff) > max_step) {
+        RCLCPP_WARN_THROTTLE(
+            this->get_logger(), *this->get_clock(), 2000,
+            "Ignoring encoder counter jump: right=%ld left=%ld "
+            "(%.3f/%.3f wheel rev)",
+            static_cast<long>(right_count_delta),
+            static_cast<long>(left_count_delta), right_diff, left_diff);
         return;
     }
 
-    float d_roll_r = static_cast<float>(encoder_sign_r) * right_diff;
-    float d_roll_l = static_cast<float>(encoder_sign_l) * left_diff;
+    const float d_roll_r = static_cast<float>(encoder_sign_r * right_diff);
+    const float d_roll_l = static_cast<float>(encoder_sign_l * left_diff);
 
     // 車輪回転量から実走行距離・旋回角を算出
     float d_linear = (d_roll_r + d_roll_l) * static_cast<float>(wheel_circumference) / 2.0f;
     float d_angular = (d_roll_r - d_roll_l) * static_cast<float>(wheel_circumference) / static_cast<float>(track_width);
 
-    // 正確な実受信間隔dtで瞬時速度を計算（通信ジッターによる0割れ・倍速を根絶）
-    float inst_v = d_linear / static_cast<float>(dt);
-    float inst_w = d_angular / static_cast<float>(dt);
-
     {
         std::lock_guard<std::mutex> lock(odom_mutex_);
+
+        // Accumulate wheel motion for a stable publish-period velocity. The
+        // EKF consumes this twist, so per-packet timing jitter must not leak in.
+        odom_roll_right += d_roll_r;
+        odom_roll_left += d_roll_l;
 
         float mid_yaw = odom_yaw + d_angular / 2.0f;
         odom_x += d_linear * std::cos(mid_yaw);
@@ -736,17 +764,6 @@ void Roboteq::process_encoder_data(int32_t right_val, int32_t left_val)
         odom_last_x = odom_x;
         odom_last_y = odom_y;
         odom_last_yaw = odom_yaw;
-
-        // 指数移動平均フィルタ（EMA）でエンコーダの量子化ノイズを平滑化
-        constexpr float ALPHA = 0.40f;
-        current_v_ = (1.0f - ALPHA) * current_v_ + ALPHA * inst_v;
-        current_w_ = (1.0f - ALPHA) * current_w_ + ALPHA * inst_w;
-
-        // 停止状態の判定（指令値・移動量がほぼゼロなら素早く0にする）
-        if (std::abs(linear_x) < 1e-4f && std::abs(angular_z) < 1e-4f && std::abs(d_linear) < 1e-4f) {
-            current_v_ = 0.0f;
-            current_w_ = 0.0f;
-        }
 
         last_odom_update_time_ = now;
     }
@@ -772,25 +789,60 @@ void Roboteq::odom_publish()
         return;
     }
     
+    const double publish_dt =
+        (current_time - last_publish_time).seconds();
     last_publish_time = current_time;
     
     float x = 0.0f, y = 0.0f, yaw = 0.0f, v = 0.0f, w = 0.0f;
+    float roll_right = 0.0f, roll_left = 0.0f;
+    bool encoder_stale = false;
     {
         std::lock_guard<std::mutex> lock(odom_mutex_);
         x = odom_x;
         y = odom_y;
         yaw = odom_yaw;
+        roll_right = odom_roll_right;
+        roll_left = odom_roll_left;
+        odom_roll_right = 0.0f;
+        odom_roll_left = 0.0f;
+        encoder_stale =
+            (current_time - last_odom_update_time_).seconds() > 0.3;
+    }
 
-        // エンコーダ受信が0.3秒以上途絶した場合は停止扱いとする
-        if ((current_time - last_odom_update_time_).seconds() > 0.3) {
-            current_v_ = 0.0f;
-            current_w_ = 0.0f;
-            v = 0.0f;
-            w = 0.0f;
-        } else {
-            v = current_v_;
-            w = current_w_;
+    const float linear_delta =
+        (roll_right + roll_left) *
+        static_cast<float>(wheel_circumference) / 2.0f;
+    const float angular_delta =
+        (roll_right - roll_left) *
+        static_cast<float>(wheel_circumference) /
+        static_cast<float>(track_width);
+
+    // Restore the pre-fae7459 behavior: compute velocity from all encoder
+    // movement accumulated during one odometry publish period, not from the
+    // timing of an individual serial packet. Use the former five-sample moving
+    // average as well, since this twist is integrated by robot_localization.
+    if (!encoder_stale && publish_dt > 1e-6 && publish_dt <= 1.0) {
+        const float raw_v = linear_delta / static_cast<float>(publish_dt);
+        const float raw_w = angular_delta / static_cast<float>(publish_dt);
+
+        velocity_history_v_.push_back(raw_v);
+        velocity_history_w_.push_back(raw_w);
+        if (velocity_history_v_.size() > 5) {
+            velocity_history_v_.erase(velocity_history_v_.begin());
+            velocity_history_w_.erase(velocity_history_w_.begin());
         }
+
+        for (const float sample : velocity_history_v_) {
+            v += sample;
+        }
+        for (const float sample : velocity_history_w_) {
+            w += sample;
+        }
+        v /= static_cast<float>(velocity_history_v_.size());
+        w /= static_cast<float>(velocity_history_w_.size());
+    } else {
+        velocity_history_v_.clear();
+        velocity_history_w_.clear();
     }
 
     tf2::Quaternion tf2_quat;

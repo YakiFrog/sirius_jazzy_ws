@@ -28,3 +28,5 @@ roboteq_ros2_driver:
     motor_sign_l: -1.0
     encoder_sign_r: -1.0
     encoder_sign_l: 1.0
+    # 1回のストリーム受信で許容する最大車輪回転量。カウンタ飛び防止。
+    max_encoder_step_revolutions: 0.25

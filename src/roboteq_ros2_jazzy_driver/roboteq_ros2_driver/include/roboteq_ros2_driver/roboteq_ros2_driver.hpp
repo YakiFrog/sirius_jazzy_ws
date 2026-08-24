@@ -4,6 +4,7 @@
 #include <math.h>
 #include <unistd.h>
 
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -42,8 +43,8 @@ class Roboteq : public rclcpp::Node
   rclcpp::Time last_encoder_time_{0, 0, RCL_ROS_TIME};
   rclcpp::Time last_odom_update_time_{0, 0, RCL_ROS_TIME};
   bool has_last_encoder_time_{false};
-  float current_v_{0.0f};
-  float current_w_{0.0f};
+  std::vector<float> velocity_history_v_;
+  std::vector<float> velocity_history_w_;
 
   uint32_t starttime{};
   uint32_t hstimer{};
@@ -66,8 +67,8 @@ class Roboteq : public rclcpp::Node
 
   float odom_roll_left{};
   float odom_roll_right{};
-  float odom_encoder_left_old{};
-  float odom_encoder_right_old{};
+  int32_t odom_encoder_left_old{};
+  int32_t odom_encoder_right_old{};
 
   float odom_x{};
   float odom_y{};
@@ -127,6 +128,7 @@ class Roboteq : public rclcpp::Node
   double motor_sign_l{};
   double encoder_sign_r{};
   double encoder_sign_l{};
+  double max_encoder_step_revolutions{};
 
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};
