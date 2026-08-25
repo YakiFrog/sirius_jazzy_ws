@@ -309,12 +309,45 @@ read -p "生成されたセマンティック地図を保存しますか？ (Y/n
 save_choice=$(echo "$save_choice" | tr '[:upper:]' '[:lower:]')
 
 if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
+    SLAM_BASE_YAML=""
+    echo ""
+    echo "保存する構造地図を選択してください:"
+    echo "  [1] RTAB-Map版のみ（従来どおり）"
+    echo "  [2] RTAB-Map版 + SLAM Toolbox PGMベース版"
+    read -p "選択 [1]: " STRUCTURAL_MAP_CHOICE
+    STRUCTURAL_MAP_CHOICE=${STRUCTURAL_MAP_CHOICE:-1}
+
+    if [ "$STRUCTURAL_MAP_CHOICE" = "2" ]; then
+        mapfile -d '' SLAM_MAP_YAMLS < <(
+            find "$WS_DIR/maps_waypoints/maps" -maxdepth 1 -type f -name '*.yaml' -print0 | sort -z
+        )
+        if [ "${#SLAM_MAP_YAMLS[@]}" -eq 0 ]; then
+            echo "警告: $WS_DIR/maps_waypoints/maps にSLAM Toolbox地図YAMLがありません。"
+            echo "RTAB-Map版のみ保存します。"
+        else
+            echo ""
+            echo "利用可能なSLAM Toolbox地図:"
+            for i in "${!SLAM_MAP_YAMLS[@]}"; do
+                echo "  [$((i+1))] $(basename "${SLAM_MAP_YAMLS[$i]}")"
+            done
+            read -p "構造ベースにする地図番号を選択してください [1]: " SLAM_MAP_CHOICE
+            SLAM_MAP_CHOICE=${SLAM_MAP_CHOICE:-1}
+            SLAM_MAP_INDEX=$((SLAM_MAP_CHOICE-1))
+            if [ "$SLAM_MAP_INDEX" -ge 0 ] && [ "$SLAM_MAP_INDEX" -lt "${#SLAM_MAP_YAMLS[@]}" ]; then
+                SLAM_BASE_YAML="${SLAM_MAP_YAMLS[$SLAM_MAP_INDEX]}"
+                echo "SLAM Toolbox構造地図: $SLAM_BASE_YAML"
+            else
+                echo "警告: 無効な選択です。RTAB-Map版のみ保存します。"
+            fi
+        fi
+    fi
+
     MAP_SAVE_SCRIPT="$WS_DIR/bash/startup_bash/rtabmap_save.sh"
     if [ -f "$MAP_SAVE_SCRIPT" ]; then
         AUTO_MAP_NAME="semantic_${BAG_NAME}"
         echo "地図保存スクリプトを実行中..."
         echo "  自動地図名: $AUTO_MAP_NAME"
-        bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME"
+        bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
     else
         echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
         mkdir -p "$WS_DIR/maps_waypoints"

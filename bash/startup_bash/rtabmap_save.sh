@@ -3,6 +3,7 @@ trap 'echo ""; echo "Ctrl + Cが押されましたが、ウィンドウは閉じ
 cd ~/sirius_jazzy_ws
 
 REQUESTED_MAP_NAME="${1:-}"
+SLAM_BASE_YAML="${2:-}"
 AUTO_NAME_MODE=false
 if [ -n "$REQUESTED_MAP_NAME" ]; then
     AUTO_NAME_MODE=true
@@ -198,6 +199,21 @@ if os.path.exists(pgm_p) and os.path.exists(json_p):
     cv2.imwrite(out_p, rgb)
     print(f'✓ 全領域セマンティックカラー画像を保存しました: {out_p}')
 " 2>/dev/null
+
+    if [ -n "$SLAM_BASE_YAML" ]; then
+        REBASE_SCRIPT="$HOME/sirius_jazzy_ws/bash/startup_bash/rebase_semantic_map_to_slam.py"
+        echo ""
+        echo "[追加] SLAM ToolboxのPGMを構造ベースにした地図を生成中..."
+        echo "  構造地図: $SLAM_BASE_YAML"
+        if [ -f "$REBASE_SCRIPT" ]; then
+            if ! python3 "$REBASE_SCRIPT" "$MAP_BASE_PATH" "$SLAM_BASE_YAML"; then
+                echo "ERROR: SLAM Toolboxベース版の生成に失敗しました。"
+                echo "RTAB-Mapベースの標準版は保存済みです: $MAP_DIR"
+            fi
+        else
+            echo "ERROR: 変換スクリプトがありません: $REBASE_SCRIPT"
+        fi
+    fi
 
     echo "------------------------------------------------"
     echo "完了しました！"
