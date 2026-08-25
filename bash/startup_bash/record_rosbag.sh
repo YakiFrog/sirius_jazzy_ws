@@ -76,6 +76,7 @@ input_filename() {
     echo "  - /llm_instruction, /sirius/command_queue, /sirius/landmark_status, /sirius/landmark_markers"
     echo "  - /nav_control, /stop, /sirius/battery_status"
     echo "  - /cmd_vel_teleop"
+    echo "  - /sam3/static_texture_map_cloud, /sam3/static_colored_map_cloud (静的カラー地図・各1回)"
     echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
     echo ""
     echo "※ /velodyne_points (3D点群) は除外されます"
@@ -164,6 +165,8 @@ start_recording() {
         /stop \
         /sirius/battery_status \
         /cmd_vel_teleop \
+        /sam3/static_texture_map_cloud \
+        /sam3/static_colored_map_cloud \
         /joint_states &
     
     ROSBAG_PID=$!
