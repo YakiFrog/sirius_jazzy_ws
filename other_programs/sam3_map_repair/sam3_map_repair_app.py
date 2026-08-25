@@ -39,7 +39,15 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from sam3_map_repair_core import CameraFrame, find_map_base, inspect_bag, read_camera_frame
+from sam3_map_repair_core import (
+    DEFAULT_CLASS_PROMPTS,
+    MIN_MAPPING_THRESHOLD,
+    SEMANTIC_CLASS_REGISTRY,
+    CameraFrame,
+    find_map_base,
+    inspect_bag,
+    read_camera_frame,
+)
 
 
 APP_DIR = Path(__file__).resolve().parent
@@ -71,7 +79,7 @@ def ensure_preview_server(cancelled=lambda: False) -> None:
     if cancelled():
         raise InterruptedError
     try:
-        http_json("/class_thresholds", timeout=1.5)
+        http_json("/class_registry", timeout=1.5)
         return
     except (OSError, ValueError, urllib.error.URLError):
         pass
@@ -91,7 +99,7 @@ def ensure_preview_server(cancelled=lambda: False) -> None:
         if cancelled():
             raise InterruptedError
         try:
-            http_json("/class_thresholds", timeout=1.0)
+            http_json("/class_registry", timeout=1.0)
             return
         except (OSError, ValueError, urllib.error.URLError):
             time.sleep(1)
@@ -100,8 +108,9 @@ def ensure_preview_server(cancelled=lambda: False) -> None:
 
 def upload_preview(
     frame: CameraFrame,
-    target_class: str,
+    prompt: str,
     threshold: float,
+    semantic_class: str | None = None,
     cancelled=lambda: False,
 ) -> tuple[bytes, dict]:
     ensure_preview_server(cancelled)
@@ -110,14 +119,22 @@ def upload_preview(
     before = http_json("/debug_state")
     before_version = int(before.get("sam3_inference_frame_version", -1))
     before_pc_version = int(before.get("pc_version", -1))
-    settings = (
-        ("/prompt", {"prompt": target_class}),
+    settings = []
+    if semantic_class in SEMANTIC_CLASS_REGISTRY:
+        settings.append(
+            (
+                "/class_registry",
+                {"classes": {prompt: SEMANTIC_CLASS_REGISTRY[semantic_class]}},
+            )
+        )
+    settings.extend((
+        ("/prompt", {"prompt": prompt}),
         ("/threshold", {"threshold": threshold}),
-        ("/class_thresholds", {"classes": {target_class: threshold}}),
+        ("/class_thresholds", {"classes": {prompt: threshold}}),
         ("/sam3_resolution", {"resolution": 512}),
         ("/color_mode", {"mode": "semantic"}),
         ("/source_mode", {"mode": "network"}),
-    )
+    ))
     for endpoint, payload in settings:
         if cancelled():
             raise InterruptedError
@@ -170,12 +187,20 @@ class PreviewThread(QThread):
     completed = Signal(bytes, bytes, object, float)
     failed = Signal(str)
 
-    def __init__(self, bag: str, offset: float, target_class: str, threshold: float):
+    def __init__(
+        self,
+        bag: str,
+        offset: float,
+        prompt: str,
+        threshold: float,
+        semantic_class: str | None = None,
+    ):
         super().__init__()
         self.bag = bag
         self.offset = offset
-        self.target_class = target_class
+        self.prompt = prompt
         self.threshold = threshold
+        self.semantic_class = semantic_class
 
     def run(self):
         try:
@@ -184,8 +209,9 @@ class PreviewThread(QThread):
                 return
             overlay, state = upload_preview(
                 frame,
-                self.target_class,
+                self.prompt,
                 self.threshold,
+                self.semantic_class,
                 self.isInterruptionRequested,
             )
             if self.isInterruptionRequested():
@@ -231,16 +257,18 @@ class SegmentPreviewThread(QThread):
         self,
         bag: str,
         offsets: list[float],
-        target_class: str,
+        prompt: str,
         threshold: float,
         cache_directory: str,
+        semantic_class: str | None = None,
     ):
         super().__init__()
         self.bag = bag
         self.offsets = offsets
-        self.target_class = target_class
+        self.prompt = prompt
         self.threshold = threshold
         self.cache_directory = Path(cache_directory)
+        self.semantic_class = semantic_class
 
     def run(self):
         completed = 0
@@ -252,8 +280,9 @@ class SegmentPreviewThread(QThread):
                 frame = read_camera_frame(self.bag, offset)
                 overlay, state = upload_preview(
                     frame,
-                    self.target_class,
+                    self.prompt,
                     self.threshold,
+                    self.semantic_class,
                     self.isInterruptionRequested,
                 )
                 if self.isInterruptionRequested():
@@ -336,6 +365,7 @@ class SAM3MapRepairWindow(QMainWindow):
             "roadway": 0.50,
             "sidewalk": 0.50,
         }
+        self.class_prompt_values = dict(DEFAULT_CLASS_PROMPTS)
         self.class_checks = {}
         self.custom_preview_classes = set()
         self.pending_slider_preview = None
@@ -349,6 +379,8 @@ class SAM3MapRepairWindow(QMainWindow):
         self.playback_timer.timeout.connect(self.playback_tick)
         self._build_ui()
         self.load_custom_preview_classes()
+        self.load_class_prompts()
+        self.preview_class_changed(self.class_combo.currentText())
         if DEFAULT_BAG.is_dir():
             self.bag_edit.setText(str(DEFAULT_BAG))
         if DEFAULT_MAP.is_dir():
@@ -466,6 +498,14 @@ class SAM3MapRepairWindow(QMainWindow):
         threshold_box.addWidget(self.threshold_slider, 1)
         threshold_box.addWidget(self.threshold_spin)
         controls_layout.addLayout(threshold_box, 4, 3, 1, 2)
+        self.prompt_edit = QLineEdit()
+        self.prompt_edit.setPlaceholderText("SAM3へ渡す英語の推論文")
+        self.prompt_edit.returnPressed.connect(self.apply_class_prompt)
+        self.apply_prompt_button = QPushButton("推論文を適用")
+        self.apply_prompt_button.clicked.connect(self.apply_class_prompt)
+        controls_layout.addWidget(QLabel("現在クラスの推論文"), 5, 0)
+        controls_layout.addWidget(self.prompt_edit, 5, 1, 1, 3)
+        controls_layout.addWidget(self.apply_prompt_button, 5, 4)
         self.custom_class_edit = QLineEdit()
         self.custom_class_edit.setPlaceholderText("例: curb, crosswalk, person")
         self.custom_class_edit.returnPressed.connect(self.add_preview_class)
@@ -473,18 +513,19 @@ class SAM3MapRepairWindow(QMainWindow):
         self.add_class_button.clicked.connect(self.add_preview_class)
         self.remove_class_button = QPushButton("追加名を削除")
         self.remove_class_button.clicked.connect(self.remove_preview_class)
-        controls_layout.addWidget(QLabel("SAM3推論名"), 5, 0)
-        controls_layout.addWidget(self.custom_class_edit, 5, 1, 1, 2)
-        controls_layout.addWidget(self.add_class_button, 5, 3)
-        controls_layout.addWidget(self.remove_class_button, 5, 4)
-        controls_layout.addWidget(QLabel("再生速度"), 6, 0)
-        controls_layout.addWidget(self.rate_combo, 6, 1)
+        controls_layout.addWidget(QLabel("プレビュー名追加"), 6, 0)
+        controls_layout.addWidget(self.custom_class_edit, 6, 1, 1, 2)
+        controls_layout.addWidget(self.add_class_button, 6, 3)
+        controls_layout.addWidget(self.remove_class_button, 6, 4)
+        controls_layout.addWidget(QLabel("再生速度"), 7, 0)
+        controls_layout.addWidget(self.rate_combo, 7, 1)
         note = QLabel(
             "追加した推論名は1フレーム・区間プレビュー用です。"
-            "地図補正対象は上段の4クラスです。スコアは正解確率ではありません。"
+            "地図補正対象は上段の4クラス、地図生成の最低閾値は0.20です。"
+            "スコアは正解確率ではありません。"
         )
         note.setWordWrap(True)
-        controls_layout.addWidget(note, 6, 2, 1, 3)
+        controls_layout.addWidget(note, 7, 2, 1, 3)
         root.addWidget(controls)
 
         preview_group = QGroupBox("3. SAM3プレビュー")
@@ -617,6 +658,10 @@ class SAM3MapRepairWindow(QMainWindow):
             threshold = self.class_threshold_values.get(class_name, 0.5)
             self.threshold_spin.setValue(threshold)
             self.threshold_slider.setValue(round(threshold * 100))
+            if hasattr(self, "prompt_edit"):
+                self.prompt_edit.setText(
+                    self.class_prompt_values.get(class_name, class_name)
+                )
         finally:
             self._syncing_time_controls = False
 
@@ -641,6 +686,42 @@ class SAM3MapRepairWindow(QMainWindow):
         for class_name in stored or []:
             self.register_preview_class(str(class_name), persist=False)
 
+    def load_class_prompts(self):
+        raw = QSettings("Sirius", "SAM3MapRepair").value("class_prompts", "")
+        if raw:
+            try:
+                stored = json.loads(str(raw))
+            except (TypeError, ValueError, json.JSONDecodeError):
+                stored = {}
+            if isinstance(stored, dict):
+                for class_name, prompt in stored.items():
+                    if class_name in self.class_prompt_values:
+                        normalized = " ".join(str(prompt).strip().split())
+                        if normalized and "," not in normalized:
+                            self.class_prompt_values[class_name] = normalized
+
+    def save_class_prompts(self):
+        QSettings("Sirius", "SAM3MapRepair").setValue(
+            "class_prompts",
+            json.dumps(self.class_prompt_values, ensure_ascii=False),
+        )
+
+    def apply_class_prompt(self):
+        class_name = self.class_combo.currentText()
+        prompt = " ".join(self.prompt_edit.text().strip().split())
+        if not prompt or "," in prompt or len(prompt) > 120:
+            QMessageBox.warning(
+                self,
+                "SAM3推論文",
+                "1～120文字で入力してください。カンマは使用できません。",
+            )
+            return
+        self.class_prompt_values[class_name] = prompt
+        self.save_class_prompts()
+        self.score_label.setText(
+            f"{class_name} のSAM3推論文を「{prompt}」に設定しました。"
+        )
+
     def save_custom_preview_classes(self):
         QSettings("Sirius", "SAM3MapRepair").setValue(
             "custom_preview_classes", sorted(self.custom_preview_classes)
@@ -652,6 +733,7 @@ class SAM3MapRepairWindow(QMainWindow):
             return False
         if class_name not in self.class_threshold_values:
             self.class_threshold_values[class_name] = 0.50
+            self.class_prompt_values[class_name] = class_name
             self.class_combo.addItem(class_name)
             self.custom_preview_classes.add(class_name)
         elif class_name not in self.class_checks:
@@ -696,7 +778,9 @@ class SAM3MapRepairWindow(QMainWindow):
             self.class_combo.removeItem(index)
         self.custom_preview_classes.discard(class_name)
         self.class_threshold_values.pop(class_name, None)
+        self.class_prompt_values.pop(class_name, None)
         self.save_custom_preview_classes()
+        self.save_class_prompts()
 
     def start_slider_changed(self, raw_value: int):
         if self._syncing_time_controls:
@@ -908,13 +992,15 @@ class SAM3MapRepairWindow(QMainWindow):
         if not offsets or end - offsets[-1] > 1e-3:
             offsets.append(end)
         target_class = self.class_combo.currentText()
+        prompt = self.class_prompt_values.get(target_class, target_class)
         threshold = self.class_threshold_values[target_class]
         answer = QMessageBox.question(
             self,
             "区間SAM3プレビュー",
             f"{self.format_time(start)} ～ {self.format_time(end)} を"
             f" {interval:.1f}秒間隔で処理します。\n"
-            f"対象: {target_class} / 閾値 {threshold:.2f}\n"
+            f"意味クラス: {target_class}\n"
+            f"SAM3推論文: {prompt} / 閾値 {threshold:.2f}\n"
             f"推論フレーム数: {len(offsets)}\n\n"
             "SAM3推論のため、作成には時間がかかります。開始しますか？",
         )
@@ -928,6 +1014,7 @@ class SAM3MapRepairWindow(QMainWindow):
         )
         self.segment_preview_frames = []
         self.segment_preview_class = target_class
+        self.segment_preview_prompt = prompt
         self.playback_index = 0
         self.playback_slider.setRange(0, max(0, len(offsets) - 1))
         self.playback_slider.setValue(0)
@@ -945,9 +1032,10 @@ class SAM3MapRepairWindow(QMainWindow):
         self.segment_preview_thread = SegmentPreviewThread(
             self.bag_edit.text().strip(),
             offsets,
-            target_class,
+            prompt,
             threshold,
             self.segment_preview_cache.name,
+            target_class if target_class in SEMANTIC_CLASS_REGISTRY else None,
         )
         thread = self.segment_preview_thread
         self.active_threads.add(thread)
@@ -975,7 +1063,7 @@ class SAM3MapRepairWindow(QMainWindow):
         state: object,
         offset: float,
     ):
-        scores = state.get("class_scores", {}).get(self.segment_preview_class, [])
+        scores = state.get("class_scores", {}).get(self.segment_preview_prompt, [])
         frame_data = {
             "raw_path": raw_path,
             "overlay_path": overlay_path,
@@ -1044,7 +1132,8 @@ class SAM3MapRepairWindow(QMainWindow):
             else "採用なし"
         )
         self.score_label.setText(
-            f"区間 {self.format_time(frame['offset'])} / {self.segment_preview_class} / "
+            f"区間 {self.format_time(frame['offset'])} / {self.segment_preview_class} "
+            f"← '{self.segment_preview_prompt}' / "
             f"採用マスクスコア: {score_text}"
         )
         self.playback_label.setText(
@@ -1103,19 +1192,22 @@ class SAM3MapRepairWindow(QMainWindow):
             offset_seconds = self.start_spin.value()
             position_name = "開始"
         target_class = self.class_combo.currentText()
+        prompt = self.class_prompt_values.get(target_class, target_class)
         threshold = self.class_threshold_values[target_class]
         self.active_sam_class = target_class
+        self.active_sam_prompt = prompt
         self.active_sam_position_name = position_name
         self.preview_button.setEnabled(False)
         self.score_label.setText(
             f"{position_name} {self.format_time(offset_seconds)} / "
-            f"{target_class} をSAM3推論中…"
+            f"{target_class} ← '{prompt}' をSAM3推論中…"
         )
         self.preview_thread = PreviewThread(
             self.bag_edit.text().strip(),
             offset_seconds,
-            target_class,
+            prompt,
             threshold,
+            target_class if target_class in SEMANTIC_CLASS_REGISTRY else None,
         )
         thread = self.preview_thread
         self.active_threads.add(thread)
@@ -1146,14 +1238,20 @@ class SAM3MapRepairWindow(QMainWindow):
         self.raw_image.set_image(raw)
         self.mask_image.set_image(overlay)
         target_class = getattr(self, "active_sam_class", self.class_combo.currentText())
+        prompt = getattr(
+            self,
+            "active_sam_prompt",
+            self.class_prompt_values.get(target_class, target_class),
+        )
         position_name = getattr(self, "active_sam_position_name", "開始")
-        scores = state.get("class_scores", {}).get(target_class, [])
+        scores = state.get("class_scores", {}).get(prompt, [])
         if scores:
             score_text = ", ".join(f"{float(score):.3f}" for score in scores)
         else:
             score_text = "採用なし（閾値未満または未検出）"
         self.score_label.setText(
-            f"{position_name}位置 {self.format_time(offset)} / {target_class} / "
+            f"{position_name}位置 {self.format_time(offset)} / "
+            f"{target_class} ← '{prompt}' / "
             f"採用マスクスコア: {score_text}"
         )
 
@@ -1181,6 +1279,24 @@ class SAM3MapRepairWindow(QMainWindow):
         selected_thresholds = self.selected_class_thresholds()
         if not selected_thresholds:
             QMessageBox.warning(self, "対象クラス", "再推論するクラスを1つ以上選択してください。")
+            return
+        low_thresholds = {
+            name: threshold
+            for name, threshold in selected_thresholds.items()
+            if threshold < MIN_MAPPING_THRESHOLD
+        }
+        if low_thresholds:
+            details = ", ".join(
+                f"{name}={threshold:.2f}"
+                for name, threshold in low_thresholds.items()
+            )
+            QMessageBox.warning(
+                self,
+                "閾値が低すぎます",
+                f"地図生成では閾値{MIN_MAPPING_THRESHOLD:.2f}以上が必要です。\n"
+                f"現在: {details}\n\n"
+                "低い閾値はプレビューだけで使用してください。",
+            )
             return
         class_text = ", ".join(
             f"{name}={threshold:.2f}"
@@ -1223,6 +1339,12 @@ class SAM3MapRepairWindow(QMainWindow):
             arguments.extend(["--target-class", class_name])
             arguments.extend(
                 ["--class-threshold", f"{class_name}={threshold:.3f}"]
+            )
+            arguments.extend(
+                [
+                    "--class-prompt",
+                    f"{class_name}={self.class_prompt_values.get(class_name, class_name)}",
+                ]
             )
         self.process.setArguments(arguments)
         self.process.setWorkingDirectory(str(APP_DIR))

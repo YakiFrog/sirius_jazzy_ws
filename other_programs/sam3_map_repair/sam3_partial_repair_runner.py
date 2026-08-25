@@ -16,7 +16,13 @@ import traceback
 import urllib.error
 import urllib.request
 
-from sam3_map_repair_core import inspect_bag, merge_semantic_classes_patch
+from sam3_map_repair_core import (
+    DEFAULT_CLASS_PROMPTS,
+    MIN_MAPPING_THRESHOLD,
+    SEMANTIC_CLASS_REGISTRY,
+    inspect_bag,
+    merge_semantic_classes_patch,
+)
 
 
 HOME = Path.home()
@@ -79,16 +85,30 @@ def ensure_clean_server() -> None:
     raise RuntimeError("SAM3サーバーが120秒以内に準備完了しませんでした。")
 
 
-def configure_server(class_thresholds: dict[str, float]) -> None:
-    prompt = ", ".join(class_thresholds)
+def configure_server(
+    class_thresholds: dict[str, float], class_prompts: dict[str, str]
+) -> None:
+    prompt_thresholds = {
+        class_prompts[name]: threshold
+        for name, threshold in class_thresholds.items()
+    }
+    if len(prompt_thresholds) != len(class_thresholds):
+        raise ValueError("複数クラスに同じSAM3推論文は使用できません。")
+    prompt_registry = {
+        class_prompts[name]: SEMANTIC_CLASS_REGISTRY[name]
+        for name in class_thresholds
+    }
+    prompt = ", ".join(prompt_thresholds)
     setting_text = ", ".join(
-        f"{name}={value:.2f}" for name, value in class_thresholds.items()
+        f"{name} <- '{class_prompts[name]}' ({value:.2f})"
+        for name, value in class_thresholds.items()
     )
-    log(f"[2/7] 対象クラスと閾値を設定します: {setting_text}")
+    log(f"[2/7] 意味クラス・SAM3推論文・閾値を設定します: {setting_text}")
     settings = (
+        ("/class_registry", {"classes": prompt_registry}),
         ("/prompt", {"prompt": prompt}),
         ("/threshold", {"threshold": 0.5}),
-        ("/class_thresholds", {"classes": class_thresholds}),
+        ("/class_thresholds", {"classes": prompt_thresholds}),
         ("/sam3_resolution", {"resolution": 512}),
         ("/color_mode", {"mode": "real"}),
         ("/fast_iters", {"iters": 4}),
@@ -232,6 +252,12 @@ def parse_arguments() -> argparse.Namespace:
         default=[],
         metavar="CLASS=VALUE",
     )
+    parser.add_argument(
+        "--class-prompt",
+        action="append",
+        default=[],
+        metavar="CLASS=PROMPT",
+    )
     parser.add_argument("--threshold", default=0.4, type=float)
     parser.add_argument("--rate", default=0.25, type=float)
     parser.add_argument("--domain-id", default=43, type=int)
@@ -244,6 +270,9 @@ def main() -> int:
     try:
         target_classes = args.target_classes or ["tactile paving"]
         class_thresholds = {name: float(args.threshold) for name in target_classes}
+        class_prompts = {
+            name: DEFAULT_CLASS_PROMPTS.get(name, name) for name in target_classes
+        }
         for assignment in args.class_threshold:
             if "=" not in assignment:
                 raise ValueError(f"クラス閾値の形式が不正です: {assignment}")
@@ -251,6 +280,16 @@ def main() -> int:
             if name not in class_thresholds:
                 raise ValueError(f"未選択クラスの閾値です: {name}")
             class_thresholds[name] = float(raw_value)
+        for assignment in args.class_prompt:
+            if "=" not in assignment:
+                raise ValueError(f"クラス推論文の形式が不正です: {assignment}")
+            name, prompt = assignment.split("=", 1)
+            prompt = " ".join(prompt.strip().split())
+            if name not in class_prompts:
+                raise ValueError(f"未選択クラスの推論文です: {name}")
+            if not prompt or "," in prompt:
+                raise ValueError(f"クラス推論文が不正です: {assignment}")
+            class_prompts[name] = prompt
         summary = inspect_bag(args.bag)
         if summary.missing_topics:
             raise ValueError(
@@ -265,11 +304,15 @@ def main() -> int:
             or args.rate <= 0
         ):
             raise ValueError("閾値または再生速度が不正です。")
+        if any(value < MIN_MAPPING_THRESHOLD for value in class_thresholds.values()):
+            raise ValueError(
+                f"地図補正のSAM3閾値は{MIN_MAPPING_THRESHOLD:.2f}以上にしてください。"
+            )
 
         env = os.environ.copy()
         env["ROS_DOMAIN_ID"] = str(args.domain_id)
         ensure_clean_server()
-        configure_server(class_thresholds)
+        configure_server(class_thresholds, class_prompts)
         mapping_process = start_mapping(env)
         time.sleep(6)
         if mapping_process.poll() is not None:
@@ -289,6 +332,7 @@ def main() -> int:
             summary.path,
             args.start,
             args.end,
+            class_prompts=class_prompts,
         )
         for class_name, count in (result.added_cells_by_class or {}).items():
             log(f"  {class_name}: {count}セル追加")

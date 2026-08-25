@@ -239,7 +239,7 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None) ->
         )
         valid_ids = destination_indexed < len(palette)
         semantic_visual[valid_ids] = palette[destination_indexed[valid_ids]]
-        cv2.imwrite(str(output_semantic), semantic_visual)
+        cv2.imwrite(str(output_semantic), semantic_visual[:, :, ::-1])
 
     output_semantic_metadata = dict(semantic_metadata)
     output_semantic_metadata.update(

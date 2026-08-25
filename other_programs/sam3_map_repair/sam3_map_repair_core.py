@@ -26,6 +26,21 @@ DEFAULT_CAMERA_PARAMS = {
     "cy": 360.0,
     "baseline": 0.12,
 }
+MIN_MAPPING_THRESHOLD = 0.20
+MAX_PATCH_CLASS_COVERAGE = {"tactile paving": 0.35}
+MIN_COVERAGE_CHECK_CELLS = 500
+SEMANTIC_CLASS_REGISTRY = {
+    "grass": {"id": 3, "color": [0, 255, 0]},
+    "tactile paving": {"id": 4, "color": [255, 255, 0]},
+    "roadway": {"id": 5, "color": [0, 0, 255]},
+    "sidewalk": {"id": 6, "color": [128, 128, 128]},
+}
+DEFAULT_CLASS_PROMPTS = {
+    "grass": "grass",
+    "tactile paving": "line type tactile paving",
+    "roadway": "roadway",
+    "sidewalk": "sidewalk",
+}
 
 
 @dataclass(frozen=True)
@@ -266,6 +281,7 @@ def merge_semantic_classes_patch(
     start_seconds: float,
     end_seconds: float,
     output_directory: str | Path | None = None,
+    class_prompts: dict[str, str] | None = None,
 ) -> MergeResult:
     """Add selected target classes from a partial map to a versioned base map."""
     if not class_thresholds:
@@ -273,6 +289,45 @@ def merge_semantic_classes_patch(
     target_classes = list(class_thresholds)
     base_source = find_map_base(base_directory)
     patch_base = find_map_base(patch_directory)
+    low_thresholds = {
+        name: float(value)
+        for name, value in class_thresholds.items()
+        if float(value) < MIN_MAPPING_THRESHOLD
+    }
+    if low_thresholds:
+        details = ", ".join(
+            f"{name}={value:.2f}" for name, value in low_thresholds.items()
+        )
+        raise ValueError(
+            f"地図補正のSAM3閾値は{MIN_MAPPING_THRESHOLD:.2f}以上が必要です: "
+            f"{details}。低い閾値はプレビューだけで使用してください。"
+        )
+
+    patch_index_check = cv2.imread(
+        str(patch_base.with_name(patch_base.name + ".colored.pgm")),
+        cv2.IMREAD_GRAYSCALE,
+    )
+    with patch_base.with_name(patch_base.name + ".colored.json").open(
+        "r", encoding="utf-8"
+    ) as stream:
+        patch_meta_check = json.load(stream)
+    if patch_index_check is None:
+        raise ValueError("部分意味地図を読み込めません。")
+    observed_cells = int(np.count_nonzero(patch_index_check != 0))
+    if observed_cells >= MIN_COVERAGE_CHECK_CELLS:
+        for class_name, maximum in MAX_PATCH_CLASS_COVERAGE.items():
+            if class_name not in class_thresholds:
+                continue
+            class_id = _class_id(patch_meta_check, class_name)
+            target_cells = int(np.count_nonzero(patch_index_check == class_id))
+            coverage = target_cells / observed_cells
+            if coverage > maximum:
+                raise ValueError(
+                    f"安全停止: {class_name} が部分地図の観測領域の"
+                    f"{coverage * 100:.1f}%を占めています"
+                    f"（上限{maximum * 100:.0f}%）。"
+                    "閾値を上げ、区間SAM3プレビューで誤検出範囲を確認してください。"
+                )
     if output_directory is None:
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         class_slug = (
@@ -385,6 +440,7 @@ def merge_semantic_classes_patch(
             "class_thresholds": {
                 name: float(value) for name, value in class_thresholds.items()
             },
+            "class_prompts": dict(class_prompts or {}),
             "bag": str(Path(bag_path).expanduser().resolve()),
             "start_seconds": float(start_seconds),
             "end_seconds": float(end_seconds),

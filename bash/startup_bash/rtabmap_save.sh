@@ -196,7 +196,7 @@ if os.path.exists(pgm_p) and os.path.exists(json_p):
     rgb = np.zeros((pgm.shape[0], pgm.shape[1], 3), dtype=np.uint8)
     for i in range(len(palette)):
         rgb[pgm == i] = palette[i]
-    cv2.imwrite(out_p, rgb)
+    cv2.imwrite(out_p, rgb[:, :, ::-1])
     print(f'✓ 全領域セマンティックカラー画像を保存しました: {out_p}')
 " 2>/dev/null
 

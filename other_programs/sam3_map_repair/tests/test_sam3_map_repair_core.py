@@ -5,6 +5,7 @@ import sys
 import cv2
 import json
 import numpy as np
+import pytest
 import yaml
 
 
@@ -115,3 +116,41 @@ def test_merge_multiple_classes(tmp_path):
     assert merged[2, 1] == 3
     assert merged[4, 3] == 4
     assert result.added_cells_by_class == {"grass": 1, "tactile paving": 1}
+
+
+def test_merge_rejects_zero_mapping_threshold(tmp_path):
+    grid = np.full((6, 6), 254, np.uint8)
+    indexed = np.full((6, 6), 2, np.uint8)
+    base = write_map(tmp_path / "base", "base", grid, indexed)
+    patch = write_map(tmp_path / "patch", "patch", grid, indexed)
+
+    with pytest.raises(ValueError, match="0.20以上"):
+        CORE.merge_semantic_classes_patch(
+            base.parent,
+            patch.parent,
+            {"tactile paving": 0.0},
+            "/tmp/bag",
+            10,
+            20,
+            tmp_path / "result",
+        )
+
+
+def test_merge_rejects_excessive_tactile_coverage(tmp_path):
+    grid = np.full((40, 40), 254, np.uint8)
+    base_index = np.full((40, 40), 2, np.uint8)
+    patch_index = np.full((40, 40), 4, np.uint8)
+    patch_index[:5, :] = 2
+    base = write_map(tmp_path / "base", "base", grid, base_index)
+    patch = write_map(tmp_path / "patch", "patch", grid, patch_index)
+
+    with pytest.raises(ValueError, match="安全停止"):
+        CORE.merge_semantic_classes_patch(
+            base.parent,
+            patch.parent,
+            {"tactile paving": 0.4},
+            "/tmp/bag",
+            10,
+            20,
+            tmp_path / "result",
+        )
