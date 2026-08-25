@@ -242,6 +242,7 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 # GROUP_DESC: 【実機録画】実機センサー→rviz2real→sf_real→slamtoolbox_real→zed_offline_recorder→check_offline_real→record_offline_real。ZED取得にNVIDIA/CUDA/ZED SDKは不要です。
 # GROUP_DESC: 【地図生成時に必要】sam3_docker_gpu→sam3_settings_ui（設定確認）→run_offline_mapping の順で起動。SLAM Toolboxは起動せず、bag内の補正済みTFを使います。
 # GROUP_DESC: record_offline_sim はSAM3 Dockerとの8080競合を自動回避し、画像・LiDAR・補正TFを確認できた場合だけ録画します。終了後にもbagを検証します。
+# GROUP_DESC: sam3_map_repair_ui は作成済み地図を残し、rosbagの指定区間・対象クラスだけを再推論して別名の補正版を作ります。
 
 # Unityステレオ映像・SLAMデータをRosbagに録画（オフラインマッピング用）
 alias record_offline_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline.sh'
@@ -266,6 +267,9 @@ alias sam3_docker_gpu='cd ~/sam3_zed_server && docker compose up sam3-zed-merged
 
 # SAM3のプロンプト、閾値、解像度、深度設定を変更する専用Web UI
 alias sam3_settings_ui='bash ~/sirius_jazzy_ws/bash/startup_bash/open_sam3_settings_ui.sh'
+
+# Rosbagの指定区間をクラス別閾値で再推論し、既存地図へ部分マージ
+alias sam3_map_repair_ui='bash ~/sirius_jazzy_ws/other_programs/sam3_map_repair/run_sam3_map_repair.sh'
 
 # Unity映像レシーバー単体起動 (HTTP -> ROS2 CompressedImage)
 alias unity_stereo_bridge='src && ros2 run sirius_navigation unity_stereo_bridge'

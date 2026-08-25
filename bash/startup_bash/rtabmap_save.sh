@@ -218,6 +218,9 @@ if os.path.exists(pgm_p) and os.path.exists(json_p):
     echo "------------------------------------------------"
     echo "完了しました！"
     echo "保存先: $MAP_DIR"
+    if [ -n "${SAM3_MAP_RESULT_FILE:-}" ]; then
+        printf '%s\n' "$MAP_DIR" > "$SAM3_MAP_RESULT_FILE"
+    fi
     if [ "$AUTO_NAME_MODE" = true ]; then
         break
     fi
