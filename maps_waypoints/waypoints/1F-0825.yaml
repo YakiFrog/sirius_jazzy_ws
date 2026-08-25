@@ -1,20 +1,20 @@
 format_version: '1.0'
 waypoints:
 - number: 1
-  x: 0.0
-  y: 0.0
+  x: 0.85
+  y: 0.65
   angle_radians: 0.679
 - number: 2
-  x: 3.3
-  y: 2.4
+  x: 5.0
+  y: 3.55
   angle_radians: 0.609
 - number: 3
-  x: 6.6
-  y: 4.65
+  x: 7.75
+  y: 5.45
   angle_radians: 0.571
 - number: 4
-  x: 10.1
-  y: 6.8
+  x: 10.8
+  y: 7.2
   angle_radians: 0.515
 - number: 5
   x: 13.65
@@ -25,16 +25,16 @@ waypoints:
   y: 10.35
   angle_radians: 0.375
 - number: 7
-  x: 21.2
-  y: 11.8
+  x: 23.1
+  y: 12.5
   angle_radians: 0.336
 - number: 8
-  x: 24.6
-  y: 14.1
-  angle_radians: 0.986
+  x: 26.0
+  y: 14.55
+  angle_radians: -1.271
 - number: 9
-  x: 26.95
-  y: 11.75
+  x: 26.8
+  y: 11.9
   angle_radians: -1.299
 - number: 10
   x: 28.2
@@ -57,12 +57,12 @@ waypoints:
   y: -8.6
   angle_radians: -1.202
 - number: 15
-  x: 34.6
-  y: -12.65
+  x: 34.3
+  y: -12.85
   angle_radians: -1.418
 - number: 16
   x: 35.1
-  y: -15.45
+  y: -15.8
   angle_radians: -1.278
 - number: 17
   x: 38.2
@@ -77,8 +77,8 @@ waypoints:
   y: -21.7
   angle_radians: 1.766
 - number: 20
-  x: 35.85
-  y: -17.7
+  x: 36.05
+  y: -18.85
   angle_radians: 1.988
 - number: 21
   x: 32.5
@@ -121,8 +121,8 @@ waypoints:
   y: -1.0
   angle_radians: -2.937
 - number: 31
-  x: 2.55
-  y: -1.75
+  x: 2.3
+  y: -2.0
   angle_radians: -2.887
 - number: 32
   x: -1.6
