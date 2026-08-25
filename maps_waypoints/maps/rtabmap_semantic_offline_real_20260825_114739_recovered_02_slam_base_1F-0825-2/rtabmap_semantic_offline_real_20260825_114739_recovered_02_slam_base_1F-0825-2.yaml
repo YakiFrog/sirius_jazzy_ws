@@ -1,0 +1,10 @@
+free_thresh: 0.25
+image: rtabmap_semantic_offline_real_20260825_114739_recovered_02_slam_base_1F-0825-2.pgm
+mode: trinary
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -71.7
+- -77.80000000000001
+- 0
+resolution: 0.05
