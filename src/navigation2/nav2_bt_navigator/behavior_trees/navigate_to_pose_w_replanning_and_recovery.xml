@@ -19,13 +19,34 @@
             </Sequence>
           </RecoveryNode>
         </RateController>
-        <RecoveryNode number_of_retries="1" name="FollowPath">
-          <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
-          <Sequence>
-            <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
-            <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
-          </Sequence>
-        </RecoveryNode>
+        <!--
+          WaitPath is selected remotely by the Sirius wait_normal mode. Switch2
+          halts the running controller action when the selection changes, so the
+          same navigation goal can move between MPPI and wait-priority control.
+        -->
+        <Switch2 variable="{selected_controller}" case_1="WaitPath" case_2="FollowPath">
+          <RecoveryNode number_of_retries="1000000" name="FollowPathWithWaiting">
+            <FollowPath path="{path}" controller_id="WaitPath" error_code_id="{follow_path_error_code}"/>
+            <Sequence name="WaitBeforeRetryingSamePath">
+              <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+              <Wait wait_duration="2.0"/>
+            </Sequence>
+          </RecoveryNode>
+          <RecoveryNode number_of_retries="1" name="FollowPathNormally">
+            <FollowPath path="{path}" controller_id="FollowPath" error_code_id="{follow_path_error_code}"/>
+            <Sequence>
+              <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+              <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
+            </Sequence>
+          </RecoveryNode>
+          <RecoveryNode number_of_retries="1" name="FollowPathWithSelectedController">
+            <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
+            <Sequence>
+              <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+              <ClearEntireCostmap name="ClearLocalCostmap-Selected" service_name="local_costmap/clear_entirely_local_costmap"/>
+            </Sequence>
+          </RecoveryNode>
+        </Switch2>
       </PipelineSequence>
       <Sequence>
         <Fallback>

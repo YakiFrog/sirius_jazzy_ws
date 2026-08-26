@@ -301,7 +301,7 @@ controller_server:
     failure_tolerance: 0.5
     progress_checker_plugins: ["progress_checker"]
     goal_checker_plugins: ["general_goal_checker"]
-    controller_plugins: ["FollowPath"]
+    controller_plugins: ["FollowPath", "WaitPath"]
     use_realtime_priority: false
 
     # ロボットが指定時間内に指定距離動けない場合に失敗と判定
@@ -462,6 +462,37 @@ controller_server:
         enabled: true
         cost_power: 1
         cost_weight: 3.0      # 旋回ペナルティを課して無駄な方向転換を抑制（1.0 -> 3.0）
+
+    # 待機優先モード用。経路から外れて回避せず、衝突予測時は制御失敗を返す。
+    # BTがその失敗を受けて停止・待機し、同じグローバルパスを再試行する。
+    WaitPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      desired_linear_vel: 0.90
+      lookahead_dist: 0.90
+      min_lookahead_dist: 0.50
+      max_lookahead_dist: 1.50
+      lookahead_time: 1.00
+      use_velocity_scaled_lookahead_dist: true
+      rotate_to_heading_angular_vel: 0.90
+      rotate_to_heading_min_angle: 0.785
+      use_rotate_to_heading: true
+      min_approach_linear_velocity: 0.10
+      approach_velocity_scaling_dist: 1.00
+      use_regulated_linear_velocity_scaling: true
+      use_cost_regulated_linear_velocity_scaling: true
+      cost_scaling_dist: 0.70
+      cost_scaling_gain: 1.0
+      inflation_cost_scaling_factor: 10.0
+      regulated_linear_scaling_min_radius: 0.90
+      regulated_linear_scaling_min_speed: 0.15
+      max_allowed_time_to_collision_up_to_carrot: 2.0
+      use_collision_detection: true
+      max_angular_accel: 1.50
+      use_cancel_deceleration: true
+      cancel_deceleration: 0.90
+      allow_reversing: false
+      transform_tolerance: 0.10
+      stateful: true
 
 # コントローラサーバーからの速度指令を滑らかにする
 velocity_smoother:

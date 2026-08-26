@@ -218,6 +218,7 @@ alias nav_safe='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh safe
 alias nav_slow='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh slow'
 alias nav_normal='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh normal'
 alias nav_normal_active='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh normal_active'
+alias nav_wait='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh wait_normal'
 alias nav_strict_normal='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_normal'
 alias nav_strict_safe='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_safe'
 alias nav_strict_slow='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_slow'

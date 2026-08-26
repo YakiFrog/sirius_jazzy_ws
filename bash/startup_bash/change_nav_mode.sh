@@ -1,6 +1,6 @@
 #!/bin/bash
 # change_nav_mode.sh: Nav2 MPPI controller 走行モード動的切り替えスクリプト (一括設定高速版)
-# 使い方: ./change_nav_mode.sh [normal|normal_active|safe|slow|strict_normal|strict_safe|strict_slow|strict] (未指定の場合はメニューから選択)
+# 使い方: ./change_nav_mode.sh [normal|normal_active|safe|slow|wait_normal|strict_normal|strict_safe|strict_slow|strict] (未指定の場合はメニューから選択)
 
 MODE=$1
 
@@ -13,19 +13,21 @@ if [ -z "$MODE" ]; then
     echo "2) 通常走行・探索強化モード (normal_active) - 1.0 m/s (探索広め・加速強め・安全重視)"
     echo "3) ゆっくり安全歩行モード (safe) - 0.4 m/s"
     echo "4) 超低速安全歩行モード (slow) - 0.2 m/s"
-    echo "5) パス追従優先・通常速度モード (strict_normal) - 0.9 m/s (回避せず待機)"
-    echo "6) パス追従優先・ゆっくり速度モード (strict_safe) - 0.4 m/s (回避せず待機)"
-    echo "7) パス追従優先・超低速速度モード (strict_slow) - 0.2 m/s (回避せず待機)"
+    echo "5) 待機優先モード (wait_normal) - 0.9 m/s (障害物前で停止・再試行)"
+    echo "6) パス追従優先・通常速度モード (strict_normal) - 0.9 m/s"
+    echo "7) パス追従優先・ゆっくり速度モード (strict_safe) - 0.4 m/s"
+    echo "8) パス追従優先・超低速速度モード (strict_slow) - 0.2 m/s"
     echo "-----------------------------------------"
-    read -p "選択してください [1-7]: " CHOICE
+    read -p "選択してください [1-8]: " CHOICE
     case "$CHOICE" in
         1) MODE="normal" ;;
         2) MODE="normal_active" ;;
         3) MODE="safe" ;;
         4) MODE="slow" ;;
-        5) MODE="strict_normal" ;;
-        6) MODE="strict_safe" ;;
-        7) MODE="strict_slow" ;;
+        5) MODE="wait_normal" ;;
+        6) MODE="strict_normal" ;;
+        7) MODE="strict_safe" ;;
+        8) MODE="strict_slow" ;;
         *) echo "無効な選択です。終了します。"; exit 1 ;;
     esac
 fi
@@ -35,9 +37,9 @@ if [ "$MODE" = "strict" ]; then
     MODE="strict_safe"
 fi
 
-if [ "$MODE" != "normal" ] && [ "$MODE" != "normal_active" ] && [ "$MODE" != "safe" ] && [ "$MODE" != "slow" ] && [ "$MODE" != "strict_normal" ] && [ "$MODE" != "strict_safe" ] && [ "$MODE" != "strict_slow" ]; then
+if [ "$MODE" != "normal" ] && [ "$MODE" != "normal_active" ] && [ "$MODE" != "safe" ] && [ "$MODE" != "slow" ] && [ "$MODE" != "wait_normal" ] && [ "$MODE" != "strict_normal" ] && [ "$MODE" != "strict_safe" ] && [ "$MODE" != "strict_slow" ]; then
     echo "エラー: 走行モードを正しく指定してください。"
-    echo "使い方: $0 [normal|normal_active|safe|slow|strict_normal|strict_safe|strict_slow]"
+    echo "使い方: $0 [normal|normal_active|safe|slow|wait_normal|strict_normal|strict_safe|strict_slow]"
     exit 1
 fi
 

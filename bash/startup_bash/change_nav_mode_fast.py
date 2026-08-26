@@ -8,10 +8,13 @@ import rclpy
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import SetParameters
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
+from std_msgs.msg import String
 
 try:
     from sirius_navigation.navigation_modes import (
         NAVIGATION_MODE_CONFIGS,
+        navigation_mode_controller,
         normalize_navigation_mode,
     )
 except ImportError:
@@ -19,6 +22,7 @@ except ImportError:
     sys.path.insert(0, str(workspace / "src/sirius/sirius_navigation"))
     from sirius_navigation.navigation_modes import (  # noqa: E402
         NAVIGATION_MODE_CONFIGS,
+        navigation_mode_controller,
         normalize_navigation_mode,
     )
 
@@ -28,6 +32,23 @@ class ParameterSetter(Node):
 
     def __init__(self):
         super().__init__("parameter_setter_node")
+        selector_qos = QoSProfile(depth=1)
+        selector_qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+        selector_qos.reliability = ReliabilityPolicy.RELIABLE
+        self.controller_selector_pub = self.create_publisher(
+            String, "/controller_selector", selector_qos
+        )
+        self.navigation_mode_pub = self.create_publisher(
+            String, "/sirius/navigation_mode", selector_qos
+        )
+
+    def publish_mode(self, mode):
+        """Publish the controller selection and confirmed Sirius mode."""
+        selector = String(data=navigation_mode_controller(mode))
+        status = String(data=mode)
+        self.controller_selector_pub.publish(selector)
+        self.navigation_mode_pub.publish(status)
+        rclpy.spin_once(self, timeout_sec=0.2)
 
     def set_node_parameters(self, node_name, params_dict):
         srv_name = f"{node_name}/set_parameters"
@@ -105,6 +126,8 @@ def main():
             print(f"Setting parameters on '{node_name}'...")
             if not node.set_node_parameters(node_name, params):
                 success = False
+        if success:
+            node.publish_mode(mode)
     finally:
         node.destroy_node()
         rclpy.shutdown()
