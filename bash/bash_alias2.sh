@@ -1,6 +1,9 @@
 # PRESET: フルセンサーセット
 # PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real
 
+# PRESET: Webシミュレータ ZED映像確認
+# PRESET_ITEMS: rosbridge,web_zed_image,rviz2zed
+
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
 
@@ -52,6 +55,12 @@ alias rviz2desc='rviz2sim'
 
 # Rosbridge Web Socket起動
 alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
+
+# Web ZED画像をRViz用Imageに変換。Web側でROS接続・ZED配信をON。rviz2simではImageに /camera/stereo_sbs/image_raw を指定。
+alias web_zed_image='src && /usr/bin/python3 "$HOME/sirius-mujoco-sim/scripts/zed_image_republisher.py"'
+
+# ZED画像専用RViz。web_zed_imageと併用（通常のrviz2simとは別ウィンドウ）。
+alias rviz2zed='src && rviz2 -d "$HOME/sirius-mujoco-sim/config/zed_image.rviz"'
 
 # Foxglove Bridge 起動
 alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml'
