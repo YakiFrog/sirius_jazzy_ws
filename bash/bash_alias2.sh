@@ -53,8 +53,8 @@ alias rviz2desc='rviz2sim'
 # Unity同期用Rviz2起動
 # alias unity_viz='src && ros2 launch sirius_description unity_sim.launch.py'
 
-# Rosbridge Web Socket起動
-alias rosbridge='src && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
+# Rosbridge Web Socket (WSS/ngrok対応) 起動
+alias rosbridge='bash ~/sirius_jazzy_ws/bash/startup_bash/start_rosbridge.sh'
 
 # Web ZED画像をRViz用Imageに変換。Web側でROS接続・ZED配信をON。rviz2simではImageに /camera/stereo_sbs/image_raw を指定。
 alias web_zed_image='src && /usr/bin/python3 "$HOME/sirius-mujoco-sim/scripts/zed_image_republisher.py"'
