@@ -193,8 +193,8 @@ PYEOF
     ros2 topic pub --once "${INDEXED_SAVE_TOPIC:-/sam3/save_indexed_map}" std_msgs/msg/String "{data: '$MAP_DIR/rtabmap_${map_name}.colored'}" >/dev/null 2>&1
     sleep 1
 
-    # カラー地図のレンダリング (PGM + PLY および Indexed Grid から PNG 生成)
-    COLORIZER_SCRIPT="$HOME/sirius_jazzy_ws/src/sirius/sirius_navigation/sirius_navigation/sam3_map_colorizer.py"
+    # カラー地図のレンダリング。COLORIZER_SCRIPT で差し替え可能（THETAは自前版）。
+    COLORIZER_SCRIPT="${COLORIZER_SCRIPT:-$HOME/sirius_jazzy_ws/src/sirius/sirius_navigation/sirius_navigation/sam3_map_colorizer.py}"
     MAP_BASE_PATH="$MAP_DIR/rtabmap_$map_name"
     
     if [ -f "$COLORIZER_SCRIPT" ]; then

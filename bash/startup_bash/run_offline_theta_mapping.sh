@@ -212,7 +212,9 @@ if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
         AUTO_MAP_NAME="theta_road_${BAG_NAME}"
         echo "地図保存スクリプトを実行中 (indexed地図: /theta/save_indexed_map)..."
         echo "  自動地図名: $AUTO_MAP_NAME"
-        INDEXED_SAVE_TOPIC=/theta/save_indexed_map bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
+        COLORIZER_SCRIPT="$WS_DIR/src/sirius/sirius_navigation/sirius_navigation/theta_colorize_map.py" \
+            INDEXED_SAVE_TOPIC=/theta/save_indexed_map \
+            bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
     else
         echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
         mkdir -p "$WS_DIR/maps_waypoints"
