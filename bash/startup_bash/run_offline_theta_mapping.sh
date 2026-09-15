@@ -126,17 +126,28 @@ if [ "$RVIZ_CHOICE" != "n" ] && [ "$RVIZ_CHOICE" != "no" ]; then
     USE_RVIZ_FLAG="true"
 fi
 
+# 2c. SAM3セマンティック分類の選択（要 sam3 docker サーバ）
+echo ""
+read -p "SAM3でセマンティック分類も行いますか？ (y/N) [N]: " SAM3_CHOICE
+SAM3_CHOICE=$(echo "${SAM3_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
+USE_SAM3_FLAG="false"
+if [ "$SAM3_CHOICE" = "y" ] || [ "$SAM3_CHOICE" = "yes" ]; then
+    USE_SAM3_FLAG="true"
+    echo "※ sam3 docker サーバ (port 8080) が起動している必要があります。"
+fi
+
 echo "================================================="
 echo "路面マッピングパイプラインを起動しています..."
 echo "  Rosbag: $BAG_NAME"
 echo "  再生速度: ${PLAY_RATE}x"
 echo "  RViz2 プレビュー: $USE_RVIZ_FLAG"
+echo "  SAM3セマンティック: $USE_SAM3_FLAG"
 echo "  姿勢TF: bag内の補正済みTFを使用"
 echo "================================================="
 
 # 3. マッピングノードを起動（sirius_navigationパッケージ）
 ros2 launch sirius_navigation theta_offline_mapping.launch.py \
-    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" &
+    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" &
 LAUNCH_PID=$!
 
 sleep 5
