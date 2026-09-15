@@ -171,6 +171,10 @@ PYEOF
     fi
 
     # 3. SAM3 2Dセマンティック地図の保存とカラーPNG生成
+    #    THETA路面マッピングでは SAM3 を使わないため SKIP_SAM3_SAVE=1 で丸ごとスキップ。
+    if [ "${SKIP_SAM3_SAVE:-0}" = "1" ]; then
+        echo "[3/3] SAM3工程をスキップしました (THETA路面マッピング)"
+    else
     echo "[3/3] SAM3 2Dセマンティック地図を保存中..."
     ros2 topic pub --once /sam3/save_indexed_map std_msgs/msg/String "{data: '$MAP_DIR/rtabmap_${map_name}.colored'}" >/dev/null 2>&1
     sleep 1
@@ -199,6 +203,7 @@ if os.path.exists(pgm_p) and os.path.exists(json_p):
     cv2.imwrite(out_p, rgb[:, :, ::-1])
     print(f'✓ 全領域セマンティックカラー画像を保存しました: {out_p}')
 " 2>/dev/null
+    fi
 
     if [ -n "$SLAM_BASE_YAML" ]; then
         REBASE_SCRIPT="$HOME/sirius_jazzy_ws/bash/startup_bash/rebase_semantic_map_to_slam.py"

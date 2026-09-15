@@ -1,0 +1,197 @@
+#!/bin/bash
+# ==============================================================================
+# THETA オフライン路面マッピング 実行・保存スクリプト
+# 記録済み Rosbag を再生し、THETA BEV -> 地面点群 -> RTAB-Map で路面地図を生成します。
+# SAM3・ステレオ・深度は使用しません。
+# ==============================================================================
+
+WS_DIR="${HOME}/sirius_jazzy_ws"
+ROSBAG_DIR="${HOME}/rosbag2_data"
+
+# Set domain isolation to prevent collisions with running Unity simulation
+export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}
+
+source "$WS_DIR/install/setup.bash" 2>/dev/null || source /opt/ros/jazzy/setup.bash
+
+echo "================================================="
+echo "  THETA オフライン路面マッピング (Domain: $ROS_DOMAIN_ID)"
+echo "================================================="
+
+# 1. 録画データ (Rosbag) の選択
+BAG_LIST=($(find "$ROSBAG_DIR" -maxdepth 1 -mindepth 1 -type d | sort -r))
+
+if [ ${#BAG_LIST[@]} -eq 0 ]; then
+    echo ""
+    echo "エラー: $ROSBAG_DIR に Rosbag データが見つかりません。"
+    echo "先に ./record_rosbag_offline_theta.sh で走行データを録画してください。"
+    exit 1
+fi
+
+echo ""
+echo "利用可能な Rosbag 一覧:"
+for i in "${!BAG_LIST[@]}"; do
+    bag_base=$(basename "${BAG_LIST[$i]}")
+    echo "  [$((i+1))] $bag_base"
+done
+
+echo ""
+read -p "使用する Rosbag 番号を選択してください [1]: " choice
+choice=${choice:-1}
+index=$((choice-1))
+
+if [ $index -lt 0 ] || [ $index -ge ${#BAG_LIST[@]} ]; then
+    echo "無効な選択です。"
+    exit 1
+fi
+
+SELECTED_BAG="${BAG_LIST[$index]}"
+BAG_NAME=$(basename "$SELECTED_BAG")
+echo "選択された Rosbag: $SELECTED_BAG"
+
+# 補正済みTFやTHETA画像が欠けたbagを再生すると誤った地図を生成するため、事前に拒否する。
+BAG_VALIDATOR="$WS_DIR/bash/startup_bash/validate_theta_offline_mapping_bag.py"
+if [ -f "$BAG_VALIDATOR" ]; then
+    echo ""
+    echo "Rosbagの必須情報を検証中..."
+    VALIDATION_STATUS=0
+
+    # metadata.yaml can still look healthy when the MCAP footer or final chunk
+    # is incomplete. Check the complete MCAP structure before trusting topic counts.
+    if [ -x "$WS_DIR/mcap" ]; then
+        mapfile -d '' SELECTED_MCAP_FILES < <(
+            find "$SELECTED_BAG" -maxdepth 1 -type f -name '*.mcap' -print0 | sort -z
+        )
+        if [ "${#SELECTED_MCAP_FILES[@]}" -gt 0 ]; then
+            echo "MCAPファイル構造を確認中..."
+            for mcap_file in "${SELECTED_MCAP_FILES[@]}"; do
+                if ! "$WS_DIR/mcap" doctor "$mcap_file" >/dev/null 2>&1; then
+                    echo "✗ MCAP破損または未完了を検出: $(basename "$mcap_file")"
+                    VALIDATION_STATUS=2
+                    break
+                fi
+            done
+        fi
+    fi
+
+    if [ "$VALIDATION_STATUS" -eq 0 ]; then
+        python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
+        VALIDATION_STATUS=$?
+    fi
+
+    # Exit code 2 means rosbag2 could not open the storage (interrupted recording).
+    # Recover into a new directory and validate again. Exit code 1 means readable
+    # data with missing inputs and must not be repaired.
+    if [ "$VALIDATION_STATUS" -eq 2 ]; then
+        RECOVERY_SCRIPT="$WS_DIR/bash/startup_bash/recover_mcap_rosbag.sh"
+        if [ ! -f "$RECOVERY_SCRIPT" ]; then
+            echo "エラー: MCAP自動復旧スクリプトがありません: $RECOVERY_SCRIPT"
+            exit 1
+        fi
+
+        echo ""
+        echo "Rosbagを開けないため、MCAP自動復旧を試します..."
+        if ! RECOVERED_BAG=$(bash "$RECOVERY_SCRIPT" "$SELECTED_BAG"); then
+            echo ""
+            echo "エラー: MCAPを自動復旧できませんでした。元のRosbagは変更していません。"
+            exit 1
+        fi
+
+        SELECTED_BAG="$RECOVERED_BAG"
+        BAG_NAME=$(basename "$SELECTED_BAG")
+        echo ""
+        echo "復旧したRosbagを再検証中: $SELECTED_BAG"
+        python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
+        VALIDATION_STATUS=$?
+    fi
+
+    if [ "$VALIDATION_STATUS" -ne 0 ]; then
+        echo ""
+        echo "エラー: 必須情報が不足しているため、このRosbagは再生しません。"
+        echo "別のRosbagを選ぶか、録画機能で再録画してください。"
+        exit 1
+    fi
+fi
+
+# 2. 再生速度の選択
+echo ""
+read -p "再生速度を選択してください (例: 0.5, 1.0) [0.5]: " PLAY_RATE
+PLAY_RATE=${PLAY_RATE:-0.5}
+
+# 2b. RViz2プレビューの選択
+echo ""
+read -p "RViz2でプレビューしながら実行しますか？ (Y/n) [Y]: " RVIZ_CHOICE
+RVIZ_CHOICE=$(echo "${RVIZ_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
+USE_RVIZ_FLAG="false"
+if [ "$RVIZ_CHOICE" != "n" ] && [ "$RVIZ_CHOICE" != "no" ]; then
+    USE_RVIZ_FLAG="true"
+fi
+
+echo "================================================="
+echo "路面マッピングパイプラインを起動しています..."
+echo "  Rosbag: $BAG_NAME"
+echo "  再生速度: ${PLAY_RATE}x"
+echo "  RViz2 プレビュー: $USE_RVIZ_FLAG"
+echo "  姿勢TF: bag内の補正済みTFを使用"
+echo "================================================="
+
+# 3. マッピングノードを起動（launchはsimリポジトリ側。再ビルド不要）
+ros2 launch "$HOME/sirius-mujoco-sim/launch/theta_offline_mapping.launch.py" \
+    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" &
+LAUNCH_PID=$!
+
+sleep 5
+
+cleanup() {
+    echo ""
+    echo "マッピングノードを停止しています..."
+    kill -INT $LAUNCH_PID 2>/dev/null
+    wait $LAUNCH_PID 2>/dev/null
+    exit 0
+}
+trap cleanup INT TERM
+
+echo ""
+echo "================================================="
+echo "Rosbag 再生を開始します..."
+echo "================================================="
+echo "再生中のキー操作: Space=一時停止/再開、→=1メッセージ進む、↑/↓=速度変更"
+if [ ! -f "$SELECTED_BAG/metadata.yaml" ]; then
+    echo "Rosbag メタデータ (metadata.yaml) を生成・再インデックス中..."
+    ros2 bag reindex "$SELECTED_BAG" -s mcap
+fi
+
+PLAY_OPTIONS=(--rate "$PLAY_RATE")
+
+if ros2 bag info "$SELECTED_BAG" 2>/dev/null | grep -q "Topic: /clock"; then
+    echo "✓ 録画データ内の /clock を使用して再生します"
+    ros2 bag play "$SELECTED_BAG" "${PLAY_OPTIONS[@]}"
+else
+    echo "✓ --clock オプションを有効にして再生します"
+    ros2 bag play "$SELECTED_BAG" --clock "${PLAY_OPTIONS[@]}"
+fi
+
+echo ""
+echo "================================================="
+echo "✓ Rosbag の再生が完了しました！"
+echo "================================================="
+echo ""
+read -p "生成された路面地図を保存しますか？ (Y/n): " save_choice
+save_choice=$(echo "$save_choice" | tr '[:upper:]' '[:lower:]')
+
+if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
+    MAP_SAVE_SCRIPT="$WS_DIR/bash/startup_bash/rtabmap_save.sh"
+    if [ -f "$MAP_SAVE_SCRIPT" ]; then
+        AUTO_MAP_NAME="theta_road_${BAG_NAME}"
+        echo "地図保存スクリプトを実行中 (SAM3工程はスキップ)..."
+        echo "  自動地図名: $AUTO_MAP_NAME"
+        SKIP_SAM3_SAVE=1 bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME"
+    else
+        echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
+        mkdir -p "$WS_DIR/maps_waypoints"
+        ros2 run nav2_map_server map_saver_cli -f "$WS_DIR/maps_waypoints/theta_road_${BAG_NAME}" --ros-args \
+            -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
+        echo "✓ 地図を保存しました: $WS_DIR/maps_waypoints/theta_road_${BAG_NAME}"
+    fi
+fi
+
+cleanup

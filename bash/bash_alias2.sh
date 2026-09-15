@@ -7,6 +7,9 @@
 # PRESET: Webシミュレータ THETA BEV確認
 # PRESET_ITEMS: rosbridge,web_theta_bev,rviz2theta
 
+# PRESET: Webシミュレータ THETA オフライン路面録画
+# PRESET_ITEMS: rosbridge,web_theta_bev,rviz2sim,sf_sim,slamtoolbox,record_offline_theta_sim
+
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
 
@@ -276,11 +279,20 @@ alias check_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/check_offline
 # 実機用Rosbag録画（事前チェック付き、他ノードの自動起動なし）
 alias record_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_real.sh'
 
+# WebシミュレータTHETAのDual Fisheye・LiDAR・補正TFをRosbagに録画（THETA路面マッピング用 / sim）
+alias record_offline_theta_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_theta.sh sim'
+
+# 実機THETAのDual Fisheye・LiDAR・補正TFをRosbagに録画（THETA路面マッピング用 / real）
+alias record_offline_theta_real='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_theta.sh real'
+
 # 実機PCへCUDA不要の録画依存関係を初回セットアップ
 alias setup_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/setup_offline_real.sh'
 
 # 記録済みRosbagからSAM3推論+RTAB-Mapで2Dカラー地図を生成・保存
 alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_mapping.sh'
+
+# 記録済みRosbagからTHETA BEV->地面点群->RTAB-Mapで路面地図を生成・保存（SAM3なし）
+alias run_offline_theta_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_theta_mapping.sh'
 
 # SAM3 + SGM GPU推論Dockerサーバーを起動 (port 8080)
 alias sam3_docker_gpu='cd ~/sam3_zed_server && docker compose up sam3-zed-merged'
