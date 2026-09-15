@@ -70,10 +70,10 @@ alias rviz2zed='src && rviz2 -d "$HOME/sirius-mujoco-sim/config/zed_image.rviz"'
 
 # Web THETA Dual Fisheye(JPEG) をBEV平面画像に変換。Web側でROS接続＋「THETA映像をROS2へ送信」をON。
 # 出力は /theta/bev/image_raw（bgr8）。rviz2ではImageにこのトピックを指定する。
-alias web_theta_bev='src && /usr/bin/python3 "$HOME/sirius-mujoco-sim/scripts/theta_bev_node.py" --ros-args -p calibration:=$HOME/sirius-mujoco-sim/config/theta_calibration.yaml'
+alias web_theta_bev='src && ros2 run sirius_navigation theta_bev_node --ros-args -p use_tf:=true -p publish_raw:=true'
 
 # THETA表示専用RViz。web_theta_bevと併用（Dual Fisheye生ImageとBEVの2画面）。
-alias rviz2theta='src && rviz2 -d "$HOME/sirius-mujoco-sim/config/theta_bev.rviz"'
+alias rviz2theta='src && rviz2 -d "$HOME/sirius_jazzy_ws/install/sirius_navigation/share/sirius_navigation/rviz/theta_bev.rviz"'
 
 # Foxglove Bridge 起動
 alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml'

@@ -134,8 +134,8 @@ echo "  RViz2 プレビュー: $USE_RVIZ_FLAG"
 echo "  姿勢TF: bag内の補正済みTFを使用"
 echo "================================================="
 
-# 3. マッピングノードを起動（launchはsimリポジトリ側。再ビルド不要）
-ros2 launch "$HOME/sirius-mujoco-sim/launch/theta_offline_mapping.launch.py" \
+# 3. マッピングノードを起動（sirius_navigationパッケージ）
+ros2 launch sirius_navigation theta_offline_mapping.launch.py \
     use_sim_time:=true rviz:="$USE_RVIZ_FLAG" &
 LAUNCH_PID=$!
 
