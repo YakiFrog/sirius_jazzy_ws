@@ -124,7 +124,7 @@ def unique_output_directory(candidate: Path) -> Path:
         index += 1
 
 
-def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None) -> Path:
+def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None, overlay_on_unknown: bool = False) -> Path:
     source_yaml = source_base.with_suffix(".yaml")
     source_pgm = source_base.with_suffix(".pgm")
     source_indexed = source_base.parent / f"{source_base.name}.colored.pgm"
@@ -181,10 +181,13 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None) ->
     )
 
     # The laser occupancy grid is always authoritative for structure.
+    # overlay_on_unknown: SLAMの壁(占有)だけを正とし、路面色はSLAMフリー＋未知に載せる
+    # （SLAM自由空間が狭い場合でもカメラの路面を欠落させない）。既定は従来通りフリーのみ。
+    paintable = ~destination_occupied if overlay_on_unknown else destination_free
     destination_indexed = np.zeros_like(destination_grid, dtype=np.uint8)
     destination_indexed[destination_occupied] = 1
     destination_indexed[destination_free] = 2
-    semantic_overlay = destination_free & warped_source_free & (warped_indexed > 2)
+    semantic_overlay = paintable & warped_source_free & (warped_indexed > 2)
     destination_indexed[semantic_overlay] = warped_indexed[semantic_overlay]
 
     destination_color = np.full(
@@ -192,7 +195,7 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None) ->
     )
     destination_color[destination_occupied] = (0, 0, 0)
     destination_color[destination_free] = (255, 255, 255)
-    color_overlay = destination_free & warped_source_free
+    color_overlay = paintable & warped_source_free
     destination_color[color_overlay] = warped_color[color_overlay]
 
     destination_texture = np.zeros(
@@ -204,7 +207,7 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None) ->
             warped_texture = warp_nearest(
                 texture, affine, destination_width, destination_height, (0, 0, 0, 0)
             )
-            texture_overlay = destination_free & (warped_texture[:, :, 3] > 0)
+            texture_overlay = paintable & (warped_texture[:, :, 3] > 0)
             destination_texture[texture_overlay] = warped_texture[texture_overlay]
 
     if output_directory is None:
@@ -274,13 +277,23 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("source_base", type=Path, help="RTAB/SAM3地図の拡張子なしパス")
     parser.add_argument("slam_yaml", type=Path, help="SLAM Toolbox地図YAML")
     parser.add_argument("--output-dir", type=Path, default=None, help="出力ディレクトリ")
+    parser.add_argument(
+        "--overlay-on-unknown",
+        action="store_true",
+        help="SLAMの壁(占有)以外（フリー＋未知）にも路面色を載せる（路面を欠落させない）",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     arguments = parse_arguments()
     try:
-        rebase(arguments.source_base.expanduser(), arguments.slam_yaml.expanduser(), arguments.output_dir)
+        rebase(
+            arguments.source_base.expanduser(),
+            arguments.slam_yaml.expanduser(),
+            arguments.output_dir,
+            arguments.overlay_on_unknown,
+        )
     except Exception as error:
         print(f"エラー: SLAM Toolboxベース地図を生成できません: {error}")
         return 1

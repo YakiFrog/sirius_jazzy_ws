@@ -214,6 +214,7 @@ if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
         echo "  自動地図名: $AUTO_MAP_NAME"
         COLORIZER_SCRIPT="$WS_DIR/src/sirius/sirius_navigation/sirius_navigation/theta_colorize_map.py" \
             INDEXED_SAVE_TOPIC=/theta/save_indexed_map \
+            REBASE_ARGS="--overlay-on-unknown" \
             bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
     else
         echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
