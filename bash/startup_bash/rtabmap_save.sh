@@ -60,6 +60,19 @@ while : ;do
     # 1. 2Dグリッドマップの保存
     echo "[1/3] 2Dグリッドマップ (Nav2形式) を保存中..."
     ros2 run nav2_map_server map_saver_cli -f "$MAP_DIR/rtabmap_$map_name" --ros-args -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
+
+    # 1b. 2DグリッドのPNGを生成（PGMと同内容。閲覧・資料用）
+    if [ -f "$MAP_DIR/rtabmap_$map_name.pgm" ]; then
+        python3 - "$MAP_DIR/rtabmap_$map_name.pgm" "$MAP_DIR/rtabmap_$map_name.png" << 'PYEOF'
+import sys
+import cv2
+image = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
+if image is None:
+    sys.exit(1)
+cv2.imwrite(sys.argv[2], image)
+print(f'✓ PNGを保存しました: {sys.argv[2]}')
+PYEOF
+    fi
     
     # 2. 3D点群マップの保存 (トピック /rtabmap/cloud_map から直接保存)
     echo "[2/3] 3D点群マップ (PLY/Color) を保存中..."
@@ -170,13 +183,14 @@ PYEOF
         echo "ERROR: 3Dマップの保存に失敗しました。RTAB-Mapが停止しているか、局在化していない可能性があります。"
     fi
 
-    # 3. SAM3 2Dセマンティック地図の保存とカラーPNG生成
-    #    THETA路面マッピングでは SAM3 を使わないため SKIP_SAM3_SAVE=1 で丸ごとスキップ。
+    # 3. indexed 2Dセマンティック/カラー地図の保存とカラーPNG生成
+    #    INDEXED_SAVE_TOPIC で保存要求先を切替（THETAは /theta/save_indexed_map）。
+    #    SKIP_SAM3_SAVE=1 で丸ごとスキップ。
     if [ "${SKIP_SAM3_SAVE:-0}" = "1" ]; then
-        echo "[3/3] SAM3工程をスキップしました (THETA路面マッピング)"
+        echo "[3/3] indexed 地図工程をスキップしました"
     else
-    echo "[3/3] SAM3 2Dセマンティック地図を保存中..."
-    ros2 topic pub --once /sam3/save_indexed_map std_msgs/msg/String "{data: '$MAP_DIR/rtabmap_${map_name}.colored'}" >/dev/null 2>&1
+    echo "[3/3] indexed 2D地図を保存中..."
+    ros2 topic pub --once "${INDEXED_SAVE_TOPIC:-/sam3/save_indexed_map}" std_msgs/msg/String "{data: '$MAP_DIR/rtabmap_${map_name}.colored'}" >/dev/null 2>&1
     sleep 1
 
     # カラー地図のレンダリング (PGM + PLY および Indexed Grid から PNG 生成)

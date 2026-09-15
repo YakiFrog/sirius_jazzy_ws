@@ -179,12 +179,40 @@ read -p "生成された路面地図を保存しますか？ (Y/n): " save_choic
 save_choice=$(echo "$save_choice" | tr '[:upper:]' '[:lower:]')
 
 if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
+    # SLAM Toolbox地図を構造ベースにした重ね合わせ版を作るか選択（ZEDと同じ）
+    SLAM_BASE_YAML=""
+    echo ""
+    read -p "SLAM Toolbox地図と重ね合わせた版も作りますか？ (y/N) [N]: " SLAM_OVERLAY_CHOICE
+    SLAM_OVERLAY_CHOICE=$(echo "${SLAM_OVERLAY_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
+    if [ "$SLAM_OVERLAY_CHOICE" = "y" ] || [ "$SLAM_OVERLAY_CHOICE" = "yes" ]; then
+        mapfile -t SLAM_MAP_YAMLS < <(
+            find "$WS_DIR/maps_waypoints/maps" -maxdepth 1 -type f -name '*.yaml' 2>/dev/null | sort
+        )
+        if [ "${#SLAM_MAP_YAMLS[@]}" -eq 0 ]; then
+            echo "警告: SLAM Toolbox地図YAMLが見つかりません。重ね合わせは行いません。"
+        else
+            echo "利用可能なSLAM Toolbox地図:"
+            for i in "${!SLAM_MAP_YAMLS[@]}"; do
+                echo "  [$((i+1))] $(basename "${SLAM_MAP_YAMLS[$i]}")"
+            done
+            read -p "構造ベースにする地図番号 [1]: " SLAM_MAP_CHOICE
+            SLAM_MAP_CHOICE=${SLAM_MAP_CHOICE:-1}
+            SLAM_MAP_INDEX=$((SLAM_MAP_CHOICE-1))
+            if [ "$SLAM_MAP_INDEX" -ge 0 ] && [ "$SLAM_MAP_INDEX" -lt "${#SLAM_MAP_YAMLS[@]}" ]; then
+                SLAM_BASE_YAML="${SLAM_MAP_YAMLS[$SLAM_MAP_INDEX]}"
+                echo "SLAM Toolbox構造地図: $SLAM_BASE_YAML"
+            else
+                echo "警告: 無効な選択です。重ね合わせは行いません。"
+            fi
+        fi
+    fi
+
     MAP_SAVE_SCRIPT="$WS_DIR/bash/startup_bash/rtabmap_save.sh"
     if [ -f "$MAP_SAVE_SCRIPT" ]; then
         AUTO_MAP_NAME="theta_road_${BAG_NAME}"
-        echo "地図保存スクリプトを実行中 (SAM3工程はスキップ)..."
+        echo "地図保存スクリプトを実行中 (indexed地図: /theta/save_indexed_map)..."
         echo "  自動地図名: $AUTO_MAP_NAME"
-        SKIP_SAM3_SAVE=1 bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME"
+        INDEXED_SAVE_TOPIC=/theta/save_indexed_map bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
     else
         echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
         mkdir -p "$WS_DIR/maps_waypoints"
