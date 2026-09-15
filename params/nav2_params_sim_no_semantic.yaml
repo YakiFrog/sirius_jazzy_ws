@@ -404,7 +404,7 @@ controller_server:
       PreferForwardCritic:
         enabled: true
         cost_power: 1 # 前進優先度
-        cost_weight: 15.0          # 前進を強く優先（後退可能だが前進を推奨）
+        cost_weight: 10.0          # 前進を強く優先（後退可能だが前進を推奨）
         threshold_to_consider: 2.5 # この距離[m]以内で前進優先評価
       
       # CostCritic: コストマップ（障害物）評価
@@ -412,8 +412,8 @@ controller_server:
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 16.0              # 障害物・セマンティック高コスト回避の重み。内回り侵食を抑える
-        near_collision_cost: 120       # semantic soft costにも早めに強いペナルティをかける
+        cost_weight: 10.0              # 障害物・セマンティック高コスト回避の重み。内回り侵食を抑える
+        near_collision_cost: 150       # semantic soft costにも早めに強いペナルティをかける
         # ↑この値以上のコストになると警戒モード
         critical_cost: 250.0           # 危険レベルのコスト閾値　300 -> 250 危険判定を厳しく
         # ↑この値以上になると強いペナルティ
