@@ -481,8 +481,8 @@ waypoints:
   threshold: -1.0
   person_area: false
 - number: 49
-  x: 21.3
-  y: -19.0
+  x: 21.6
+  y: -17.7
   angle_radians: 2.0
   rotate: 0.0
   stop: false

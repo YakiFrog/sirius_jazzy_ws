@@ -4,6 +4,9 @@
 # PRESET: Webシミュレータ ZED映像確認
 # PRESET_ITEMS: rosbridge,web_zed_image,rviz2zed
 
+# PRESET: Webシミュレータ THETA BEV確認
+# PRESET_ITEMS: rosbridge,web_theta_bev,rviz2theta
+
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
 
@@ -61,6 +64,13 @@ alias web_zed_image='src && /usr/bin/python3 "$HOME/sirius-mujoco-sim/scripts/ze
 
 # ZED画像専用RViz。web_zed_imageと併用（通常のrviz2simとは別ウィンドウ）。
 alias rviz2zed='src && rviz2 -d "$HOME/sirius-mujoco-sim/config/zed_image.rviz"'
+
+# Web THETA Dual Fisheye(JPEG) をBEV平面画像に変換。Web側でROS接続＋「THETA映像をROS2へ送信」をON。
+# 出力は /theta/bev/image_raw（bgr8）。rviz2ではImageにこのトピックを指定する。
+alias web_theta_bev='src && /usr/bin/python3 "$HOME/sirius-mujoco-sim/scripts/theta_bev_node.py" --ros-args -p calibration:=$HOME/sirius-mujoco-sim/config/theta_calibration.yaml'
+
+# THETA表示専用RViz。web_theta_bevと併用（Dual Fisheye生ImageとBEVの2画面）。
+alias rviz2theta='src && rviz2 -d "$HOME/sirius-mujoco-sim/config/theta_bev.rviz"'
 
 # Foxglove Bridge 起動
 alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml'
