@@ -7,6 +7,8 @@ Terminatorの--new-tabオプションを使用したシンプル版
 """
 
 import sys
+import os
+import json
 import signal
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
@@ -15,6 +17,26 @@ from PySide6.QtCore import QTimer, QEvent
 from alias_parser import parse_bash_aliases
 from ui_components import LaunchButtonUI, MainWindowUI, CollapsibleSection
 from process_manager import ProcessManager
+
+SETTINGS_PATH = Path.home() / ".config" / "sirius_launcher" / "settings.json"
+
+
+def load_settings():
+    try:
+        with open(SETTINGS_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_settings(data):
+    try:
+        SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as error:
+        print(f"設定の保存に失敗: {error}")
 
 
 class LaunchButton(LaunchButtonUI):
@@ -159,7 +181,10 @@ class SiriusLauncher(QMainWindow):
         self.button_map = {}
         self.presets = []
         self.original_tab_names = {} # index -> name
+        self.sections = []  # (CollapsibleSection, [alias_name...])
+        self.settings = load_settings()
         self.setup_ui()
+        self.init_ros_domain()
         self.load_aliases()
     
     def setup_ui(self):
@@ -168,6 +193,54 @@ class SiriusLauncher(QMainWindow):
         self.reload_btn.clicked.connect(self.reload_launcher)
         if hasattr(self, 'preset_edit_btn'):
             self.preset_edit_btn.clicked.connect(self.edit_presets)
+        if hasattr(self, 'stop_all_btn'):
+            self.stop_all_btn.clicked.connect(self.stop_all)
+        if hasattr(self, 'preset_toggle_btn') and hasattr(self, 'preset_group'):
+            self.preset_toggle_btn.toggled.connect(self.preset_group.setVisible)
+
+    def stop_all(self):
+        """起動中の全プログラムを確認のうえ停止する"""
+        running = [b for b in self.buttons if b.process_manager.is_running()]
+        if not running:
+            QMessageBox.information(self, "全停止", "起動中のプログラムはありません。")
+            return
+        names = "\n".join(f"・{b.name}" for b in running[:20])
+        if len(running) > 20:
+            names += f"\n… 他 {len(running) - 20} 件"
+        answer = QMessageBox.question(
+            self, "全停止の確認",
+            f"起動中の {len(running)} 件を停止しますか?\n\n{names}",
+            QMessageBox.Yes | QMessageBox.No)
+        if answer != QMessageBox.Yes:
+            return
+        for button in running:
+            button.stop()
+
+    def init_ros_domain(self):
+        """保存済み（なければ環境）の ROS_DOMAIN_ID を適用してUIに反映"""
+        domain = self.settings.get('ros_domain')
+        if domain is None:
+            try:
+                domain = int(os.environ.get('ROS_DOMAIN_ID', '0'))
+            except (TypeError, ValueError):
+                domain = 0
+        try:
+            domain = max(0, min(232, int(domain)))
+        except (TypeError, ValueError):
+            domain = 0
+        os.environ['ROS_DOMAIN_ID'] = str(domain)
+        if hasattr(self, 'ros_domain_spin'):
+            self.ros_domain_spin.blockSignals(True)
+            self.ros_domain_spin.setValue(domain)
+            self.ros_domain_spin.blockSignals(False)
+            self.ros_domain_spin.valueChanged.connect(self.on_ros_domain_changed)
+
+    def on_ros_domain_changed(self, value):
+        """ROS_DOMAIN_ID を変更（新規起動分に適用）して保存"""
+        os.environ['ROS_DOMAIN_ID'] = str(int(value))
+        self.settings['ros_domain'] = int(value)
+        save_settings(self.settings)
+        print(f"ROS_DOMAIN_ID = {int(value)} に設定（新しく起動する分に適用）")
 
     def edit_presets(self):
         """プリセット編集ダイアログを開き、保存後に再読込する"""
@@ -238,6 +311,7 @@ class SiriusLauncher(QMainWindow):
                 )
                 current_section = None
                 seen_subgroup = None
+                section_names = None
                 for item in aliases:
                     alias_name, command, description = item[0], item[1], item[2]
                     subgroup = item[3] if len(item) > 3 else ""
@@ -246,8 +320,11 @@ class SiriusLauncher(QMainWindow):
                             current_section = CollapsibleSection(subgroup, expanded=False)
                             group_layout.addWidget(current_section)
                             seen_subgroup = subgroup
+                            section_names = []
+                            self.sections.append((current_section, section_names))
                         self.add_button(current_section.content_layout, alias_name, command,
                                         description, group_widget)
+                        section_names.append(alias_name)
                     else:
                         current_section = None
                         self.add_button(group_layout, alias_name, command, description, group_widget)
@@ -273,6 +350,7 @@ class SiriusLauncher(QMainWindow):
         self.buttons = []
         self.button_map = {}
         self.presets = []
+        self.sections = []
         
         # 2. プリセットボタンをUIから削除
         self.clear_layout(self.preset_layout)
@@ -362,6 +440,11 @@ class SiriusLauncher(QMainWindow):
             else:
                 badge.setText("")
                 badge.setVisible(False)
+
+        # セクション（小見出し）右上の起動数バッジを更新
+        for section, names in getattr(self, 'sections', []):
+            count = sum(1 for n in names if getattr(self.button_map.get(n), 'running', False))
+            section.set_badge(count)
 
 
 def main():

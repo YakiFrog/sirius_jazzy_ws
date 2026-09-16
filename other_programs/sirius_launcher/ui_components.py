@@ -87,10 +87,15 @@ class CollapsibleSection(QWidget):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(2)
 
+        header_row = QHBoxLayout()
+        header_row.setContentsMargins(0, 0, 0, 0)
+        header_row.setSpacing(4)
+
         self.header = QPushButton()
         self.header.setCheckable(True)
         self.header.setChecked(expanded)
         self.header.setCursor(Qt.PointingHandCursor)
+        self.header.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.header.setStyleSheet(
             "QPushButton { text-align: left; color: #0b5ed7; font-weight: bold;"
             " font-size: 13px; border: none; border-bottom: 2px solid #cfe2ff;"
@@ -98,7 +103,19 @@ class CollapsibleSection(QWidget):
             "QPushButton:hover { background-color: #eef5ff; }"
         )
         self.header.clicked.connect(self.toggle)
-        outer.addWidget(self.header)
+        header_row.addWidget(self.header, 1)
+
+        # このセクション内で起動中の数（赤バッジ）
+        self.badge = QLabel("")
+        self.badge.setAlignment(Qt.AlignCenter)
+        self.badge.setFixedSize(20, 20)
+        self.badge.setStyleSheet(
+            "QLabel { background-color: #dc3545; color: white; font-weight: bold;"
+            " border-radius: 10px; font-size: 11px; }"
+        )
+        self.badge.setVisible(False)
+        header_row.addWidget(self.badge)
+        outer.addLayout(header_row)
 
         self.content = QWidget()
         self.content_layout = QVBoxLayout(self.content)
@@ -125,6 +142,15 @@ class CollapsibleSection(QWidget):
     def add_widget(self, widget):
         self.content_layout.addWidget(widget)
 
+    def set_badge(self, count):
+        """このセクションの起動中件数を表示（0は非表示）"""
+        if count > 0:
+            self.badge.setText(str(count))
+            self.badge.setVisible(True)
+        else:
+            self.badge.setText("")
+            self.badge.setVisible(False)
+
 
 class MainWindowUI:
     """メインウィンドウのUIセットアップ"""
@@ -133,7 +159,7 @@ class MainWindowUI:
     def setup_ui(window, tab_names=None):
         """UIのセットアップ（タブ切り替え対応）"""
         from PySide6.QtWidgets import (QWidget, QVBoxLayout, QScrollArea, QFrame,
-                                       QTabWidget, QTabBar, QSplitter)
+                                       QTabWidget, QTabBar, QSplitter, QSpinBox)
 
         window.setWindowTitle("Sirius ROS2 Launch Manager")
         window.setMinimumSize(900, 600)
@@ -145,9 +171,16 @@ class MainWindowUI:
         main_layout.setContentsMargins(6, 6, 6, 6)
         main_layout.setSpacing(4)
 
-        # ヘッダーレイアウト（タイトルとリロードボタン）
+        # ヘッダーレイアウト（プリセット折りたたみ・全停止・リロード）
         header_layout = QHBoxLayout()
-        header_layout.addStretch(1)
+
+        # プリセット表示の折りたたみ
+        preset_toggle_btn = QPushButton("📋 プリセット")
+        preset_toggle_btn.setCheckable(True)
+        preset_toggle_btn.setChecked(True)
+        preset_toggle_btn.setFixedWidth(120)
+        preset_toggle_btn.setStyleSheet("background-color: #6c757d; color: white; font-weight: bold; border-radius: 4px; padding: 5px;")
+        header_layout.addWidget(preset_toggle_btn)
 
         # タイトル
         title = QLabel("Sirius ROS2 Launch Manager")
@@ -156,9 +189,23 @@ class MainWindowUI:
         title_font.setBold(True)
         title.setFont(title_font)
         title.setAlignment(Qt.AlignCenter)
-        header_layout.addWidget(title)
-        
-        header_layout.addStretch(1)
+        header_layout.addWidget(title, 1)
+
+        # ROS_DOMAIN_ID（全体に適用。変更は新規起動分から）
+        ros_label = QLabel("ROS_DOMAIN")
+        ros_label.setStyleSheet("color: #333; font-weight: bold;")
+        header_layout.addWidget(ros_label)
+        ros_domain_spin = QSpinBox()
+        ros_domain_spin.setRange(0, 232)
+        ros_domain_spin.setFixedWidth(72)
+        ros_domain_spin.setToolTip("全プログラム共通の ROS_DOMAIN_ID（0-232）。変更は新しく起動する分から適用されます。")
+        header_layout.addWidget(ros_domain_spin)
+
+        # 全停止ボタン
+        stop_all_btn = QPushButton("⏹ 全停止")
+        stop_all_btn.setFixedWidth(110)
+        stop_all_btn.setStyleSheet("background-color: #dc3545; color: white; font-weight: bold; border-radius: 4px; padding: 5px;")
+        header_layout.addWidget(stop_all_btn)
 
         # リロードボタン
         reload_btn = QPushButton("🔄 リロード")
@@ -167,6 +214,9 @@ class MainWindowUI:
         header_layout.addWidget(reload_btn)
 
         main_layout.addLayout(header_layout)
+        window.preset_toggle_btn = preset_toggle_btn
+        window.stop_all_btn = stop_all_btn
+        window.ros_domain_spin = ros_domain_spin
 
         # 情報ラベル
         info_label = QLabel("ボタンを押すとTerminatorのタブで起動します (--new-tab使用) | 緑●=起動中")
@@ -202,6 +252,7 @@ class MainWindowUI:
         preset_group.setLayout(preset_group_layout)
         preset_group.setMinimumWidth(260)
         window.preset_edit_btn = preset_edit_btn
+        window.preset_group = preset_group
 
         # タブウィジェット追加
         tab_widget = QTabWidget()
