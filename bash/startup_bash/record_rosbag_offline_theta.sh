@@ -13,6 +13,7 @@ source "$WS_DIR/install/setup.bash" 2>/dev/null || source /opt/ros/jazzy/setup.b
 
 ROSBAG_PID=""
 HEARTBEAT_PID=""
+CAPTURE_PID=""
 CURRENT_BAG_PATH=""
 RESULT_SHOWN=false
 CLEANUP_IN_PROGRESS=false
@@ -64,6 +65,13 @@ cleanup() {
         wait "$ROSBAG_PID" 2>/dev/null || true
         ROSBAG_PID=""
         echo "  ✓ Rosbag記録プロセスが終了しました"
+    fi
+    if [ -n "$CAPTURE_PID" ]; then
+        echo "[2/3] THETAキャプチャnodeを停止..."
+        kill -INT "$CAPTURE_PID" 2>/dev/null || true
+        wait "$CAPTURE_PID" 2>/dev/null || true
+        CAPTURE_PID=""
+        echo "  ✓ THETAキャプチャnodeを停止しました"
     fi
     show_result
     echo "================================================="
@@ -266,6 +274,22 @@ echo "  THETA オフライン路面マッピング 録画ツール [$MODE_LABEL]
 echo "========================================="
 echo "※ SLAM Toolboxは自動起動しません。録画前にLauncherから slamtoolbox を起動してください。"
 echo "※ $THETA_SOURCE_MSG"
+
+# 実機: THETA HDMIキャプチャノードが未起動なら自動起動する（YUYV/5fps）。
+if [ "$MODE" = "real" ]; then
+    if ! ros2 topic type "$THETA_TOPIC" >/dev/null 2>&1; then
+        echo "THETAキャプチャnode (theta_capture_node) を起動します..."
+        ros2 run sirius_navigation theta_capture_node --ros-args \
+            -p device:=/dev/theta_capture -p fourcc:=YUYV -p fps:=5.0 &
+        CAPTURE_PID=$!
+        sleep 3
+        if ! kill -0 "$CAPTURE_PID" 2>/dev/null; then
+            echo "エラー: THETAキャプチャnodeを起動できませんでした。"
+            CAPTURE_PID=""
+            cleanup 1
+        fi
+    fi
+fi
 
 if ! preflight_check; then
     cleanup 1

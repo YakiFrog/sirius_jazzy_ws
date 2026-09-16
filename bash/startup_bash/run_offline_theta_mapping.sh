@@ -158,8 +158,17 @@ echo "  姿勢TF: bag内の補正済みTFを使用"
 echo "================================================="
 
 # 3. マッピングノードを起動（sirius_navigationパッケージ）
+# 実機bag（real_theta_mapping_*）は実機校正YAMLを自動適用
+CALIB_ARGS=()
+CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml"
+case "$BAG_NAME" in
+    real_theta_mapping*) [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL") ;;
+esac
+if [ ${#CALIB_ARGS[@]} -gt 0 ]; then
+    echo "実機校正を使用: $CALIB_REAL"
+fi
 ros2 launch sirius_navigation theta_offline_mapping.launch.py \
-    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" &
+    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" "${CALIB_ARGS[@]}" &
 LAUNCH_PID=$!
 
 sleep 5
