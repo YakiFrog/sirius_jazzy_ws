@@ -291,6 +291,9 @@ alias check_theta_capture='python3 ~/sirius_jazzy_ws/bash/startup_bash/check_the
 # 実機THETAのHDMIキャプチャをROS2(/theta/dual_fisheye/image_raw/compressed)へ配信
 # 起動時に対話でfps(既定5)と解像度(既定1920x1080)を選択。引数指定も可: theta_capture 5 1280x720
 alias theta_capture='bash "$HOME/sirius_jazzy_ws/bash/startup_bash/start_theta_capture.sh"'
+alias theta_calib_capture='src && python3 "$HOME/sirius_jazzy_ws/bash/startup_bash/theta_checkerboard_capture.py"'
+alias theta_calib_solve='src && python3 "$HOME/sirius_jazzy_ws/bash/startup_bash/theta_checkerboard_solve.py"'
+alias theta_calib_check='src && python3 "$HOME/sirius_jazzy_ws/bash/startup_bash/theta_checkerboard_check.py"'
 
 # 実機THETAキャプチャのプレビュー（theta_capture 起動後に実行）
 # theta_bev_node(BEV生成) + RViz2 を起動し、raw dual-fisheye と BEV を並べて表示する。
