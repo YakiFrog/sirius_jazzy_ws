@@ -182,6 +182,12 @@ class MainWindowUI:
         preset_toggle_btn.setStyleSheet("background-color: #6c757d; color: white; font-weight: bold; border-radius: 4px; padding: 5px;")
         header_layout.addWidget(preset_toggle_btn)
 
+        # SAM3設定ウィンドウ
+        sam3_settings_btn = QPushButton("🎛 SAM3設定")
+        sam3_settings_btn.setFixedWidth(120)
+        sam3_settings_btn.setStyleSheet("background-color: #6f42c1; color: white; font-weight: bold; border-radius: 4px; padding: 5px;")
+        header_layout.addWidget(sam3_settings_btn)
+
         # タイトル
         title = QLabel("Sirius ROS2 Launch Manager")
         title_font = QFont()
@@ -217,6 +223,7 @@ class MainWindowUI:
         window.preset_toggle_btn = preset_toggle_btn
         window.stop_all_btn = stop_all_btn
         window.ros_domain_spin = ros_domain_spin
+        window.sam3_settings_btn = sam3_settings_btn
 
         # 情報ラベル
         info_label = QLabel("ボタンを押すとTerminatorのタブで起動します (--new-tab使用) | 緑●=起動中")

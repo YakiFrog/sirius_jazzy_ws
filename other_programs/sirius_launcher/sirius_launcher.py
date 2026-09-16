@@ -197,6 +197,14 @@ class SiriusLauncher(QMainWindow):
             self.stop_all_btn.clicked.connect(self.stop_all)
         if hasattr(self, 'preset_toggle_btn') and hasattr(self, 'preset_group'):
             self.preset_toggle_btn.toggled.connect(self.preset_group.setVisible)
+        if hasattr(self, 'sam3_settings_btn'):
+            self.sam3_settings_btn.clicked.connect(self.open_sam3_settings)
+
+    def open_sam3_settings(self):
+        """SAM3設定ウィンドウを開く"""
+        from sam3_settings_dialog import Sam3SettingsDialog
+        dialog = Sam3SettingsDialog(parent=self)
+        dialog.exec()
 
     def stop_all(self):
         """起動中の全プログラムを確認のうえ停止する"""
