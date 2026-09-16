@@ -267,6 +267,8 @@ alias sam3_map_load='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_s
 # GROUP_DESC: record_offline_sim はSAM3 Dockerとの8080競合を自動回避し、画像・LiDAR・補正TFを確認できた場合だけ録画します。終了後にもbagを検証します。
 # GROUP_DESC: sam3_map_repair_ui は作成済み地図を残し、rosbagの指定区間・対象クラスだけを再推論して別名の補正版を作ります。
 
+# SUBGROUP: 録画
+
 # Unityステレオ映像・SLAMデータをRosbagに録画（オフラインマッピング用）
 alias record_offline_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline.sh'
 
@@ -285,6 +287,13 @@ alias record_offline_theta_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_
 # 実機THETAのDual Fisheye・LiDAR・補正TFをRosbagに録画（THETA路面マッピング用 / real）
 alias record_offline_theta_real='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_theta.sh real'
 
+# ZED+THETAを1つのbagにまとめて録画（オフライン マッピング用。どちらか無くてもOK / sim|real）
+alias record_offline_both='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_both.sh'
+alias record_offline_both_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_both.sh sim'
+alias record_offline_both_real='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_offline_both.sh real'
+
+# SUBGROUP: THETA キャプチャ・校正
+
 # 実機THETA(HDMI->USBキャプチャ)の映像取得確認（真っ黒ならTHETA側のHDMI出力設定を確認）
 alias check_theta_capture='python3 ~/sirius_jazzy_ws/bash/startup_bash/check_theta_capture.py'
 
@@ -299,6 +308,8 @@ alias theta_calib_check='src && python3 "$HOME/sirius_jazzy_ws/bash/startup_bash
 # theta_bev_node(BEV生成) + RViz2 を起動し、raw dual-fisheye と BEV を並べて表示する。
 # 実機校正 theta_calibration_real.yaml を使用（TFが無ければYAML姿勢にフォールバック）。
 alias rviz2theta_capture='src && ros2 launch sirius_navigation theta_capture_preview.launch.py'
+
+# SUBGROUP: セットアップ・地図生成
 
 # 実機PCへCUDA不要の録画依存関係を初回セットアップ
 alias setup_offline_real='bash ~/sirius_jazzy_ws/bash/startup_bash/setup_offline_real.sh'
@@ -317,6 +328,8 @@ alias sam3_settings_ui='bash ~/sirius_jazzy_ws/bash/startup_bash/open_sam3_setti
 
 # Rosbagの指定区間をクラス別閾値で再推論し、既存地図へ部分マージ
 alias sam3_map_repair_ui='bash ~/sirius_jazzy_ws/other_programs/sam3_map_repair/run_sam3_map_repair.sh'
+
+# SUBGROUP: その他
 
 # Unity映像レシーバー単体起動 (HTTP -> ROS2 CompressedImage)
 alias unity_stereo_bridge='src && ros2 run sirius_navigation unity_stereo_bridge'

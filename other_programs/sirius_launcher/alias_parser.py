@@ -17,6 +17,7 @@ def parse_bash_aliases(alias_file_path, include_group_descriptions=False):
     group_descriptions = {}
     presets = []
     current_group = "その他"
+    current_subgroup = ""
     current_description = ""
     current_preset_name = None
     
@@ -51,8 +52,16 @@ def parse_bash_aliases(alias_file_path, include_group_descriptions=False):
             
             if line.startswith('# GROUP:'):
                 current_group = line.replace('# GROUP:', '').strip()
+                current_subgroup = ""
                 if current_group not in groups:
                     groups[current_group] = []
+                current_description = ""
+                i += 1
+                continue
+
+            # タブ内の小見出し（サブグループ）。次の # SUBGROUP: か # GROUP: まで有効。
+            if line.startswith('# SUBGROUP:'):
+                current_subgroup = line.replace('# SUBGROUP:', '').strip()
                 current_description = ""
                 i += 1
                 continue
@@ -98,7 +107,7 @@ def parse_bash_aliases(alias_file_path, include_group_descriptions=False):
                     
                     if current_group not in groups:
                         groups[current_group] = []
-                    groups[current_group].append((alias_name, command, description))
+                    groups[current_group].append((alias_name, command, description, current_subgroup))
                     
                     current_description = ""
             

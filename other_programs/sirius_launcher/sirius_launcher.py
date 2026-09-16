@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtCore import QTimer, QEvent
 
 from alias_parser import parse_bash_aliases
-from ui_components import LaunchButtonUI, MainWindowUI
+from ui_components import LaunchButtonUI, MainWindowUI, CollapsibleSection
 from process_manager import ProcessManager
 
 
@@ -44,6 +44,7 @@ class LaunchButton(LaunchButtonUI):
         self.timer.start(1000)
         
         self.has_error = False
+        self.running = False
         # イベントフィルタをインストールして、ウィジェット全体のクリックを捕まえる
         self.installEventFilter(self)
         # 子ウィジェットにもフィルタをインストール
@@ -118,6 +119,7 @@ class LaunchButton(LaunchButtonUI):
         """プロセスの状態を定期的にチェック"""
         is_running = self.process_manager.is_running()
         self.has_error = self.process_manager.check_for_errors() if is_running else False
+        self.running = is_running
         
         self.update_status(is_running, self.has_error)
         
@@ -164,6 +166,18 @@ class SiriusLauncher(QMainWindow):
         """UIのセットアップ"""
         self.preset_layout, self.tab_layouts, self.tab_widget, self.reload_btn = MainWindowUI.setup_ui(self)
         self.reload_btn.clicked.connect(self.reload_launcher)
+        if hasattr(self, 'preset_edit_btn'):
+            self.preset_edit_btn.clicked.connect(self.edit_presets)
+
+    def edit_presets(self):
+        """プリセット編集ダイアログを開き、保存後に再読込する"""
+        from preset_editor import PresetEditorDialog, save_presets_to_file
+        alias_file = Path.home() / "sirius_jazzy_ws" / "bash" / "bash_alias2.sh"
+        dialog = PresetEditorDialog(self.presets, list(self.button_map.keys()), self)
+        if dialog.exec():
+            save_presets_to_file(str(alias_file), dialog.presets)
+            print("プリセットを保存しました。再読み込みします。")
+            self.reload_launcher()
 
     def add_group(self, title, tab_name=None, description=""):
         """グループボックスを追加（タブ対応）"""
@@ -196,6 +210,8 @@ class SiriusLauncher(QMainWindow):
         # プリセットボタンを作成
         for preset_name, items in presets:
             self.add_preset_button(preset_name, items)
+        # 上揃え（余った縦スペースは下端へ）
+        self.preset_layout.addStretch(1)
 
         # タブ名リスト（ui_components.pyのデフォルトと合わせる）
         tab_names_list = [
@@ -220,8 +236,21 @@ class SiriusLauncher(QMainWindow):
                     tab_name,
                     group_descriptions.get(group_name, ""),
                 )
-                for alias_name, command, description in aliases:
-                    self.add_button(group_layout, alias_name, command, description, group_widget)
+                current_section = None
+                seen_subgroup = None
+                for item in aliases:
+                    alias_name, command, description = item[0], item[1], item[2]
+                    subgroup = item[3] if len(item) > 3 else ""
+                    if subgroup:
+                        if subgroup != seen_subgroup:
+                            current_section = CollapsibleSection(subgroup, expanded=False)
+                            group_layout.addWidget(current_section)
+                            seen_subgroup = subgroup
+                        self.add_button(current_section.content_layout, alias_name, command,
+                                        description, group_widget)
+                    else:
+                        current_section = None
+                        self.add_button(group_layout, alias_name, command, description, group_widget)
 
         # 各タブのレイアウトにストレッチ追加
         for layout in self.tab_layouts.values():
@@ -319,6 +348,20 @@ class SiriusLauncher(QMainWindow):
                 else:
                     if current_text != original_name:
                         self.tab_widget.setTabText(idx, original_name)
+
+        # タブ右上の「起動中プロセス数」バッジを更新
+        running_counts = {}
+        for button in self.buttons:
+            if getattr(button, 'running', False) and button.tab_index is not None:
+                running_counts[button.tab_index] = running_counts.get(button.tab_index, 0) + 1
+        for idx, badge in getattr(self, 'tab_badges', {}).items():
+            count = running_counts.get(idx, 0)
+            if count > 0:
+                badge.setText(str(count))
+                badge.setVisible(True)
+            else:
+                badge.setText("")
+                badge.setVisible(False)
 
 
 def main():
