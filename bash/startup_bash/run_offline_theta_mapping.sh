@@ -136,18 +136,30 @@ if [ "$SAM3_CHOICE" = "y" ] || [ "$SAM3_CHOICE" = "yes" ]; then
     echo "※ sam3 docker サーバ (port 8080) が起動している必要があります。"
 fi
 
+# 2d. デバッグ可視化の選択（検出画像・意味色点群をRVizで同時表示）
+echo ""
+read -p "デバッグ可視化（検出画像/意味色点群をRViz表示）を使いますか？ (y/N) [N]: " DEBUG_CHOICE
+DEBUG_CHOICE=$(echo "${DEBUG_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
+DEBUG_ARGS=()
+if [ "$DEBUG_CHOICE" = "y" ] || [ "$DEBUG_CHOICE" = "yes" ]; then
+    DEBUG_ARGS=(publish_debug:=true publish_raw:=true "rviz_config:=$WS_DIR/src/sirius/sirius_navigation/rviz/theta_debug.rviz")
+    USE_RVIZ_FLAG="true"
+    echo "※ デバッグRViz表示のため RViz2 を有効にします。"
+fi
+
 echo "================================================="
 echo "路面マッピングパイプラインを起動しています..."
 echo "  Rosbag: $BAG_NAME"
 echo "  再生速度: ${PLAY_RATE}x"
 echo "  RViz2 プレビュー: $USE_RVIZ_FLAG"
 echo "  SAM3セマンティック: $USE_SAM3_FLAG"
+echo "  デバッグ可視化: $DEBUG_CHOICE"
 echo "  姿勢TF: bag内の補正済みTFを使用"
 echo "================================================="
 
 # 3. マッピングノードを起動（sirius_navigationパッケージ）
 ros2 launch sirius_navigation theta_offline_mapping.launch.py \
-    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" &
+    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" &
 LAUNCH_PID=$!
 
 sleep 5
