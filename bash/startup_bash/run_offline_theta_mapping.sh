@@ -166,8 +166,9 @@ CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.y
 case "$BAG_NAME" in
     real_theta_mapping*|real_both_mapping*|real_*)
         [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL")
-        # Scan3(VLP-16 2.5D, 360°)のフリースペース内だけに地面点を制限し、
-        # 遠方の食い合いを抑えるため半径を2.5mに狭める（狭い曲がり角対策）。
+        # 半径を2.5mに狭め、scan3(VLP-16 2.5D)ゲートも併用。
+        # ゲートは高さ不一致(0.85m vs 1.135m)による過剰除外を避けるため、
+        # 「自機ビーム除外・時刻合わせ・保留率<50%なら自動無効」のガード付き。
         LIDAR_ARGS=(lidar_topic:=/scan3 lidar_gate:=true max_radius:=2.5 grid_range_max:=2.5)
         ;;
 esac
