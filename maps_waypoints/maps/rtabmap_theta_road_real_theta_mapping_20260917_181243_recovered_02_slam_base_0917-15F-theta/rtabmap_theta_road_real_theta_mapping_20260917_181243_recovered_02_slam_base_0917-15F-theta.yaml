@@ -1,0 +1,10 @@
+free_thresh: 0.25
+image: rtabmap_theta_road_real_theta_mapping_20260917_181243_recovered_02_slam_base_0917-15F-theta.pgm
+mode: trinary
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -24.900000000000002
+- -5.25
+- 0
+resolution: 0.05
