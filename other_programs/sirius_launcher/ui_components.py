@@ -204,7 +204,7 @@ class MainWindowUI:
         ros_domain_spin = QSpinBox()
         ros_domain_spin.setRange(0, 232)
         ros_domain_spin.setFixedWidth(72)
-        ros_domain_spin.setToolTip("全プログラム共通の ROS_DOMAIN_ID（0-232）。変更は新しく起動する分から適用されます。")
+        ros_domain_spin.setToolTip("全プログラム共通の ROS_DOMAIN_ID（0-232）。未保存時は ~/.bashrc の既定値を使用。変更は新しく起動する分から適用されます。")
         header_layout.addWidget(ros_domain_spin)
 
         # 全停止ボタン

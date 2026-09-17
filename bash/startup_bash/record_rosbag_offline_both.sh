@@ -168,7 +168,8 @@ maybe_start_theta_capture() {
     [ "$MODE" = "real" ] || return 0
     echo "THETAトピックが無いため theta_capture_node を起動します..."
     ros2 run sirius_navigation theta_capture_node --ros-args \
-        -p device:=/dev/theta_capture -p fourcc:=YUYV -p fps:=5.0 &
+        -p device:=/dev/theta_capture -p fourcc:=YUYV -p fps:=5.0 \
+        -p width:=1280 -p height:=720 &
     CAPTURE_PID=$!
     sleep 3
     kill -0 "$CAPTURE_PID" 2>/dev/null || { echo "  ✗ THETAキャプチャ起動失敗"; CAPTURE_PID=""; }

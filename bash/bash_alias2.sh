@@ -298,7 +298,7 @@ alias record_offline_both_real='bash ~/sirius_jazzy_ws/bash/startup_bash/record_
 alias check_theta_capture='python3 ~/sirius_jazzy_ws/bash/startup_bash/check_theta_capture.py'
 
 # 実機THETAのHDMIキャプチャをROS2(/theta/dual_fisheye/image_raw/compressed)へ配信
-# 起動時に対話でfps(既定5)と解像度(既定1920x1080)を選択。引数指定も可: theta_capture 5 1280x720
+# 起動時に対話でfps(既定5)と解像度(既定1280x720)を選択。引数指定も可: theta_capture 5 2
 alias theta_capture='bash "$HOME/sirius_jazzy_ws/bash/startup_bash/start_theta_capture.sh"'
 alias theta_calib_capture='src && python3 "$HOME/sirius_jazzy_ws/bash/startup_bash/theta_checkerboard_capture.py"'
 alias theta_calib_solve='src && python3 "$HOME/sirius_jazzy_ws/bash/startup_bash/theta_checkerboard_solve.py"'

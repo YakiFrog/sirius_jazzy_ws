@@ -275,12 +275,13 @@ echo "========================================="
 echo "※ SLAM Toolboxは自動起動しません。録画前にLauncherから slamtoolbox を起動してください。"
 echo "※ $THETA_SOURCE_MSG"
 
-# 実機: THETA HDMIキャプチャノードが未起動なら自動起動する（YUYV/5fps）。
+# 実機: THETA HDMIキャプチャノードが未起動なら自動起動する（YUYV/5fps/1280x720）。
 if [ "$MODE" = "real" ]; then
     if ! ros2 topic type "$THETA_TOPIC" >/dev/null 2>&1; then
         echo "THETAキャプチャnode (theta_capture_node) を起動します..."
         ros2 run sirius_navigation theta_capture_node --ros-args \
-            -p device:=/dev/theta_capture -p fourcc:=YUYV -p fps:=5.0 &
+            -p device:=/dev/theta_capture -p fourcc:=YUYV -p fps:=5.0 \
+            -p width:=1280 -p height:=720 &
         CAPTURE_PID=$!
         sleep 3
         if ! kill -0 "$CAPTURE_PID" 2>/dev/null; then

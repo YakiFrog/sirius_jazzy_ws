@@ -1,8 +1,9 @@
 #!/bin/bash
 # THETA S (HDMI->USBキャプチャ) をROS2へ配信する。
-# 起動時に送信fpsと解像度を選択できる（既定 fps=5, 1920x1080）。
+# 起動時に送信fpsと解像度を選択できる（既定 fps=5, 1280x720）。
 # 引数でも指定可能: start_theta_capture.sh <fps> <解像度番号 or WxH>
-#   例: start_theta_capture.sh 5 1      # fps5, 解像度メニュー1(1920x1080)
+#   例: start_theta_capture.sh 5 1      # fps5, 解像度メニュー1(1280x720)
+#   例: start_theta_capture.sh 5 2      # fps5, 解像度メニュー2(1920x1080)
 #   例: start_theta_capture.sh 5 1280x720
 #
 # 【重要】実効fpsの上限はキャプチャボード(I-O DATA HDPC-UT)のYUYVモードに律速される（PCではない）。
@@ -16,17 +17,18 @@
 #   （画素を回すと近似中心/ROIで円がずれ残像が出るため、キャプチャ側では回さない）。
 #
 # fpsは間引きレート。範囲は 0.1〜30.0。録画は5推奨（RTABは2Hz取り込み）。
-# 注意: 魚眼のキャリブ値(theta_calibration*.yaml)は1920x1080基準。変更時は中心/焦点距離を同スケールに。
+# 注意: 魚眼のキャリブ値(theta_calibration*.yaml)は1920x1080基準だが、投影側が
+#   image_size比で中心/焦点を自動スケールするため720pでもそのまま使える。
 
 WS_DIR="${HOME}/sirius_jazzy_ws"
 source "$WS_DIR/install/setup.bash" 2>/dev/null || source /opt/ros/jazzy/setup.bash
 
 # 検証済みの解像度と、そのYUYV実測上限fps（最低720p: 640x480は4:3で魚眼が縦長になるため除外）
-RES_OPTIONS=("1920x1080" "1280x720")
-RES_CAPS=("5" "10")
+RES_OPTIONS=("1280x720" "1920x1080")
+RES_CAPS=("10" "5")
 RES_LABELS=(
-    "1920x1080  (既定・キャリブ基準, YUYV上限 約5fps)"
-    "1280x720   (最小推奨, YUYV上限 約10fps)"
+    "1280x720   (既定, YUYV上限 約10fps)"
+    "1920x1080  (キャリブ基準, YUYV上限 約5fps)"
 )
 
 FPS="${1:-}"

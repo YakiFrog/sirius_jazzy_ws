@@ -9,6 +9,7 @@ Terminatorの--new-tabオプションを使用したシンプル版
 import sys
 import os
 import json
+import re
 import signal
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
@@ -37,6 +38,22 @@ def save_settings(data):
             json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as error:
         print(f"設定の保存に失敗: {error}")
+
+
+def default_ros_domain_from_bashrc():
+    """~/.bashrc の ROS_DOMAIN_ID をマシン既定値として読み取る（無ければ None）"""
+    try:
+        with open(Path.home() / ".bashrc", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("#") or "ROS_DOMAIN_ID" not in line:
+                    continue
+                match = re.search(r"ROS_DOMAIN_ID\s*=\s*[\"']?(\d+)", line)
+                if match:
+                    return int(match.group(1))
+    except OSError:
+        pass
+    return None
 
 
 class LaunchButton(LaunchButtonUI):
@@ -225,13 +242,17 @@ class SiriusLauncher(QMainWindow):
             button.stop()
 
     def init_ros_domain(self):
-        """保存済み（なければ環境）の ROS_DOMAIN_ID を適用してUIに反映"""
+        """保存済み（なければ環境変数→~/.bashrc）の ROS_DOMAIN_ID を適用してUIに反映"""
         domain = self.settings.get('ros_domain')
         if domain is None:
-            try:
-                domain = int(os.environ.get('ROS_DOMAIN_ID', '0'))
-            except (TypeError, ValueError):
-                domain = 0
+            env_domain = os.environ.get('ROS_DOMAIN_ID')
+            if env_domain is not None:
+                try:
+                    domain = int(env_domain)
+                except (TypeError, ValueError):
+                    domain = None
+            if domain is None:
+                domain = default_ros_domain_from_bashrc()
         try:
             domain = max(0, min(232, int(domain)))
         except (TypeError, ValueError):
@@ -325,7 +346,7 @@ class SiriusLauncher(QMainWindow):
                     subgroup = item[3] if len(item) > 3 else ""
                     if subgroup:
                         if subgroup != seen_subgroup:
-                            current_section = CollapsibleSection(subgroup, expanded=False)
+                            current_section = CollapsibleSection(subgroup, expanded=True)
                             group_layout.addWidget(current_section)
                             seen_subgroup = subgroup
                             section_names = []
