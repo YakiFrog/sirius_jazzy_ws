@@ -161,21 +161,21 @@ echo "================================================="
 # 実機bag（real_*mapping_* / real_*theta*）は実機校正YAMLを自動適用し、
 # 狭い曲がり角での点群の食い合いを避けるため max_radius を狭める。
 CALIB_ARGS=()
-RADIUS_ARGS=()
+LIDAR_ARGS=()
 CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml"
 case "$BAG_NAME" in
     real_theta_mapping*|real_both_mapping*|real_*)
         [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL")
-        # 範囲は用途に応じて調整（広げるほど路面カバレッジ増・食い合い増）
-        RADIUS_ARGS=(max_radius:=2.5 grid_range_max:=3.0)
+        # Scan3(2D LiDAR)のフリースペース内だけに地面点を制限（角/壁裏の食い合いを軽減）
+        LIDAR_ARGS=(lidar_topic:=/scan3 lidar_gate:=true)
         ;;
 esac
 if [ ${#CALIB_ARGS[@]} -gt 0 ]; then
     echo "実機校正を使用: $CALIB_REAL"
-    echo "実機用レンジ: ${RADIUS_ARGS[*]}"
+    echo "実機用LiDARゲート: ${LIDAR_ARGS[*]}"
 fi
 ros2 launch sirius_navigation theta_offline_mapping.launch.py \
-    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" "${CALIB_ARGS[@]}" "${RADIUS_ARGS[@]}" &
+    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" "${CALIB_ARGS[@]}" "${LIDAR_ARGS[@]}" &
 LAUNCH_PID=$!
 
 sleep 5
