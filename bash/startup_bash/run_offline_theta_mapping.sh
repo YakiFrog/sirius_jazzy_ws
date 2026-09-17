@@ -158,17 +158,24 @@ echo "  姿勢TF: bag内の補正済みTFを使用"
 echo "================================================="
 
 # 3. マッピングノードを起動（sirius_navigationパッケージ）
-# 実機bag（real_*mapping_* / real_*theta*）は実機校正YAMLを自動適用
+# 実機bag（real_*mapping_* / real_*theta*）は実機校正YAMLを自動適用し、
+# 狭い曲がり角での点群の食い合いを避けるため max_radius を狭める。
 CALIB_ARGS=()
+RADIUS_ARGS=()
 CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml"
 case "$BAG_NAME" in
-    real_theta_mapping*|real_both_mapping*|real_*) [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL") ;;
+    real_theta_mapping*|real_both_mapping*|real_*)
+        [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL")
+        # 範囲は用途に応じて調整（広げるほど路面カバレッジ増・食い合い増）
+        RADIUS_ARGS=(max_radius:=2.5 grid_range_max:=3.0)
+        ;;
 esac
 if [ ${#CALIB_ARGS[@]} -gt 0 ]; then
     echo "実機校正を使用: $CALIB_REAL"
+    echo "実機用レンジ: ${RADIUS_ARGS[*]}"
 fi
 ros2 launch sirius_navigation theta_offline_mapping.launch.py \
-    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" "${CALIB_ARGS[@]}" &
+    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" "${CALIB_ARGS[@]}" "${RADIUS_ARGS[@]}" &
 LAUNCH_PID=$!
 
 sleep 5
