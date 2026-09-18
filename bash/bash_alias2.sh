@@ -125,6 +125,9 @@ alias odom_path_real='src && ros2 run sirius_navigation odom_path_publisher --ro
 # Nav2起動(既存MAP)
 alias nav2='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_sim.sh'
 
+# Nav2のBT XMLのみ再読込（nav2スタック再起動なし）
+alias nav_bt_reload='bash ~/sirius_jazzy_ws/bash/startup_bash/reload_bt_navigator.sh'
+
 # Nav2起動（MAPなし）
 alias nav2slam='src && ros2 launch nav2_bringup bringup_launch.py \
 params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim_slam.yaml \

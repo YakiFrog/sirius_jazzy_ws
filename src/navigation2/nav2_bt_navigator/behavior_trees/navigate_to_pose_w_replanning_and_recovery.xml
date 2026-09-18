@@ -33,21 +33,33 @@
               失敗すると外周リカバリのSpin(回り続け)へ落ちていた。
             -->
             <Sequence name="WaitBeforeRetryingSamePath">
+              <!--
+                残留ローカルコストを毎回クリアしてから再試行する。2D LiDARは
+                前方180°のみで、FOV外/遮蔽域のセルはクリアレイが通らず永久に
+                残る。クリア後2秒待つ間にセンサが再マークするので、実障害物が
+                残っていれば再び待機に戻り安全側に動作する。
+              -->
+              <ClearEntireCostmap name="ClearLocalCostmap-Wait" service_name="local_costmap/clear_entirely_local_costmap"/>
               <AlwaysSuccess/>
               <Wait wait_duration="2.0"/>
             </Sequence>
           </RecoveryNode>
           <RecoveryNode number_of_retries="1" name="FollowPathNormally">
             <FollowPath path="{path}" controller_id="FollowPath" error_code_id="{follow_path_error_code}"/>
+            <!--
+              全モード共通: 失敗時はエラーコード判定を挟まず必ずローカルコストを
+              クリアする。2D LiDARは前方180°のみでFOV外/遮蔽域のセルはクリア
+              レイが通らず永久に残るため、残留コストでの失敗を確実に解消する。
+            -->
             <Sequence>
-              <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+              <AlwaysSuccess/>
               <ClearEntireCostmap name="ClearLocalCostmap-Context" service_name="local_costmap/clear_entirely_local_costmap"/>
             </Sequence>
           </RecoveryNode>
           <RecoveryNode number_of_retries="1" name="FollowPathWithSelectedController">
             <FollowPath path="{path}" controller_id="{selected_controller}" error_code_id="{follow_path_error_code}"/>
             <Sequence>
-              <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+              <AlwaysSuccess/>
               <ClearEntireCostmap name="ClearLocalCostmap-Selected" service_name="local_costmap/clear_entirely_local_costmap"/>
             </Sequence>
           </RecoveryNode>
