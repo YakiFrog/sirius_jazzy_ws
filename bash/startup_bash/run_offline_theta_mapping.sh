@@ -159,17 +159,17 @@ echo "================================================="
 
 # 3. マッピングノードを起動（sirius_navigationパッケージ）
 # 実機bag（real_*mapping_* / real_*theta*）は実機校正YAMLを自動適用し、
-# 狭い曲がり角での点群の食い合いを避けるため max_radius を狭める。
+# 地面点群の半径を3.0mに設定する。
 CALIB_ARGS=()
 LIDAR_ARGS=()
 CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml"
 case "$BAG_NAME" in
     real_theta_mapping*|real_both_mapping*|real_*)
         [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL")
-        # 半径を2.0mに狭め、scan3(VLP-16 2.5D)ゲートも併用。
+        # 半径を3.0mに広げ、scan3(VLP-16 2.5D)ゲートも併用。
         # ゲートは高さ不一致(0.85m vs 1.135m)による過剰除外を避けるため、
         # 「自機ビーム除外・時刻合わせ・保留率<50%なら自動無効」のガード付き。
-        LIDAR_ARGS=(lidar_topic:=/scan3 lidar_gate:=true max_radius:=2.0 grid_range_max:=2.0)
+        LIDAR_ARGS=(lidar_topic:=/scan3 lidar_gate:=true max_radius:=3.0 grid_range_max:=3.0)
         ;;
 esac
 if [ ${#CALIB_ARGS[@]} -gt 0 ]; then

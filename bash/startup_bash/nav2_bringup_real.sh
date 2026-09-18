@@ -105,9 +105,21 @@ while : ;do
 
     write_current_map_state "$selected_map"
     
+    # Prompt for semantic costmap layer (default OFF)
+    read -p "セマンティックコストレイヤー(semantic_layer)を有効にしますか？ (y/N): " use_semantic
+    use_semantic=$(echo "$use_semantic" | tr '[:upper:]' '[:lower:]')
+    
+    PARAMS_FILE="${HOME}/sirius_jazzy_ws/params/nav2_params.yaml"
+    if [ "$use_semantic" = "y" ] || [ "$use_semantic" = "yes" ]; then
+        PARAMS_FILE="${HOME}/sirius_jazzy_ws/params/nav2_params_semantic.yaml"
+        echo "セマンティックレイヤーを有効にして起動します。"
+    else
+        echo "セマンティックレイヤーを無効にして起動します。"
+    fi
+    
     ros2 launch nav2_bringup bringup_launch.py \
     use_sim_time:=False \
     map:=$selected_map \
-    params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
+    params_file:="$PARAMS_FILE" \
     use_composition:=False
 done
