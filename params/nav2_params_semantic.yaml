@@ -535,6 +535,8 @@ waypoint_follower:
 bt_navigator:
   ros__parameters:
     use_sim_time: false
+    # BTのXMLを新しいゴールのたびに読み直す（nav_bt_reload不要・停止なしで反映）
+    always_reload_bt_xml: True
     global_frame: map
     robot_base_frame: sirius3/base_footprint
     odom_topic: /odom/filtered # EKFセンサフュージョン後のオドメトリを使用
