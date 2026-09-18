@@ -295,6 +295,9 @@ controller_server:
       time_steps: 60  # 80 -> 60 60*0.1 = 6.0秒先まで予測 -> 40
       model_dt: 0.10 # 0.05→0.07,  1/20 = 0.05, 1/15 = 0.06666...  制御周期に合わせる
       batch_size: 2000  
+      # 1 -> 2: 全軌道が衝突判定でも即NoValidControlで失敗せず、内部リトライを1回増やす。
+      # これによりBTリカバリ(Spin)へ落ちる頻度を減らす（特に低速モードの膠着対策）。
+      retry_attempt_limit: 2
 
       # 【速度と加速度の物理的チューニング指針】
       # 1. 安全制動距離の公式: d = v^2 / (2 * a)
@@ -450,7 +453,9 @@ controller_server:
       use_velocity_scaled_lookahead_dist: true
       rotate_to_heading_angular_vel: 0.90
       rotate_to_heading_min_angle: 0.785
-      use_rotate_to_heading: true
+      # wait_normal(5)用: true->false。パス向き合わせのその場旋回をやめ、
+      # 障害物前では停止・待機させる（回り続けの主因を除去）。
+      use_rotate_to_heading: false
       min_approach_linear_velocity: 0.10
       approach_velocity_scaling_dist: 1.00
       use_regulated_linear_velocity_scaling: true

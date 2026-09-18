@@ -27,8 +27,13 @@
         <Switch2 variable="{selected_controller}" case_1="WaitPath" case_2="FollowPath">
           <RecoveryNode number_of_retries="1000000" name="FollowPathWithWaiting">
             <FollowPath path="{path}" controller_id="WaitPath" error_code_id="{follow_path_error_code}"/>
+            <!--
+              wait_normal(5)用: WaitPath失敗時は条件判定せず必ず2秒待って
+              同じパスを再試行する。旧実装は WouldAControllerRecoveryHelp が
+              失敗すると外周リカバリのSpin(回り続け)へ落ちていた。
+            -->
             <Sequence name="WaitBeforeRetryingSamePath">
-              <WouldAControllerRecoveryHelp error_code="{follow_path_error_code}"/>
+              <AlwaysSuccess/>
               <Wait wait_duration="2.0"/>
             </Sequence>
           </RecoveryNode>
