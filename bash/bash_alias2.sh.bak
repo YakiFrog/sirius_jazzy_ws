@@ -8,7 +8,7 @@
 # PRESET_ITEMS: roboteq,velodyne,imu,rviz2real,sf_real,slamtoolbox_real,zed_offline_recorder
 
 # PRESET: ZED, THETA起動_real
-# PRESET_ITEMS: theta_capture,zed_offline_recorder
+# PRESET_ITEMS: theta_capture
 
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア

@@ -1,8 +1,11 @@
 # RICOH THETA S (HDMI) を USB キャプチャボード経由で安定パスにする udev ルール。
 # インストール: sudo bash install_theta_udev.sh
 #
-# UGREEN 25854 (1de1:f105): HDMIキャプチャ。/dev/theta_capture を作成。
+# MacroSilicon USB3.0 capture (534d:2109): HDMIキャプチャ。/dev/theta_capture を作成。
 #   ATTR{index}=="0" でキャプチャノードのみ（metadataノード index=1 を除外）。
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="534d", ATTRS{idProduct}=="2109", ATTR{index}=="0", SYMLINK+="theta_capture", MODE="0660", GROUP="video"
+
+# UGREEN 25854 (1de1:f105): HDMIキャプチャ（予備）。/dev/theta_capture を作成。
 SUBSYSTEM=="video4linux", ATTRS{idVendor}=="1de1", ATTRS{idProduct}=="f105", ATTR{index}=="0", SYMLINK+="theta_capture", MODE="0660", GROUP="video"
 
 # (任意) I-O DATA HDPC-UT (04bb:0141) を使う場合
