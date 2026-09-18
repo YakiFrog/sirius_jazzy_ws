@@ -1,0 +1,7 @@
+image: rtabmap_theta_road_real_theta_mapping_20260917_181243_recovered_10.pgm
+mode: trinary
+resolution: 0.050
+origin: [-2.945, -4.113, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
