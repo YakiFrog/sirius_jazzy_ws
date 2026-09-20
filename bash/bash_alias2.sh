@@ -1,5 +1,5 @@
 # PRESET: フルセンサーセット
-# PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real
+# PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real,odom_path_real
 
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
@@ -9,6 +9,9 @@
 
 # PRESET: ZED, THETA起動_real
 # PRESET_ITEMS: theta_capture,zed_offline_recorder
+
+# PRESET: 現実自律移動セット
+# PRESET_ITEMS: rviz2real,twist_mux,llm_goal,sirius_ble_gateway_ui,pos,nav2_real
 
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
