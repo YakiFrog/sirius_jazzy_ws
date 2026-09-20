@@ -17,7 +17,18 @@ echo "================================================="
 echo "  SAM3 オフライン・セマンティックマッピング (Domain: $ROS_DOMAIN_ID)"
 echo "================================================="
 
-# 0. SAM3 GPU サーバー (Docker) をクリーンな状態で起動
+# 0. 実行モードの選択（重ね合わせのみならSAM3サーバーを起動しない）
+echo ""
+echo "実行内容を選択してください:"
+echo "  [1] Rosbagを再生して新規マッピング"
+echo "  [2] 既存の生成済み地図をSLAM Toolbox地図と重ね合わせる"
+read -p "選択 [1]: " RUN_MODE
+RUN_MODE=${RUN_MODE:-1}
+if [ "$RUN_MODE" = "2" ]; then
+    exec bash "$WS_DIR/bash/startup_bash/rebase_existing_map.sh"
+fi
+
+# 0b. SAM3 GPU サーバー (Docker) をクリーンな状態で起動
 if [ -d "$SAM3_SERVER_DIR" ]; then
     echo "SAM3 GPU サーバー (Docker: port 8080) を初期化中..."
     if docker container inspect sam3_zed_container >/dev/null 2>&1; then
@@ -97,6 +108,34 @@ if [ $index -lt 0 ] || [ $index -ge ${#BAG_LIST[@]} ]; then
 fi
 
 SELECTED_BAG="${BAG_LIST[$index]}"
+
+# 選択したフォルダ直下にMCAPがなければ、日付などでまとめた親フォルダとみなし、
+# その中のRosbagフォルダ（MCAPを含むもの）を一覧表示して選ばせる。
+if ! compgen -G "$SELECTED_BAG/*.mcap" >/dev/null; then
+    INNER_BAG_LIST=()
+    while IFS= read -r inner_dir; do
+        if compgen -G "$inner_dir/*.mcap" >/dev/null; then
+            INNER_BAG_LIST+=("$inner_dir")
+        fi
+    done < <(find "$SELECTED_BAG" -maxdepth 1 -mindepth 1 -type d | sort)
+
+    if [ ${#INNER_BAG_LIST[@]} -gt 0 ]; then
+        echo ""
+        echo "$(basename "$SELECTED_BAG") 内の Rosbag 一覧:"
+        for i in "${!INNER_BAG_LIST[@]}"; do
+            echo "  [$((i+1))] $(basename "${INNER_BAG_LIST[$i]}")"
+        done
+        read -p "使用する Rosbag 番号を選択してください [1]: " inner_choice
+        inner_choice=${inner_choice:-1}
+        inner_index=$((inner_choice-1))
+        if [ $inner_index -lt 0 ] || [ $inner_index -ge ${#INNER_BAG_LIST[@]} ]; then
+            echo "無効な選択です。"
+            exit 1
+        fi
+        SELECTED_BAG="${INNER_BAG_LIST[$inner_index]}"
+    fi
+fi
+
 BAG_NAME=$(basename "$SELECTED_BAG")
 echo "選択された Rosbag: $SELECTED_BAG"
 
