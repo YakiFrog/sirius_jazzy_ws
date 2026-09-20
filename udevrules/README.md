@@ -5,6 +5,7 @@
 - `99-ichimill.rules` - Ichimillデバイス用
 - `99-roboteq-serial.rules` - Roboteqモータコントローラー用
 - `99-wt905.rules` - WT905 IMUセンサー用
+- `99-usb-autosuspend.rules` - USBオートサスペンド無効化用（Hokuyo/Roboteq/WiFi/ハブ）
 
 ## udevルールの適用手順
 

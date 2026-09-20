@@ -1,0 +1,18 @@
+# Disable USB runtime autosuspend for devices whose links are sensitive to it.
+# Background: Hokuyo (15d1:0000), Roboteq (20d2:5740), Realtek WiFi (0bda:*)
+# and the bus-powered hub (1a40:0101) previously dropped off the bus with
+# "clear tt ... error -71" / "device descriptor read ... error -110", which
+# made urg_node2 lose /dev/hokuyo and fail to reconnect.
+# Keeping power/control="on" prevents the kernel from suspending these devices.
+
+# Hokuyo 2D LiDAR
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="15d1", ATTR{idProduct}=="0000", TEST=="power/control", ATTR{power/control}="on"
+
+# Roboteq motor controller
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="20d2", ATTR{idProduct}=="5740", TEST=="power/control", ATTR{power/control}="on"
+
+# Realtek USB WLAN adapters (RTL8811/RTL8851 etc.)
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", TEST=="power/control", ATTR{power/control}="on"
+
+# USB2.0 hubs used to fan out the above devices
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="1a40", ATTR{idProduct}=="0101", TEST=="power/control", ATTR{power/control}="on"

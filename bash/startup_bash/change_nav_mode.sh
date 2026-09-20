@@ -13,11 +13,11 @@ if [ -z "$MODE" ]; then
     echo "2) 通常走行・探索強化モード (normal_active) - 1.0 m/s (探索広め・加速強め・安全重視)"
     echo "3) ゆっくり安全歩行モード (safe) - 0.4 m/s"
     echo "4) 超低速安全歩行モード (slow) - 0.2 m/s"
-    echo "5) 待機優先モード (wait_normal) - 0.9 m/s (障害物前で停止・再試行)"
+    echo "5) 待機優先モード (wait_normal) - 0.6 m/s (障害物前で停止・再試行)"
     echo "6) パス追従優先・通常速度モード (strict_normal) - 0.9 m/s"
     echo "7) パス追従優先・ゆっくり速度モード (strict_safe) - 0.4 m/s"
     echo "8) パス追従優先・超低速速度モード (strict_slow) - 0.2 m/s"
-    echo "9) 待機優先・高速モード (wait_active) - 1.2 m/s (障害物前で停止・再試行)"
+    echo "9) 待機優先・高速モード (wait_active) - 0.72 m/s (障害物前で停止・再試行)"
     echo "-----------------------------------------"
     read -p "選択してください [1-9]: " CHOICE
     case "$CHOICE" in
