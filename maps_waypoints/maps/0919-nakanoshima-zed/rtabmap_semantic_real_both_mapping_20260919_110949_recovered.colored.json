@@ -687,7 +687,7 @@
                 0
             ],
             "global_cost": 0,
-            "local_cost": 50
+            "local_cost": 0
         },
         "5": {
             "name": "roadway",
@@ -696,8 +696,8 @@
                 0,
                 255
             ],
-            "global_cost": 100,
-            "local_cost": 100
+            "global_cost": 0,
+            "local_cost": 0
         },
         "6": {
             "name": "sidewalk",
@@ -707,7 +707,7 @@
                 128
             ],
             "global_cost": 0,
-            "local_cost": 10
+            "local_cost": 0
         }
     },
     "semantic_encoding": "class_id"
