@@ -17,16 +17,36 @@ if [ ! -f "$REBASE_SCRIPT" ]; then
     exit 1
 fi
 
-# 1. 重ね合わせ可能な生成済み地図（必須ファイルが揃ったディレクトリ）を新しい順に一覧
-SOURCE_MAPS=()
-while IFS= read -r dir; do
-    base="$dir/$(basename "$dir")"
-    if [ -f "${base}.yaml" ] && [ -f "${base}.pgm" ] && \
+# 1. 重ね合わせ可能な生成済み地図（必須ファイルが揃ったもの）を新しい順に一覧
+#    maps/ 直下だけでなく 0920/theta のような日付サブフォルダにも保存されるため、
+#    ディレクトリ名ではなく *.colored.json を起点に地図ベースを探索する。
+map_base_has_requirements() {
+    local base="$1"
+    [ -f "${base}.yaml" ] && [ -f "${base}.pgm" ] && \
         [ -f "${base}.colored.pgm" ] && [ -f "${base}.colored.json" ] && \
-        [ -f "${base}.color.png" ]; then
-        SOURCE_MAPS+=("$dir")
+        [ -f "${base}.color.png" ]
+}
+
+map_label() {
+    local rel="${1#"$MAPS_DIR"/}"
+    local dir_rel
+    dir_rel="$(dirname "$rel")"
+    if [ "$dir_rel" = "." ]; then
+        printf '%s' "$(basename "$rel")"
+    elif [ "$(basename "$dir_rel")" = "$(basename "$rel")" ]; then
+        printf '%s' "$dir_rel"
+    else
+        printf '%s' "$rel"
     fi
-done < <(find "$MAPS_DIR" -maxdepth 1 -mindepth 1 -type d -printf '%T@ %p\n' 2>/dev/null | sort -rn | cut -d' ' -f2-)
+}
+
+SOURCE_MAPS=()
+while IFS= read -r json_file; do
+    base="${json_file%.colored.json}"
+    if map_base_has_requirements "$base"; then
+        SOURCE_MAPS+=("$base")
+    fi
+done < <(find "$MAPS_DIR" -type f -name '*.colored.json' -printf '%T@ %p\n' 2>/dev/null | sort -rn | cut -d' ' -f2-)
 
 if [ ${#SOURCE_MAPS[@]} -eq 0 ]; then
     echo ""
@@ -36,20 +56,47 @@ if [ ${#SOURCE_MAPS[@]} -eq 0 ]; then
 fi
 
 echo ""
-echo "重ね合わせる既存地図を選択してください:"
+echo "重ね合わせる既存地図を選択してください（パスを直接入力しても可）:"
 for i in "${!SOURCE_MAPS[@]}"; do
-    echo "  [$((i+1))] $(basename "${SOURCE_MAPS[$i]}")"
+    echo "  [$((i+1))] $(map_label "${SOURCE_MAPS[$i]}")"
 done
 read -p "選択 [1]: " source_choice
 source_choice=${source_choice:-1}
-source_index=$((source_choice-1))
-if [ "$source_index" -lt 0 ] || [ "$source_index" -ge ${#SOURCE_MAPS[@]} ]; then
-    echo "無効な選択です。"
-    exit 1
+
+SOURCE_BASE=""
+if [[ "$source_choice" =~ ^[0-9]+$ ]]; then
+    source_index=$((source_choice-1))
+    if [ "$source_index" -lt 0 ] || [ "$source_index" -ge ${#SOURCE_MAPS[@]} ]; then
+        echo "無効な選択です。"
+        exit 1
+    fi
+    SOURCE_BASE="${SOURCE_MAPS[$source_index]}"
+else
+    # 数字以外はパス入力として扱う（例: ~/sirius_jazzy_ws/maps_waypoints/maps/0920/theta）
+    input_path="${source_choice/#\~/$HOME}"
+    if [ -d "$input_path" ]; then
+        json_file="$(find "$input_path" -maxdepth 1 -type f -name '*.colored.json' | sort | head -n1)"
+        if [ -z "$json_file" ]; then
+            echo "エラー: 指定フォルダに地図ファイル (*.colored.json) がありません: $input_path"
+            exit 1
+        fi
+        SOURCE_BASE="${json_file%.colored.json}"
+    elif [ -f "$input_path" ]; then
+        SOURCE_BASE="$input_path"
+        SOURCE_BASE="${SOURCE_BASE%.colored.json}"
+        SOURCE_BASE="${SOURCE_BASE%.yaml}"
+        SOURCE_BASE="${SOURCE_BASE%.pgm}"
+    else
+        echo "エラー: フォルダ/ファイルが見当たりません: $input_path"
+        exit 1
+    fi
+    if ! map_base_has_requirements "$SOURCE_BASE"; then
+        echo "エラー: 地図に必要なファイルが揃っていません: $SOURCE_BASE"
+        exit 1
+    fi
 fi
-SOURCE_DIR="${SOURCE_MAPS[$source_index]}"
-SOURCE_BASE="$SOURCE_DIR/$(basename "$SOURCE_DIR")"
-echo "選択された地図: $SOURCE_DIR"
+SOURCE_DIR="$(dirname "$SOURCE_BASE")"
+echo "選択された地図: $SOURCE_BASE"
 
 # 2. 構造ベースにする SLAM Toolbox 地図YAMLを選択
 mapfile -t SLAM_MAP_YAMLS < <(

@@ -149,13 +149,23 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None, ov
     color_grid = cv2.imread(str(source_color), cv2.IMREAD_COLOR)
     if any(item is None for item in (source_grid, destination_grid, indexed_grid, color_grid)):
         raise ValueError("PGM/PNG画像の読み込みに失敗しました。")
-    if indexed_grid.shape != source_grid.shape or color_grid.shape[:2] != source_grid.shape:
-        raise ValueError("RTAB構造地図・意味地図・カラー地図のサイズが一致しません。")
+    if color_grid.shape[:2] != indexed_grid.shape:
+        raise ValueError("意味地図・カラー地図のサイズが一致しません。")
 
     with source_json.open("r", encoding="utf-8") as stream:
         semantic_metadata = json.load(stream)
     if semantic_metadata.get("semantic_encoding") != "class_id":
         raise ValueError("colored.pgmがsemantic class_id形式ではありません。")
+
+    # 意味/カラー地図はRTABのgrid_mapとは別キャンバスで作られることがある
+    # （theta_indexed_map_node が独自にorigin/サイズを拡張する）。その場合は
+    # colored.json 側の解像度・原点で世界座標変換する。
+    indexed_metadata = {
+        "resolution": float(
+            semantic_metadata.get("resolution", source_metadata["resolution"])
+        ),
+        "origin": list(semantic_metadata.get("origin", source_metadata["origin"])),
+    }
 
     source_occupied, source_free = occupancy_masks(source_grid, source_metadata)
     destination_occupied, destination_free = occupancy_masks(
@@ -163,31 +173,42 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None, ov
     )
     source_height, source_width = source_grid.shape
     destination_height, destination_width = destination_grid.shape
-    affine = source_to_destination_affine(
+    source_affine = source_to_destination_affine(
         source_metadata,
         source_height,
         destination_metadata,
         destination_height,
     )
+    indexed_height, indexed_width = indexed_grid.shape
+    indexed_affine = source_to_destination_affine(
+        indexed_metadata,
+        indexed_height,
+        destination_metadata,
+        destination_height,
+    )
 
     warped_source_free = warp_nearest(
-        source_free.astype(np.uint8), affine, destination_width, destination_height
+        source_free.astype(np.uint8), source_affine, destination_width, destination_height
     ).astype(bool)
     warped_indexed = warp_nearest(
-        indexed_grid, affine, destination_width, destination_height
+        indexed_grid, indexed_affine, destination_width, destination_height
     )
     warped_color = warp_nearest(
-        color_grid, affine, destination_width, destination_height, (0, 0, 0)
+        color_grid, indexed_affine, destination_width, destination_height, (0, 0, 0)
     )
 
     # The laser occupancy grid is always authoritative for structure.
     # overlay_on_unknown: SLAMの壁(占有)だけを正とし、路面色はSLAMフリー＋未知に載せる
     # （SLAM自由空間が狭い場合でもカメラの路面を欠落させない）。既定は従来通りフリーのみ。
     paintable = ~destination_occupied if overlay_on_unknown else destination_free
+    # カメラ路面の有効領域。RTABの占有グリッド(.pgm)は自機フットプリントしか持たず
+    # スパースなため、それをマスクに使うと路面が飛び飛びになる。インデックス地図で
+    # 観測済み（unknown=0でも壁=1でもない）セルも有効領域として併用する。
+    source_observed = warped_source_free | (warped_indexed >= 2)
     destination_indexed = np.zeros_like(destination_grid, dtype=np.uint8)
     destination_indexed[destination_occupied] = 1
     destination_indexed[destination_free] = 2
-    semantic_overlay = paintable & warped_source_free & (warped_indexed > 2)
+    semantic_overlay = paintable & source_observed & (warped_indexed > 2)
     destination_indexed[semantic_overlay] = warped_indexed[semantic_overlay]
 
     destination_color = np.full(
@@ -195,7 +216,7 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None, ov
     )
     destination_color[destination_occupied] = (0, 0, 0)
     destination_color[destination_free] = (255, 255, 255)
-    color_overlay = paintable & warped_source_free
+    color_overlay = paintable & source_observed
     destination_color[color_overlay] = warped_color[color_overlay]
 
     destination_texture = np.zeros(
@@ -203,9 +224,9 @@ def rebase(source_base: Path, slam_yaml: Path, output_directory: Path | None, ov
     )
     if source_texture.is_file():
         texture = cv2.imread(str(source_texture), cv2.IMREAD_UNCHANGED)
-        if texture is not None and texture.shape[:2] == source_grid.shape and texture.shape[2] == 4:
+        if texture is not None and texture.shape[:2] == indexed_grid.shape and texture.shape[2] == 4:
             warped_texture = warp_nearest(
-                texture, affine, destination_width, destination_height, (0, 0, 0, 0)
+                texture, indexed_affine, destination_width, destination_height, (0, 0, 0, 0)
             )
             texture_overlay = paintable & (warped_texture[:, :, 3] > 0)
             destination_texture[texture_overlay] = warped_texture[texture_overlay]

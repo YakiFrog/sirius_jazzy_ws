@@ -1,0 +1,10 @@
+free_thresh: 0.25
+image: theta_slam_base_0920-nakanoshima.pgm
+mode: trinary
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -182.75
+- -233.35000000000002
+- 0
+resolution: 0.05
