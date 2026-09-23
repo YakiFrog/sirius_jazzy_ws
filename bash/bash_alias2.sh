@@ -324,6 +324,12 @@ alias sam3_docker_gpu='cd ~/sam3_zed_server && docker compose up sam3-zed-merged
 # SAM3のプロンプト、閾値、解像度、深度設定を変更する専用Web UI
 alias sam3_settings_ui='bash ~/sirius_jazzy_ws/bash/startup_bash/open_sam3_settings_ui.sh'
 
+# SAM3設定ダイアログ（theta_sam3.yamlを編集・保存）
+alias sam3_settings_dialog='bash ~/sirius_jazzy_ws/bash/startup_bash/open_sam3_settings_dialog.sh'
+
+# THETA rosbagの代表フレームでSAM3事前確認（HTMLレポートをブラウザ表示）
+alias theta_sam3_preview='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta_sam3_preview.sh'
+
 # Rosbagの指定区間をクラス別閾値で再推論し、既存地図へ部分マージ
 alias sam3_map_repair_ui='bash ~/sirius_jazzy_ws/other_programs/sam3_map_repair/run_sam3_map_repair.sh'
 

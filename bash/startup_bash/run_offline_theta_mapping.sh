@@ -175,6 +175,32 @@ if [ "$SAM3_CHOICE" = "y" ] || [ "$SAM3_CHOICE" = "yes" ]; then
     echo "※ sam3 docker サーバ (port 8080) が起動している必要があります。"
 fi
 
+# 2c-2. SAM3設定（共有YAML）と rosbag 事前確認
+if [ "$USE_SAM3_FLAG" = "true" ]; then
+    echo ""
+    read -p "SAM3設定ダイアログでprompt/クラス/閾値を編集しますか？ (Y/n) [Y]: " SAM3_SETTINGS_CHOICE
+    SAM3_SETTINGS_CHOICE=$(echo "${SAM3_SETTINGS_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
+    if [ "$SAM3_SETTINGS_CHOICE" != "n" ] && [ "$SAM3_SETTINGS_CHOICE" != "no" ]; then
+        echo "※ 保存先: src/sirius/sirius_navigation/config/theta_sam3.yaml（次回起動から反映）"
+        bash "$WS_DIR/bash/startup_bash/open_sam3_settings_dialog.sh"
+    fi
+
+    echo ""
+    read -p "選択中のrosbagでSAM3事前確認（代表フレーム→HTMLレポート）を行いますか？ (Y/n) [Y]: " SAM3_PREVIEW_CHOICE
+    SAM3_PREVIEW_CHOICE=$(echo "${SAM3_PREVIEW_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
+    if [ "$SAM3_PREVIEW_CHOICE" != "n" ] && [ "$SAM3_PREVIEW_CHOICE" != "no" ]; then
+        if ! bash "$WS_DIR/bash/startup_bash/run_theta_sam3_preview.sh" "$SELECTED_BAG"; then
+            echo ""
+            echo "警告: SAM3事前確認に失敗しました。設定を確認するか、このまま続行できます。"
+            read -p "このまま本番マッピングを続行しますか？ (Y/n): " SAM3_CONTINUE
+            SAM3_CONTINUE=$(echo "${SAM3_CONTINUE:-y}" | tr '[:upper:]' '[:lower:]')
+            if [ "$SAM3_CONTINUE" = "n" ] || [ "$SAM3_CONTINUE" = "no" ]; then
+                exit 1
+            fi
+        fi
+    fi
+fi
+
 # 2d. デバッグ可視化の選択（検出画像・意味色点群をRVizで同時表示）
 echo ""
 read -p "デバッグ可視化（検出画像/意味色点群をRViz表示）を使いますか？ (y/N) [N]: " DEBUG_CHOICE
