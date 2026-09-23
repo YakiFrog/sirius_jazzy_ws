@@ -186,6 +186,69 @@ if [ "$DEBUG_CHOICE" = "y" ] || [ "$DEBUG_CHOICE" = "yes" ]; then
     echo "※ デバッグRViz表示のため RViz2 を有効にします。"
 fi
 
+# 2e. 地面点群の半径(幅)フィルタの選択
+echo ""
+echo "地面点群の半径(幅)フィルタを選択してください（床を広く取るには無効化）:"
+echo "  [1] 既定の半径を使う [推奨]  (sim=4.8m / 実機=3.0m)"
+echo "  [2] 半径を数値で指定"
+echo "  [3] 半径フィルタを無効化 (BEV全域・床を広くマッピング)"
+read -p "選択 [1]: " RADIUS_CHOICE
+RADIUS_CHOICE=${RADIUS_CHOICE:-1}
+
+# 3. マッピングノードを起動（sirius_navigationパッケージ）
+# 実機bag（real_*mapping_* / real_*theta*）は実機校正YAMLを自動適用し、
+# 地面点群の半径ベース値を3.0mにする。scan3(VLP-16 2.5D)ゲートも併用。
+# ゲートは高さ不一致(0.85m vs 1.135m)による過剰除外を避けるため、
+# 「自機ビーム除外・時刻合わせ・保留率<50%なら自動無効」のガード付き。
+CALIB_ARGS=()
+GATE_ARGS=()
+BASE_MAX_RADIUS=""
+BASE_GRID_RANGE=""
+CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml"
+case "$BAG_NAME" in
+    real_theta_mapping*|real_both_mapping*|real_*)
+        [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL")
+        BASE_MAX_RADIUS="3.0"
+        BASE_GRID_RANGE="3.0"
+        GATE_ARGS=(lidar_topic:=/scan3 lidar_gate:=true)
+        ;;
+esac
+
+RADIUS_ARGS=()
+GRID_ARGS=()
+RADIUS_DESCRIPTION=""
+case "$RADIUS_CHOICE" in
+    2)
+        read -p "最大半径[m] (0.1〜7.0): " radius_input
+        if ! awk -v r="$radius_input" \
+            'BEGIN { exit !(r ~ /^[0-9]+([.][0-9]+)?$/ && r >= 0.1 && r <= 7.0) }'; then
+            echo "エラー: 最大半径は 0.1〜7.0 の数値で指定してください。"
+            exit 1
+        fi
+        RADIUS_ARGS=(max_radius:="$radius_input")
+        RADIUS_DESCRIPTION="${radius_input}m"
+        # RTAB-Map の地図範囲が半径より狭いと床が切れるため追随させる
+        # （simの既定 grid_range_max=7.0 は半径上限7.0を覆うため変更不要）
+        if [ -n "$BASE_GRID_RANGE" ] && awk -v r="$radius_input" -v base="$BASE_GRID_RANGE" \
+            'BEGIN { exit !(r > base) }'; then
+            GRID_ARGS=(grid_range_max:="$radius_input")
+        fi
+        ;;
+    3)
+        RADIUS_ARGS=(max_radius:=0.0)
+        # BEV(10m四方)全域を覆うようRTAB-Mapの地図範囲を広げる
+        GRID_ARGS=(grid_range_max:=7.0)
+        RADIUS_DESCRIPTION="無効 (0.0)"
+        ;;
+    *)
+        [ -n "$BASE_MAX_RADIUS" ] && RADIUS_ARGS=(max_radius:="$BASE_MAX_RADIUS")
+        [ -n "$BASE_GRID_RANGE" ] && GRID_ARGS=(grid_range_max:="$BASE_GRID_RANGE")
+        RADIUS_DESCRIPTION="既定 (${BASE_MAX_RADIUS:-4.8}m)"
+        ;;
+esac
+
+LIDAR_ARGS=("${GATE_ARGS[@]}" "${RADIUS_ARGS[@]}" "${GRID_ARGS[@]}")
+
 echo "================================================="
 echo "路面マッピングパイプラインを起動しています..."
 echo "  Rosbag: $BAG_NAME"
@@ -193,27 +256,15 @@ echo "  再生速度: ${PLAY_RATE}x"
 echo "  RViz2 プレビュー: $USE_RVIZ_FLAG"
 echo "  SAM3セマンティック: $USE_SAM3_FLAG"
 echo "  デバッグ可視化: $DEBUG_CHOICE"
+echo "  半径(幅)フィルタ: $RADIUS_DESCRIPTION"
 echo "  姿勢TF: bag内の補正済みTFを使用"
 echo "================================================="
 
-# 3. マッピングノードを起動（sirius_navigationパッケージ）
-# 実機bag（real_*mapping_* / real_*theta*）は実機校正YAMLを自動適用し、
-# 地面点群の半径を3.0mに設定する。
-CALIB_ARGS=()
-LIDAR_ARGS=()
-CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml"
-case "$BAG_NAME" in
-    real_theta_mapping*|real_both_mapping*|real_*)
-        [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL")
-        # 半径を3.0mに広げ、scan3(VLP-16 2.5D)ゲートも併用。
-        # ゲートは高さ不一致(0.85m vs 1.135m)による過剰除外を避けるため、
-        # 「自機ビーム除外・時刻合わせ・保留率<50%なら自動無効」のガード付き。
-        LIDAR_ARGS=(lidar_topic:=/scan3 lidar_gate:=true max_radius:=3.0 grid_range_max:=3.0)
-        ;;
-esac
 if [ ${#CALIB_ARGS[@]} -gt 0 ]; then
     echo "実機校正を使用: $CALIB_REAL"
-    echo "実機用LiDARゲート: ${LIDAR_ARGS[*]}"
+fi
+if [ ${#LIDAR_ARGS[@]} -gt 0 ]; then
+    echo "地面点群/LiDAR引数: ${LIDAR_ARGS[*]}"
 fi
 ros2 launch sirius_navigation theta_offline_mapping.launch.py \
     use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" "${CALIB_ARGS[@]}" "${LIDAR_ARGS[@]}" &

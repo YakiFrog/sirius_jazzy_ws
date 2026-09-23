@@ -1,0 +1,7 @@
+image: rtabmap_semantic_real_both_mapping_20260920_113447_recovered.pgm
+mode: trinary
+resolution: 0.050
+origin: [-110.211, -166.778, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
