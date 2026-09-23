@@ -232,12 +232,12 @@ waypoints:
   y: -153.75
   angle_radians: 3.066
 - number: 58
-  x: -102.65
-  y: -153.2
+  x: -101.85
+  y: -153.3
   angle_radians: 2.91
 - number: 59
-  x: -105.0
-  y: -152.05
+  x: -105.1
+  y: -151.45
   angle_radians: 1.563
 - number: 60
   x: -103.65
