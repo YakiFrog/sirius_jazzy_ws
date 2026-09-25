@@ -88,6 +88,9 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     encoder_sign_l = this->declare_parameter("encoder_sign_l", 1.0);
     max_encoder_step_revolutions =
         this->declare_parameter("max_encoder_step_revolutions", 0.25);
+    publish_status = this->declare_parameter("publish_status", true);
+    status_topic = this->declare_parameter("status_topic", std::string("roboteq/status"));
+    status_publish_hz = this->declare_parameter("status_publish_hz", 20.0);
 
     starttime = 0;
     hstimer = 0;
@@ -128,6 +131,11 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
 //  odom publisher
 //
     odom_pub = this->create_publisher<nav_msgs::msg::Odometry>(odom_topic, 1000);
+    if (publish_status)
+    {
+        status_pub =
+            this->create_publisher<roboteq_ros2_driver::msg::RoboteqStatus>(status_topic, 10);
+    }
 
     RCLCPP_INFO(
         this->get_logger(),
@@ -192,6 +200,9 @@ void Roboteq::update_parameters()
     this->get_parameter("encoder_sign_l", encoder_sign_l);
     this->get_parameter(
         "max_encoder_step_revolutions", max_encoder_step_revolutions);
+    this->get_parameter("publish_status", publish_status);
+    this->get_parameter("status_topic", status_topic);
+    this->get_parameter("status_publish_hz", status_publish_hz);
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -567,7 +578,13 @@ void Roboteq::odom_stream()
     int stream_ms = odom_stream_interval_ms;
     if (stream_ms <= 0) stream_ms = 50;
     std::stringstream ss;
-    ss << "# C_?CB_# " << stream_ms << "\r";
+    if (publish_status) {
+        // Roboteqのストリームはラウンドロビン(1周期に1クエリ)。全テレメトリを
+        // 既定5ms間隔で回すと各項目が約29Hzになり、CBも20Hzのodom配信に足りる。
+        ss << "# C_?CB_?V_?A_?BA_?BS_?FF_?T_# " << stream_ms << "\r";
+    } else {
+        ss << "# C_?CB_# " << stream_ms << "\r";
+    }
     safe_serial_write(ss.str());
     
     // オプション: より小さなデータフォーマットを使用
@@ -632,31 +649,8 @@ void Roboteq::odom_loop()
                         packet_count++;
                         
                         // 行の終わり - データを処理
-                        if (line_buffer.length() >= 3 && 
-                            line_buffer[0] == 'C' && 
-                            line_buffer[1] == 'B' && 
-                            line_buffer[2] == '=') {
-                                
-                            if (odom_encoder_toss > 0) {
-                                --odom_encoder_toss;
-                            } else {
-                                // データを解析
-                                size_t delimiter_pos = line_buffer.find(':', 3);
-                                if (delimiter_pos != std::string::npos) {
-                                    try {
-                                        std::string right_str = line_buffer.substr(3, delimiter_pos - 3);
-                                        std::string left_str = line_buffer.substr(delimiter_pos + 1);
-                                        
-                                        int32_t right_val = std::stoi(right_str);
-                                        int32_t left_val = std::stoi(left_str);
-                                        
-                                        process_encoder_data(right_val, left_val);
-                                    }
-                                    catch (const std::exception& e) {
-                                        // データ解析エラーの無視
-                                    }
-                                }
-                            }
+                        if (line_buffer.find('=') != std::string::npos) {
+                            process_telemetry(line_buffer);
                         }
                         
                         // バッファをクリア
@@ -767,6 +761,111 @@ void Roboteq::process_encoder_data(int32_t right_val, int32_t left_val)
 
         last_odom_update_time_ = now;
     }
+}
+
+void Roboteq::process_telemetry(const std::string &line)
+{
+    const size_t eq = line.find('=');
+    if (eq == std::string::npos) {
+        return;
+    }
+    const std::string key = line.substr(0, eq);
+    const std::string val = line.substr(eq + 1);
+
+    std::vector<double> nums;
+    size_t start = 0;
+    while (start <= val.size()) {
+        const size_t sep = val.find(':', start);
+        const std::string tok =
+            (sep == std::string::npos) ? val.substr(start) : val.substr(start, sep - start);
+        if (!tok.empty()) {
+            try {
+                nums.push_back(std::stod(tok));
+            } catch (const std::exception &) {
+                // 数値でないトークンは無視
+            }
+        }
+        if (sep == std::string::npos) {
+            break;
+        }
+        start = sep + 1;
+    }
+
+    if (key == "CB") {
+        if (odom_encoder_toss > 0) {
+            --odom_encoder_toss;
+            return;
+        }
+        if (nums.size() >= 2) {
+            process_encoder_data(
+                static_cast<int32_t>(nums[0]), static_cast<int32_t>(nums[1]));
+        }
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(telemetry_mutex_);
+    if (key == "V") {
+        if (nums.size() >= 1) tel_voltage_internal_ = nums[0] * 0.1;
+        if (nums.size() >= 2) tel_voltage_ = nums[1] * 0.1;
+        if (nums.size() >= 3) tel_voltage_5v_ = nums[2] * 0.001;
+    } else if (key == "A") {
+        if (nums.size() >= 1) tel_current_ch1_ = nums[0] * 0.1;
+        if (nums.size() >= 2) tel_current_ch2_ = nums[1] * 0.1;
+    } else if (key == "BA") {
+        if (nums.size() >= 1) tel_battery_current_ch1_ = nums[0] * 0.1;
+        if (nums.size() >= 2) tel_battery_current_ch2_ = nums[1] * 0.1;
+    } else if (key == "BS") {
+        if (nums.size() >= 1) tel_rpm_ch1_ = nums[0];
+        if (nums.size() >= 2) tel_rpm_ch2_ = nums[1];
+    } else if (key == "T") {
+        if (nums.size() >= 1) tel_temperature_ = nums[0];
+    } else if (key == "FF") {
+        if (nums.size() >= 1) tel_fault_flags_ = static_cast<int>(nums[0]);
+    } else {
+        return;
+    }
+    telemetry_valid_ = true;
+}
+
+void Roboteq::status_publish()
+{
+    if (!publish_status || !status_pub) {
+        return;
+    }
+    static rclcpp::Time last_publish_time(0, 0, RCL_ROS_TIME);
+    static bool first_publish = true;
+    const rclcpp::Time current_time = this->get_clock()->now();
+    if (first_publish) {
+        first_publish = false;
+        last_publish_time = current_time;
+    }
+    double publish_interval = 0.05;
+    if (status_publish_hz > 1e-6) {
+        publish_interval = 1.0 / status_publish_hz;
+    }
+    if ((current_time - last_publish_time).seconds() < publish_interval) {
+        return;
+    }
+    last_publish_time = current_time;
+
+    roboteq_ros2_driver::msg::RoboteqStatus msg;
+    msg.header.stamp = current_time;
+    msg.header.frame_id = base_frame;
+    {
+        std::lock_guard<std::mutex> lock(telemetry_mutex_);
+        msg.voltage = static_cast<float>(tel_voltage_);
+        msg.voltage_internal = static_cast<float>(tel_voltage_internal_);
+        msg.voltage_5v = static_cast<float>(tel_voltage_5v_);
+        msg.current_ch1 = static_cast<float>(tel_current_ch1_);
+        msg.current_ch2 = static_cast<float>(tel_current_ch2_);
+        msg.battery_current_ch1 = static_cast<float>(tel_battery_current_ch1_);
+        msg.battery_current_ch2 = static_cast<float>(tel_battery_current_ch2_);
+        msg.rpm_ch1 = static_cast<float>(tel_rpm_ch1_);
+        msg.rpm_ch2 = static_cast<float>(tel_rpm_ch2_);
+        msg.temperature = static_cast<float>(tel_temperature_);
+        msg.fault_flags = tel_fault_flags_;
+    }
+    status_pub->publish(msg);
 }
 
 void Roboteq::odom_publish()
@@ -901,6 +1000,13 @@ int Roboteq::run() {
         odom_publish();
     } catch (const std::exception &e) {
         RCLCPP_ERROR_STREAM(this->get_logger(), "Exception in odom_publish: " << e.what());
+    }
+
+    // Roboteqテレメトリ(電圧/電流/フォルト等)をパブリッシュ
+    try {
+        status_publish();
+    } catch (const std::exception &e) {
+        RCLCPP_ERROR_STREAM(this->get_logger(), "Exception in status_publish: " << e.what());
     }
     
     // デバイスの接続状態をチェック

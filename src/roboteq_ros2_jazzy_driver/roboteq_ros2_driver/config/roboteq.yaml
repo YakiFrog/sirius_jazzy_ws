@@ -15,8 +15,13 @@ roboteq_ros2_driver:
     gear_ratio: 1.0  # pulseが既に車輪1回転あたりのカウント数を表す場合は1.0に設定
     pulse: 475  # エンコーダのパルス数（車輪1回転あたり）
     max_speed: 1.5  # m/s
-    odom_stream_interval_ms: 10
+    # Roboteqストリームはラウンドロビン(1周期1クエリ)。全テレメトリを5msで回すと各約29Hz。
+    odom_stream_interval_ms: 5
     odom_publish_hz: 20.0
+    # 電圧/電流/フォルト等のテレメトリ配信
+    publish_status: true
+    status_topic: "roboteq/status"
+    status_publish_hz: 20.0
     speed_scale: 0.52 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
     # 55% はやすぎる
     # 45% おそすぎる

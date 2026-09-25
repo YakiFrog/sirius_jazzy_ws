@@ -152,6 +152,7 @@ start_recording() {
         /local_costmap/costmap \
         /local_costmap/published_footprint \
         /roboteq/odom \
+        /roboteq/status \
         /blinker_led_command \
         /npc/odom \
         /target_detector/target_markers \

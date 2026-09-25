@@ -15,6 +15,7 @@
 #include "std_msgs/msg/header.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include "roboteq_ros2_driver/msg/roboteq_status.hpp"
 
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -37,6 +38,21 @@ class Roboteq : public rclcpp::Node
   std::unique_ptr<tf2_ros::TransformBroadcaster> odom_baselink_transform_;
   std::thread odom_thread_;
   std::mutex odom_mutex_;
+  std::mutex telemetry_mutex_;
+
+  // Roboteq telemetry (populated from the serial stream)
+  bool telemetry_valid_{false};
+  double tel_voltage_{0.0};
+  double tel_voltage_internal_{0.0};
+  double tel_voltage_5v_{0.0};
+  double tel_current_ch1_{0.0};
+  double tel_current_ch2_{0.0};
+  double tel_battery_current_ch1_{0.0};
+  double tel_battery_current_ch2_{0.0};
+  double tel_rpm_ch1_{0.0};
+  double tel_rpm_ch2_{0.0};
+  double tel_temperature_{0.0};
+  int tel_fault_flags_{0};
 
   bool running_;
 
@@ -129,6 +145,9 @@ class Roboteq : public rclcpp::Node
   double encoder_sign_r{};
   double encoder_sign_l{};
   double max_encoder_step_revolutions{};
+  bool publish_status{};
+  std::string status_topic{};
+  double status_publish_hz{};
 
   // Test different odom msg memory
   //nav_msgs::msg::Odometry odom_msg{};
@@ -154,6 +173,8 @@ class Roboteq : public rclcpp::Node
   void odom_stream(); 
   void odom_loop();
   void process_encoder_data(int32_t right_val, int32_t left_val);
+  void process_telemetry(const std::string &line);
+  void status_publish();
   //void odom_hs_run();
   void odom_ms_run();
   void odom_ls_run();
@@ -170,6 +191,7 @@ class Roboteq : public rclcpp::Node
 
   //publisher
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
+  rclcpp::Publisher<roboteq_ros2_driver::msg::RoboteqStatus>::SharedPtr status_pub;
 
 
 

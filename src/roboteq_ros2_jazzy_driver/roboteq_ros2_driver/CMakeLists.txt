@@ -27,15 +27,17 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(serial REQUIRED)
 find_package(Boost 1.71 CONFIG REQUIRED COMPONENTS thread)
+find_package(rosidl_default_generators REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
 #add_executable(roboteq_diff_driver src/driver.cpp)
-add_executable(roboteq_ros2_driver src/driver_dev.cpp)
+# 実行ファイル名はパッケージ名と同一にできない(rosidlのターゲットと衝突)。
+add_executable(roboteq_ros2_driver_node src/driver_dev.cpp)
 
 ament_target_dependencies(
-  roboteq_ros2_driver serial
+  roboteq_ros2_driver_node serial
   rclcpp
   sensor_msgs
   std_msgs
@@ -46,18 +48,29 @@ ament_target_dependencies(
   tf2_geometry_msgs
 )
 
-target_include_directories(roboteq_ros2_driver PUBLIC
+target_include_directories(roboteq_ros2_driver_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/RoboteqStatus.msg"
+  DEPENDENCIES std_msgs
+)
+
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(roboteq_ros2_driver_node "${cpp_typesupport_target}")
 
 install(
   DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}/
 )
 
-install(TARGETS roboteq_ros2_driver
+install(TARGETS roboteq_ros2_driver_node
   DESTINATION lib/${PROJECT_NAME})
   
+ament_export_dependencies(rosidl_default_runtime)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
