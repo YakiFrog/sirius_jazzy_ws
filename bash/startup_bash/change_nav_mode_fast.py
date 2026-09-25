@@ -13,17 +13,17 @@ from std_msgs.msg import String
 
 try:
     from sirius_navigation.navigation_modes import (
-        NAVIGATION_MODE_CONFIGS,
         navigation_mode_controller,
         normalize_navigation_mode,
+        resolve_navigation_mode_config,
     )
 except ImportError:
     workspace = Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(workspace / "src/sirius/sirius_navigation"))
     from sirius_navigation.navigation_modes import (  # noqa: E402
-        NAVIGATION_MODE_CONFIGS,
         navigation_mode_controller,
         normalize_navigation_mode,
+        resolve_navigation_mode_config,
     )
 
 
@@ -122,7 +122,7 @@ def main():
     node = ParameterSetter()
     try:
         success = True
-        for node_name, params in NAVIGATION_MODE_CONFIGS[mode].items():
+        for node_name, params in resolve_navigation_mode_config(mode).items():
             print(f"Setting parameters on '{node_name}'...")
             if not node.set_node_parameters(node_name, params):
                 success = False
