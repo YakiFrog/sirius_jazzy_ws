@@ -1,0 +1,54 @@
+{
+  "timestamp": "20260925_144455",
+  "port": "/dev/roboteq",
+  "baud": 230400,
+  "stream_ms": 20,
+  "max_duty": 1000,
+  "tests": [
+    "env"
+  ],
+  "reverse": false,
+  "config": {
+    "FID": "FID=Roboteq v2.1a SBL2XXX 05/19/2023",
+    "MMOD1": "0",
+    "MMOD2": "0",
+    "MXRPM1": "100",
+    "MXRPM2": "100",
+    "ALIM1": "120",
+    "ALIM2": "120",
+    "EPPR1": "295",
+    "EPPR2": "295",
+    "EMOD1": "18",
+    "EMOD2": "34",
+    "ENCP1": "-",
+    "ENCP2": "-",
+    "BLFB1": "1",
+    "BLFB2": "1",
+    "KP1": "0",
+    "KP2": "0",
+    "KI1": "0",
+    "KI2": "0",
+    "KD1": "0",
+    "KD2": "0",
+    "MAC1": "20000",
+    "MAC2": "20000",
+    "MDEC1": "20000",
+    "MDEC2": "20000",
+    "MXACC1": "-",
+    "MXACC2": "-",
+    "MXDEC1": "-",
+    "MXDEC2": "-",
+    "RWD1": "1000",
+    "RWD2": "-"
+  },
+  "alim_amps": 12.0,
+  "segments": [
+    {
+      "phase": "idle",
+      "c1": 0,
+      "c2": 0,
+      "duration": 3.0,
+      "label": "idle"
+    }
+  ]
+}
