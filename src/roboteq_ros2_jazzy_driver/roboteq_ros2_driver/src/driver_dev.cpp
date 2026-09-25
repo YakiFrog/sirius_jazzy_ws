@@ -5,6 +5,8 @@
 #include <functional> 
 #include <memory>     
 #include <string>     
+#include <algorithm>
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/clock.hpp"
@@ -91,6 +93,14 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     publish_status = this->declare_parameter("publish_status", true);
     status_topic = this->declare_parameter("status_topic", std::string("roboteq/status"));
     status_publish_hz = this->declare_parameter("status_publish_hz", 20.0);
+    // ソフトウェア閉ループ車輪速度制御
+    closed_loop = this->declare_parameter("closed_loop", false);
+    cl_kp = this->declare_parameter("cl_kp", 150.0);
+    cl_ki = this->declare_parameter("cl_ki", 300.0);
+    cl_kd = this->declare_parameter("cl_kd", 0.0);
+    cl_control_hz = this->declare_parameter("cl_control_hz", 50.0);
+    cl_max_duty = this->declare_parameter("cl_max_duty", 1000);
+    cl_anti_windup = this->declare_parameter("cl_anti_windup", 3.0);
 
     starttime = 0;
     hstimer = 0;
@@ -161,6 +171,13 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     using namespace std::chrono_literals;
     // set odometry publishing loop timer at 10Hz
     timer_ = this->create_wall_timer(10ms,std::bind(&Roboteq::run, this));
+    // ソフト閉ループ制御タイマ (closed_loop=false の間は control_loop が即return)
+    {
+        double chz = (cl_control_hz > 1.0) ? cl_control_hz : 50.0;
+        control_timer_ = this->create_wall_timer(
+            std::chrono::milliseconds(static_cast<int>(1000.0 / chz)),
+            std::bind(&Roboteq::control_loop, this));
+    }
     // enable modifying params at run-time
     odom_baselink_transform_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
     /*    
@@ -203,6 +220,18 @@ void Roboteq::update_parameters()
     this->get_parameter("publish_status", publish_status);
     this->get_parameter("status_topic", status_topic);
     this->get_parameter("status_publish_hz", status_publish_hz);
+    bool prev_closed_loop = closed_loop;
+    this->get_parameter("closed_loop", closed_loop);
+    this->get_parameter("cl_kp", cl_kp);
+    this->get_parameter("cl_ki", cl_ki);
+    this->get_parameter("cl_kd", cl_kd);
+    this->get_parameter("cl_control_hz", cl_control_hz);
+    this->get_parameter("cl_max_duty", cl_max_duty);
+    this->get_parameter("cl_anti_windup", cl_anti_windup);
+    if (closed_loop && !prev_closed_loop) {
+        cl_integral_r_ = 0.0;
+        cl_integral_l_ = 0.0;
+    }
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
     if (new_stream_ms != odom_stream_interval_ms) {
@@ -319,6 +348,15 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
 
     linear_x = twist_msg->linear.x;
     angular_z = twist_msg->angular.z;
+
+    // 閉ループ時は目標車輪速度(物理m/s, speed_scale前)を保存するだけ。
+    // 実際の!G送出は control_loop() がエンコーダ速度をフィードバックして行う。
+    if (closed_loop) {
+        std::lock_guard<std::mutex> lock(speed_mutex_);
+        target_right_speed_ = right_wheel_speed;
+        target_left_speed_ = left_wheel_speed;
+        return;
+    }
 
     float min_speed_thresh = (min_speed_threshold > 0.0) ? min_speed_threshold : 0.10f;
     constexpr float EPSILON = 1e-6f;
@@ -868,6 +906,65 @@ void Roboteq::status_publish()
     status_pub->publish(msg);
 }
 
+double Roboteq::open_loop_duty(double wheel_speed_mps) const
+{
+    // 既存のオープンループ指令と同一のマッピング(FFとして使う)
+    const double scale = (speed_scale > 0.0) ? speed_scale : 1.0;
+    const double ws = wheel_speed_mps * scale;
+    const double rpm = ws / wheel_circumference * 60.0;
+    const double maxrpm = (max_rpm > 0) ? static_cast<double>(max_rpm) : 1.0;
+    return rpm / maxrpm * 1000.0;
+}
+
+void Roboteq::control_loop()
+{
+    if (!closed_loop) {
+        return;
+    }
+    const rclcpp::Time now = this->get_clock()->now();
+    static rclcpp::Time last_time(0, 0, RCL_ROS_TIME);
+    static bool first = true;
+    if (first) {
+        first = false;
+        last_time = now;
+    }
+    double dt = (now - last_time).seconds();
+    last_time = now;
+    if (!(dt > 0.0) || dt > 0.5) {
+        dt = 1.0 / ((cl_control_hz > 1.0) ? cl_control_hz : 50.0);
+    }
+
+    double target_r, target_l, actual_r, actual_l;
+    {
+        std::lock_guard<std::mutex> lock(speed_mutex_);
+        target_r = target_right_speed_;
+        target_l = target_left_speed_;
+        actual_r = actual_right_speed_;
+        actual_l = actual_left_speed_;
+    }
+
+    const double err_r = target_r - actual_r;
+    const double err_l = target_l - actual_l;
+    cl_integral_r_ = std::max(-cl_anti_windup, std::min(cl_anti_windup, cl_integral_r_ + err_r * dt));
+    cl_integral_l_ = std::max(-cl_anti_windup, std::min(cl_anti_windup, cl_integral_l_ + err_l * dt));
+
+    double duty_r = open_loop_duty(target_r) + cl_kp * err_r + cl_ki * cl_integral_r_;
+    double duty_l = open_loop_duty(target_l) + cl_kp * err_l + cl_ki * cl_integral_l_;
+    const double dmax = (cl_max_duty > 0) ? static_cast<double>(cl_max_duty) : 1000.0;
+    duty_r = std::max(-dmax, std::min(dmax, duty_r));
+    duty_l = std::max(-dmax, std::min(dmax, duty_l));
+
+    const int ch1 = static_cast<int>(std::lround(motor_sign_r * duty_r));
+    const int ch2 = static_cast<int>(std::lround(motor_sign_l * duty_l));
+
+    std::stringstream cmd_r;
+    std::stringstream cmd_l;
+    cmd_r << "!G 1 " << ch1 << "\r";
+    cmd_l << "!G 2 " << ch2 << "\r";
+    safe_serial_write(cmd_r.str());
+    safe_serial_write(cmd_l.str());
+}
+
 void Roboteq::odom_publish()
 {
     static rclcpp::Time last_publish_time(0, 0, RCL_ROS_TIME);
@@ -906,6 +1003,22 @@ void Roboteq::odom_publish()
         odom_roll_left = 0.0f;
         encoder_stale =
             (current_time - last_odom_update_time_).seconds() > 0.3;
+    }
+
+    // ソフト閉ループ用: odomと同じpublish期間から左右車輪速度(m/s, 前進正)を求める。
+    // odomのtwistと同じ量を使うことで、閉ループがodom速度を目標に一致させる。
+    {
+        std::lock_guard<std::mutex> lock(speed_mutex_);
+        if (!encoder_stale && publish_dt > 1e-6 && publish_dt <= 1.0) {
+            const double v_r = roll_right * wheel_circumference / publish_dt;
+            const double v_l = roll_left * wheel_circumference / publish_dt;
+            constexpr double alpha = 0.5;
+            actual_right_speed_ += (v_r - actual_right_speed_) * alpha;
+            actual_left_speed_ += (v_l - actual_left_speed_) * alpha;
+        } else if (encoder_stale) {
+            actual_right_speed_ = 0.0;
+            actual_left_speed_ = 0.0;
+        }
     }
 
     const float linear_delta =

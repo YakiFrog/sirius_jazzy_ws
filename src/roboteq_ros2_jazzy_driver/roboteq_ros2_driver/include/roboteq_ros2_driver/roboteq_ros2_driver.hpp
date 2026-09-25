@@ -54,6 +54,26 @@ class Roboteq : public rclcpp::Node
   double tel_temperature_{0.0};
   int tel_fault_flags_{0};
 
+  // --- ソフトウェア閉ループ車輪速度制御 ---
+  // エンコーダから推定した実車輪速度をフィードバックし、同定したFF(duty)に
+  // PI補正を足して !G を送る。Roboteq内蔵閉ループはゲイン分解能が粗く発振するため、
+  // ROS側で閉ループを構成する。
+  bool closed_loop{};
+  double cl_kp{};
+  double cl_ki{};
+  double cl_kd{};
+  double cl_control_hz{};
+  int cl_max_duty{};
+  double cl_anti_windup{};
+  double target_right_speed_{0.0};
+  double target_left_speed_{0.0};
+  double actual_right_speed_{0.0};
+  double actual_left_speed_{0.0};
+  double cl_integral_r_{0.0};
+  double cl_integral_l_{0.0};
+  std::mutex speed_mutex_;
+  rclcpp::TimerBase::SharedPtr control_timer_;
+
   bool running_;
 
   rclcpp::Time last_encoder_time_{0, 0, RCL_ROS_TIME};
@@ -175,6 +195,8 @@ class Roboteq : public rclcpp::Node
   void process_encoder_data(int32_t right_val, int32_t left_val);
   void process_telemetry(const std::string &line);
   void status_publish();
+  void control_loop();
+  double open_loop_duty(double wheel_speed_mps) const;
   //void odom_hs_run();
   void odom_ms_run();
   void odom_ls_run();

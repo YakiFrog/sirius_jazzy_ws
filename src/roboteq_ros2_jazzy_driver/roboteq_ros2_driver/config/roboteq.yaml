@@ -22,6 +22,15 @@ roboteq_ros2_driver:
     publish_status: true
     status_topic: "roboteq/status"
     status_publish_hz: 20.0
+    # ソフトウェア閉ループ車輪速度制御(エンコーダ速度フィードバック + FF + PI)
+    # closed_loop=false の間は従来のオープンループ指令。
+    closed_loop: false
+    cl_kp: 250.0        # duty / (m/s)  空転テストで調整
+    cl_ki: 800.0        # duty / (m/s*s)
+    cl_kd: 0.0
+    cl_control_hz: 50.0
+    cl_max_duty: 1000
+    cl_anti_windup: 3.0
     speed_scale: 0.52 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
     # 55% はやすぎる
     # 45% おそすぎる
