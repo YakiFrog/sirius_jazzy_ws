@@ -65,6 +65,14 @@ class Roboteq : public rclcpp::Node
   double cl_control_hz{};
   int cl_max_duty{};
   double cl_anti_windup{};
+  double cl_min_speed{};       // 閉ループの最低目標車輪速度[m/s] デッドバンド補償
+  double cl_duty_slew{};       // duty変化の上限 [duty/s] 回生スパイク抑制
+  double cl_duty_lpf_tau{};    // duty出力ローパス時定数[s] 速度振動抑制
+  double cl_feedback_alpha{};  // 車輪速度フィードバックの平滑化係数(小さいほど強い)
+  double last_duty_r_{0.0};
+  double last_duty_l_{0.0};
+  double filtered_duty_r_{0.0};
+  double filtered_duty_l_{0.0};
   double target_right_speed_{0.0};
   double target_left_speed_{0.0};
   double actual_right_speed_{0.0};

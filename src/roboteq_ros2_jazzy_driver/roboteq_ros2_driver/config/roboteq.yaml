@@ -23,14 +23,19 @@ roboteq_ros2_driver:
     status_topic: "roboteq/status"
     status_publish_hz: 20.0
     # ソフトウェア閉ループ車輪速度制御(エンコーダ速度フィードバック + FF + PI)
-    # closed_loop=false の間は従来のオープンループ指令。
-    closed_loop: false
-    cl_kp: 250.0        # duty / (m/s)  空転テストで調整
-    cl_ki: 800.0        # duty / (m/s*s)
+    # 規定: 有効。蛇行・左右差・過電圧を改善(15F-0925ループで検証)。
+    # falseにすると従来のオープンループ指令。
+    closed_loop: true
+    cl_kp: 120.0        # duty / (m/s)  15F-0925ループで最良
+    cl_ki: 250.0        # duty / (m/s*s)
     cl_kd: 0.0
     cl_control_hz: 50.0
     cl_max_duty: 1000
-    cl_anti_windup: 3.0
+    cl_anti_windup: 0.5  # 積分クランプ(m/s*s) ※コード側で400/kiも適用
+    cl_min_speed: 0.0    # デッドバンド補償(0=無効)。0.15で試したが速度ディップ悪化のため無効化
+    cl_duty_slew: 3000.0 # duty変化の上限[duty/s] 回生スパイク抑制
+    cl_duty_lpf_tau: 0.08 # duty出力ローパス時定数[s] 速度振動抑制
+    cl_feedback_alpha: 0.5 # 車輪速度フィードバック平滑化(小=強い) 0.3は蛇行悪化のため0.5
     speed_scale: 0.52 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
     # 55% はやすぎる
     # 45% おそすぎる

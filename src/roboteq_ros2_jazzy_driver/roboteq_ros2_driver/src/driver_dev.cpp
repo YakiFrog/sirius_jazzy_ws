@@ -101,6 +101,10 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     cl_control_hz = this->declare_parameter("cl_control_hz", 50.0);
     cl_max_duty = this->declare_parameter("cl_max_duty", 1000);
     cl_anti_windup = this->declare_parameter("cl_anti_windup", 3.0);
+    cl_min_speed = this->declare_parameter("cl_min_speed", 0.15);
+    cl_duty_slew = this->declare_parameter("cl_duty_slew", 3000.0);
+    cl_duty_lpf_tau = this->declare_parameter("cl_duty_lpf_tau", 0.08);
+    cl_feedback_alpha = this->declare_parameter("cl_feedback_alpha", 0.5);
 
     starttime = 0;
     hstimer = 0;
@@ -228,9 +232,21 @@ void Roboteq::update_parameters()
     this->get_parameter("cl_control_hz", cl_control_hz);
     this->get_parameter("cl_max_duty", cl_max_duty);
     this->get_parameter("cl_anti_windup", cl_anti_windup);
+    this->get_parameter("cl_min_speed", cl_min_speed);
+    this->get_parameter("cl_duty_slew", cl_duty_slew);
+    this->get_parameter("cl_duty_lpf_tau", cl_duty_lpf_tau);
+    this->get_parameter("cl_feedback_alpha", cl_feedback_alpha);
     if (closed_loop && !prev_closed_loop) {
         cl_integral_r_ = 0.0;
         cl_integral_l_ = 0.0;
+        last_duty_r_ = 0.0;
+        last_duty_l_ = 0.0;
+        filtered_duty_r_ = 0.0;
+        filtered_duty_l_ = 0.0;
+        // 有効化時に古い目標が残っていると勝手に走るため0にリセット
+        std::lock_guard<std::mutex> lock(speed_mutex_);
+        target_right_speed_ = 0.0;
+        target_left_speed_ = 0.0;
     }
     // If the stream interval changed while running, re-send the stream
     // configuration to the device so it starts using the new rate sooner.
@@ -352,6 +368,14 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     // 閉ループ時は目標車輪速度(物理m/s, speed_scale前)を保存するだけ。
     // 実際の!G送出は control_loop() がエンコーダ速度をフィードバックして行う。
     if (closed_loop) {
+        // デッドバンド補償: 到達不能な低速(デッドバンド以下)を追わせない。
+        // 左右の比率を保ったまま最大速度を下限まで底上げする。
+        float max_abs = std::max(std::abs(right_wheel_speed), std::abs(left_wheel_speed));
+        if (max_abs > 1e-6f && max_abs < static_cast<float>(cl_min_speed)) {
+            float boost = static_cast<float>(cl_min_speed) / max_abs;
+            right_wheel_speed *= boost;
+            left_wheel_speed *= boost;
+        }
         std::lock_guard<std::mutex> lock(speed_mutex_);
         target_right_speed_ = right_wheel_speed;
         target_left_speed_ = left_wheel_speed;
@@ -945,14 +969,40 @@ void Roboteq::control_loop()
 
     const double err_r = target_r - actual_r;
     const double err_l = target_l - actual_l;
-    cl_integral_r_ = std::max(-cl_anti_windup, std::min(cl_anti_windup, cl_integral_r_ + err_r * dt));
-    cl_integral_l_ = std::max(-cl_anti_windup, std::min(cl_anti_windup, cl_integral_l_ + err_l * dt));
+    // 目標がほぼ0なら積分をリセット（停止時に電流を残さない）
+    if (std::abs(target_r) < 0.02 && std::abs(target_l) < 0.02) {
+        cl_integral_r_ = 0.0;
+        cl_integral_l_ = 0.0;
+    }
+    // 積分ワインドアップ対策: 積分の寄与が最大400 dutyを超えないようクランプ
+    const double i_limit = (cl_ki > 1e-6) ? (400.0 / cl_ki) : cl_anti_windup;
+    cl_integral_r_ = std::max(-i_limit, std::min(i_limit, cl_integral_r_ + err_r * dt));
+    cl_integral_l_ = std::max(-i_limit, std::min(i_limit, cl_integral_l_ + err_l * dt));
 
     double duty_r = open_loop_duty(target_r) + cl_kp * err_r + cl_ki * cl_integral_r_;
     double duty_l = open_loop_duty(target_l) + cl_kp * err_l + cl_ki * cl_integral_l_;
+    // duty出力のローパス: 高周波の速度ノイズを追わせない(速度振動抑制)
+    if (cl_duty_lpf_tau > 1e-6) {
+        const double a = 1.0 - std::exp(-dt / cl_duty_lpf_tau);
+        filtered_duty_r_ += (duty_r - filtered_duty_r_) * a;
+        filtered_duty_l_ += (duty_l - filtered_duty_l_) * a;
+    } else {
+        filtered_duty_r_ = duty_r;
+        filtered_duty_l_ = duty_l;
+    }
+    duty_r = filtered_duty_r_;
+    duty_l = filtered_duty_l_;
     const double dmax = (cl_max_duty > 0) ? static_cast<double>(cl_max_duty) : 1000.0;
     duty_r = std::max(-dmax, std::min(dmax, duty_r));
     duty_l = std::max(-dmax, std::min(dmax, duty_l));
+    // duty変化のスルーレート制限: 急なduty低下による回生スパイク(FF=2)を抑制
+    if (cl_duty_slew > 1e-6) {
+        const double step = cl_duty_slew * dt;
+        duty_r = std::max(last_duty_r_ - step, std::min(last_duty_r_ + step, duty_r));
+        duty_l = std::max(last_duty_l_ - step, std::min(last_duty_l_ + step, duty_l));
+    }
+    last_duty_r_ = duty_r;
+    last_duty_l_ = duty_l;
 
     const int ch1 = static_cast<int>(std::lround(motor_sign_r * duty_r));
     const int ch2 = static_cast<int>(std::lround(motor_sign_l * duty_l));
@@ -1012,7 +1062,9 @@ void Roboteq::odom_publish()
         if (!encoder_stale && publish_dt > 1e-6 && publish_dt <= 1.0) {
             const double v_r = roll_right * wheel_circumference / publish_dt;
             const double v_l = roll_left * wheel_circumference / publish_dt;
-            constexpr double alpha = 0.5;
+            // 車輪速度フィードバックの平滑化係数(パラメータ化)
+            const double alpha =
+                (cl_feedback_alpha > 0.0 && cl_feedback_alpha <= 1.0) ? cl_feedback_alpha : 0.5;
             actual_right_speed_ += (v_r - actual_right_speed_) * alpha;
             actual_left_speed_ += (v_l - actual_left_speed_) * alpha;
         } else if (encoder_stale) {
