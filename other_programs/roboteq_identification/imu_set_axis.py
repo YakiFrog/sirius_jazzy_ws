@@ -21,20 +21,32 @@ def send(ser, data):
     time.sleep(0.15)
 
 
+RATE_VALUES = {10: 0x06, 20: 0x07, 50: 0x08, 100: 0x09, 125: 0x0A, 200: 0x0B}
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("axis", choices=["6", "9"])
+    ap.add_argument("axis", nargs="?", choices=["6", "9"], default=None,
+                    help="融合軸モード 6 or 9（省略時は変更しない）")
+    ap.add_argument("--rate", type=int, default=None,
+                    help="出力周波数[Hz]: 50/100/125/200")
     ap.add_argument("--port", default="/dev/wt905")
     ap.add_argument("--baud", type=int, default=115200)
     args = ap.parse_args()
 
-    raw0 = 0x01 if args.axis == "6" else 0x00
     with serial.Serial(args.port, args.baud, timeout=0.2) as ser:
         time.sleep(0.2)
         ser.reset_input_buffer()
         send(ser, [0xFF, 0xAA, 0x69, 0x88, 0xB5])      # unlock configuration
-        send(ser, [0xFF, 0xAA, 0x24, raw0, 0x00])      # axis transition algorithm
-        print("sent axis=%s (reg 0x24 raw0=0x%02X) on %s" % (args.axis, raw0, args.port))
+        if args.axis:
+            raw0 = 0x01 if args.axis == "6" else 0x00
+            send(ser, [0xFF, 0xAA, 0x24, raw0, 0x00])  # axis transition algorithm
+            print("sent axis=%s (reg 0x24 raw0=0x%02X)" % (args.axis, raw0))
+        if args.rate:
+            if args.rate not in RATE_VALUES:
+                raise SystemExit("rate must be one of %s" % list(RATE_VALUES))
+            send(ser, [0xFF, 0xAA, 0x03, RATE_VALUES[args.rate], 0x00])  # output frequency
+            print("sent rate=%dHz (reg 0x03 raw0=0x%02X)" % (args.rate, RATE_VALUES[args.rate]))
 
 
 if __name__ == "__main__":
