@@ -18,8 +18,9 @@ if [ -z "$MODE" ]; then
     echo "7) パス追従優先・ゆっくり速度モード (strict_safe) - 0.4 m/s"
     echo "8) パス追従優先・超低速速度モード (strict_slow) - 0.2 m/s"
     echo "9) 待機優先・高速モード (wait_active) - 0.72 m/s (障害物前で停止・再試行)"
+    echo "10) 高速モード (fast) - 1.2 m/s (減速緩和で回生OVLを抑制・閉ループ前提)"
     echo "-----------------------------------------"
-    read -p "選択してください [1-9]: " CHOICE
+    read -p "選択してください [1-10]: " CHOICE
     case "$CHOICE" in
         1) MODE="normal" ;;
         2) MODE="normal_active" ;;
@@ -30,6 +31,7 @@ if [ -z "$MODE" ]; then
         7) MODE="strict_safe" ;;
         8) MODE="strict_slow" ;;
         9) MODE="wait_active" ;;
+        10) MODE="fast" ;;
         *) echo "無効な選択です。終了します。"; exit 1 ;;
     esac
 fi
@@ -39,9 +41,9 @@ if [ "$MODE" = "strict" ]; then
     MODE="strict_safe"
 fi
 
-if [ "$MODE" != "normal" ] && [ "$MODE" != "normal_active" ] && [ "$MODE" != "safe" ] && [ "$MODE" != "slow" ] && [ "$MODE" != "wait_normal" ] && [ "$MODE" != "wait_active" ] && [ "$MODE" != "strict_normal" ] && [ "$MODE" != "strict_safe" ] && [ "$MODE" != "strict_slow" ]; then
+if [ "$MODE" != "normal" ] && [ "$MODE" != "normal_active" ] && [ "$MODE" != "fast" ] && [ "$MODE" != "safe" ] && [ "$MODE" != "slow" ] && [ "$MODE" != "wait_normal" ] && [ "$MODE" != "wait_active" ] && [ "$MODE" != "strict_normal" ] && [ "$MODE" != "strict_safe" ] && [ "$MODE" != "strict_slow" ]; then
     echo "エラー: 走行モードを正しく指定してください。"
-    echo "使い方: $0 [normal|normal_active|safe|slow|wait_normal|wait_active|strict_normal|strict_safe|strict_slow]"
+    echo "使い方: $0 [normal|normal_active|fast|safe|slow|wait_normal|wait_active|strict_normal|strict_safe|strict_slow]"
     exit 1
 fi
 

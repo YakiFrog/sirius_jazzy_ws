@@ -1,0 +1,1 @@
+path_len=8.762 m  net_disp=8.505 m  start=(-6.946,-4.226) end=(-5.918,4.217)  ff_seen=[16] Vmin=5.8
