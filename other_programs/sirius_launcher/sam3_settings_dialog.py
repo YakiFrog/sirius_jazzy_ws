@@ -19,6 +19,8 @@ from PySide6.QtWidgets import (
 
 DEFAULT_CONFIG = os.path.expanduser(
     "~/sirius_jazzy_ws/src/sirius/sirius_navigation/config/theta_sam3.yaml")
+DEFAULT_CLASSES_CONFIG = os.path.expanduser(
+    "~/sirius_jazzy_ws/src/sirius/sirius_navigation/config/sam3_classes.yaml")
 SAM3_SERVER_DIR = os.path.expanduser("~/sam3_zed_server")
 SAM3_CONTAINER = "sam3_zed_container"
 
@@ -27,9 +29,10 @@ class Sam3SettingsDialog(QDialog):
     def __init__(self, config_path=DEFAULT_CONFIG, server="http://localhost:8080", parent=None):
         super().__init__(parent)
         self.config_path = config_path
+        self.classes_path = DEFAULT_CLASSES_CONFIG
         self.server = server.rstrip("/")
         self.setWindowTitle("SAM3 設定（THETAマッピング用）")
-        self.resize(720, 600)
+        self.resize(720, 620)
         self._build_ui()
         self.load_config()
 
@@ -37,13 +40,25 @@ class Sam3SettingsDialog(QDialog):
         root = QVBoxLayout(self)
 
         path_row = QHBoxLayout()
-        path_row.addWidget(QLabel("設定ファイル:"))
-        self.path_edit = QLineEdit(self.config_path)
-        path_row.addWidget(self.path_edit, 1)
-        browse = QPushButton("参照")
-        browse.clicked.connect(self._browse)
-        path_row.addWidget(browse)
+        path_row.addWidget(QLabel("クラス設定:"))
+        self.classes_path_edit = QLineEdit(self.classes_path)
+        self.classes_path_edit.setToolTip(
+            "ZED/THETA共通のクラス登録簿（prompt/classes/class_thresholds）")
+        path_row.addWidget(self.classes_path_edit, 1)
+        browse_classes = QPushButton("参照")
+        browse_classes.clicked.connect(lambda: self._browse(self.classes_path_edit))
+        path_row.addWidget(browse_classes)
         root.addLayout(path_row)
+
+        theta_row = QHBoxLayout()
+        theta_row.addWidget(QLabel("THETA設定:"))
+        self.path_edit = QLineEdit(self.config_path)
+        self.path_edit.setToolTip("THETA固有の threshold / score_min を保存")
+        theta_row.addWidget(self.path_edit, 1)
+        browse = QPushButton("参照")
+        browse.clicked.connect(lambda: self._browse(self.path_edit))
+        theta_row.addWidget(browse)
+        root.addLayout(theta_row)
 
         self.status = QLabel("")
         self.status.setStyleSheet("color: #6c757d;")
@@ -116,11 +131,12 @@ class Sam3SettingsDialog(QDialog):
         spin.setValue(value)
         return spin
 
-    def _browse(self):
-        path, _ = QFileDialog.getSaveFileName(self, "設定YAML", self.path_edit.text(),
+    def _browse(self, line_edit=None):
+        target = line_edit if line_edit is not None else self.path_edit
+        path, _ = QFileDialog.getSaveFileName(self, "設定YAML", target.text(),
                                               "YAML (*.yaml *.yml)")
         if path:
-            self.path_edit.setText(path)
+            target.setText(path)
 
     def _add_row(self, name, class_id, color, threshold):
         row = self.table.rowCount()
@@ -135,30 +151,43 @@ class Sam3SettingsDialog(QDialog):
         if row >= 0:
             self.table.removeRow(row)
 
+    @staticmethod
+    def _read_yaml(path):
+        if not path or not os.path.exists(path):
+            return {}
+        with open(path, encoding="utf-8") as stream:
+            return yaml.safe_load(stream) or {}
+
     def load_config(self):
-        path = self.path_edit.text().strip()
-        if not os.path.exists(path):
-            self.status.setText(f"設定ファイルが無いので既定を表示: {path}")
-            self.status.setStyleSheet("color: #6c757d;")
-            return
+        classes_path = self.classes_path_edit.text().strip()
+        theta_path = self.path_edit.text().strip()
         try:
-            with open(path, encoding="utf-8") as stream:
-                cfg = yaml.safe_load(stream) or {}
+            classes_cfg = self._read_yaml(classes_path)
+            theta_cfg = self._read_yaml(theta_path)
         except Exception as error:
             self.status.setText(f"読込失敗: {error}")
             self.status.setStyleSheet("color: #dc3545;")
             return
-        self.prompt_edit.setText(str(cfg.get("prompt", "")))
-        self.threshold_spin.setValue(float(cfg.get("threshold", 0.3) or 0.3))
-        self.score_min_spin.setValue(float(cfg.get("score_min", 0.3) or 0.3))
-        class_thresholds = cfg.get("class_thresholds") or {}
+
+        # 旧形式（theta_sam3.yaml に classes がある）も読めるようにフォールバック。
+        prompt = classes_cfg.get("prompt") or theta_cfg.get("prompt", "")
+        classes = classes_cfg.get("classes") or theta_cfg.get("classes") or {}
+        class_thresholds = (
+            classes_cfg.get("class_thresholds")
+            or theta_cfg.get("class_thresholds")
+            or {}
+        )
+        self.prompt_edit.setText(str(prompt))
+        self.threshold_spin.setValue(float(theta_cfg.get("threshold", 0.3) or 0.3))
+        self.score_min_spin.setValue(float(theta_cfg.get("score_min", 0.3) or 0.3))
         self.table.setRowCount(0)
-        for name, spec in (cfg.get("classes") or {}).items():
+        for name, spec in classes.items():
             spec = spec or {}
             color = spec.get("color", [255, 255, 255])
             self._add_row(name, spec.get("id", 0), color,
                           class_thresholds.get(name, self.threshold_spin.value()))
-        self.status.setText(f"読込ました: {path}")
+        self.status.setText(
+            f"読込ました: クラス={classes_path} / THETA={theta_path}")
         self.status.setStyleSheet("color: #28a745;")
 
     def _collect(self):
@@ -193,14 +222,39 @@ class Sam3SettingsDialog(QDialog):
         }
 
     def save_config(self):
-        path = self.path_edit.text().strip()
+        cfg = self._collect()
+        classes_path = self.classes_path_edit.text().strip()
+        theta_path = self.path_edit.text().strip()
+        classes_payload = {
+            "prompt": cfg["prompt"],
+            "classes": cfg["classes"],
+            "class_thresholds": cfg["class_thresholds"],
+        }
         try:
-            with open(path, "w", encoding="utf-8") as stream:
-                yaml.safe_dump(self._collect(), stream, sort_keys=False, allow_unicode=True)
+            with open(classes_path, "w", encoding="utf-8") as stream:
+                yaml.safe_dump(classes_payload, stream,
+                               sort_keys=False, allow_unicode=True)
         except Exception as error:
-            QMessageBox.critical(self, "エラー", f"保存に失敗しました: {error}")
+            QMessageBox.critical(self, "エラー", f"クラス設定の保存に失敗しました: {error}")
             return False
-        self.status.setText(f"保存しました: {path}（次回のTHETAマッピングから反映）")
+
+        # THETA固有の threshold / score_min のみを theta_sam3.yaml に保存する。
+        try:
+            theta_cfg = self._read_yaml(theta_path)
+            for key in ("prompt", "classes", "class_thresholds"):
+                theta_cfg.pop(key, None)
+            theta_cfg["threshold"] = cfg["threshold"]
+            theta_cfg["score_min"] = cfg["score_min"]
+            with open(theta_path, "w", encoding="utf-8") as stream:
+                yaml.safe_dump(theta_cfg, stream,
+                               sort_keys=False, allow_unicode=True)
+        except Exception as error:
+            QMessageBox.critical(self, "エラー", f"THETA設定の保存に失敗しました: {error}")
+            return False
+
+        self.status.setText(
+            f"保存しました: クラス={classes_path} / THETA={theta_path}"
+            "（次回マッピングから反映）")
         self.status.setStyleSheet("color: #28a745;")
         return True
 

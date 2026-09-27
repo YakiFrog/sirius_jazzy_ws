@@ -16,7 +16,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtCore import QTimer, QEvent
 
 from alias_parser import parse_bash_aliases
-from ui_components import LaunchButtonUI, MainWindowUI, CollapsibleSection
+from ui_components import LaunchButtonUI, MainWindowUI, CollapsibleSection, RunningProcessRow
 from process_manager import ProcessManager
 
 SETTINGS_PATH = Path.home() / ".config" / "sirius_launcher" / "settings.json"
@@ -199,10 +199,17 @@ class SiriusLauncher(QMainWindow):
         self.presets = []
         self.original_tab_names = {} # index -> name
         self.sections = []  # (CollapsibleSection, [alias_name...])
+        self.running_rows = {}  # name -> RunningProcessRow
         self.settings = load_settings()
         self.setup_ui()
         self.init_ros_domain()
         self.load_aliases()
+
+        # 起動中一覧を定期的に更新
+        self.running_timer = QTimer()
+        self.running_timer.timeout.connect(self.refresh_running_list)
+        self.running_timer.start(1000)
+        self.refresh_running_list()
     
     def setup_ui(self):
         """UIのセットアップ"""
@@ -383,13 +390,21 @@ class SiriusLauncher(QMainWindow):
         
         # 2. プリセットボタンをUIから削除
         self.clear_layout(self.preset_layout)
-        
+
+        # 2b. 起動中一覧の行を削除（ストレッチは残す）
+        if hasattr(self, 'running_layout'):
+            for row in self.running_rows.values():
+                self.running_layout.removeWidget(row)
+                row.deleteLater()
+        self.running_rows = {}
+
         # 3. 各タブのグループボックスなどのUI要素を削除
         for layout in self.tab_layouts.values():
             self.clear_layout(layout)
             
         # 4. 再ロードと再配置
         self.load_aliases()
+        self.refresh_running_list()
         print("✅ 再読み込み完了。")
     
     def add_preset_button(self, preset_name, items):
@@ -429,6 +444,69 @@ class SiriusLauncher(QMainWindow):
         layout.addWidget(button)
         self.buttons.append(button)
         self.button_map[name] = button
+
+    def refresh_running_list(self):
+        """起動中プログラム一覧を最新状態に更新（停止/再起動/フォーカス付き）"""
+        if not hasattr(self, 'running_layout'):
+            return
+
+        running = [b for b in self.buttons if b.process_manager.is_running()]
+        running_names = {b.name for b in running}
+
+        # 終了したものを行から削除
+        for name in list(self.running_rows.keys()):
+            if name not in running_names:
+                row = self.running_rows.pop(name)
+                self.running_layout.removeWidget(row)
+                row.deleteLater()
+
+        # 新しく起動したものを追加（ストレッチの手前へ）
+        for button in running:
+            if button.name not in self.running_rows:
+                self.add_running_row(button)
+
+        self.update_running_count(len(running))
+
+    def add_running_row(self, button):
+        """起動中ボタン1件分の操作行を一覧へ追加"""
+        row = RunningProcessRow(button.name)
+        row.focus_requested.connect(lambda b=button: b.launch())
+        row.restart_requested.connect(lambda b=button: self.restart_button(b))
+        row.stop_requested.connect(lambda b=button: self.stop_button_from_panel(b))
+        # 末尾のストレッチの手前に挿入（上揃え）
+        self.running_layout.insertWidget(max(0, self.running_layout.count() - 1), row)
+        self.running_rows[button.name] = row
+
+    def stop_button_from_panel(self, button):
+        """一覧から停止し、少し待って表示を更新"""
+        button.stop()
+        QTimer.singleShot(2700, self.refresh_running_list)
+
+    def restart_button(self, button):
+        """一覧から停止→再起動する"""
+        if button.process_manager.is_running():
+            button.stop()
+            # Terminatorタブが閉じるのを待ってから再起動
+            QTimer.singleShot(2700, lambda b=button: self.relaunch_button(b))
+        else:
+            self.relaunch_button(button)
+
+    def relaunch_button(self, button):
+        """停止済みのボタンを再起動する"""
+        button.launch()
+        QTimer.singleShot(1600, self.refresh_running_list)
+
+    def update_running_count(self, count):
+        """一覧見出しの件数表示を更新"""
+        label = getattr(self, 'running_count_label', None)
+        if label is None:
+            return
+        if count > 0:
+            label.setText(f"起動中: {count} 件")
+            label.setStyleSheet("color: #28a745; font-weight: bold;")
+        else:
+            label.setText("起動中のプログラムはありません")
+            label.setStyleSheet("color: gray; font-style: italic;")
 
     def update_tab_error_status(self):
         """全てのタブのエラー状況をスキャンして表示を更新"""

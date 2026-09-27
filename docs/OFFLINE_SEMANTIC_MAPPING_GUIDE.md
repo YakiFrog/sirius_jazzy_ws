@@ -72,10 +72,32 @@ cd ~/sirius_jazzy_ws
 ```
 1. 一覧から先ほど録画した Rosbag の番号を選択します。必須画像または補正TFがないbagは自動的に拒否されます。
 2. 再生速度を選択します（推奨: `0.5`）。
-3. 認識させたい物体/路面のプロンプトを入力します（デフォルト: `grass, tactile paving, roadway, sidewalk`）。
+3. 認識させたい物体/路面のプロンプトを入力します（既定: `config/sam3_classes.yaml` の `prompt`。初期値は `grass, tactile paving, line-type tactile paving, line type tactile paving, roadway, sidewalk`）。
 4. RVizを選んだ場合は一時停止状態から開始できます。端末で`Space`を押すと開始/一時停止、`→`で1メッセージ進み、`↑`/`↓`で速度を変更できます。
 5. SAM3 GPU サーバー、RTAB-Map、2D カラーインデックスノードが立ち上がり、Rosbag の再生に合わせてセマンティック地図が構築されます。再生時はSlamToolboxを起動せず、bag内の補正済みTFを使います。
 6. 再生完了後、保存確認で **`y`** を入力すると、bag名から`semantic_<bag名>`を自動生成して保存します。同名があれば`_02`、`_03`を付け、既存地図を上書きしません。
+
+#### セマンティッククラス登録簿（エイリアスとID調整）
+
+検出プロンプト文字列と意味IDの対応は `config/sam3_classes.yaml` に集約されています。
+`run_offline_mapping.sh` はコンテナ起動後にこの登録簿を SAM3 サーバの
+`/class_registry` へ自動適用するため、同じ対象を別名で検出しても同じIDに統合できます。
+
+- 例: `line-type tactile paving` と `line type tactile paving` は、どちらも
+  `tactile paving` と同じ `id: 4`（黄）に割り当てています。
+- 新しい言い回しを追加したい場合は、`classes` に同じ `id` の行を足すだけです
+  （地図側の代表色・コストは `id` で解決されるため `semantic_costs.yaml` の変更は不要）。
+- 登録簿に無いプロンプトは `semantic_id=0` として地図から無視されます。
+  入力プロンプトに未登録の語があると再生前に警告が表示されるので、
+  その場合は `classes` に追記してください。
+
+IDと色は次のUIから編集できます（適用後は次回起動にも引き継がれます）。
+
+- Web UI: `http://localhost:8080/` の「Semantic Classes」表で ID / 色 / 追加・削除を編集し
+  「Apply Configuration」を押す（`/class_registry` を更新）。
+- Launcher の「SAM3設定」ダイアログ（`open_sam3_settings_dialog.sh`）:
+  クラスは `config/sam3_classes.yaml`、THETA固有の `threshold`/`score_min` は
+  `config/theta_sam3.yaml` に保存し、起動中サーバにも即時適用します。
 
 ---
 

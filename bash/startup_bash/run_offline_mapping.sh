@@ -211,9 +211,115 @@ echo ""
 read -p "再生速度を選択してください (例: 0.5, 1.0) [0.5]: " PLAY_RATE
 PLAY_RATE=${PLAY_RATE:-0.5}
 
+# クラス登録簿（config/sam3_classes.yaml）を読み、SAM3サーバへ適用するヘルパー。
+#   default-prompt: 既定プロンプトの表示
+#   apply         : /class_registry と /class_thresholds を送信し、未登録プロンプトを警告
+sam3_class_registry() {
+    local action="${1:-apply}"
+    SAM3_ACTION="$action" PROMPT_INPUT="${PROMPT_INPUT:-}" python3 - <<'PY'
+import json
+import os
+import sys
+import urllib.request
+
+ACTION = os.environ.get("SAM3_ACTION", "apply")
+PROMPT = os.environ.get("PROMPT_INPUT", "")
+
+DEFAULT_PROMPT = (
+    "grass, tactile paving, line-type tactile paving, "
+    "line type tactile paving, roadway, sidewalk"
+)
+DEFAULT_CLASSES = {
+    "grass": {"id": 3, "color": [0, 255, 0]},
+    "tactile paving": {"id": 4, "color": [255, 255, 0]},
+    "line-type tactile paving": {"id": 4, "color": [255, 255, 0]},
+    "roadway": {"id": 5, "color": [0, 0, 255]},
+    "sidewalk": {"id": 6, "color": [128, 128, 128]},
+}
+SOURCE_CANDIDATES = [
+    os.environ.get("SIRIUS_SAM3_CLASSES"),
+    os.path.expanduser("~/sirius_jazzy_ws/params/sam3_classes.yaml"),
+    os.path.expanduser(
+        "~/sirius_jazzy_ws/src/sirius/sirius_navigation/config/sam3_classes.yaml"
+    ),
+]
+
+
+def load_config():
+    # ビルド済みならパッケージのローダを使う（params/ の上書きも尊重される）。
+    try:
+        from sirius_navigation.sam3_classes import load_sam3_classes
+
+        cfg, _ = load_sam3_classes()
+        return cfg
+    except Exception:
+        pass
+    # 未ビルドでも動くようにソースツリーのYAMLを直接読む。
+    import yaml
+
+    for candidate in SOURCE_CANDIDATES:
+        if candidate and os.path.exists(candidate):
+            with open(candidate, encoding="utf-8") as stream:
+                data = yaml.safe_load(stream) or {}
+            classes = data.get("classes") or DEFAULT_CLASSES
+            prompt = str(data.get("prompt") or "").strip() or ", ".join(classes)
+            return {
+                "prompt": prompt,
+                "classes": classes,
+                "class_thresholds": data.get("class_thresholds") or {},
+            }
+    return {
+        "prompt": DEFAULT_PROMPT,
+        "classes": dict(DEFAULT_CLASSES),
+        "class_thresholds": {},
+    }
+
+
+def post(endpoint, payload):
+    request = urllib.request.Request(
+        f"http://localhost:8080/{endpoint}",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=5) as response:
+        return response.read().decode("utf-8", "replace")
+
+
+def main():
+    cfg = load_config()
+    if ACTION == "default-prompt":
+        print(cfg["prompt"])
+        return 0
+    classes = cfg["classes"]
+    thresholds = cfg["class_thresholds"]
+    try:
+        post("class_registry", {"classes": classes})
+        if thresholds:
+            post("class_thresholds", {"default": 0.5, "classes": thresholds})
+    except Exception as error:
+        print(f"  ✗ クラス登録簿の適用に失敗: {error}")
+        return 1
+    print(f"  ✓ class_registry={len(classes)} classes (line-type tactile paving -> id 4)")
+    known = {str(name).strip() for name in classes}
+    unknown = [
+        phrase.strip()
+        for phrase in PROMPT.split(",")
+        if phrase.strip() and phrase.strip() not in known
+    ]
+    if unknown:
+        print("  ⚠ 未登録のプロンプト（ID0として無視されます）: " + ", ".join(unknown))
+        print("    config/sam3_classes.yaml の classes に同じ id を追加してください。")
+    return 0
+
+
+sys.exit(main())
+PY
+}
+
 # 3. プロンプト（クラス定義）の設定
 echo ""
-DEFAULT_PROMPT="grass, tactile paving, roadway, sidewalk"
+DEFAULT_PROMPT=$(sam3_class_registry default-prompt)
 read -p "SAM3 認識プロンプト (カンマ区切り) [$DEFAULT_PROMPT]: " PROMPT_INPUT
 PROMPT_INPUT=${PROMPT_INPUT:-$DEFAULT_PROMPT}
 
@@ -251,6 +357,15 @@ post_sam3_setting source_mode '{"mode":"network"}' "source=rosbag network"
 
 if [ "$SAM3_SETTING_FAILURES" -ne 0 ]; then
     echo "エラー: SAM3設定を適用できないため、条件不一致の実験は開始しません。"
+    exit 1
+fi
+
+# コンテナは起動時にクラスIDをハードコード既定へ戻すため、プロンプト送信後に
+# クラス登録簿を必ず適用し直す（line-type tactile paving 等のエイリアスを有効化）。
+echo ""
+echo "セマンティッククラス登録簿をサーバへ適用中..."
+if ! sam3_class_registry apply; then
+    echo "エラー: クラス登録簿を適用できないため、条件不一致の実験は開始しません。"
     exit 1
 fi
 

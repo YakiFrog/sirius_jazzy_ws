@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QGroupBox, QSizePolicy
 )
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 
 
@@ -152,6 +152,58 @@ class CollapsibleSection(QWidget):
             self.badge.setVisible(False)
 
 
+class RunningProcessRow(QWidget):
+    """起動中プログラム1件分の行（タブ表示・再起動・停止）。"""
+
+    focus_requested = Signal()
+    restart_requested = Signal()
+    stop_requested = Signal()
+
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(2, 2, 2, 2)
+        layout.setSpacing(4)
+
+        self.name_label = QLabel(name)
+        self.name_label.setStyleSheet("font-weight: bold; color: #212529;")
+        self.name_label.setToolTip(name)
+        self.name_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        layout.addWidget(self.name_label, 1)
+
+        self.focus_btn = QPushButton("👁")
+        self.focus_btn.setFixedWidth(32)
+        self.focus_btn.setToolTip("ターミナルタブを表示")
+        self.focus_btn.setStyleSheet(
+            "background-color: #17a2b8; color: white; font-weight: bold;"
+            " border-radius: 3px; padding: 3px;"
+        )
+        self.focus_btn.clicked.connect(self.focus_requested.emit)
+        layout.addWidget(self.focus_btn)
+
+        self.restart_btn = QPushButton("🔄 再起動")
+        self.restart_btn.setFixedWidth(86)
+        self.restart_btn.setToolTip("停止してからもう一度起動します")
+        self.restart_btn.setStyleSheet(
+            "background-color: #fd7e14; color: white; font-weight: bold;"
+            " border-radius: 3px; padding: 3px;"
+        )
+        self.restart_btn.clicked.connect(self.restart_requested.emit)
+        layout.addWidget(self.restart_btn)
+
+        self.stop_btn = QPushButton("■ 停止")
+        self.stop_btn.setFixedWidth(72)
+        self.stop_btn.setToolTip("このプログラムを停止します")
+        self.stop_btn.setStyleSheet(
+            "background-color: #dc3545; color: white; font-weight: bold;"
+            " border-radius: 3px; padding: 3px;"
+        )
+        self.stop_btn.clicked.connect(self.stop_requested.emit)
+        layout.addWidget(self.stop_btn)
+
+
 class MainWindowUI:
     """メインウィンドウのUIセットアップ"""
     
@@ -289,10 +341,23 @@ class MainWindowUI:
             tab_widget.addTab(scroll, tab_name)
             tab_layouts[tab_name] = tab_layout
 
-        # 本体（左: プリセット 約1/3 / 右: タブ 約2/3）
+        # 左カラム（1列目）: 上=プリセット / 下=起動中一覧
+        running_group, running_layout, running_count_label = MainWindowUI.create_running_group()
+        left_column = QSplitter(Qt.Vertical)
+        left_column.setChildrenCollapsible(False)
+        left_column.addWidget(preset_group)
+        left_column.addWidget(running_group)
+        left_column.setStretchFactor(0, 3)
+        left_column.setStretchFactor(1, 2)
+        left_column.setSizes([420, 280])
+        window.running_group = running_group
+        window.running_layout = running_layout
+        window.running_count_label = running_count_label
+
+        # 本体（左: プリセット+起動中 約1/3 / 右: タブ 約2/3）
         body = QSplitter(Qt.Horizontal)
         body.setChildrenCollapsible(False)
-        body.addWidget(preset_group)
+        body.addWidget(left_column)
         body.addWidget(tab_widget)
         body.setStretchFactor(0, 1)
         body.setStretchFactor(1, 2)
@@ -315,7 +380,41 @@ class MainWindowUI:
         window.tab_badges = tab_badges
 
         return preset_layout, tab_layouts, tab_widget, reload_btn
-    
+
+    @staticmethod
+    def create_running_group():
+        """起動中プログラム一覧パネルを作成する。
+
+        戻り値: (group, running_layout, count_label)
+        """
+        from PySide6.QtWidgets import (QScrollArea, QFrame)
+
+        group = QGroupBox("起動中")
+        group.setStyleSheet("QGroupBox { font-weight: bold; }")
+        group_layout = QVBoxLayout()
+        group_layout.setContentsMargins(4, 4, 4, 4)
+        group_layout.setSpacing(3)
+
+        count_label = QLabel("起動中のプログラムはありません")
+        count_label.setAlignment(Qt.AlignCenter)
+        count_label.setStyleSheet("color: gray; font-style: italic;")
+        group_layout.addWidget(count_label)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        content = QWidget()
+        running_layout = QVBoxLayout(content)
+        running_layout.setContentsMargins(0, 0, 0, 0)
+        running_layout.setSpacing(2)
+        running_layout.addStretch(1)
+        scroll.setWidget(content)
+        group_layout.addWidget(scroll, 1)
+
+        group.setLayout(group_layout)
+        return group, running_layout, count_label
+
     @staticmethod
     def create_subgroup_header(title):
         """タブ内の小見出し（サブグループ）を作成"""

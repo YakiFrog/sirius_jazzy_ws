@@ -181,7 +181,7 @@ if [ "$USE_SAM3_FLAG" = "true" ]; then
     read -p "SAM3設定ダイアログでprompt/クラス/閾値を編集しますか？ (Y/n) [Y]: " SAM3_SETTINGS_CHOICE
     SAM3_SETTINGS_CHOICE=$(echo "${SAM3_SETTINGS_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
     if [ "$SAM3_SETTINGS_CHOICE" != "n" ] && [ "$SAM3_SETTINGS_CHOICE" != "no" ]; then
-        echo "※ 保存先: src/sirius/sirius_navigation/config/theta_sam3.yaml（次回起動から反映）"
+        echo "※ 保存先: classes=config/sam3_classes.yaml / threshold=config/theta_sam3.yaml（次回起動から反映）"
         bash "$WS_DIR/bash/startup_bash/open_sam3_settings_dialog.sh"
     fi
 
