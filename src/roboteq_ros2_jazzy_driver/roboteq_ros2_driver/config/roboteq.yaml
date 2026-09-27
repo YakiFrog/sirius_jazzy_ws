@@ -36,6 +36,16 @@ roboteq_ros2_driver:
     cl_duty_slew: 3000.0 # duty変化の上限[duty/s] 回生スパイク抑制
     cl_duty_lpf_tau: 0.08 # duty出力ローパス時定数[s] 速度振動抑制
     cl_feedback_alpha: 0.5 # 車輪速度フィードバック平滑化(小=強い) 0.3は蛇行悪化のため0.5
+    # 非常停止(e-stop)検知: /stop に加え Roboteq のフォルト等を e-stop として扱い、
+    # 閉ループ状態(目標/積分/duty)をリセットして解除時の暴走を防ぐ。
+    estop_detect_fault: true   # FFビットによる検知を有効化
+    estop_ff_mask: 20          # 4=UnderVoltage | 16=E-Stop (bit2 overvoltageは回生で頻発するため除外)
+    # 物理e-stopは電源遮断でFFが出ず(?)、バッテリ電圧のみ降下するため電圧検知を有効化。
+    # 正常約13.3V / 物理e-stopで10.3V以下へ降下 / FF=4は5V未満まで出ない。
+    estop_min_voltage: 10.5    # この値未満でe-stop扱い(0=無効)
+    estop_recovery_voltage: 12.0 # この値以上で復帰(0=min+0.5)
+    estop_telemetry_timeout: 0.0 # テレメトリ途絶[s]をe-stop扱い(0=無効)。例: 0.5
+    estop_debounce_count: 5    # 連続何回で確定するか(100Hz検知 → 5で約50ms)
     speed_scale: 0.52 # 速度指令のスケーリング係数: 0.50 でほぼ司令した通りの速度になる
     # 55% はやすぎる
     # 45% おそすぎる

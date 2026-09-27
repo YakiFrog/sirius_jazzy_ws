@@ -82,6 +82,23 @@ class Roboteq : public rclcpp::Node
   std::mutex speed_mutex_;
   rclcpp::TimerBase::SharedPtr control_timer_;
 
+  // --- 非常停止(e-stop) ---
+  // ソフトe-stop(/stop) と Roboteq が報告するフォルト(FF: 低電圧/短絡/E-stop)を
+  // 統合し、閉ループ制御を安全に停止・リセットする。
+  bool software_estop_{false};   // /stop(true) 由来
+  bool hardware_estop_{false};   // FF/電圧/テレメトリ途絶 由来
+  bool estop_active_{false};     // 上記のOR。制御はこのフラグで停止する
+  int estop_bad_count_{0};       // 検知デバウンス
+  int estop_good_count_{0};
+  bool estop_detect_fault{};
+  int estop_ff_mask{};
+  double estop_min_voltage{};
+  double estop_recovery_voltage{};
+  double estop_telemetry_timeout{};
+  int estop_debounce_count{};
+  rclcpp::Time last_telemetry_time_{0, 0, RCL_ROS_TIME};
+  bool has_last_telemetry_time_{false};
+
   bool running_;
 
   rclcpp::Time last_encoder_time_{0, 0, RCL_ROS_TIME};
@@ -205,6 +222,10 @@ class Roboteq : public rclcpp::Node
   void status_publish();
   void control_loop();
   double open_loop_duty(double wheel_speed_mps) const;
+  // e-stop 状態の更新・閉ループ状態リセット・ハードウェアe-stop検知
+  void update_estop_state();
+  void reset_closed_loop_state();
+  void check_hardware_estop();
   //void odom_hs_run();
   void odom_ms_run();
   void odom_ls_run();

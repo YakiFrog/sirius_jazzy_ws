@@ -105,6 +105,15 @@ Roboteq::Roboteq() : Node("roboteq_ros2_driver")
     cl_duty_slew = this->declare_parameter("cl_duty_slew", 3000.0);
     cl_duty_lpf_tau = this->declare_parameter("cl_duty_lpf_tau", 0.08);
     cl_feedback_alpha = this->declare_parameter("cl_feedback_alpha", 0.5);
+    // 非常停止(e-stop)検知
+    // ソフトe-stop(/stop)に加え、Roboteqのフォルトフラグ・バッテリ電圧・
+    // テレメトリ途絶をe-stopとして扱い、閉ループ状態をリセットする。
+    estop_detect_fault = this->declare_parameter("estop_detect_fault", true);
+    estop_ff_mask = this->declare_parameter("estop_ff_mask", 20);  // 4=UV | 16=E-stop
+    estop_min_voltage = this->declare_parameter("estop_min_voltage", 0.0);  // 0=無効
+    estop_recovery_voltage = this->declare_parameter("estop_recovery_voltage", 0.0);
+    estop_telemetry_timeout = this->declare_parameter("estop_telemetry_timeout", 0.0);  // 0=無効
+    estop_debounce_count = this->declare_parameter("estop_debounce_count", 3);
 
     starttime = 0;
     hstimer = 0;
@@ -236,6 +245,12 @@ void Roboteq::update_parameters()
     this->get_parameter("cl_duty_slew", cl_duty_slew);
     this->get_parameter("cl_duty_lpf_tau", cl_duty_lpf_tau);
     this->get_parameter("cl_feedback_alpha", cl_feedback_alpha);
+    this->get_parameter("estop_detect_fault", estop_detect_fault);
+    this->get_parameter("estop_ff_mask", estop_ff_mask);
+    this->get_parameter("estop_min_voltage", estop_min_voltage);
+    this->get_parameter("estop_recovery_voltage", estop_recovery_voltage);
+    this->get_parameter("estop_telemetry_timeout", estop_telemetry_timeout);
+    this->get_parameter("estop_debounce_count", estop_debounce_count);
     if (closed_loop && !prev_closed_loop) {
         cl_integral_r_ = 0.0;
         cl_integral_l_ = 0.0;
@@ -310,6 +325,10 @@ void Roboteq::bumper_callback(const std_msgs::msg::Bool::SharedPtr stop_msg)
     if (stop_msg->data)
     {
         RCLCPP_INFO(this->get_logger(), "Bumper!!!");
+        software_estop_ = true;
+        // 閉ループの目標/積分を先に落としてから出力を切る。
+        // (停止中に積分が巻き上がり、解除時に暴走するのを防ぐ)
+        update_estop_state();
         safe_serial_write("!EX 1\r");
     }
 
@@ -318,11 +337,99 @@ void Roboteq::bumper_callback(const std_msgs::msg::Bool::SharedPtr stop_msg)
         RCLCPP_INFO(this->get_logger(), "Restart!!!");
         // Releasing emergency stop. Reset command values to 0 to prevent the controller
         // from resuming previous non-zero velocities from its memory.
+        software_estop_ = false;
         safe_serial_write("!G 1 0\r");
         safe_serial_write("!G 2 0\r");
         safe_serial_write("!MG\r");
         linear_x = 0.0;
         angular_z = 0.0;
+        update_estop_state();
+    }
+}
+
+void Roboteq::reset_closed_loop_state()
+{
+    std::lock_guard<std::mutex> lock(speed_mutex_);
+    target_right_speed_ = 0.0;
+    target_left_speed_ = 0.0;
+    cl_integral_r_ = 0.0;
+    cl_integral_l_ = 0.0;
+    filtered_duty_r_ = 0.0;
+    filtered_duty_l_ = 0.0;
+    last_duty_r_ = 0.0;
+    last_duty_l_ = 0.0;
+    actual_right_speed_ = 0.0;
+    actual_left_speed_ = 0.0;
+}
+
+void Roboteq::update_estop_state()
+{
+    const bool active = software_estop_ || hardware_estop_;
+    if (active == estop_active_) {
+        return;
+    }
+    estop_active_ = active;
+    // 状態遷移時は必ず閉ループ状態をリセットする。
+    reset_closed_loop_state();
+    if (active) {
+        safe_serial_write("!G 1 0\r");
+        safe_serial_write("!G 2 0\r");
+        RCLCPP_WARN(
+            this->get_logger(),
+            "E-STOP active (software=%d hardware=%d): closed-loop state reset, "
+            "motor command zeroed",
+            software_estop_ ? 1 : 0, hardware_estop_ ? 1 : 0);
+    } else {
+        RCLCPP_INFO(this->get_logger(), "E-STOP released: closed-loop state reset");
+    }
+}
+
+void Roboteq::check_hardware_estop()
+{
+    const rclcpp::Time now = this->get_clock()->now();
+    bool bad = false;
+    {
+        std::lock_guard<std::mutex> lock(telemetry_mutex_);
+        if (estop_detect_fault && telemetry_valid_ &&
+            (tel_fault_flags_ & estop_ff_mask) != 0) {
+            bad = true;
+        }
+        if (!bad && estop_min_voltage > 1e-6 && telemetry_valid_ &&
+            tel_voltage_ > 0.1) {
+            const double recover = (estop_recovery_voltage > estop_min_voltage)
+                ? estop_recovery_voltage
+                : (estop_min_voltage + 0.5);
+            if (!hardware_estop_ && tel_voltage_ < estop_min_voltage) {
+                bad = true;
+            } else if (hardware_estop_ && tel_voltage_ < recover) {
+                bad = true;
+            }
+        }
+        if (!bad && estop_telemetry_timeout > 1e-6 && has_last_telemetry_time_) {
+            const double age = (now - last_telemetry_time_).seconds();
+            if (age > estop_telemetry_timeout) {
+                bad = true;
+            }
+        }
+    }
+
+    if (bad) {
+        ++estop_bad_count_;
+        estop_good_count_ = 0;
+    } else {
+        ++estop_good_count_;
+        estop_bad_count_ = 0;
+    }
+
+    const int need = (estop_debounce_count > 1) ? estop_debounce_count : 1;
+    const bool prev = hardware_estop_;
+    if (!hardware_estop_ && estop_bad_count_ >= need) {
+        hardware_estop_ = true;
+    } else if (hardware_estop_ && estop_good_count_ >= need) {
+        hardware_estop_ = false;
+    }
+    if (hardware_estop_ != prev) {
+        update_estop_state();
     }
 }
 
@@ -368,6 +475,14 @@ void Roboteq::cmdvel_callback(const geometry_msgs::msg::Twist::SharedPtr twist_m
     // 閉ループ時は目標車輪速度(物理m/s, speed_scale前)を保存するだけ。
     // 実際の!G送出は control_loop() がエンコーダ速度をフィードバックして行う。
     if (closed_loop) {
+        // e-stop中は指令を無視して目標を0に固定する。
+        // (Nav2が停止中もcmd_velを出し続け、積分が巻き上がるのを防ぐ)
+        if (estop_active_) {
+            std::lock_guard<std::mutex> lock(speed_mutex_);
+            target_right_speed_ = 0.0;
+            target_left_speed_ = 0.0;
+            return;
+        }
         // デッドバンド補償: 到達不能な低速(デッドバンド以下)を追わせない。
         // 左右の比率を保ったまま最大速度を下限まで底上げする。
         float max_abs = std::max(std::abs(right_wheel_speed), std::abs(left_wheel_speed));
@@ -887,10 +1002,14 @@ void Roboteq::process_telemetry(const std::string &line)
         return;
     }
     telemetry_valid_ = true;
+    last_telemetry_time_ = this->get_clock()->now();
+    has_last_telemetry_time_ = true;
 }
 
 void Roboteq::status_publish()
 {
+    // e-stop検知は配信有無に関わらず run() の周期(100Hz)で実施する。
+    check_hardware_estop();
     if (!publish_status || !status_pub) {
         return;
     }
@@ -943,6 +1062,11 @@ double Roboteq::open_loop_duty(double wheel_speed_mps) const
 void Roboteq::control_loop()
 {
     if (!closed_loop) {
+        return;
+    }
+    // e-stop中は積分を進めず、出力も残さない。
+    if (estop_active_) {
+        reset_closed_loop_state();
         return;
     }
     const rclcpp::Time now = this->get_clock()->now();
