@@ -212,6 +212,9 @@ local_costmap:
       resolution: 0.05
       lethal_cost_threshold: 100
       trinary_costmap: false
+      # この版の StaticLayer は combination_method ではなく use_maximum を読む。
+      # semantic_layer を意図どおり最大値合成にする（先頭レイヤーなので実質同じだが明示）。
+      use_maximum: true
       # footprint: "[ [0.30, 0.30], [0.30, -0.30], [-0.50, -0.30], [-0.50, 0.30] ]" # ロボットの形状（ぴったりサイズ）
       footprint: "[ [0.50, 0.30], [0.50, -0.30], [-0.70, -0.30], [-0.70, 0.30] ]" # ロボットの形状 (10cmマージン, 横は5cmマージン) これをでかくしすぎるとパスが引けなくなる
       plugins: ["semantic_layer", "stvl_layer", "obstacle_layer", "inflation_layer"]
