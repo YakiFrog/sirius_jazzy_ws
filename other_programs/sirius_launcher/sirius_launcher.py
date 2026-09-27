@@ -506,7 +506,7 @@ class SiriusLauncher(QMainWindow):
             label.setStyleSheet("color: #28a745; font-weight: bold;")
         else:
             label.setText("起動中のプログラムはありません")
-            label.setStyleSheet("color: gray; font-style: italic;")
+            label.setStyleSheet("color: white; font-style: italic;")
 
     def update_tab_error_status(self):
         """全てのタブのエラー状況をスキャンして表示を更新"""

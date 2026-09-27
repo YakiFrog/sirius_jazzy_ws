@@ -168,7 +168,7 @@ class RunningProcessRow(QWidget):
         layout.setSpacing(4)
 
         self.name_label = QLabel(name)
-        self.name_label.setStyleSheet("font-weight: bold; color: #212529;")
+        self.name_label.setStyleSheet("font-weight: bold; color: white;")
         self.name_label.setToolTip(name)
         self.name_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         layout.addWidget(self.name_label, 1)
@@ -390,14 +390,14 @@ class MainWindowUI:
         from PySide6.QtWidgets import (QScrollArea, QFrame)
 
         group = QGroupBox("起動中")
-        group.setStyleSheet("QGroupBox { font-weight: bold; }")
+        group.setStyleSheet("QGroupBox { font-weight: bold; color: white; }")
         group_layout = QVBoxLayout()
         group_layout.setContentsMargins(4, 4, 4, 4)
         group_layout.setSpacing(3)
 
         count_label = QLabel("起動中のプログラムはありません")
         count_label.setAlignment(Qt.AlignCenter)
-        count_label.setStyleSheet("color: gray; font-style: italic;")
+        count_label.setStyleSheet("color: white; font-style: italic;")
         group_layout.addWidget(count_label)
 
         scroll = QScrollArea()
