@@ -98,6 +98,10 @@ global_costmap:
       width: 50
       height: 50
       track_unknown_space: false # falseにすることで、UNKNOWN領域を通過可能として扱う
+      # static_layer系(static_layer/semantic_layer)の合成をMAXにする。
+      # false(既定=上書き)だと semantic_layer が非セマンティックセルをFREE(0)で
+      # 上書きし、1枚目の static_layer が入れたPGMの壁を消してしまう。
+      use_maximum: true
       plugins: ["static_layer", "semantic_layer", "obstacle_layer", "inflation_layer"] # プラグインの読み込み順序は大事。適用順序になる。
       # ↑ semantic_layerは static_layerの後に適用。セマンティックLETHALセルを壁と同等に扱う。
       filters: ["keepout_filter"]
@@ -108,7 +112,8 @@ global_costmap:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: True
         map_topic: "/sam3/static_colored_map_grid"
-        # combination_method: 0（デフォルト=上書き）でOK。セマンティックセルが100になる。
+        # use_maximum: true（ノード共通）により、セマンティックLETHALセルだけを
+        # 引き上げ、非セマンティック/FREEセルはPGMの壁を消さない。
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
