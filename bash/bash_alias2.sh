@@ -13,6 +13,9 @@
 # PRESET: 現実自律移動セット
 # PRESET_ITEMS: rviz2real,twist_mux,llm_goal,sirius_ble_gateway_ui,pos,nav2_real,foxglove
 
+# PRESET: THETA色付き3D地図（実機）
+# PRESET_ITEMS: rviz2real,theta_capture,theta_colorize
+
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
 # GROUP_DESC: 実機のモーター、LiDAR、IMUなどを個別に起動します。デバイス接続とudev設定を確認してから使用してください。
@@ -170,6 +173,10 @@ alias sfimu='sfimu_sim'
 # Siriusランチャー起動
 alias sirius_launcher='cd ${HOME}/sirius_jazzy_ws/other_programs/sirius_launcher && python3 sirius_launcher.py'
 
+# SiriusLauncher ブラウザ版（遠隔PCからTailscale越しに操作。既定 http://<IP>:8090）
+# パスワード保護: sirius_launcher_web --password 任意  → 起動後にURLで ?pw=任意 を一度開く
+alias sirius_launcher_web='cd ${HOME}/sirius_jazzy_ws/other_programs/sirius_launcher && python3 web_server.py'
+
 # TAB: Sirius Ear関連
 # GROUP: Sirius Ear関連
 # GROUP_DESC: Sirius EarのBluetooth接続、経路、曲率、位置関連ノードを個別に起動します。
@@ -307,6 +314,9 @@ alias theta_calib_check='src && python3 "$HOME/sirius_jazzy_ws/bash/startup_bash
 # 実機校正 theta_calibration_real.yaml を使用（TFが無ければYAML姿勢にフォールバック）。
 alias rviz2theta_capture='src && ros2 launch sirius_navigation theta_capture_preview.launch.py'
 
+# VLP16点群をTHETAで色付けし /velodyne_points_colored を配信（TFがあれば姿勢はTF優先）
+alias theta_colorize='src && ros2 run sirius_navigation theta_colorize_cloud_node'
+
 # SUBGROUP: セットアップ・地図生成
 
 # 実機PCへCUDA不要の録画依存関係を初回セットアップ
@@ -317,6 +327,28 @@ alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_
 
 # 記録済みRosbagからTHETA BEV->地面点群->RTAB-Mapで路面地図を生成・保存（SAM3なし）
 alias run_offline_theta_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_theta_mapping.sh'
+
+# 3D色付き地図/オフラインSLAM用bag録画（色付き点群+生点群+IMU+THETA+TF+odom。実機）
+alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
+# 3D色付き地図/オフラインSLAM用bag録画（シミュレーション）
+alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'
+
+# 録画前に必須トピック・TF・レートが揃っているか検査（緑=OK）
+alias check_3dmap_ready='bash ~/sirius_jazzy_ws/bash/startup_bash/check_theta_3dmap_ready.sh'
+
+# 録画bagから色付き3D地図(PLY)を生成（bagを対話選択。引数でbagパス指定も可）
+alias theta_bag_to_ply='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta_bag_to_ply.sh'
+
+# 生成済み色付き3D地図(PLY)を /colored_map として配信（RViz2で表示。最新のcolored_map.plyを自動選択）
+alias pub_3dmap='src && ros2 run sirius_navigation theta_ply_publisher'
+
+# 色付き点群bagをKISS-ICP+ポーズグラフでオフラインSLAM（ファイル直読み・DDS不使用）
+# 使い方: run_theta_offline_slam <bag_dir> --start 80 --end 305 [--voxel 0.05]
+alias run_theta_offline_slam='python3 ~/sirius_jazzy_ws/other_programs/theta_3d_map/theta_offline_slam.py'
+
+# 色付き点群bagをループ閉じ込めSLAM(rtabmap)で処理し、壁2重を解消した色付き3D地図を作成
+#（bagを対話選択。引数でbagパス指定も可）
+alias run_theta_slam_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta_slam_mapping.sh'
 
 # SAM3 + SGM GPU推論Dockerサーバーを起動 (port 8080)
 alias sam3_docker_gpu='cd ~/sam3_zed_server && docker compose up sam3-zed-merged'
@@ -343,3 +375,13 @@ alias rtabmap_save='bash ~/sirius_jazzy_ws/bash/startup_bash/rtabmap_save.sh'
 
 # 作成済みセマンティックカラー地図の選択・ロード
 alias sam3_colored_map_select='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_colored_map_select.sh'
+
+# TAB: 実験的
+# GROUP: 実験的
+# GROUP_DESC: 実験的な機能（KISS-ICPで地面だけXY投影した路面マッピング→Foxglove配信）。
+
+# KISS-ICPで地面XY投影の色付き路面マップ(PNG/PLY)を生成（bagを対話選択。地面z指定可）
+alias theta_kiss_ground_map='bash ~/sirius_jazzy_ws/other_programs/theta_3d_map/run_theta_kiss_ground_map.sh'
+
+# 生成した路面マップを /ground_map(点群) と /ground_map_image(画像) で配信（Foxglove用）
+alias pub_ground_map='bash ~/sirius_jazzy_ws/other_programs/theta_3d_map/run_pub_ground_map.sh'
