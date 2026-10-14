@@ -326,6 +326,8 @@ class MainWindowUI:
                 "Sirius Ear関連",
                 "リアル実験",
                 "オフライン・マッピング",
+                "3次元地図生成・自律移動",
+                "実験的",
             ]
         for tab_name in tab_names:
             scroll = QScrollArea()

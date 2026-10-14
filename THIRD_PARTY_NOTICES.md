@@ -27,6 +27,14 @@ This software includes third party software components with the following licens
 - **Source**: https://github.com/Hokuyo-aut/urg_node2
 - **License Files**: See `src/urg_node2/LICENSE`
 
+## FAST-LIO2 (FAST_LIO_ROS2, ROS2 port)
+- **License**: GPL-2.0
+- **Source**: https://github.com/Ericsii/FAST_LIO_ROS2
+- **License Files**: See `src/FAST_LIO_ROS2/LICENSE`
+- **Note**: Retrieved as a git submodule. Requires `livox_ros_driver2` interface
+  types; this repository provides an interface-only compatibility shim at
+  `src/livox_ros_driver2` (no Livox SDK required).
+
 ---
 
 All original licenses are preserved in their respective directories under `src/`.

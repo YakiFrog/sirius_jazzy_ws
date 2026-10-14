@@ -114,13 +114,16 @@ class LaunchButton(LaunchButtonUI):
                         "以下のコマンドを実行してください：\n"
                         "sudo apt install wmctrl xdotool -y"
                     )
-                else:
+                elif self.process_manager.has_terminator_ancestor():
                     QMessageBox.warning(
                         self,
                         "警告",
                         f"「{self.name}」のターミナルタブをフォーカスできませんでした。\n"
                         "タブが手動で閉じられたか、名前が変更された可能性があります。"
                     )
+                else:
+                    # Web版などが起動したプロセスはTerminatorタブを持たない
+                    print(f"「{self.name}」はWeb版など外部で起動中です（タブなし）")
             return
             
         if self.process_manager.launch():
@@ -332,6 +335,8 @@ class SiriusLauncher(QMainWindow):
             "Sirius Ear関連",
             "リアル実験",
             "オフライン・マッピング",
+            "3次元地図生成・自律移動",
+            "実験的",
         ]
         for i, name in enumerate(tab_names_list):
             self.original_tab_names[i] = name

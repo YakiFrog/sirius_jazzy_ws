@@ -8,6 +8,9 @@
 [submodule "src/ros_tcp_endpoint"]
 	path = src/ros_tcp_endpoint
 	url = https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+[submodule "src/FAST_LIO_ROS2"]
+	path = src/FAST_LIO_ROS2
+	url = https://github.com/Ericsii/FAST_LIO_ROS2.git
 [submodule "bt_jazzy_docker"]
 	path = bt_jazzy_docker
 	url = ./bt_jazzy_docker
