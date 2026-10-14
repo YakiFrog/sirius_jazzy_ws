@@ -8,7 +8,6 @@ import signal
 import subprocess
 import tempfile
 import psutil
-from PySide6.QtCore import QTimer
 
 
 class ProcessManager:
@@ -371,13 +370,47 @@ class ProcessManager:
             print(f"タブフォーカス中にエラーが発生しました: {e}")
             return False
 
+    def _read_pid_file(self):
+        """PIDファイルから稼働中のPIDを返す（Web版など外部が書いたものも含む）"""
+        try:
+            if os.path.exists(self.pid_file):
+                with open(self.pid_file, 'r') as f:
+                    pid_str = f.read().strip()
+                if pid_str:
+                    pid = int(pid_str)
+                    if psutil.pid_exists(pid):
+                        return pid
+        except (OSError, ValueError):
+            pass
+        return None
+
+    def has_terminator_ancestor(self):
+        """このプロセスがTerminatorタブ由来かどうかを判定（Web版起動分はFalse）"""
+        if not self.pid_file_content:
+            return False
+        try:
+            proc = psutil.Process(self.pid_file_content)
+            parent = proc.parent()
+            if parent and parent.name() == 'terminator':
+                return True
+            grandparent = parent.parent() if parent else None
+            return bool(grandparent and grandparent.name() == 'terminator')
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            return False
+
     def is_running(self):
-        """プロセスが実行中かチェック"""
+        """プロセスが実行中かチェック（Web版が起動したものも検出する）"""
         if self.pid_file_content and psutil.pid_exists(self.pid_file_content):
             return True
-        else:
-            if self.pid_file_content:
-                self.pid_file_content = None
-                if os.path.exists(self.pid_file):
-                    os.remove(self.pid_file)
-            return False
+
+        # アプリ起動後にWeb版などが起動したケースをPIDファイルから拾う
+        pid = self._read_pid_file()
+        if pid:
+            self.pid_file_content = pid
+            return True
+
+        if self.pid_file_content:
+            self.pid_file_content = None
+            if os.path.exists(self.pid_file):
+                os.remove(self.pid_file)
+        return False

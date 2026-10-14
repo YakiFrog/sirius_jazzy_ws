@@ -13,8 +13,7 @@
 """
 import argparse
 import os
-import signal
-import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -22,10 +21,11 @@ from pathlib import Path
 from flask import Flask, jsonify, request, make_response
 
 from alias_parser import parse_bash_aliases
+from process_manager import ProcessManager
 
 app = Flask(__name__)
 LOCK = threading.Lock()
-PROCS = {}
+MANAGERS = {}
 BUTTONS = {}
 GROUPS = []
 PRESETS = []
@@ -33,10 +33,17 @@ ALIAS_FILE = ""
 PASSWORD = ""
 DEFAULT_DOMAIN = ""
 HOME = os.path.expanduser("~")
+RESTART_EXIT_CODE = 99
 
 
 def log_path(name):
-    return f"/tmp/sirius_web_{name.replace('/', '_')}.log"
+    # デスクトップ版(process_manager.py)と共有: /tmp/sirius_launcher_<name>.log
+    return f"/tmp/sirius_launcher_{name}.log"
+
+
+def pid_path(name):
+    # デスクトップ版(process_manager.py)と共有: /tmp/sirius_launcher_<name>.pid
+    return f"/tmp/sirius_launcher_{name}.pid"
 
 
 ERR_KEYWORDS = ("[ERROR]", "[FATAL]", "Traceback (most recent call last):")
@@ -93,53 +100,80 @@ def load_aliases(path):
     PRESETS = [{"name": n, "items": i} for n, i in presets]
 
 
+def get_manager(name):
+    """エイリアス名ごとの ProcessManager を取得（アプリ版と同じ起動方式を共有）。"""
+    m = MANAGERS.get(name)
+    if m is None:
+        m = ProcessManager(name, BUTTONS.get(name, ""))
+        MANAGERS[name] = m
+    return m
+
+
+def running_pid(name):
+    """Web版・アプリ版どちらが起動したものでも、稼働中ならPIDを返す。"""
+    m = get_manager(name)
+    if m.is_running():
+        return m.pid_file_content
+    return None
+
+
 def is_running(name):
-    e = PROCS.get(name)
-    return bool(e and e["proc"].poll() is None)
+    return get_manager(name).is_running()
+
+
+def scan_pid_files():
+    """アプリ版/Web版が起動したプロセスを拾うため /tmp のPIDファイルを走査。"""
+    names = set()
+    prefix = "sirius_launcher_"
+    suffix = ".pid"
+    try:
+        for fn in os.listdir("/tmp"):
+            if fn.startswith(prefix) and fn.endswith(suffix):
+                names.add(fn[len(prefix):-len(suffix)])
+    except OSError:
+        pass
+    return names
 
 
 def start_one(name, domain=""):
     if name not in BUTTONS:
         return False, "unknown alias"
-    if is_running(name):
+    m = get_manager(name)
+    if m.is_running():
         return True, "already running"
-    cmd = BUTTONS[name]
-    lp = log_path(name)
-    f = open(lp, "ab")
-    f.write(f"\n===== start {name} @ {time.strftime('%F %T')} (ROS_DOMAIN_ID={domain or DEFAULT_DOMAIN or '(inherit)'}) =====\n".encode())
-    f.flush()
-    env = os.environ.copy()
     use_domain = str(domain).strip() or str(DEFAULT_DOMAIN).strip()
+    old_domain = os.environ.get("ROS_DOMAIN_ID")
     if use_domain:
-        env["ROS_DOMAIN_ID"] = use_domain
-    proc = subprocess.Popen(
-        ["bash", "-lc", cmd], cwd=HOME, env=env, stdout=f, stderr=subprocess.STDOUT,
-        stdin=subprocess.DEVNULL, start_new_session=True)
-    PROCS[name] = {"proc": proc, "cmd": cmd, "log": lp, "started": time.time(),
-                   "domain": use_domain}
+        os.environ["ROS_DOMAIN_ID"] = use_domain
+    try:
+        # アプリ版と同じく Terminator の新規タブで起動する
+        ok = m.launch()
+    finally:
+        if use_domain:
+            if old_domain is None:
+                os.environ.pop("ROS_DOMAIN_ID", None)
+            else:
+                os.environ["ROS_DOMAIN_ID"] = old_domain
+    if not ok:
+        return False, "launch failed"
     return True, "started"
 
 
 def stop_one(name):
-    e = PROCS.get(name)
-    if not e:
+    m = get_manager(name)
+    if not m.is_running():
+        if os.path.exists(m.pid_file):
+            try:
+                os.remove(m.pid_file)
+            except OSError:
+                pass
         return False, "not started"
-    proc = e["proc"]
-    if proc.poll() is not None:
-        return True, "already stopped"
-    try:
-        os.killpg(os.getpgid(proc.pid), signal.SIGINT)
-    except ProcessLookupError:
-        return True, "gone"
-    for _ in range(50):
-        if proc.poll() is not None:
-            break
-        time.sleep(0.1)
-    if proc.poll() is None:
-        try:
-            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+    result = m.stop()
+    if result:
+        # アプリ版と同様に、少し待ってから強制終了しタブを閉じる
+        time.sleep(1.5)
+        m.force_kill_tree(result["pids"], result["terminator_pid"])
+        m.close_terminator_tab(result["terminator_pid"])
     return True, "stopped"
 
 
@@ -220,6 +254,7 @@ button{cursor:pointer}
  <input id="domain" type="number" min="0" max="232" style="width:76px;background:#0f1115;color:#e6e6e6;border:1px solid #333;border-radius:6px;padding:5px 8px">
  <button class="hbtn" id="sidebarBtn" onclick="toggleSidebar()">◀ 左パネル</button>
  <button class="hbtn stop" onclick="stopAll()">全て停止</button>
+ <button class="hbtn" onclick="restartServer()">⟳ サーバー再起動</button>
  <button class="hbtn" onclick="load()">再読み込み</button>
 </header>
 <div class="body">
@@ -320,6 +355,9 @@ async function toggle(n){const st=await api('/api/status');const r=st[n]&&st[n].
  if(r){await api('/api/stop',{name:n});}else{const res=await api('/api/start',{name:n,domain:dom()});if(res.error)alert(res.error);}refresh();}
 async function stopIt(n){await api('/api/stop',{name:n});refresh();}
 async function stopAll(){if(!confirm('全て停止しますか？'))return;await api('/api/stop_all',{});refresh();}
+async function restartServer(){if(!confirm('Webサーバー（SiriusLauncher Web）を再起動しますか？\\n起動中のプロセスは維持されます。'))return;
+ try{await api('/api/restart_server',{});}catch(e){}
+ setTimeout(()=>location.reload(),3000);}
 async function runPreset(n){await api('/api/preset',{name:n,domain:dom()});refresh();}
 function toggleSidebar(){const s=document.querySelector('.sidebar');s.classList.toggle('closed');document.getElementById('sidebarBtn').textContent=s.classList.contains('closed')?'▶ 左パネル':'◀ 左パネル';}
 (function(){const gutter=document.getElementById('gutter'),sb=document.querySelector('.sidebar');
@@ -369,11 +407,12 @@ def api_status():
         return jsonify({"error": "auth"}), 401
     out = {}
     with LOCK:
-        for name, e in PROCS.items():
-            p = e["proc"]
-            out[name] = {"running": p.poll() is None, "pid": p.pid,
-                         "returncode": p.returncode, "error": has_error(name),
-                         "domain": e.get("domain", "")}
+        for name in set(MANAGERS) | scan_pid_files():
+            pid = running_pid(name)
+            if pid is None:
+                continue
+            out[name] = {"running": True, "pid": pid, "returncode": None,
+                         "error": has_error(name), "domain": ""}
     return jsonify(out)
 
 
@@ -404,9 +443,35 @@ def api_stop_all():
     if not auth_ok():
         return jsonify({"error": "auth"}), 401
     with LOCK:
-        for name in list(PROCS):
+        for name in list(MANAGERS):
             stop_one(name)
     return jsonify({})
+
+
+@app.route("/api/restart_server", methods=["POST", "GET"])
+def api_restart_server():
+    """Webサーバー自身を再起動する。
+
+    起動ラッパー(スーパーバイザ)経由なら exit code 99 で終了して再起動させる。
+    直接起動されている場合は execv で自己置換を試みる。
+    """
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+
+    supervised = os.environ.get("SIRIUS_WEB_SUPERVISED") == "1"
+    argv = list(sys.argv)
+
+    def _restart():
+        time.sleep(0.5)
+        if supervised:
+            os._exit(RESTART_EXIT_CODE)
+        try:
+            os.execv(sys.executable, [sys.executable] + argv)
+        except Exception as error:  # noqa: BLE001
+            print(f"自己再起動に失敗: {error}")
+
+    threading.Thread(target=_restart, daemon=True).start()
+    return jsonify({"restarting": True})
 
 
 @app.route("/api/preset", methods=["POST"])
