@@ -17,10 +17,10 @@
 # PRESET_ITEMS: rviz2real,theta_capture,theta_colorize
 
 # PRESET: 3D地図生成セット
-# PRESET_ITEMS: roboteq,velodyne,imu,lio3d,rtab3d,rviz2real,save3d
+# PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,rtab3d
 
 # PRESET: 3D自律移動セット
-# PRESET_ITEMS: roboteq,velodyne,imu,lio3d,twist_mux,nav2_3d,rviz2real
+# PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,twist_mux,nav2_3d
 
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
@@ -391,6 +391,9 @@ alias sam3_colored_map_select='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_col
 # 3Dスタック導入 (small_gicp + FAST-LIO2)
 alias install3d='bash ~/sirius_jazzy_ws/bash/startup_bash/install_3d_stack.sh'
 
+# ロボットTFのみ起動 (robot_state_publisher。RVizなし＝遠隔/ヘッドレス/XQuartz向け)
+alias tf_real='src && ros2 launch sirius_description display.launch.py use_sim_time:=false rviz:=false'
+
 # SUBGROUP: 3D地図生成
 
 # 3D LiDAR-IMUオドメトリ (FAST-LIO2) 起動
@@ -402,6 +405,9 @@ alias save3d='bash ~/sirius_jazzy_ws/bash/startup_bash/save_3d_map.sh'
 # RTAB-Mapでループ閉じ込めしつつライブ3Dマッピング (FAST-LIO2オドメトリ使用, /cloud_mapを配信)
 alias rtab3d='src && ros2 launch sirius_navigation theta_3d_mapping.launch.py'
 
+# THETAで色付き3D点群マップを生成 (lio3dと併用。30秒ごと＋停止時にPLY保存)
+alias colored3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_map.sh'
+
 # SUBGROUP: 3D自己位置推定
 
 # 3D地図への局所自己位置推定 (small_gicp, map->odom)。初期姿勢はRVizの2D Pose Estimateで指定
@@ -411,6 +417,11 @@ alias loc3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_localization.sh'
 
 # 3D地図ベースのNav2自律移動セット (localizer + Nav2。AMCLは使用しない)
 alias nav2_3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_nav2.sh'
+
+# SUBGROUP: 表示
+
+# 3D地図表示用RViz (NUC画面用。XQuartzでは起動不可。遠隔は foxglove を使用)
+alias rviz3d='src && rviz2 -d "$HOME/sirius_jazzy_ws/install/sirius_navigation/share/sirius_navigation/rviz/theta_3d_map.rviz"'
 
 # TAB: 実験的
 # GROUP: 実験的
