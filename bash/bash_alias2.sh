@@ -389,4 +389,3 @@ alias pub_ground_map='bash ~/sirius_jazzy_ws/other_programs/theta_3d_map/run_pub
 # NUCリポジトリの版を監視/同期（originへ）
 alias sync_nuc_repo='bash ~/sirius_jazzy_ws/bash/startup_bash/sync_nuc_repo.sh sync'
 alias check_nuc_repo='bash ~/sirius_jazzy_ws/bash/startup_bash/sync_nuc_repo.sh check'
-alias watch_nuc_repo='bash ~/sirius_jazzy_ws/bash/startup_bash/sync_nuc_repo.sh watch'
