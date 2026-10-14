@@ -4,8 +4,10 @@ set -u
 WS="$HOME/sirius_jazzy_ws"
 
 cd "$WS" || exit 1
+set +u
 source /opt/ros/jazzy/setup.bash
 source "$WS/install/setup.bash"
+set -u
 
 CONFIG_DIR="${SIRIUS_FASTLIO_CONFIG_DIR:-$WS/install/sirius_navigation/share/sirius_navigation/config}"
 CONFIG_FILE="${SIRIUS_FASTLIO_CONFIG_FILE:-fast_lio_sirius.yaml}"

@@ -6,18 +6,19 @@ WS="$HOME/sirius_jazzy_ws"
 source "$WS/bash/startup_bash/sirius_3d_maps.sh"
 
 cd "$WS" || exit 1
+set +u
 source /opt/ros/jazzy/setup.bash
 source "$WS/install/setup.bash"
+set -u
 
-map_dir=$(sirius3d_pick_dir) || exit 1
-map3d=$(sirius3d_find_file "$map_dir" npy ply pcd) || {
-    echo "3D地図ファイルが見つかりません: $map_dir"
+entry=$(sirius3d_pick) || exit 1
+map3d="${entry%%|*}"
+map2d="${entry##*|}"
+if [ -z "$map2d" ]; then
+    echo "この3D地図には2D投影地図(.yaml)がありません: $map3d"
+    echo "  Nav2用に2D地図が必要です。save3d で生成するか、同名の .yaml を配置してください。"
     exit 1
-}
-map2d=$(sirius3d_find_file "$map_dir" yaml) || {
-    echo "2D投影地図(.yaml)が見つかりません: $map_dir"
-    exit 1
-}
+fi
 
 PARAMS="${HOME}/sirius_jazzy_ws/params/nav2_params.yaml"
 read -p "セマンティックコストレイヤー(semantic_layer)を有効にしますか？ (y/N): " use_semantic

@@ -20,25 +20,9 @@ for _ in $(seq 1 20); do
 done
 
 echo "[2/3] GUIセッション環境を検出"
-ENV_SRC=""
-for pid in $(pgrep -u "$USER_NAME" -x terminator 2>/dev/null) \
-           $(pgrep -u "$USER_NAME" -x gnome-shell 2>/dev/null) \
-           $(pgrep -u "$USER_NAME" -x Xorg 2>/dev/null); do
-    if [ -r "/proc/$pid/environ" ]; then
-        ENV_SRC="/proc/$pid/environ"
-        break
-    fi
-done
-
-if [ -n "$ENV_SRC" ]; then
-    echo "  $ENV_SRC から DISPLAY/DBUS を取得"
-    while IFS= read -r line; do
-        case "$line" in
-            DISPLAY=*|XAUTHORITY=*|WAYLAND_DISPLAY=*|DBUS_SESSION_BUS_ADDRESS=*|XDG_RUNTIME_DIR=*)
-                export "$line"
-                ;;
-        esac
-    done < <(tr '\0' '\n' < "$ENV_SRC")
+source "$HOME/sirius_jazzy_ws/bash/startup_bash/detect_gui_env.sh"
+if sirius_detect_gui_env; then
+    echo "  DISPLAY=$DISPLAY を使用"
     echo "[3/3] Terminatorタブで起動"
     SIRIUS_WEB_NO_BROWSER=1 bash "$LAUNCH"
 else

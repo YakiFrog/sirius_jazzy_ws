@@ -41,6 +41,10 @@ cat > "$RUN_SCRIPT" <<EOF
 #!/bin/bash
 export ROS_DOMAIN_ID="$DOMAIN"
 export SIRIUS_WEB_SUPERVISED=1
+if [ -f "$WS/bash/startup_bash/detect_gui_env.sh" ]; then
+    source "$WS/bash/startup_bash/detect_gui_env.sh"
+    sirius_detect_gui_env || true
+fi
 cd "$DIR" || exit 1
 echo -ne "\\033]0;[SiriusWebServer]\\007"
 while true; do
