@@ -166,8 +166,10 @@ button{cursor:pointer}
 .gutter:hover{background:#2f6fed}
 .sidebar.closed+.gutter{display:none}
 .panel{display:flex;flex-direction:column;min-height:0}
-.panel.presets{flex:3;border-bottom:1px solid #24303a}
-.panel.running{flex:2}
+.panel.presets{flex:0 0 55%}
+.panel.running{flex:1 1 auto}
+.hgutter{flex:0 0 6px;background:#1b2027;cursor:row-resize}
+.hgutter:hover{background:#2f6fed}
 .ptitle{padding:6px 10px;font-weight:bold;font-size:13px;background:#141920;color:#cfd6df}
 .plist{overflow:auto;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
 .preset{background:#3a2f6f;color:#fff;border-radius:6px;padding:7px 10px;font-size:13px;text-align:left;border:none}
@@ -226,6 +228,7 @@ button{cursor:pointer}
    <div class="ptitle" id="pt_presets"><span class="arr">▼</span>プリセット<button class="xbtn gray" id="pedit" style="margin-left:auto">✏ 編集</button></div>
    <div class="plist" id="presets"></div>
   </div>
+  <div class="hgutter" id="hgutter"></div>
   <div class="panel running">
    <div class="ptitle" id="pt_running"><span class="arr">▼</span>起動中 <span id="runhint" style="color:#7f8a99;font-weight:normal"></span></div>
    <div class="plist" id="running"><div class="empty">起動中のプログラムはありません</div></div>
@@ -325,6 +328,13 @@ function toggleSidebar(){const s=document.querySelector('.sidebar');s.classList.
  gutter.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
  window.addEventListener('mousemove',e=>{if(!drag)return;sb.style.width=Math.max(160,Math.min(760,e.clientX))+'px';});
  window.addEventListener('mouseup',()=>{if(!drag)return;drag=false;document.body.style.userSelect='';localStorage.setItem('sbw',parseInt(sb.style.width));});
+})();
+(function(){const g=document.getElementById('hgutter'),pr=document.querySelector('.panel.presets'),sb=document.querySelector('.sidebar');
+ const saved=localStorage.getItem('prh');if(saved)pr.style.flex='0 0 '+saved+'px';
+ let drag=false;
+ g.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
+ window.addEventListener('mousemove',e=>{if(!drag)return;const r=sb.getBoundingClientRect();let h=Math.max(80,Math.min(r.height-80,e.clientY-r.top));pr.style.flex='0 0 '+h+'px';});
+ window.addEventListener('mouseup',()=>{if(!drag)return;drag=false;document.body.style.userSelect='';localStorage.setItem('prh',parseInt(pr.style.flex.split(' ')[2]));});
 })();
 async function showLog(n){const j=await api('/api/log?name='+encodeURIComponent(n));document.getElementById('log').textContent=j.log;document.getElementById('log').style.display='block';document.getElementById('logclose').style.display='block';}
 function closeLog(){document.getElementById('log').style.display='none';document.getElementById('logclose').style.display='none';}
