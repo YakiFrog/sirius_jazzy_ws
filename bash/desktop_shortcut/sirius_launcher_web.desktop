@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Sirius Launcher (Web)
+Comment=SiriusLauncher ブラウザ版を起動してブラウザで開く
+Exec=bash -lc "bash $HOME/sirius_jazzy_ws/bash/desktop_shortcut/sirius_launcher_web.sh"
+Path=/home/kotantu-desktop/sirius_jazzy_ws
+Icon=web-browser
+Terminal=false
+Categories=Utility;Development;
