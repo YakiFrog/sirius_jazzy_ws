@@ -13,3 +13,6 @@ __pycache__/
 
 # Local Graphify knowledge graph (rebuild with `graphify extract . --code-only --no-cluster`)
 graphify-out/
+
+# Generated 3D maps (colored point-cloud PLY etc.)
+maps_waypoints/maps3d/

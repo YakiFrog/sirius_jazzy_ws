@@ -12,6 +12,20 @@
 	path = src/FAST_LIO_ROS2
 	url = https://github.com/YakiFrog/FAST_LIO_ROS2.git
 	branch = ros2
+[submodule "src/ros2_pcl_object_detection"]
+	path = src/ros2_pcl_object_detection
+	url = https://github.com/klintan/ros2_pcl_object_detection.git
+[submodule "src/rosbridge_suite"]
+	path = src/rosbridge_suite
+	url = https://github.com/RobotWebTools/rosbridge_suite.git
+	branch = jazzy
+[submodule "src/rtabmap"]
+	path = src/rtabmap
+	url = https://github.com/introlab/rtabmap.git
+[submodule "src/rtabmap_ros"]
+	path = src/rtabmap_ros
+	url = https://github.com/introlab/rtabmap_ros.git
+	branch = ros2
 [submodule "bt_jazzy_docker"]
 	path = bt_jazzy_docker
 	url = ./bt_jazzy_docker
