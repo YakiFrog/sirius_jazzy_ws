@@ -22,6 +22,12 @@
 # PRESET: 3D自律移動セット
 # PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,twist_mux,nav2_3d
 
+# PRESET: 3D地図生成セット(Webシミュ)
+# PRESET_ITEMS: rosbridge,tf_sim,lio3d_sim
+
+# PRESET: 3D自律移動セット(Webシミュ)
+# PRESET_ITEMS: rosbridge,tf_sim,lio3d_sim,twist_mux,nav2_3d_sim
+
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
 # GROUP_DESC: 実機のモーター、LiDAR、IMUなどを個別に起動します。デバイス接続とudev設定を確認してから使用してください。
@@ -384,7 +390,7 @@ alias sam3_colored_map_select='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_col
 
 # TAB: 3次元地図生成・自律移動
 # GROUP: 3次元地図生成・自律移動
-# GROUP_DESC: FAST-LIO2で3Dオドメトリを取り、small_gicpで3D地図へ局所自己位置推定し、Nav2で自律移動します。3D地図は2Dへ投影してNav2に渡します。EKF(sf_real)とは排他（odom->baseの二重配信を避ける）です。
+# GROUP_DESC: FAST-LIO2で3Dオドメトリを取り、small_gicpで3D地図へ局所自己位置推定し、Nav2で自律移動します。3D地図は2Dへ投影してNav2に渡します。EKF(sf_real)とは排他（odom->baseの二重配信を避ける）です。Webシミュレータで検証する場合は *_sim を使います（/clock・/velodyne_pointsをON、/tfはOFF）。
 
 # SUBGROUP: セットアップ
 
@@ -394,10 +400,16 @@ alias install3d='bash ~/sirius_jazzy_ws/bash/startup_bash/install_3d_stack.sh'
 # ロボットTFのみ起動 (robot_state_publisher。RVizなし＝遠隔/ヘッドレス/XQuartz向け)
 alias tf_real='src && ros2 launch sirius_description display.launch.py use_sim_time:=false rviz:=false'
 
+# ロボットTFのみ起動 (Webシミュ用。use_sim_time=true・RViz/関節GUIなし)
+alias tf_sim='src && ros2 launch sirius_description display.launch.py use_sim_time:=true rviz:=false use_gui:=false'
+
 # SUBGROUP: 3D地図生成
 
 # 3D LiDAR-IMUオドメトリ (FAST-LIO2) 起動
 alias lio3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh'
+
+# 3D LiDAR-IMUオドメトリ (FAST-LIO2) 起動 (Webシミュ用。use_sim_time=true)
+alias lio3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh sim'
 
 # 現在の点群(/cloud_map等)を3D地図として保存し2Dへ投影 (maps_waypoints/maps3d/<name>)
 alias save3d='bash ~/sirius_jazzy_ws/bash/startup_bash/save_3d_map.sh'
@@ -408,15 +420,24 @@ alias rtab3d='src && ros2 launch sirius_navigation theta_3d_mapping.launch.py'
 # THETAで色付き3D点群マップを生成 (lio3dと併用。30秒ごと＋停止時にPLY保存)
 alias colored3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_map.sh'
 
+# THETA色付き3D点群マップ生成 (Webシミュ用。ブラウザの色付き/velodyne_pointsをlio3d_sim姿勢で蓄積)
+alias colored3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_map.sh sim'
+
 # SUBGROUP: 3D自己位置推定
 
 # 3D地図への局所自己位置推定 (small_gicp, map->odom)。初期姿勢はRVizの2D Pose Estimateで指定
 alias loc3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_localization.sh'
 
+# 3D地図への局所自己位置推定 (Webシミュ用。use_sim_time=true)
+alias loc3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_localization.sh sim'
+
 # SUBGROUP: 3D自律移動
 
 # 3D地図ベースのNav2自律移動セット (localizer + Nav2。AMCLは使用しない)
 alias nav2_3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_nav2.sh'
+
+# 3D地図ベースのNav2自律移動セット (Webシミュ用。use_sim_time=true・simパラメータ)
+alias nav2_3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_nav2.sh sim'
 
 # SUBGROUP: 表示
 

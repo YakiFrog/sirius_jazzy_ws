@@ -10,7 +10,8 @@
 	url = https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
 [submodule "src/FAST_LIO_ROS2"]
 	path = src/FAST_LIO_ROS2
-	url = https://github.com/Ericsii/FAST_LIO_ROS2.git
+	url = https://github.com/YakiFrog/FAST_LIO_ROS2.git
+	branch = ros2
 [submodule "bt_jazzy_docker"]
 	path = bt_jazzy_docker
 	url = ./bt_jazzy_docker
