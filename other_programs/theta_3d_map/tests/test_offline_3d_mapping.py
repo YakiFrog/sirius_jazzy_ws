@@ -51,6 +51,32 @@ def test_weak_lidar_axis_cannot_pull_wheel_trajectory_backwards():
     np.testing.assert_allclose([p[0, 3] for p in poses], range(5), atol=1e-6)
 
 
+def test_observable_information_keeps_translation_beside_far_lever_arms():
+    # A small far wall patch and a huge farther floor. Without normalizing the
+    # rotation block by a representative length, the far points set the 1% eigen
+    # threshold and observable translation directions disappear.
+    a, b = np.meshgrid(np.linspace(-2, 2, 40), np.linspace(20, 80, 40))
+    floor = np.column_stack([a.ravel(), b.ravel(), np.zeros(a.size)])
+    wall = np.column_stack([np.full(200, 10.), np.linspace(-1, 1, 200), np.linspace(0, 2, 200)])
+    points = np.vstack([floor, wall])
+    normals = np.vstack([np.tile([0., 0., 1.], (len(floor), 1)), np.tile([1., 0., 0.], (len(wall), 1))])
+    h = np.column_stack([normals, np.cross(points, normals)])
+    sqrt_info, diagnostics, weak = m.observable_information(h, .01, .05, scale=30.)
+    # Wall translation x and floor translation z must stay observable.
+    assert np.linalg.norm(sqrt_info @ np.array([1., 0., 0., 0., 0., 0.])) > 0
+    assert np.linalg.norm(sqrt_info @ np.array([0., 0., 1., 0., 0., 0.])) > 0
+    assert 'x' not in diagnostics['dropped_axes'] and 'z' not in diagnostics['dropped_axes']
+    # Weights are mapped back to the original meter/radian parameterization.
+    e = np.array([.1, -.2, .3, .01, -.02, .03])
+    scaled = np.array([1., 1., 1., 30., 30., 30.]) * e
+    expected = np.zeros(6)
+    keep = diagnostics['keep']
+    expected[keep] = (np.sqrt(diagnostics['eigenvalues'][keep])/.05
+                      * (diagnostics['vectors'][:, keep].T @ scaled))
+    np.testing.assert_allclose(sqrt_info @ e, expected, atol=1e-9)
+    assert weak == 6 - int(keep.sum())
+
+
 def test_loop_closure_detects_revisit_and_skips_recent_pairs(tmp_path, monkeypatch):
     # 片道→同じ場所へ戻る経路。再訪ペアだけがループ候補になる。
     positions = [[k*0.5, 0., 0.] for k in range(21)] + [[(40-k)*0.5, 0.2, 0.] for k in range(21, 40)]
@@ -76,6 +102,31 @@ def test_loop_closure_detects_revisit_and_skips_recent_pairs(tmp_path, monkeypat
     # --no-loop なら候補ゼロ
     args.no_loop = True
     assert m.find_loop_edges(poses, times, cache, args)[0] == []
+
+
+def test_rejected_loop_candidate_does_not_consume_its_nodes(tmp_path, monkeypatch):
+    # ノード0で最も近い候補(0,8)のICPが不採用でも、同じノード0を使う
+    # 後続の再訪ペア(0,9)を検証して拘束にできること。
+    positions = [[k*.5, 0., 0.] for k in range(8)] + [[.05*(k-7), .3, 0.] for k in range(8, 12)]
+    poses = [m.transform(translation=p) for p in positions]
+    times = np.arange(len(poses), dtype=float)
+    cache = tmp_path/'cache'
+    cache.mkdir()
+    for k in range(len(poses)):
+        marker = -999. if k == 8 else 1.
+        np.savez(cache/f'{k:06d}.npz', xyz=np.array([[marker, 0., 0.]]), rgb=np.zeros((1, 3)))
+
+    def fake_icp(source, target, initial, args):
+        if source[0, 0] < 0:
+            return None, {'accepted': False, 'fitness': 0.0, 'reason': 'insufficient overlap'}
+        return initial, {'accepted': True, 'fitness': 1.0, 'rmse': 0.0}
+
+    monkeypatch.setattr(m, 'icp_edge', fake_icp)
+    args = SimpleNamespace(no_loop=False, loop_radius=1.0, loop_min_gap=5.0,
+                           loop_min_keyframes=8, max_iterations=30)
+    edges, diagnostics = m.find_loop_edges(poses, times, cache, args)
+    assert (0, 8) in [(d['from'], d['to']) for d in diagnostics if not d['accepted']]
+    assert (0, 9) in [(i, j) for i, j, *_ in edges], '不採用候補がノード0を塞いではいけない'
 
 
 @pytest.fixture

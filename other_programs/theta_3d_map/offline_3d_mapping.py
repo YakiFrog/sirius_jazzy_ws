@@ -45,13 +45,44 @@ def interpolate_pose(stamp, times, poses, max_gap):
     return transform(rot.as_matrix(), (1-alpha)*poses[i-1][:3, 3] + alpha*poses[i][:3, 3])
 
 
-def observable_information(jacobian, ratio, sigma):
-    """Mean point-to-plane information; discard weak directions rather than boosting them."""
-    information = jacobian.T @ jacobian / max(1, len(jacobian))
+def dropped_axis_labels(vectors, keep, to_normalized, threshold=.7):
+    """Original-frame axes whose direction is mostly covered by the discarded subspace."""
+    dropped = vectors[:, ~keep]
+    if not dropped.size:
+        return []
+    labels = []
+    for index, label in enumerate(('x', 'y', 'z', 'roll', 'pitch', 'yaw')):
+        direction = np.zeros(6)
+        direction[index] = 1.
+        direction *= to_normalized
+        projected = dropped @ (dropped.T @ direction)
+        if np.linalg.norm(projected) / np.linalg.norm(direction) > threshold:
+            labels.append(label)
+    return labels
+
+
+def observable_information(jacobian, ratio, sigma, scale=1.):
+    """Mean point-to-plane information with rotation/translation unit normalization.
+
+    Rows of `jacobian` are [normal, point x normal] in the sensor frame, so rotation
+    columns grow with the lever arm while translation columns stay unitless. Mixing
+    them lets distant points inflate the rotation block and hide genuinely observable
+    translation directions. `scale` is a representative length: rotations are divided
+    by it before the eigen test, then the weights are mapped back to the original
+    parameterization so residual units (meters, radians) are unchanged.
+    """
+    scale = max(float(scale), 1e-6)
+    to_original = np.array([1., 1., 1., 1./scale, 1./scale, 1./scale])
+    to_normalized = np.array([1., 1., 1., scale, scale, scale])
+    scaled = jacobian * to_original
+    information = scaled.T @ scaled / max(1, len(jacobian))
     values, vectors = np.linalg.eigh(information)
     keep = values > max(1e-9, values[-1] * ratio)
     weights = np.where(keep, np.maximum(values, 0), 0) / sigma**2
-    return np.diag(np.sqrt(weights)) @ vectors.T, values, int((~keep).sum())
+    sqrt_info = (np.diag(np.sqrt(weights)) @ vectors.T) * to_normalized
+    diagnostics = {'eigenvalues': values, 'vectors': vectors, 'keep': keep, 'scale': scale,
+                   'dropped_axes': dropped_axis_labels(vectors, keep, to_normalized)}
+    return sqrt_info, diagnostics, int((~keep).sum())
 
 
 def icp_edge(source, target, initial, args):
@@ -79,14 +110,25 @@ def icp_edge(source, target, initial, args):
         return None, meta
     p = moved[keep]
     normals = np.asarray(dst.normals)[indices[keep]]
+    lever = max(float(np.median(np.linalg.norm(p, axis=1))), 1e-3)
     h = np.column_stack([normals, np.cross(p, normals)])
-    sqrt_info, eigenvalues, weak = observable_information(h, args.degeneracy_ratio, args.lidar_sigma)
-    meta.update(accepted=True, eigenvalues=eigenvalues.tolist(), weak_directions=weak)
-    # Project the ICP displacement itself too. An arbitrary weak-axis shift can
-    # otherwise leak into strong residuals through finite-rotation coupling.
+    sqrt_info, degeneracy, weak = observable_information(h, args.degeneracy_ratio, args.lidar_sigma, lever)
+    meta.update(accepted=True, eigenvalues=degeneracy['eigenvalues'].tolist(), weak_directions=weak,
+                char_length_m=lever, dropped_axes=degeneracy['dropped_axes'],
+                eigenvectors=np.round(degeneracy['vectors'], 3).tolist())
+    # Project the ICP displacement itself too. The projection runs in the normalized
+    # frame so a weak-axis shift cannot leak into strong residuals through
+    # finite-rotation coupling, and only physically unobservable components are lost.
     correction = pose_error(result.transformation, initial)
-    projector = np.linalg.pinv(sqrt_info) @ sqrt_info
-    correction = projector @ correction
+    to_normalized = np.array([1., 1., 1., lever, lever, lever])
+    to_original = np.array([1., 1., 1., 1./lever, 1./lever, 1./lever])
+    normalized = to_normalized * correction
+    dropped = ~degeneracy['keep']
+    removed = (degeneracy['vectors'][:, dropped] @ (degeneracy['vectors'][:, dropped].T @ normalized)
+               if dropped.any() else np.zeros(6))
+    correction = to_original * (normalized - removed)
+    meta.update(correction_norm_m=float(np.linalg.norm(normalized)),
+                dropped_correction_m=float(np.linalg.norm(removed)))
     measured = transform(Rotation.from_rotvec(correction[3:]).as_matrix(), correction[:3]) @ initial
     return (measured, sqrt_info), meta
 
@@ -167,8 +209,33 @@ def optimize_poses(initial, edges, args, progress=None, base_from_lidar=None):
                            f_scale=2., max_nfev=args.max_iterations, x_scale='jac')
     if not np.isfinite(result.x).all():
         raise RuntimeError('Optimization produced a nonfinite trajectory')
-    return unpack(result.x), {'success': bool(result.success), 'cost': float(result.cost),
-                             'evaluations': result.nfev, 'message': result.message}
+    return unpack(result.x), {'success': bool(result.success), 'status': int(result.status),
+                             'cost': float(result.cost), 'evaluations': result.nfev,
+                             'optimality': float(result.optimality), 'message': result.message}
+
+
+def residual_breakdown(poses, edges, args, base_from_lidar):
+    """Weighted residual RMS per constraint type at the current poses.
+
+    Least-squares reports one total cost; separating wheel / LiDAR / IMU shows which
+    constraint group keeps the trajectory from converging or closing the loop.
+    """
+    values = {'wheel': [], 'lidar': [], 'imu': []}
+    for i, j, wheel, lidar, imu in edges:
+        relative = inverse(poses[i]) @ poses[j]
+        if wheel is not None:
+            values['wheel'].append(wheel_residual(relative, wheel, base_from_lidar, args))
+        if lidar is not None:
+            values['lidar'].append(lidar[1] @ pose_error(relative, lidar[0]))
+        if imu is not None:
+            values['imu'].append(Rotation.from_matrix(relative[:3, :3] @ imu.T).as_rotvec()
+                                 / args.imu_rotation_sigma)
+    report = {}
+    for name, rows in values.items():
+        parts = np.concatenate(rows) if rows else np.zeros(1)
+        report[name] = {'edges': len(rows), 'rms': float(np.sqrt(np.mean(parts**2))),
+                        'max_abs': float(np.max(np.abs(parts)))}
+    return report
 
 
 def find_loop_edges(poses, times, cache, args, progress=None):
@@ -177,7 +244,9 @@ def find_loop_edges(poses, times, cache, args, progress=None):
     候補: 現在姿勢間の距離が loop_radius 以下、キーフレーム番号差が
     loop_min_keyframes 以上、時刻差が loop_min_gap 秒以上。
     検証: 近距離の候補から順にICP。既存の受理条件（fitness/重なり/退化除去）を
-    そのまま使い、通ったものだけ拘束として採用する。1ノードにつき最大1本。
+    そのまま使い、通ったものだけ拘束として採用する。1ノードにつき採用は最大1本。
+    使用済みの印は採用後にだけ付け、不採用の候補が同じノードを使う別の再訪ペアの
+    検証を妨げないようにする。
     """
     edges, diagnostics = [], []
     n = len(poses)
@@ -203,15 +272,18 @@ def find_loop_edges(poses, times, cache, args, progress=None):
             progress.update(number-1, f'採用 {len(edges)}件')
         if i in used or j in used:
             continue
-        used.update((i, j))
         with np.load(cache/f'{i:06d}.npz') as target, np.load(cache/f'{j:06d}.npz') as source:
             relative = inverse(poses[i]) @ poses[j]
             lidar, meta = icp_edge(source['xyz'], target['xyz'], relative, args)
         meta.update({'from': i, 'to': j, 'type': 'loop',
                      'distance': distance, 'gap_s': float(times[j]-times[i])})
         diagnostics.append(meta)
-        if lidar is not None:
-            edges.append((i, j, None, lidar, None))
+        if lidar is None:
+            # Do not consume the nodes of a rejected candidate: a later, better
+            # revisit pair may still need the same start or end node.
+            continue
+        used.update((i, j))
+        edges.append((i, j, None, lidar, None))
     return edges, diagnostics
 
 
@@ -554,17 +626,24 @@ def _run(args, progress):
         # 1回目: 隣接拘束のみ。再訪候補の判定とICP初期値にこの姿勢を使う。
         progress.begin(4, '軌跡の最適化（1回目）', detail='終了割合は算出できません。経過時間と計算回数を更新します')
         poses, first_pass = optimize_poses(initial, edges, args, progress, base_from_lidar)
+        first_pass['residuals'] = residual_breakdown(poses, edges, args, base_from_lidar)
+        save_trajectory(output/'trajectory_first_pass.csv', times, poses, base_from_lidar)
         progress.finish_stage()
         progress.begin(5, 'ループ閉じ込み候補の検索')
         loop_edges, loop_diag = find_loop_edges(poses, times, cache, args, progress)
         progress.finish_stage(f'確認 {len(loop_diag)}件・採用 {len(loop_edges)}件')
         diagnostics.extend(loop_diag)
-        print(f'loop candidates={len(loop_diag)} accepted={len(loop_edges)}', flush=True)
+        accepted = [(d['from'], d['to']) for d in loop_diag if d.get('accepted')]
+        print(f'loop candidates={len(loop_diag)} accepted={len(loop_edges)} nodes={accepted}', flush=True)
         if loop_edges:
             # 2回目: ループ拘束込みで全キーフレームを再最適化。
+            # 初期値は生の初期軌道ではなく1回目の収束解を使う。生の初期軌道から
+            # 始めると、ループの強い拘束に引っ張られて隣接拘束を壊す局所解へ
+            # 落ちやすい（1回目は optimality 4.5e-3 まで収束している）。
             edges.extend(loop_edges)
             progress.begin(6, 'ループ補正を含む軌跡の最適化（2回目）', detail='終了割合は算出できません。経過時間と計算回数を更新します')
-            poses, optimization = optimize_poses(initial, edges, args, progress, base_from_lidar)
+            poses, optimization = optimize_poses(poses, edges, args, progress, base_from_lidar)
+            optimization['residuals'] = residual_breakdown(poses, edges, args, base_from_lidar)
             progress.finish_stage()
         else:
             optimization = first_pass

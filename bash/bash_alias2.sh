@@ -85,8 +85,8 @@ alias web_theta_bev='src && ros2 run sirius_navigation theta_bev_node --ros-args
 alias rviz2theta='src && rviz2 -d "$HOME/sirius_jazzy_ws/install/sirius_navigation/share/sirius_navigation/rviz/theta_bev.rviz"'
 
 # Foxglove Bridge 起動
-# ポートは8766固定（8765はDartsRobot monitor_dashboardが使用中のため）
-alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8766'
+# ポートは8766固定（8765はDartsRobot monitor_dashboardが使用中のため）。接続URLを表示する
+alias foxglove='bash ~/sirius_jazzy_ws/bash/startup_bash/start_foxglove.sh'
 
 # Unity上のZEDカメラのトピックをROS2に流す
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
@@ -340,6 +340,11 @@ alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_
 
 # 記録済みRosbagからTHETA BEV->地面点群->RTAB-Mapで路面地図を生成・保存（SAM3なし）
 alias run_offline_theta_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_theta_mapping.sh'
+
+# 3D色付き地図/オフラインSLAM用bag録画（色付き点群+生点群+IMU+THETA+TF+odom。実機）
+alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
+# 3D色付き地図/オフラインSLAM用bag録画（シミュレーション）
+alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'
 
 # 録画前に必須トピック・TF・レートが揃っているか検査（緑=OK）
 alias check_3dmap_ready='bash ~/sirius_jazzy_ws/bash/startup_bash/check_theta_3dmap_ready.sh'

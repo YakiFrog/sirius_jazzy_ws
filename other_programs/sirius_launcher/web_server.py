@@ -85,6 +85,96 @@ def clean_term_text(s):
     return s
 
 
+class TeleopBridge:
+    """十字キーパッド → /controller (ControllerInput) のブリッジ。
+
+    rclpyヘルパー(teleop_bridge.py)を遅延起動し、stdinパイプにキーコードを流す。
+    sirius_controller_node（scnエイリアス）が起動中ならリモート操作できる。
+    """
+
+    KEYS = {65, 66, 67, 68, 44, 46}  # 矢印4種 + 並進停止(,) + 旋回停止(.)
+
+    def __init__(self, script, log_path):
+        self.script = script
+        self.log_path = log_path
+        self.lock = threading.Lock()
+        self.proc = None
+        self.domain = None
+        self.error = ""
+
+    def _tail(self):
+        try:
+            with open(self.log_path, "r", errors="ignore") as f:
+                f.seek(0, os.SEEK_END)
+                size = f.tell()
+                f.seek(max(0, size - 2000))
+                return f.read().strip().replace("\n", " | ")[-300:]
+        except OSError:
+            return "(ログなし)"
+
+    def _spawn(self, domain):
+        ws = Path(self.script).resolve().parents[2]
+        cmd = (
+            "source /opt/ros/jazzy/setup.bash 2>/dev/null; "
+            f"source '{ws}/install/setup.bash' 2>/dev/null; "
+            f"exec python3 '{self.script}'"
+        )
+        env = os.environ.copy()
+        env["ROS_DOMAIN_ID"] = str(domain)
+        env.setdefault("LANG", "C.UTF-8")
+        logf = open(self.log_path, "ab", buffering=0)
+        self.proc = subprocess.Popen(
+            ["bash", "-c", cmd], stdin=subprocess.PIPE,
+            stdout=logf, stderr=subprocess.STDOUT, env=env)
+        self.domain = str(domain)
+        self.error = ""
+        time.sleep(0.3)
+        if self.proc.poll() is not None:
+            self.error = "ブリッジ起動失敗: " + self._tail()
+            raise RuntimeError(self.error)
+
+    def ensure(self, domain):
+        with self.lock:
+            if (self.proc is None or self.proc.poll() is not None
+                    or self.domain != str(domain)):
+                try:
+                    self._spawn(str(domain))
+                except Exception as e:  # noqa: BLE001
+                    self.error = str(e)
+                    return False
+            return True
+
+    def send(self, key, domain):
+        with self.lock:
+            if (self.proc is None or self.proc.poll() is not None
+                    or self.domain != str(domain)):
+                try:
+                    self._spawn(str(domain))
+                except Exception as e:  # noqa: BLE001
+                    self.error = str(e)
+                    return False
+            try:
+                self.proc.stdin.write(f"{key}\n".encode())
+                self.proc.stdin.flush()
+                self.error = ""
+                return True
+            except (BrokenPipeError, OSError):
+                self.error = "ブリッジに書き込めません（ログ参照）"
+                return False
+
+    def status(self):
+        with self.lock:
+            alive = self.proc is not None and self.proc.poll() is None
+            return {"alive": alive, "pid": (self.proc.pid if alive else 0),
+                    "domain": self.domain or "", "error": self.error}
+
+
+TELEOP = TeleopBridge(
+    str(Path(__file__).resolve().parent / "teleop_bridge.py"),
+    "/tmp/sirius_launcher_teleop_bridge.log",
+)
+
+
 class TermSession:
     """ブラウザのターミナルタブ（PTY）。対話シェル/任意コマンドを実行する。
 
@@ -602,6 +692,21 @@ button:active{transform:translateY(1px);filter:brightness(1.3)}
 button.busy{opacity:.55;pointer-events:none}
 #toast{position:fixed;top:52px;right:16px;background:#17442a;color:#e6ffe9;border:1px solid #2c7a4b;border-radius:8px;padding:10px 14px;font-size:13px;z-index:30;display:none;max-width:60vw}
 #toast.bad{background:#5a1f1f;border-color:#a33;color:#ffe9e9}
+.hbtn.on{background:#1d3a5f;border-color:#2f6fed}
+.teleop{position:fixed;right:16px;bottom:16px;z-index:25;background:#141920;border:1px solid #2a3444;border-radius:10px;padding:10px 12px;box-shadow:0 6px 24px #0008;display:none}
+.teleop.open{display:block}
+.thead{display:flex;align-items:center;gap:8px;font-size:12px;color:#9aa4b2;margin-bottom:8px}
+.tstate{color:#7f8a99}.tstate.ok{color:#7fe08a}.tstate.warn{color:#ffb86b}
+.tgrid{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,38px);gap:4px;justify-content:center}
+.tk{background:#1a2230;border:1px solid #2a3444;color:#e6e6e6;border-radius:8px;font-size:15px;cursor:pointer;user-select:none;touch-action:none}
+.tk.on{background:#2f6fed;border-color:#2f6fed}
+.tk.up{grid-area:1/2}.tk.left{grid-area:2/1}.tk.stop{grid-area:2/2;background:#3a1d1d;border-color:#a33;font-size:12px}
+.tk.stop.on{background:#a33;border-color:#a33}
+.tk.right{grid-area:2/3}.tk.down{grid-area:3/2}
+.thint{font-size:11px;color:#7f8a99;margin-top:6px;text-align:center;max-width:170px}
+.tchk{display:flex;justify-content:center;font-size:11px;color:#9aa4b2;margin-top:7px;cursor:pointer;user-select:none}
+.tchk input{margin-right:5px}
+.loghint{font-size:11px;color:#ffb86b;padding:2px 12px 0}
 </style></head><body>
 <header>
  <h1>SiriusLauncher Web</h1>
@@ -611,6 +716,7 @@ button.busy{opacity:.55;pointer-events:none}
  <input id="domain" type="number" min="0" max="232" style="width:76px;background:#0f1115;color:#e6e6e6;border:1px solid #333;border-radius:6px;padding:5px 8px">
  <button class="hbtn" id="sidebarBtn" onclick="toggleSidebar()">◀ 左パネル</button>
  <button class="hbtn" id="termBtn" onclick="toggleTerm()">⌨ ターミナル</button>
+ <button class="hbtn" id="teleopBtn" onclick="toggleTeleop()">⭕ テレオペ</button>
  <button class="hbtn" onclick="openProcs()">⧉ プロセス</button>
  <button class="hbtn stop" onclick="stopAll()">全て停止</button>
  <button class="hbtn" onclick="restartServer()">⟳ サーバー再起動</button>
@@ -678,12 +784,25 @@ button.busy{opacity:.55;pointer-events:none}
   <button class="hbtn" id="loginterrupt" onclick="sendLogControl()" disabled>Ctrl+C</button>
   <button class="hbtn" id="logclose" onclick="closeLog()">閉じる</button></div>
  <pre id="logout"></pre>
+ <div class="loghint" id="loghint"></div>
  <form class="tin" onsubmit="sendLogInput(event)">
   <input id="login" aria-label="コマンドへの入力" placeholder="番号やパスを入力してEnter" onkeydown="logKey(event)" disabled autocomplete="off">
   <button class="hbtn" id="logsend" type="submit" disabled>送信 / Enter</button>
  </form>
 </div>
 <div id="toast"></div>
+<div class="teleop" id="teleop">
+ <div class="thead"><span>⭕ テレオペ（/controller）</span><span class="tstate" id="tstate">待機</span><button class="xbtn gray" onclick="toggleTeleop(false)">✕</button></div>
+ <div class="tgrid">
+  <button class="tk up" data-k="65" title="前進 +0.1 m/s">▲</button>
+  <button class="tk left" data-k="68" title="左旋回 +0.157 rad/s">◀</button>
+  <button class="tk stop" data-k="stop" title="停止（並進・旋回をリセット）">■ 停止</button>
+  <button class="tk right" data-k="67" title="右旋回 -0.157 rad/s">▶</button>
+  <button class="tk down" data-k="66" title="後退 -0.1 m/s">▼</button>
+ </div>
+ <div class="tchk"><label><input type="checkbox" id="tkdm" checked> 離したら停止</label></div>
+ <div class="thint">押している間で加減速 / 矢印・Spaceキーでも可（scn起動中のみ有効）</div>
+</div>
 <script>
 let DATA=null,TAB=0,COLLAPSED={};
 async function api(p,body){const o={method:body?'POST':'GET',headers:{'Content-Type':'application/json'}};if(body)o.body=JSON.stringify(body);const r=await fetch(p,o);return r.json();}
@@ -750,6 +869,7 @@ async function refresh(){if(!DATA)return;const st=await api('/api/status');
  DATA.groups.forEach((g,i)=>{let c=0;g.items.forEach(it=>{const s=st[it.name];if(s&&s.error)c++;});
   const bd=document.getElementById('badge_'+i);if(bd){bd.textContent=c;bd.classList.toggle('hide',c===0);}});
  const run=Object.entries(st).filter(([n,s])=>s.running);
+ SCN_RUN=run.some(([n])=>n==='scn');
  document.getElementById('cnt').textContent='起動中: '+run.length+' 件';
  document.getElementById('runhint').textContent=run.length?('('+run.length+')'):'';
  const r=document.getElementById('running');
@@ -797,6 +917,7 @@ function toggleSidebar(){const s=document.querySelector('.sidebar');s.classList.
 })();
 let LOG_NAME=null,LOG_REQUEST=0,LOG_FOCUS=false,LOG_BUSY=false;
 async function showLog(n){LOG_NAME=n;LOG_FOCUS=true;document.getElementById('logtitle').textContent=n;
+ document.getElementById('loghint').textContent=(n==='scn')?'KeyOp操作: A=前進 B=後退 C=右旋回 D=左旋回 / ,=並進リセット .=旋回リセット（入力してEnter）':'';
  document.getElementById('logout').textContent='';document.getElementById('login').value='';
  document.getElementById('log').classList.add('open');await pollLog();}
 function closeLog(){LOG_NAME=null;LOG_REQUEST++;document.getElementById('log').classList.remove('open');}
@@ -896,7 +1017,51 @@ async function runCmd(){const inp=document.getElementById('cmdin');const v=inp.v
  ci.addEventListener('keydown',cmdKey);
  document.addEventListener('mousedown',e=>{if(!e.target.closest('.cmdwrap'))hideSugg();});})();
 function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-load();setInterval(refresh,2000);setInterval(pollTerm,700);setInterval(pollLog,700);
+// ---- テレオペ（十字キーパッド → /controller） ----
+let SCN_RUN=false,TK_TIMER=null,TK_KEY=null;
+const TK_MAP={ArrowUp:65,ArrowDown:66,ArrowLeft:68,ArrowRight:67};
+function deadmanOn(){const c=document.getElementById('tkdm');return !c||c.checked;}
+function toggleTeleop(force){const p=document.getElementById('teleop');
+ const open=(force!==undefined)?force:!p.classList.contains('open');
+ p.classList.toggle('open',open);
+ document.getElementById('teleopBtn').classList.toggle('on',open);
+ if(open)teleopPoll();
+ try{localStorage.setItem('teleop',open?'1':'0');}catch(e){}}
+async function teleopSend(k){try{const r=await api('/api/teleop',{key:k,domain:dom()});
+ if(!r.ok)toast(r.error||'テレオペ送信に失敗しました',true);teleopState(r);}catch(e){toast('テレオペ送信に失敗しました',true);}}
+function teleopState(r){const s=document.getElementById('tstate');if(!s)return;
+ let cls='',txt='';
+ if(r&&r.error){cls='warn';txt='⚠ '+r.error;}
+ else if(SCN_RUN){if(r&&r.alive){cls='ok';txt='操作可能';}else{txt='scn起動中・ブリッジ待機';}}
+ else if(r&&r.alive){cls='ok';txt='ブリッジ稼働'+(r.domain?(' (D'+r.domain+')'):'');}
+ else{txt='待機（キー操作で起動 / scn未起動）';}
+ s.className='tstate '+cls;s.textContent=txt;}
+async function teleopPoll(){if(!document.getElementById('teleop').classList.contains('open'))return;
+ try{teleopState(await api('/api/teleop/status'));}catch(e){}}
+function startHold(k,el){stopHold();el.classList.add('on');teleopSend(k);TK_KEY=k;TK_TIMER=setInterval(()=>teleopSend(k),120);}
+function stopHold(){if(TK_TIMER){clearInterval(TK_TIMER);TK_TIMER=null;}
+ if(TK_KEY!==null){const k=TK_KEY;TK_KEY=null;document.querySelectorAll('.tk').forEach(b=>b.classList.remove('on'));
+  if(k!=='stop'&&deadmanOn())teleopSend('stop');}}
+function teleopKeyGuard(e){if(!document.getElementById('teleop').classList.contains('open'))return false;
+ if(e.isComposing||e.keyCode===229)return false;
+ const t=e.target;return !(t&&t.closest&&t.closest('input,textarea,select,[contenteditable]'));}
+(function(){document.querySelectorAll('#teleop .tk').forEach(b=>{
+ b.addEventListener('pointerdown',e=>{e.preventDefault();const dk=b.dataset.k;startHold(dk==='stop'?'stop':parseInt(dk,10),b);});
+ b.addEventListener('pointerleave',stopHold);
+ b.addEventListener('contextmenu',e=>e.preventDefault());});
+ window.addEventListener('pointerup',stopHold);window.addEventListener('pointercancel',stopHold);
+ document.addEventListener('keydown',e=>{
+  if(!teleopKeyGuard(e))return;
+  if(e.key===' '){e.preventDefault();if(!e.repeat)teleopSend('stop');return;}
+  const k=TK_MAP[e.key];if(k!==undefined){e.preventDefault();teleopSend(k);}});
+ document.addEventListener('keyup',e=>{
+  if(!teleopKeyGuard(e))return;
+  if(TK_MAP[e.key]!==undefined&&deadmanOn())teleopSend('stop');});
+ const dm=document.getElementById('tkdm');
+ dm.checked=localStorage.getItem('tkdm')!=='0';
+ dm.addEventListener('change',()=>{try{localStorage.setItem('tkdm',dm.checked?'1':'0');}catch(e){}});
+ toggleTeleop(localStorage.getItem('teleop')==='1');})();
+load();setInterval(refresh,2000);setInterval(pollTerm,700);setInterval(pollLog,700);setInterval(teleopPoll,2000);
 </script></body></html>"""
 
 LOGIN = """<!doctype html><html><head><meta charset="utf-8"><title>login</title></head>
@@ -1082,6 +1247,33 @@ def api_input():
     return jsonify(result), 200 if result.get("ok") else 409
 
 
+@app.route("/api/teleop", methods=["POST"])
+def api_teleop():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    body = request.json or {}
+    key = body.get("key")
+    domain = str(body.get("domain") or DEFAULT_DOMAIN)
+    if key == "stop":
+        ok = TELEOP.send(44, domain)
+        time.sleep(0.15)
+        ok = TELEOP.send(46, domain) and ok
+    elif isinstance(key, int) and not isinstance(key, bool) and key in TeleopBridge.KEYS:
+        ok = TELEOP.send(key, domain)
+    else:
+        return jsonify({"error": "invalid key"}), 400
+    st = TELEOP.status()
+    st["ok"] = ok
+    return jsonify(st), 200 if ok else 502
+
+
+@app.route("/api/teleop/status")
+def api_teleop_status():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    return jsonify(TELEOP.status())
+
+
 @app.route("/api/ps")
 def api_ps():
     if not auth_ok():
@@ -1215,6 +1407,7 @@ def main():
         print(f"エイリアスファイルがありません: {ALIAS_FILE}")
         return 1
     load_aliases(ALIAS_FILE)
+    threading.Thread(target=TELEOP.ensure, args=(DEFAULT_DOMAIN,), daemon=True).start()
     print(f"SiriusLauncher Web: http://{args.host}:{args.port}  "
           f"({len(BUTTONS)} aliases, {len(GROUPS)} groups, {len(PRESETS)} presets)")
     if PASSWORD:
