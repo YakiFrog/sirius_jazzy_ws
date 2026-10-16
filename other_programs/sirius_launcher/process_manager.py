@@ -5,7 +5,9 @@ Sirius ROS2 Launch Manager - Process Management
 
 import os
 import signal
+import shlex
 import subprocess
+import sys
 import tempfile
 import psutil
 
@@ -22,6 +24,30 @@ class ProcessManager:
         self.tab_title = name
         self.script_path = None
         self.pid_file_content = None
+
+    def launch_web(self, domain=""):
+        """Start a persistent PTY command without requiring a desktop terminal."""
+        try:
+            script_fd, self.script_path = tempfile.mkstemp(suffix='.sh', prefix='sirius_launcher_')
+            with os.fdopen(script_fd, 'w') as script:
+                script.write('if [ -f "$HOME/.bashrc" ]; then source "$HOME/.bashrc" >/dev/null 2>&1; fi\n')
+                if domain:
+                    script.write(f'export ROS_DOMAIN_ID={shlex.quote(str(domain))}\n')
+                script.write('unset PROMPT_COMMAND\n')
+                script.write(self.command + '\nexit $?\n')
+            with open(self.log_file, 'wb'):
+                pass
+            with open(self.log_file, 'ab') as log:
+                self.process = subprocess.Popen(
+                    [sys.executable, os.path.join(os.path.dirname(__file__), 'command_session.py'),
+                     '--name', self.name, '--script', self.script_path],
+                    stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
+                    start_new_session=True)
+            self.pid_file_content = self.process.pid
+            return True
+        except OSError as error:
+            print(f"Web起動エラー: {error}")
+            return False
     
     def launch(self):
         """コマンドを新しいターミナルタブで起動"""
@@ -149,6 +175,7 @@ class ProcessManager:
             os.path.basename(part) in {
                 "record_rosbag_offline.sh",
                 "record_rosbag_offline_real.sh",
+                "record_rosbag_3dmap.sh",
             }
             for part in cmdline
         )
@@ -378,9 +405,9 @@ class ProcessManager:
                     pid_str = f.read().strip()
                 if pid_str:
                     pid = int(pid_str)
-                    if psutil.pid_exists(pid):
+                    if psutil.pid_exists(pid) and psutil.Process(pid).status() != psutil.STATUS_ZOMBIE:
                         return pid
-        except (OSError, ValueError):
+        except (OSError, ValueError, psutil.Error):
             pass
         return None
 
@@ -400,8 +427,14 @@ class ProcessManager:
 
     def is_running(self):
         """プロセスが実行中かチェック（Web版が起動したものも検出する）"""
-        if self.pid_file_content and psutil.pid_exists(self.pid_file_content):
-            return True
+        if self.process is not None:
+            self.process.poll()  # Reap Web command owners after their terminal exits.
+        if self.pid_file_content:
+            try:
+                if psutil.Process(self.pid_file_content).status() != psutil.STATUS_ZOMBIE:
+                    return True
+            except psutil.Error:
+                pass
 
         # アプリ起動後にWeb版などが起動したケースをPIDファイルから拾う
         pid = self._read_pid_file()

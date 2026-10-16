@@ -21,6 +21,11 @@ class TestProcessManager(unittest.TestCase):
     def test_detects_offline_recorder_scripts(self):
         self.assertTrue(
             ProcessManager._is_offline_recorder_script(
+                ["bash", "/workspace/bash/startup_bash/record_rosbag_3dmap.sh"]
+            )
+        )
+        self.assertTrue(
+            ProcessManager._is_offline_recorder_script(
                 ["bash", "/workspace/bash/startup_bash/record_rosbag_offline.sh"]
             )
         )
