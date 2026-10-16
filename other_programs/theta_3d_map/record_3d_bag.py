@@ -179,8 +179,8 @@ def main(argv=None):
     frames = preflight(args.mode, args.preflight_timeout, domain)
 
     topics = ['/velodyne_points', '/velodyne_points_colored', '/imu', '/odom',
-              '/tf', '/tf_static', '/Odometry', '/odometry/filtered',
-              '/theta/dual_fisheye/image_raw/compressed']
+              '/odom/filtered', '/odometry/filtered', '/magnetometer', '/Odometry',
+              '/tf', '/tf_static', '/theta/dual_fisheye/image_raw/compressed']
     if args.mode == 'sim':
         topics.extend(['/clock', '/ground_truth/odom', '/sirius_web/time_status', '/sirius_web/sensor_config'])
 
@@ -237,6 +237,8 @@ def main(argv=None):
     command = ['ros2', 'bag', 'record', '-s', 'mcap', '--storage-preset-profile', 'zstd_fast',
                '--qos-profile-overrides-path', str(qos_path), '-o', str(bag), '--topics', *topics]
     print(f'Recording: {bag}\nStop with Ctrl+C once. Wheel/IMU/LiDAR are required; live SLAM is optional.', flush=True)
+    if signal.getsignal(signal.SIGINT) == signal.SIG_IGN:
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
     child = subprocess.Popen(command, start_new_session=True)
 
     def stop(_signum=None, _frame=None):
