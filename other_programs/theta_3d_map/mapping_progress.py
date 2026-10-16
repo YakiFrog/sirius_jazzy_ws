@@ -69,7 +69,7 @@ class MappingProgress:
             self.detail = detail or self.detail
             self._print()
 
-    def complete(self, output, points, warning=False):
+    def complete(self, output, points, warning=False, warning_reason=None):
         self.stop.set()
         with self.lock:
             self.stage_done = True
@@ -79,7 +79,7 @@ class MappingProgress:
                   f'保存先: {output}\n'
                   '次の操作: view_3dmap で今回のBAGの地図を選択してください。', flush=True)
             if warning:
-                print('要確認: 最適化が収束する前に停止しました。report.jsonと地図を確認してください。', flush=True)
+                print('要確認: '+(warning_reason or '最適化が収束する前に停止しました。report.jsonと地図を確認してください。'), flush=True)
 
     def _print(self):
         # Called with the lock held: a heartbeat cannot mix different stages.

@@ -434,6 +434,8 @@ alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3
 # 車輪相対移動+IMU姿勢+縮退方向を抑制したICPで、3D地図と同一形状の色付き3D地図を生成
 # 使い方: offline_3dmap ~/rosbag2_data/<bag名> [--mode wheel] [-o 出力先]
 alias offline_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_3d_mapping.sh'
+# FastLIOをBAGから独立再計算。引数なしならBAGを番号選択。
+alias recompute_3d_lio='bash ~/sirius_jazzy_ws/bash/startup_bash/recompute_3d_lio.sh'
 
 # 生成済み3D地図をFoxgloveへ配信（引数なしで地図選択。通常・色付きの2トピック）
 alias view_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/view_3d_map.sh'

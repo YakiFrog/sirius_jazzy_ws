@@ -1,0 +1,33 @@
+# Shared backend policy. Per-robot extrinsics come from the recorded /tf_static
+# or capture/calibration.yaml; do not tune this file per bag.
+parameters:
+  frontend: auto
+  trajectory: auto
+  lio_topic: /Odometry
+  lio_wheel_fusion: auto
+  raw_cloud_topic: /velodyne_points
+  wheel_model: planar
+  voxel: 0.05
+  icp_voxel: 0.2
+  keyframe_distance: 0.5
+  keyframe_angle: 8.0
+  keyframe_interval: 2.0
+  max_sync_gap: 0.2
+  max_correspondence: 0.5
+  min_fitness: 0.3
+  degeneracy_ratio: 0.01
+  lidar_sigma: 0.05
+  wheel_position_sigma: 0.03
+  wheel_rotation_sigma: 0.03
+  wheel_vertical_sigma: 0.10
+  imu_rotation_sigma: 0.05
+  lio_position_sigma: 0.10
+  lio_rotation_sigma: 0.03
+  dynamic_range: 30.0
+  dynamic_margin: 0.20
+  dynamic_window: 8.0
+  dynamic_min_votes: 3
+  max_iterations: 2000
+  max_trajectory_speed: 2.0
+  loop_max_attempts: 6
+  surface_rounds: 3

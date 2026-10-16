@@ -125,6 +125,32 @@ def preflight(mode, timeout, domain):
                        + ('（Webシミュの「THETA 360°映像で色付け」をON）' if mode == 'sim'
                           else '（theta_colorize を起動）'))
             ng += 1
+    # A source YAML may differ from the installed/running node. Record the actual
+    # wheel-fusion switch so the offline backend does not count encoders twice.
+    fastlio_runtime = None
+    from rclpy.parameter_client import AsyncParameterClient
+    from rclpy.parameter import parameter_value_to_python
+    for name, namespace in node.get_node_names_and_namespaces():
+        if name not in ('laserMapping', 'laser_mapping', 'fast_lio', 'lio_mapping'):
+            continue
+        remote = namespace.rstrip('/')+'/'+name
+        client = AsyncParameterClient(node, remote)
+        if not client.wait_for_services(timeout_sec=.3):
+            continue
+        names = ['wheel.enabled', 'wheel.topic', 'wheel.child_frame', 'wheel.imu_to_base_translation',
+                 'wheel.imu_from_base_rotation', 'wheel.velocity_std', 'wheel.yaw_rate_std',
+                 'common.lid_topic', 'common.imu_topic', 'common.time_offset_lidar_to_imu',
+                 'preprocess.timestamp_unit', 'preprocess.scan_rate', 'preprocess.normalize_point_time',
+                 'mapping.extrinsic_R', 'mapping.extrinsic_T', 'mapping.extrinsic_est_en',
+                 'mapping.acc_cov', 'mapping.gyr_cov']
+        future = client.get_parameters(names)
+        rclpy.spin_until_future_complete(node, future, timeout_sec=1.)
+        if future.done() and future.exception() is None and future.result() is not None:
+            values = future.result().values
+            fastlio_runtime = {'node': remote, 'wheel_enabled': parameter_value_to_python(values[0]),
+                               'wheel_topic': parameter_value_to_python(values[1]), 'source': 'running node parameters',
+                               'parameters': {key: parameter_value_to_python(value) for key, value in zip(names, values)}}
+            break
     node.destroy_node()
     rclpy.shutdown()
 
@@ -137,7 +163,8 @@ def preflight(mode, timeout, domain):
         raise ValueError('回転点群を受信しましたが /sirius_web/sensor_config が未受信です。WebのROS接続を確認して再実行してください')
     return {'lidar_frame': cloud.header.frame_id, 'wheel_frame': wheel.header.frame_id,
             'wheel_child_frame': wheel.child_frame_id,
-            '_sensor_profile': json.loads(sensor_profiles[-1]) if sensor_profiles else None}
+            '_sensor_profile': json.loads(sensor_profiles[-1]) if sensor_profiles else None,
+            '_fastlio_runtime': fastlio_runtime}
 
 
 def ask(prompt, default=''):
@@ -215,6 +242,12 @@ def main(argv=None):
     capture = bag.with_name(bag.name+'.capture')
     capture.mkdir(parents=True, exist_ok=False)
     profile = frames.pop('_sensor_profile', None)
+    fastlio_runtime = frames.pop('_fastlio_runtime', None)
+    if fastlio_runtime is not None:
+        (capture/'fastlio_runtime.json').write_text(json.dumps(fastlio_runtime, indent=2)+'\n')
+    theta_config = ws/'src/sirius/sirius_navigation/config'/('theta_calibration_real.yaml' if args.mode == 'real' else 'theta_calibration.yaml')
+    if theta_config.exists():
+        shutil.copyfile(theta_config, capture/'theta_calibration.yaml')
     if profile is not None and not args.config:
         from web_sensor_profile import apply_profile
         (capture/'calibration.yaml').write_text(yaml.safe_dump(apply_profile(yaml.safe_load(config.read_text()), profile), sort_keys=False))

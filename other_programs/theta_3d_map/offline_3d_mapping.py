@@ -12,6 +12,8 @@ from scipy.sparse import lil_matrix
 from scipy.spatial import cKDTree
 from scipy.spatial.transform import Rotation, Slerp
 import yaml
+from mapping_fusion import (read_static_calibration, load_lio, wheel_weights,
+                            visibility_filter, motion_consistency)
 
 
 def transform(rotation=None, translation=None):
@@ -87,13 +89,10 @@ def observable_information(jacobian, ratio, sigma, scale=1.):
 
 def icp_edge(source, target, initial, args):
     import open3d as o3d
-    def cloud(points):
-        pc = o3d.geometry.PointCloud()
-        pc.points = o3d.utility.Vector3dVector(points)
-        pc = pc.voxel_down_sample(args.icp_voxel)
-        pc.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=args.icp_voxel*4, max_nn=30))
-        return pc
-    src, dst = cloud(source), cloud(target)
+    from mapping_geometry import registration_cloud
+    planar = not getattr(args, 'no_planar_normals', False)
+    src, _ = registration_cloud(source, args.icp_voxel, planar)
+    dst, _ = registration_cloud(target, args.icp_voxel, planar)
     if min(len(src.points), len(dst.points)) < 30:
         return None, {'accepted': False, 'reason': 'too few points'}
     result = o3d.pipelines.registration.registration_icp(
@@ -134,17 +133,62 @@ def icp_edge(source, target, initial, args):
 
 
 def wheel_residual(relative, measured, base_from_lidar, args):
+    weights = np.ones(3)
+    expected_body_z = 0.
+    if isinstance(measured, tuple):
+        measured, weights, *kinematics = measured
+        if kinematics:
+            expected_body_z = kinematics[0]
     if getattr(args, 'wheel_model', 'se3') == 'se3':
         return pose_error(relative, measured) / np.r_[np.full(3, args.wheel_position_sigma),
                                                        np.full(3, args.wheel_rotation_sigma)]
-    # Wheel encoders observe travel in the body plane and rotation about its Z.
-    # Their zero z/roll/pitch fields are NOT measurements of those quantities.
+    # Encoder pose has no measured world height. Nonholonomic motion nevertheless
+    # bounds displacement normal to the body plane. IMU-integrated increments
+    # account for pitch changes inside an interval, preserving actual ramps.
     lidar_from_base = inverse(base_from_lidar)
     predicted = base_from_lidar @ relative @ lidar_from_base
     wheel = base_from_lidar @ measured @ lidar_from_base
     error = Rotation.from_matrix(predicted[:3, :3] @ wheel[:3, :3].T).as_rotvec()
-    return np.r_[(predicted[:2, 3] - wheel[:2, 3]) / args.wheel_position_sigma,
-                 error[2] / args.wheel_rotation_sigma]
+    planar = weights * np.r_[(predicted[:2, 3] - wheel[:2, 3]) / args.wheel_position_sigma,
+                             error[2] / args.wheel_rotation_sigma]
+    distance = np.linalg.norm(wheel[:2, 3])
+    rotation = Rotation.from_matrix(predicted[:3, :3]).magnitude()
+    vertical_sigma = getattr(args, 'wheel_vertical_sigma', .10)+.5*distance*rotation
+    return np.r_[planar, (predicted[2, 3]-expected_body_z)/vertical_sigma]
+
+
+def unobservable_motion_information(lidar, sigma, scale=1.):
+    """Use the motion prior only where scan geometry cannot observe displacement."""
+    if lidar is None:
+        return np.diag(1./sigma)
+    units = np.array([1., 1., 1., scale, scale, scale])
+    _, values, vectors = np.linalg.svd(lidar[1]/units)
+    null = vectors[values < max(1e-8, values[0]*1e-8)]
+    projection = null.T @ null
+    return ((projection*units)/units[:, None])/sigma[:, None]
+
+
+def inertial_residual(first, second, measurement, args):
+    if isinstance(measurement, dict) and 'gravity' in measurement:
+        return (first[:3, :3].T@np.array([0., 0., 1.])-measurement['gravity'])/args.imu_rotation_sigma
+    relative = first[:3, :3].T@second[:3, :3]
+    if isinstance(measurement, dict):
+        angle = np.arctan2(relative[1, 0], relative[0, 0])-measurement['yaw']
+        return np.array([0., 0., np.arctan2(np.sin(angle), np.cos(angle))])/args.imu_rotation_sigma
+    return Rotation.from_matrix(relative@measurement.T).as_rotvec()/args.imu_rotation_sigma
+
+
+def pose_graph_residual(poses, edges, args, base_from_lidar):
+    values = []
+    for i, j, wheel, lidar, imu in edges:
+        relative = inverse(poses[i]) @ poses[j]
+        if wheel is not None:
+            values.extend(wheel_residual(relative, wheel, base_from_lidar, args))
+        if lidar is not None:
+            values.extend(lidar[1] @ pose_error(relative, lidar[0]))
+        if imu is not None:
+            values.extend(inertial_residual(poses[i], poses[j], imu, args))
+    return np.asarray(values)
 
 
 def seed_planar_motion(wt, wp, it, ip, max_gap, imu_from_base):
@@ -176,7 +220,7 @@ def optimize_poses(initial, edges, args, progress=None, base_from_lidar=None):
     if len(initial) < 2:
         return initial, {'success': True, 'cost': 0., 'evaluations': 0}
     base_from_lidar = np.eye(4) if base_from_lidar is None else base_from_lidar
-    wheel_size = 3 if getattr(args, 'wheel_model', 'se3') == 'planar' else 6
+    wheel_size = 4 if getattr(args, 'wheel_model', 'se3') == 'planar' else 6
     x0 = np.concatenate([np.r_[p[:3, 3], Rotation.from_matrix(p[:3, :3]).as_rotvec()] for p in initial[1:]])
     def unpack(x):
         return [initial[0]] + [transform(Rotation.from_rotvec(v[3:]).as_matrix(), v[:3])
@@ -184,18 +228,7 @@ def optimize_poses(initial, edges, args, progress=None, base_from_lidar=None):
     def residual(x):
         if progress is not None:
             progress.evaluated()
-        poses = unpack(x)
-        values = []
-        for i, j, wheel, lidar, imu in edges:
-            relative = inverse(poses[i]) @ poses[j]
-            if wheel is not None:
-                values.extend(wheel_residual(relative, wheel, base_from_lidar, args))
-            if lidar is not None:
-                measurement, sqrt_info = lidar
-                values.extend(sqrt_info @ pose_error(relative, measurement))
-            if imu is not None:
-                values.extend(Rotation.from_matrix(relative[:3, :3] @ imu.T).as_rotvec() / args.imu_rotation_sigma)
-        return np.asarray(values)
+        return pose_graph_residual(unpack(x), edges, args, base_from_lidar)
     pattern = lil_matrix((len(residual(x0)), len(x0)), dtype=int)
     row = 0
     for i, j, wheel, lidar, imu in edges:
@@ -228,8 +261,7 @@ def residual_breakdown(poses, edges, args, base_from_lidar):
         if lidar is not None:
             values['lidar'].append(lidar[1] @ pose_error(relative, lidar[0]))
         if imu is not None:
-            values['imu'].append(Rotation.from_matrix(relative[:3, :3] @ imu.T).as_rotvec()
-                                 / args.imu_rotation_sigma)
+            values['imu'].append(inertial_residual(poses[i], poses[j], imu, args))
     report = {}
     for name, rows in values.items():
         parts = np.concatenate(rows) if rows else np.zeros(1)
@@ -267,16 +299,42 @@ def find_loop_edges(poses, times, cache, args, progress=None):
     if progress is not None:
         progress.begin(5, 'ループ閉じ込み候補の確認', len(candidates))
     used = set()
+    attempts = np.zeros(n, dtype=int)
     for number, (distance, i, j) in enumerate(candidates, 1):
         if progress is not None:
             progress.update(number-1, f'採用 {len(edges)}件')
         if i in used or j in used:
             continue
+        if max(attempts[i], attempts[j]) >= getattr(args, 'loop_max_attempts', 6):
+            continue
+        attempts[i] += 1
+        attempts[j] += 1
         with np.load(cache/f'{i:06d}.npz') as target, np.load(cache/f'{j:06d}.npz') as source:
             relative = inverse(poses[i]) @ poses[j]
             lidar, meta = icp_edge(source['xyz'], target['xyz'], relative, args)
         meta.update({'from': i, 'to': j, 'type': 'loop',
                      'distance': distance, 'gap_s': float(times[j]-times[i])})
+        if (lidar is not None and getattr(args, 'verify_loops', False)
+                and (meta['rmse'] > max(3*args.lidar_sigma, args.icp_voxel)
+                     or meta.get('weak_directions', 6) > 3)):
+            lidar = None
+            meta.update(accepted=False, reason='loop surface error/observability check failed')
+        if lidar is not None and getattr(args, 'verify_loops', False):
+            # A high one-way overlap can still align the wrong parallel wall.
+            with np.load(cache/f'{i:06d}.npz') as target, np.load(cache/f'{j:06d}.npz') as source:
+                reverse, reverse_meta = icp_edge(target['xyz'], source['xyz'], inverse(relative), args)
+            cycle = pose_error(lidar[0] @ reverse[0], np.eye(4)) if reverse is not None else np.full(6, np.inf)
+            # Error is normalized by the same physical surface/noise scale across bags.
+            consistent = (reverse is not None and np.linalg.norm(cycle[:3]) <= 3*args.lidar_sigma
+                          and np.linalg.norm(cycle[3:]) <= .05
+                          and meta['rmse'] <= max(3*args.lidar_sigma, args.icp_voxel)
+                          and meta.get('weak_directions', 6) <= 3)
+            meta.update(reverse_fitness=reverse_meta.get('fitness', 0.),
+                        cycle_translation_m=float(np.linalg.norm(cycle[:3])) if reverse is not None else None,
+                        cycle_rotation_rad=float(np.linalg.norm(cycle[3:])) if reverse is not None else None)
+            if not consistent:
+                lidar = None
+                meta.update(accepted=False, reason='loop reciprocity/geometry check failed')
         diagnostics.append(meta)
         if lidar is None:
             # Do not consume the nodes of a rejected candidate: a later, better
@@ -284,6 +342,38 @@ def find_loop_edges(poses, times, cache, args, progress=None):
             continue
         used.update((i, j))
         edges.append((i, j, None, lidar, None))
+    return edges, diagnostics
+
+
+def find_covisibility_edges(poses, cache, args, progress=None):
+    """Align overlapping scans at several baselines to limit accumulated tilt drift.
+
+    Consecutive scans alone allow a small pitch error to accumulate over a long
+    floor. These constraints use actual 3D returns and retain changes of slope.
+    """
+    if getattr(args, 'no_covisibility', False):
+        return [], []
+    edges, diagnostics = [], []
+    if progress is not None:
+        progress.begin(5, '複数の距離で重なる点群の照合', len(poses))
+    for i in range(len(poses)):
+        with np.load(cache/f'{i:06d}.npz') as frame:
+            target = frame['xyz']
+        for j in range(i+2, min(i+10, len(poses)), 2):
+            relative = inverse(poses[i])@poses[j]
+            if not .7 < np.linalg.norm(relative[:3, 3]) < 4.5:
+                continue
+            with np.load(cache/f'{j:06d}.npz') as frame:
+                lidar, meta = icp_edge(frame['xyz'], target, relative, args)
+            meta.update({'from': i, 'to': j, 'type': 'covisibility'})
+            if lidar is not None and meta['rmse'] > max(3*args.lidar_sigma, args.icp_voxel):
+                lidar = None
+                meta.update(accepted=False, reason='surface alignment error too large')
+            diagnostics.append(meta)
+            if lidar is not None:
+                edges.append((i, j, None, lidar, None))
+        if progress is not None:
+            progress.update(i+1, f'採用 {len(edges)}件')
     return edges, diagnostics
 
 
@@ -371,8 +461,8 @@ class CloudDeskewer:
 
     def apply(self, xyz, offsets, reference_time):
         offsets = np.asarray(offsets).reshape(-1).astype(float)
-        if np.any(np.isfinite(offsets) & ((offsets < -.001) | (offsets > .5))):
-            raise ValueError('VLP16 time must be seconds from the PointCloud2 header (0..0.5 s)')
+        if np.any(np.isfinite(offsets) & (np.abs(offsets) > .5)):
+            raise ValueError('Point time must be seconds relative to the PointCloud2 header (-0.5..0.5 s)')
         sample_times = reference_time + offsets
         indexes = np.searchsorted(self.times, sample_times)
         indexes = np.clip(indexes, 1, len(self.times)-1)
@@ -395,12 +485,22 @@ class CloudDeskewer:
         return result
 
 
-def points(msg, args, deskewer=None):
+def points(msg, args, deskewer=None, timing_msg=None):
     from sensor_msgs_py.point_cloud2 import read_points
     p = read_points(msg, skip_nans=False)
     xyz = np.column_stack([p[n].reshape(-1) for n in ('x', 'y', 'z')]).astype(float)
-    if deskewer is not None and 'time' in p.dtype.names:
-        xyz = deskewer.apply(xyz, p['time'], stamp(msg))
+    offsets = p['time'] if 'time' in p.dtype.names else None
+    if offsets is None and timing_msg is not None:
+        raw = read_points(timing_msg, skip_nans=False)
+        raw_xyz = np.column_stack([raw[n].reshape(-1) for n in ('x', 'y', 'z')])
+        if timing_msg.header.frame_id != msg.header.frame_id or abs(stamp(timing_msg)-stamp(msg)) > 1e-6:
+            raise ValueError('Raw/colored point cloud frame or timestamp mismatch')
+        if xyz.shape != raw_xyz.shape or not np.allclose(xyz, raw_xyz, atol=1e-6, rtol=0, equal_nan=True):
+            raise ValueError('Cannot recover point times: colored cloud changed point order or XYZ')
+        if 'time' in raw.dtype.names:
+            offsets = raw['time']
+    if deskewer is not None and offsets is not None:
+        xyz = deskewer.apply(xyz, offsets, stamp(msg))
     keep = np.isfinite(xyz).all(axis=1)
     distance = np.linalg.norm(xyz, axis=1)
     keep &= (distance >= args.min_range) & (distance <= args.max_range)
@@ -520,6 +620,10 @@ def _run(args, progress):
     base_from_lidar, imu_from_lidar_rot, expected_frame = calibration(config)
     progress.begin(1, '入力データ・校正設定の確認')
     wt, wp, it, ip, frames = load_motion(args, progress)
+    from sensor_consistency import check_imu
+    sensor_health = check_imu(args, reader, wt, wp)
+    for warning in sensor_health['warnings']:
+        print('WARNING: '+warning, flush=True)
     progress.finish_stage(f'車輪姿勢 {len(wt)}件・IMU姿勢 {len(it)}件')
     if expected_frame and frames[1] != expected_frame:
         raise ValueError(f'Wheel child frame {frames[1]} differs from calibration {expected_frame}')
@@ -530,23 +634,87 @@ def _run(args, progress):
     topic = args.cloud_topic or ('/velodyne_points_colored' if counts.get('/velodyne_points_colored', 0) else '/velodyne_points')
     if not counts.get(topic, 0):
         raise ValueError(f'No point cloud messages on {topic}')
+    static_lidar, static_imu, static_transforms, sensor_frames = read_static_calibration(
+        args.bag, reader, frames[1], topic, args.imu_topic)
+    calibration_source = 'capture/config YAML'
+    if static_lidar is not None and static_imu is not None:
+        base_from_lidar = static_lidar
+        imu_from_lidar_rot = static_imu[:3, :3].T @ static_lidar[:3, :3]
+        calibration_source = 'recorded /tf_static'
+        seed = seed_planar_motion(wt, wp, it, ip, args.max_sync_gap, static_imu[:3, :3].T) if args.wheel_model == 'planar' else wp
+    else:
+        with open(config) as f:
+            wheel_config = yaml.safe_load(f)['/**']['ros__parameters'].get('wheel', {})
+        if 'imu_to_base_translation' not in wheel_config:
+            raise ValueError('Missing base/IMU calibration: record /tf_static or provide an explicit wheel.imu_to_base_translation')
+    wheel_imu_seed = seed
+    seed_times = wt
+    lio_times, lio_base, lio_report = np.array([]), [], {'available': False}
+    if args.trajectory != 'wheel' and args.mode != 'wheel':
+        with open(config) as f:
+            captured_params = yaml.safe_load(f)['/**']['ros__parameters']
+        mapping = captured_params['mapping']
+        imu_from_base = inverse(static_imu) if static_imu is not None else (
+            transform(np.array(mapping['extrinsic_R']).reshape(3, 3), mapping['extrinsic_T']) @ inverse(base_from_lidar))
+        lio_times, lio_base, lio_report = load_lio(args, reader, static_transforms, frames[1], imu_from_base)
+    using_lio = len(lio_times) >= 2
+    disagreement = False
+    runtime_path = Path(args.lio_bag or args.bag).expanduser()/'capture'/'fastlio_runtime.json'
+    runtime = json.loads(runtime_path.read_text()) if runtime_path.is_file() else {}
+    frontend_wheel = (runtime['wheel_enabled'] if isinstance(runtime.get('wheel_enabled'), bool)
+                      else captured_params.get('wheel', {}).get('enabled', False) if using_lio else False)
+    lio_has_wheel = using_lio and (args.lio_wheel_fusion == 'already-fused' or (
+        args.lio_wheel_fusion == 'auto' and frontend_wheel))
+    lio_report['wheel_already_in_frontend'] = bool(lio_has_wheel)
+    lio_report['wheel_policy_source'] = ('runtime snapshot' if isinstance(runtime.get('wheel_enabled'), bool)
+                                        else 'capture YAML (actual runtime not recorded)')
+    if args.trajectory == 'lio' and not using_lio:
+        raise ValueError(f'No usable LIO poses on {args.lio_topic}')
+    if using_lio:
+        # A rigid frame alignment preserves every relative slope and height.
+        # LIO's initial sensor frame is not necessarily a gravity-aligned frame.
+        match = next(((t, p, interpolate_pose(t, wt, seed, args.max_sync_gap))
+                      for t, p in zip(lio_times, lio_base)
+                      if interpolate_pose(t, wt, seed, args.max_sync_gap) is not None), None)
+        if match is None:
+            raise ValueError('LIO and wheel trajectories have no synchronized overlap')
+        _, lio_first, wheel_first = match
+        yaw = lambda p: np.arctan2(p[1, 0], p[0, 0])
+        rot = Rotation.from_euler('z', yaw(wheel_first)-yaw(lio_first)).as_matrix()
+        if sensor_health.get('absolute_attitude_usable') and len(it) >= 2:
+            rot = wheel_first[:3, :3]@lio_first[:3, :3].T
+            lio_report['world_alignment'] = 'full rigid alignment to consistent initial IMU attitude'
+        else:
+            lio_report['world_alignment'] = 'yaw only; absolute map vertical unvalidated'
+        alignment = transform(rot, wheel_first[:3, 3]-rot @ lio_first[:3, 3])
+        aligned_lio = [alignment @ p for p in lio_base]
+        ratio, disagreement = motion_consistency(wt, wp, lio_times, aligned_lio, interpolate_pose, args.max_sync_gap)
+        lio_report.update(median_lio_wheel_travel_ratio=ratio,
+                          initialization='wheel/IMU: sustained motion disagreement' if disagreement else 'FastLIO')
+        if not disagreement:
+            seed, seed_times = aligned_lio, lio_times
+    print(f'Trajectory: {"FastLIO + adaptive wheel" if using_lio else "wheel + IMU"}; calibration: {calibration_source}', flush=True)
     import rosbag2_py
-    r.set_filter(rosbag2_py.StorageFilter(topics=[topic]))
+    recover_times = topic != args.raw_cloud_topic and counts.get(args.raw_cloud_topic, 0)
+    r.set_filter(rosbag2_py.StorageFilter(topics=[topic] + ([args.raw_cloud_topic] if recover_times else [])))
     output.mkdir(parents=True, exist_ok=True)
     cache = output/'frames'
     cache.mkdir()
-    deskewer = CloudDeskewer(wt, seed, base_from_lidar, args.max_sync_gap) if not args.no_deskew else None
+    deskewer = CloudDeskewer(seed_times, seed, base_from_lidar, args.max_sync_gap) if not args.no_deskew else None
     origin, start = None, None
-    initial, times, imu_poses, wheel_poses = [], [], [], []
+    initial, times, imu_poses, wheel_poses, lio_poses, kinematic_poses = [], [], [], [], [], []
     skipped = colored = 0
     last_candidate = None
     cloud_frame = None
     previous_stamp = None
     progress.begin(2, '点群の読み込み・キーフレーム作成', counts[topic])
     processed = 0
-    def add_frame(msg, pose, t):
-        nonlocal skipped, colored
-        xyz, rgb, has_color = points(msg, args, deskewer)
+    recovered_scans = 0
+    def add_frame(msg, pose, t, timing_msg=None):
+        nonlocal skipped, colored, recovered_scans
+        xyz, rgb, has_color = points(msg, args, deskewer, timing_msg)
+        if timing_msg is not None and 'time' not in {f.name for f in msg.fields}:
+            recovered_scans += 1
         if len(xyz) < 30:
             skipped += 1
             return
@@ -557,10 +725,19 @@ def _run(args, progress):
         initial.append(pose)
         times.append(t)
         wheel_poses.append(interpolate_pose(t, wt, wp, args.max_sync_gap))
+        kinematic_poses.append(interpolate_pose(t, wt, wheel_imu_seed, args.max_sync_gap))
         imu_poses.append(interpolate_pose(t, it, ip, args.max_sync_gap) if len(it) >= 2 else None)
+        lio_poses.append(interpolate_pose(t, lio_times, aligned_lio, args.max_sync_gap) if using_lio else None)
         colored += int(has_color)
+    raw_scans = {}
     while r.has_next():
-        _, data, _ = r.read_next()
+        read_topic, data, _ = r.read_next()
+        if read_topic != topic:
+            raw = deserialize_message(data, PointCloud2)
+            raw_scans[stamp(raw)] = raw
+            while len(raw_scans) > 12:
+                del raw_scans[next(iter(raw_scans))]
+            continue
         processed += 1
         progress.update(processed, f'キーフレーム {len(initial)}件')
         msg = deserialize_message(data, PointCloud2)
@@ -576,10 +753,13 @@ def _run(args, progress):
         cloud_frame = msg.header.frame_id
         if start is None:
             start = t
-        if t-start < args.start or t-start > args.end:
+        if t-start > args.end:
+            break
+        if t-start < args.start:
             continue
-        base = interpolate_pose(t, wt, seed, args.max_sync_gap)
-        if base is None:
+        base = interpolate_pose(t, seed_times, seed, args.max_sync_gap)
+        wheel_base = interpolate_pose(t, wt, wp, args.max_sync_gap)
+        if base is None or wheel_base is None:
             skipped += 1
             continue
         if origin is None:
@@ -589,12 +769,12 @@ def _run(args, progress):
             else:
                 origin = inverse(base)
         pose = origin @ base @ base_from_lidar
-        last_candidate = (msg, pose, t)
+        last_candidate = (msg, pose, t, raw_scans.get(t))
         if initial:
             delta = inverse(initial[-1]) @ pose
             if np.linalg.norm(delta[:3, 3]) < args.keyframe_distance-1e-9 and np.linalg.norm(Rotation.from_matrix(delta[:3, :3]).as_rotvec()) < np.deg2rad(args.keyframe_angle) and t-times[-1] < args.keyframe_interval:
                 continue
-        add_frame(msg, pose, t)
+        add_frame(*last_candidate)
         last_candidate = None
     # Include the final partial interval so trajectory distance covers the bag.
     if last_candidate is not None:
@@ -614,13 +794,68 @@ def _run(args, progress):
         imu = None
         if imu_poses[i] is not None and imu_poses[i+1] is not None:
             imu = imu_from_lidar_rot.T @ imu_poses[i][:3, :3].T @ imu_poses[i+1][:3, :3] @ imu_from_lidar_rot
+            if sensor_health.get('absolute_attitude_usable') and not using_lio:
+                # Gravity directions below supply absolute roll/pitch. Keep only
+                # the relative yaw here rather than counting tilt twice.
+                imu = {'yaw': float(np.arctan2(imu[1, 0], imu[0, 0]))}
         wheel = inverse(base_from_lidar) @ inverse(wheel_poses[i]) @ wheel_poses[i+1] @ base_from_lidar
+        expected_body_z = (inverse(kinematic_poses[i])@kinematic_poses[i+1])[2, 3]
+        if args.wheel_model == 'planar':
+            wheel = (wheel, np.ones(3), expected_body_z)
+        if using_lio:
+            wheel_transform = wheel[0] if isinstance(wheel, tuple) else wheel
+            relative_lio = (inverse(lio_poses[i] @ base_from_lidar) @ (lio_poses[i+1] @ base_from_lidar)
+                            if lio_poses[i] is not None and lio_poses[i+1] is not None else None)
+            discrepancy = (np.linalg.norm(lidar[1] @ pose_error(relative_lio, lidar[0]))
+                           if lidar is not None and relative_lio is not None else None)
+            imu_discrepancy = (Rotation.from_matrix(relative_lio[:3, :3] @ imu.T).magnitude()
+                               if imu is not None and relative_lio is not None else 0.)
+            use_lio_edge = (relative_lio is not None and (discrepancy is None or discrepancy <= 3.)
+                            and imu_discrepancy <= max(.1, 3*args.imu_rotation_sigma))
+            if disagreement and relative_lio is not None:
+                wheel_motion = base_from_lidar @ wheel_transform @ inverse(base_from_lidar)
+                lio_motion = base_from_lidar @ relative_lio @ inverse(base_from_lidar)
+                wheel_distance = np.linalg.norm(wheel_motion[:3, 3])
+                if wheel_distance > .05 and not .5 <= np.linalg.norm(lio_motion[:3, 3])/wheel_distance <= 2.:
+                    use_lio_edge = False
+            trusted = relative_lio if use_lio_edge else (lidar[0] if lidar is not None else relative)
+            weights, fusion_meta = wheel_weights(trusted, wheel_transform, base_from_lidar, lidar,
+                                                args.wheel_position_sigma, args.wheel_rotation_sigma)
+            if args.wheel_model == 'planar':
+                wheel = (wheel_transform, weights, expected_body_z)
+            distance = np.linalg.norm(trusted[:3, 3])
+            sigma = np.r_[np.full(3, args.lio_position_sigma+.01*distance),
+                          np.full(3, args.lio_rotation_sigma)]
+            if use_lio_edge:
+                # Retain the measured surface alignment, including z/roll/pitch.
+                # A plausible LIO increment can still contain a small systematic
+                # tilt error which accumulates into doubled floors over a route.
+                motion_info = unobservable_motion_information(
+                    lidar, sigma, meta.get('char_length_m', 1.))
+                if lidar is None:
+                    lidar = (relative_lio, motion_info)
+                elif np.linalg.norm(motion_info) > 1e-8:
+                    edges.append((i, i+1, None, (relative_lio, motion_info), None))
+                if lio_has_wheel:
+                    wheel = None
+                imu = None
+            meta.update(measurement_source=('ICP + FastLIO nullspace' if use_lio_edge else 'ICP/IMU fallback'),
+                        lio_accepted=bool(use_lio_edge),
+                        fusion=fusion_meta, lio_geometric_innovation=discrepancy,
+                        lio_imu_rotation_difference_rad=float(imu_discrepancy),
+                        icp_used_as='surface measurement; accepted LIO supplies unobservable directions only')
         edges.append((i, i+1, wheel, lidar, imu))
         diagnostics.append({'from': i, 'to': i+1, **meta})
         progress.update(i+1)
         if (i+1) % 20 == 0:
             print(f'registered {i+1}/{len(initial)-1} edges', flush=True)
     progress.finish_stage()
+    if sensor_health.get('absolute_attitude_usable'):
+        for i, imu_pose in enumerate(imu_poses):
+            if imu_pose is None:
+                continue
+            gravity = imu_from_lidar_rot.T@imu_pose[:3, :3].T@np.array([0., 0., 1.])
+            edges.append((i, i, None, None, {'gravity': gravity}))
     loop_edges, first_pass = [], None
     if args.mode == 'optimize':
         # 1回目: 隣接拘束のみ。再訪候補の判定とICP初期値にこの姿勢を使う。
@@ -629,13 +864,17 @@ def _run(args, progress):
         first_pass['residuals'] = residual_breakdown(poses, edges, args, base_from_lidar)
         save_trajectory(output/'trajectory_first_pass.csv', times, poses, base_from_lidar)
         progress.finish_stage()
+        covisibility, covisibility_diag = find_covisibility_edges(poses, cache, args, progress)
+        diagnostics.extend(covisibility_diag)
+        edges.extend(covisibility)
+        print(f'covisibility edges={len(covisibility)}', flush=True)
         progress.begin(5, 'ループ閉じ込み候補の検索')
         loop_edges, loop_diag = find_loop_edges(poses, times, cache, args, progress)
         progress.finish_stage(f'確認 {len(loop_diag)}件・採用 {len(loop_edges)}件')
         diagnostics.extend(loop_diag)
         accepted = [(d['from'], d['to']) for d in loop_diag if d.get('accepted')]
         print(f'loop candidates={len(loop_diag)} accepted={len(loop_edges)} nodes={accepted}', flush=True)
-        if loop_edges:
+        if loop_edges or covisibility:
             # 2回目: ループ拘束込みで全キーフレームを再最適化。
             # 初期値は生の初期軌道ではなく1回目の収束解を使う。生の初期軌道から
             # 始めると、ループの強い拘束に引っ張られて隣接拘束を壊す局所解へ
@@ -657,6 +896,34 @@ def _run(args, progress):
         for stage, title in [(4, '軌跡の最適化（1回目）'), (5, 'ループ閉じ込み'), (6, '軌跡の最適化（2回目）')]:
             progress.begin(stage, title)
             progress.finish_stage('車輪のみのモードのためスキップ')
+    from mapping_quality import floor_overlap_quality, trajectory_jump_quality
+    quality_before = floor_overlap_quality(cache, poses, times, base_from_lidar)
+    floor_quality = quality_before
+    surface_refinement = {'enabled': False}
+    if args.mode == 'optimize' and not getattr(args, 'no_surface_refinement', False):
+        from mapping_bundle import refine_surfaces
+        progress.begin(6, '共有する面と全姿勢の同時補正', detail='床・壁の観測を複数の走行位置から照合します')
+        candidate, surface_refinement = refine_surfaces(
+            poses, cache, edges, args,
+            lambda p: pose_graph_residual(p, edges, args, base_from_lidar), progress,
+            edge_residual=lambda a, b, e: pose_graph_residual(
+                [a, b], [(0, 1, *e[2:])], args, base_from_lidar))
+        candidate_quality = floor_overlap_quality(cache, candidate, times, base_from_lidar, reference=quality_before)
+        key = 'p95_pair_p95_height_difference_m'
+        reject = (quality_before.get('revisit_pairs', 0) >= 20 and (
+            candidate_quality.get('revisit_pairs', 0) < .9*quality_before['revisit_pairs']
+            or candidate_quality.get(key, np.inf) > quality_before[key]+.002
+            or candidate_quality.get('max_pair_p95_height_difference_m', np.inf)
+               > quality_before['max_pair_p95_height_difference_m']+.005))
+        surface_refinement.update(accepted=not reject, floor_quality_before=quality_before,
+                                  floor_quality_candidate=candidate_quality)
+        if reject:
+            save_trajectory(output/'trajectory_surface_rejected.csv', times, candidate, base_from_lidar)
+            print('共有面補正は再訪床面の重なりを悪化させたため不採用。補正前の姿勢を保存します。', flush=True)
+        else:
+            poses, floor_quality = candidate, candidate_quality
+        surface_refinement['graph_residuals'] = residual_breakdown(poses, edges, args, base_from_lidar)
+        progress.finish_stage()
     # ループ拘束が最適化後にどれだけ満たされたか（閉じ残差）を記録する。
     loop_residuals = []
     for i, j, _, lidar, _ in loop_edges:
@@ -678,6 +945,17 @@ def _run(args, progress):
     progress.finish_stage()
     progress.begin(8, '点群の間引き・地図ファイルの保存', detail='通常地図・色付き地図・軌跡・レポートを保存します')
     xyz, rgb = reduce_points(np.concatenate(xyz_chunks), np.concatenate(rgb_chunks), args.voxel)
+    dynamic_report = {'enabled': not args.no_dynamic_filter}
+    if not args.no_dynamic_filter:
+        write_map(output/'map_3d_unfiltered.ply', xyz)
+        write_map(output/'map_3d_colored_unfiltered.ply', xyz, rgb)
+        def frame_points(i):
+            with np.load(cache/f'{i:06d}.npz') as frame:
+                return frame['xyz'].copy()
+        keep, dynamic_diag = visibility_filter(xyz, frame_points, poses, args, progress, times=times)
+        dynamic_report.update(dynamic_diag)
+        write_map(output/'dynamic_candidates.ply', xyz[~keep], rgb[~keep])
+        xyz, rgb = xyz[keep], rgb[keep]
     progress.update(0, f'間引き完了（{len(xyz):,}点）、ファイル保存中')
     write_map(output/'map_3d.ply', xyz)
     write_map(output/'map_3d_colored.ply', xyz, rgb)
@@ -688,38 +966,88 @@ def _run(args, progress):
     evaluation = evaluate_ground_truth(args, times, poses, base_from_lidar, output)
     if evaluation:
         print(f"3D真値との比較: 位置RMSE={evaluation['position_rmse_m']:.3f} m, 高さRMSE={evaluation['height_rmse_m']:.3f} m", flush=True)
+    lio_report['accepted_edges'] = sum(e.get('lio_accepted', False) for e in diagnostics)
+    lio_report['rejected_edges'] = sum(e.get('lio_accepted') is False for e in diagnostics)
+    jump_quality = trajectory_jump_quality(poses, times, args.max_trajectory_speed)
+    jump_warning = jump_quality['jump_count'] > 0
+    floor_warning = floor_quality.get('p95_pair_p95_height_difference_m', 0.) > .05
+    sensor_warning = bool(sensor_health['warnings'])
+    validation_status = ('needs_review' if floor_warning or jump_warning or sensor_warning or not optimization['success'] else
+                         'revisit_consistency_checked' if floor_quality.get('revisit_pairs', 0) else 'no_floor_revisit_evidence')
+    import hashlib
+    implementation = {name: hashlib.sha256((Path(__file__).parent/name).read_bytes()).hexdigest()
+                      for name in ('offline_3d_mapping.py', 'mapping_fusion.py', 'mapping_bundle.py', 'mapping_quality.py', 'mapping_geometry.py', 'mapping_progress.py', 'sensor_consistency.py')}
     report = {'ground_truth_evaluation': evaluation, 'bag': str(args.bag), 'config': str(config.resolve()), 'mode': args.mode,
+              'implementation_sha256': implementation,
+              'calibration_source': calibration_source, 'resolved_base_from_lidar': base_from_lidar.tolist(),
+              'sensor_frames': sensor_frames, 'lio': {**lio_report, 'used_for_mapping': using_lio},
+              'dynamic_filter': dynamic_report, 'recovered_point_time_scans': recovered_scans,
               'cloud_topic': topic, 'wheel_topic': args.wheel_topic, 'imu_topic': args.imu_topic,
               'wheel_frames': frames, 'keyframes': len(initial), 'points': len(xyz),
               'deskew': {'scans': deskewer.scans, 'points': deskewer.points, 'dropped_points': deskewer.dropped} if deskewer else None,
               'cloud_frame': cloud_frame, 'imu_edges': sum(e[4] is not None for e in edges),
+              'gravity_edges': sum(isinstance(e[4], dict) and 'gravity' in e[4] for e in edges),
               'loops': len(loop_edges), 'loop_residuals': loop_residuals,
+              'covisibility_edges': sum(e.get('type') == 'covisibility' and e.get('accepted', False) for e in diagnostics),
               'options': {k: (str(v) if isinstance(v, Path) else None if isinstance(v, float) and not np.isfinite(v) else v)
                           for k, v in vars(args).items()},
               'skipped_scans': skipped, 'rgb_keyframes': colored,
               'optimization_first_pass': first_pass, 'optimization': optimization,
+              'surface_refinement': surface_refinement,
+              'floor_overlap_quality': floor_quality,
+              'trajectory_jump_quality': jump_quality,
+              'validation_status': validation_status,
+              'sensor_consistency': sensor_health,
               'edges': diagnostics, 'limitations': [
                   ('Loop closure disabled (--no-loop)' if args.no_loop else
                    f'Loop closure enabled (radius {args.loop_radius:g} m, gap >= {args.loop_min_gap:g} s, '
                    f'min keyframe gap {args.loop_min_keyframes}); accepted edges: {len(loop_edges)}'),
-                  'Point time in seconds is deskewed with encoder/IMU seed motion when present; snapshot clouds without time remain unchanged',
+                  'Signed point-time seconds are deskewed using LIO or wheel/IMU motion; legacy colored scans recover time only after exact raw XYZ/order validation',
+                  'Adjacent ICP retains observable surface alignment; accepted LIO supplies only its nullspace and initialization/deskew',
+                  'Shared local plane refinement adjusts 3D poses without assuming a globally level floor',
+                  'Visibility cleaning preserves unknown/occluded space; objects never observed to move can remain',
                   'IMU orientation constraints are used only when marked valid in the bag',
                   'Ground truth is recorded for evaluation only and is never an optimization input',
-                  'Planar wheel mode leaves height, roll and pitch unconstrained by encoders']}
+                  'Encoders do not measure world height; a soft body-normal motion prior uses wheel/IMU kinematics and allows slope transitions']}
     (output/'report.json').write_text(json.dumps(report, indent=2)+'\n')
     import shutil
     shutil.copyfile(config, output/'calibration.yaml')
+    if static_lidar is not None and static_imu is not None:
+        with open(config) as f:
+            resolved = yaml.safe_load(f)
+        params = resolved['/**']['ros__parameters']
+        imu_lidar = inverse(static_imu) @ static_lidar
+        params['mapping']['extrinsic_R'] = imu_lidar[:3, :3].reshape(-1).tolist()
+        params['mapping']['extrinsic_T'] = imu_lidar[:3, 3].tolist()
+        params.setdefault('wheel', {}).update(child_frame=frames[1],
+            imu_to_base_translation=inverse(static_imu)[:3, 3].tolist(),
+            imu_from_base_rotation=inverse(static_imu)[:3, :3].reshape(-1).tolist())
+        (output/'resolved_calibration.yaml').write_text(yaml.safe_dump(resolved, sort_keys=False))
     if not args.keep_cache:
         shutil.rmtree(cache)
     print(f'Saved: {output}/map_3d.ply and map_3d_colored.ply ({len(xyz)} identical XYZ points)', flush=True)
     if not colored:
         print('WARNING: no RGB in input; colored map is neutral gray', file=sys.stderr)
-    if len(initial) > 1 and not any(e[4] is not None for e in edges):
+    if len(initial) > 1 and not using_lio and not any(e[4] is not None for e in edges):
         print('WARNING: no valid IMU orientation constraints; using wheel and LiDAR only', file=sys.stderr)
     if not optimization['success']:
         print('WARNING: optimizer stopped before convergence; inspect report.json', file=sys.stderr)
+    if floor_quality.get('revisit_pairs', 0):
+        print(f"再訪床面の高さ差（ペア内95%点の、ペア間95%値）: {floor_quality['p95_pair_p95_height_difference_m']*100:.1f} cm。絶対精度ではありません。", flush=True)
+        if floor_quality['p95_pair_p95_height_difference_m'] > .05:
+            print('WARNING: residual floor misalignment exceeds 5 cm; convergence alone does not validate map geometry', file=sys.stderr)
+    if jump_warning:
+        print(f"WARNING: {jump_quality['jump_count']} abnormal keyframe speed spike(s) detected in the optimized trajectory; inspect trajectory_jump_quality in report.json", file=sys.stderr)
     progress.finish_stage()
-    progress.complete(output, len(xyz), warning=not optimization['success'])
+    reasons = []
+    if floor_warning:
+        reasons.append('再訪床面に5cmを超える残差があります。床の重なりを確認してください。')
+    if jump_warning:
+        reasons.append('最適化後の軌跡に異常な速度の飛びがあります。地図の連続性を確認してください。')
+    if sensor_warning:
+        reasons.append('IMUの姿勢と重力方向に不整合があります。絶対的な地図の上下方向は未検証です。')
+    reason = ' '.join(reasons) or None
+    progress.complete(output, len(xyz), warning=floor_warning or jump_warning or sensor_warning or not optimization['success'], warning_reason=reason)
     return 0
 
 
@@ -729,12 +1057,27 @@ def main(argv=None):
     parser.add_argument('--directory', default='~/rosbag2_data', help='Directory to list recorded bags')
     parser.add_argument('-o', '--output', help='Empty output directory (default: <bag>/offline_3d)')
     parser.add_argument('--config', help='FAST-LIO YAML; default: bag/capture/calibration.yaml')
+    parser.add_argument('--mapping-config', default=str(Path(__file__).resolve().parents[2]/'params/offline_3d_mapping.yaml'),
+                        help='Shared backend YAML policy; explicit CLI options override it')
     parser.add_argument('--mode', choices=['optimize', 'wheel'], default='optimize')
     parser.add_argument('--cloud-topic')
+    parser.add_argument('--raw-cloud-topic', default='/velodyne_points', help='Recover missing colored-cloud point times from identical raw XYZ')
+    parser.add_argument('--trajectory', choices=['auto', 'lio', 'wheel'], default='auto',
+                        help='auto: recorded FastLIO trajectory + adaptive wheels when available; otherwise wheel/IMU')
+    parser.add_argument('--lio-topic', default='/Odometry')
+    parser.add_argument('--lio-bag', help='Optional separately recomputed FastLIO pose bag; raw sensor bag remains unchanged')
+    parser.add_argument('--frontend', choices=['auto', 'recorded', 'recompute'], default='auto',
+                        help='auto: freshly recompute FastLIO for bags captured as real; recorded: use existing poses')
+    parser.add_argument('--lio-wheel-fusion', choices=['auto', 'independent', 'already-fused'], default='auto',
+                        help='Avoid double-counting wheel factors when capture YAML says FastLIO already fused wheels')
+    parser.add_argument('--lio-position-sigma', type=float, default=.10, help='Conservative LIO relative-position floor [m]')
+    parser.add_argument('--lio-rotation-sigma', type=float, default=.03, help='Conservative LIO relative-rotation floor [rad]')
     parser.add_argument('--wheel-topic', default='/odom')
     parser.add_argument('--wheel-model', choices=['planar', 'se3'], default='planar',
                         help='planar: encoder x/y/yaw only, initialize slope height from IMU; se3: full 3D pose sensor')
     parser.add_argument('--imu-topic', default='/imu')
+    parser.add_argument('--wheel-vertical-sigma', type=float, default=.10,
+                        help='Soft body-normal displacement uncertainty [m]; world height remains free on slopes')
     parser.add_argument('--ground-truth-topic', default='/ground_truth/odom', help='Optional evaluation only; never used for mapping')
     for name, default in [('voxel', .05), ('icp-voxel', .2), ('keyframe-distance', .5),
                           ('keyframe-angle', 8.), ('keyframe-interval', 2.),
@@ -744,25 +1087,60 @@ def main(argv=None):
                           ('imu-rotation-sigma', .05), ('min-range', .5), ('max-range', 80.)]:
         parser.add_argument('--'+name, type=float, default=default)
     parser.add_argument('--max-iterations', type=int, default=300)
+    parser.add_argument('--max-trajectory-speed', type=float, default=2.0,
+                        help='Abnormal-jump check: physical keyframe-to-keyframe speed cap [m/s]')
     parser.add_argument('--max-keyframes', type=int, default=4000)
     parser.add_argument('--start', type=float, default=0., help='Seconds from first cloud')
     parser.add_argument('--end', type=float, default=float('inf'))
     parser.add_argument('--keep-cache', action='store_true')
     parser.add_argument('--no-deskew', action='store_true', help='Disable per-point encoder/IMU motion compensation')
+    parser.add_argument('--no-dynamic-filter', action='store_true', help='Keep accumulated points without visibility cleaning')
+    parser.add_argument('--dynamic-range', type=float, default=30.)
+    parser.add_argument('--dynamic-margin', type=float, default=.20, help='Conservative surface/pose uncertainty margin [m]')
+    parser.add_argument('--dynamic-window', type=float, default=8., help='Time neighborhood for contradiction votes [s]')
+    parser.add_argument('--dynamic-min-votes', type=int, default=3)
     parser.add_argument('--no-loop', action='store_true', help='Disable loop closure')
+    parser.add_argument('--no-covisibility', action='store_true', help='Disable overlapping scans at multiple baselines (diagnosis only)')
+    parser.add_argument('--no-planar-normals', action='store_true', help='Use only local PCA normals (diagnosis only)')
+    parser.add_argument('--no-surface-refinement', action='store_true', help='Disable joint scan/plane refinement (diagnosis only)')
+    parser.add_argument('--surface-rounds', type=int, default=3, help='Shared-plane reassociation/refinement passes')
+    parser.add_argument('--no-loop-verification', dest='verify_loops', action='store_false',
+                        help='Disable reciprocal ICP and geometric quality checks (diagnosis only)')
     parser.add_argument('--loop-radius', type=float, default=6.0,
                         help='Revisit candidate distance threshold [m]')
     parser.add_argument('--loop-min-gap', type=float, default=10.0,
                         help='Minimum time gap between revisited keyframes [s]')
     parser.add_argument('--loop-min-keyframes', type=int, default=8,
                         help='Minimum keyframe index gap for a revisit candidate')
+    parser.add_argument('--loop-max-attempts', type=int, default=6, help='Bound ICP trials per node; rejected candidates still allow alternatives')
+    pre, _ = parser.parse_known_args(argv)
+    policy = Path(pre.mapping_config).expanduser()
+    if not policy.is_file():
+        parser.error(f'Mapping policy not found: {policy}')
+    with policy.open() as f:
+        defaults = yaml.safe_load(f).get('parameters', {})
+    actions = {action.dest: action for action in parser._actions}
+    for key, value in defaults.items():
+        if key not in actions or key in {'bag', 'config', 'output', 'directory', 'mapping_config', 'help'}:
+            parser.error(f'Unsupported mapping policy key: {key}')
+        if actions[key].choices and value not in actions[key].choices:
+            parser.error(f'Invalid mapping policy value: {key}={value}')
+    parser.set_defaults(**defaults)
     args = parser.parse_args(argv)
     positive = [args.voxel, args.icp_voxel, args.keyframe_distance, args.keyframe_angle,
                 args.keyframe_interval, args.max_sync_gap, args.max_correspondence,
                 args.lidar_sigma, args.wheel_position_sigma, args.wheel_rotation_sigma,
-                args.imu_rotation_sigma, args.max_range, args.loop_radius, args.loop_min_gap]
+                args.imu_rotation_sigma, args.max_range, args.loop_radius, args.loop_min_gap,
+                args.lio_position_sigma, args.lio_rotation_sigma, args.dynamic_range, args.dynamic_margin, args.dynamic_window,
+                args.wheel_vertical_sigma, args.max_trajectory_speed]
     if not all(np.isfinite(v) and v > 0 for v in positive) or not 0 < args.degeneracy_ratio < 1 or not 0 < args.min_fitness <= 1 or args.start < 0 or args.end < args.start or args.max_iterations < 1 or args.max_keyframes < 1 or args.loop_min_keyframes < 1:
         parser.error('Invalid range, noise, optimizer, loop, or sampling option')
+    if args.dynamic_min_votes < 2:
+        parser.error('--dynamic-min-votes must be at least 2')
+    if args.loop_max_attempts < 1:
+        parser.error('--loop-max-attempts must be positive')
+    if not 1 <= args.surface_rounds <= 10:
+        parser.error('--surface-rounds must be between 1 and 10')
     try:
         if args.bag is None:
             from map_selection import bag_candidates, choose_numbered, next_output_directory
@@ -772,6 +1150,31 @@ def main(argv=None):
             if args.output is None:
                 args.output = str(next_output_directory(args.bag))
             print(f'選択したBAG: {args.bag}\n保存先: {args.output}', flush=True)
+        raw_bag = Path(args.bag).expanduser().resolve()
+        destination = Path(args.output).expanduser() if args.output else raw_bag/'offline_3d'
+        if destination.exists() and (not destination.is_dir() or any(destination.iterdir())):
+            raise ValueError(f'Output is not empty: {destination}. Use another --output directory.')
+        capture_record = raw_bag/'capture/recording.json'
+        capture_mode = json.loads(capture_record.read_text()).get('mode') if capture_record.is_file() else None
+        recompute = args.frontend == 'recompute' or (args.frontend == 'auto' and capture_mode == 'real')
+        if recompute and args.lio_bag is None and args.mode != 'wheel' and args.trajectory != 'wheel':
+            import subprocess
+            pose_bag = raw_bag/'recomputed_lio'
+            number = 2
+            while pose_bag.exists():
+                pose_bag = raw_bag/f'recomputed_lio_{number}'
+                number += 1
+            print('実機BAG: 新しい地図・初期化状態でFastLIO＋車輪を先に再計算します。元BAGは変更しません。', flush=True)
+            command = [sys.executable, str(Path(__file__).with_name('recompute_fastlio.py')),
+                       str(raw_bag), '--output', str(pose_bag)]
+            if args.config:
+                command.extend(['--config', str(args.config)])
+            if np.isfinite(args.end):
+                command.extend(['--duration', str(args.end+2.)])
+            result = subprocess.run(command)
+            if result.returncode:
+                raise RuntimeError('FastLIO recomputation failed; see the pose bag log. --frontend recorded uses recorded/fallback poses explicitly.')
+            args.lio_bag = str(pose_bag)
         return run(args)
     except (ValueError, RuntimeError, ImportError, OSError, EOFError) as exc:
         print(f'ERROR: {exc}', file=sys.stderr)

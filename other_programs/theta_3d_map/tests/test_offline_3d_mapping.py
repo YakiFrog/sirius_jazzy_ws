@@ -32,6 +32,42 @@ def test_interpolation_does_not_extrapolate_or_bridge_gaps():
     np.testing.assert_allclose(m.interpolate_pose(.5, np.array([0., 1.]), poses, 1)[:3, 3], [1, 0, 0])
 
 
+@pytest.mark.parametrize('wheel_fusion', ['auto', 'already-fused'])
+def test_recorded_fastlio_is_used_and_shared_imu_is_not_counted_twice(synthetic_bag, wheel_fusion):
+    import rosbag2_py
+    from rclpy.serialization import serialize_message
+    from nav_msgs.msg import Odometry
+    import shutil
+    bag = synthetic_bag.parent/'with_lio'
+    writer = rosbag2_py.SequentialWriter()
+    writer.open(rosbag2_py.StorageOptions(uri=str(bag), storage_id='mcap'), rosbag2_py.ConverterOptions('', ''))
+    source = m.reader(synthetic_bag)
+    for i, topic in enumerate(source.get_all_topics_and_types()):
+        writer.create_topic(rosbag2_py.TopicMetadata(id=i, name=topic.name, type=topic.type, serialization_format='cdr'))
+    writer.create_topic(rosbag2_py.TopicMetadata(id=99, name='/Odometry', type='nav_msgs/msg/Odometry', serialization_format='cdr'))
+    while source.has_next():
+        topic, data, ns = source.read_next()
+        writer.write(topic, data, ns)
+        if topic == '/odom':
+            odom = Odometry()
+            odom.header.frame_id, odom.child_frame_id = 'camera_init', 'body'
+            odom.header.stamp.sec, odom.header.stamp.nanosec = divmod(ns, 1_000_000_000)
+            odom.pose.pose.orientation.w = 1.
+            odom.pose.pose.position.x = 17.+(ns-10_000_000_000)*1e-9
+            odom.pose.pose.position.z = .3  # FAST-LIO body is IMU, not footprint.
+            writer.write('/Odometry', serialize_message(odom), ns)
+    del writer
+    shutil.copytree(synthetic_bag/'capture', bag/'capture')
+    assert m.main([str(bag), '--lio-wheel-fusion', wheel_fusion, '--no-loop']) == 0
+    report = json.loads((bag/'offline_3d/report.json').read_text())
+    initial = np.loadtxt(bag/'offline_3d/trajectory_initial.csv', delimiter=',', skiprows=1)
+    assert report['lio']['used_for_mapping'] is True
+    assert report['imu_edges'] == 0
+    np.testing.assert_allclose(initial[-1, 1:4], [2, 0, 0], atol=1e-6)
+    assert report['lio']['wheel_already_in_frontend'] == (wheel_fusion == 'already-fused')
+    assert report['optimization']['residuals']['wheel']['edges'] == (0 if wheel_fusion == 'already-fused' else report['keyframes']-1)
+
+
 def test_weak_lidar_axis_cannot_pull_wheel_trajectory_backwards():
     # Parallel wall and floor have no normal component along the travel axis.
     h = np.zeros((120, 6))
@@ -181,6 +217,57 @@ def synthetic_bag(tmp_path):
                   'child_frame': 'sirius3/base_footprint'}}}}
     (capture/'calibration.yaml').write_text(yaml.safe_dump(config))
     return bag
+
+
+def test_frozen_lio_falls_back_without_collapsing_a_moving_map(synthetic_bag):
+    import rosbag2_py
+    from rclpy.serialization import serialize_message, deserialize_message
+    from nav_msgs.msg import Odometry
+    from sensor_msgs.msg import PointCloud2, Imu
+    from sensor_msgs_py.point_cloud2 import read_points, create_cloud
+    import shutil
+    source = m.reader(synthetic_bag, ['/velodyne_points'])
+    _, data, _ = source.read_next()
+    template = deserialize_message(data, PointCloud2)
+    original = read_points(template, skip_nans=False)
+    world = np.column_stack([original[n] for n in ('x', 'y', 'z')]) + [.05, 0, .85]
+    bag = synthetic_bag.parent/'frozen_lio'
+    writer = rosbag2_py.SequentialWriter()
+    writer.open(rosbag2_py.StorageOptions(uri=str(bag), storage_id='mcap'), rosbag2_py.ConverterOptions('', ''))
+    for i, (topic, typ) in enumerate([('/velodyne_points', 'sensor_msgs/msg/PointCloud2'),
+                                    ('/odom', 'nav_msgs/msg/Odometry'), ('/Odometry', 'nav_msgs/msg/Odometry'),
+                                    ('/imu', 'sensor_msgs/msg/Imu')]):
+        writer.create_topic(rosbag2_py.TopicMetadata(id=i, name=topic, type=typ, serialization_format='cdr'))
+    for i in range(201):
+        ns = 10_000_000_000+i*50_000_000
+        distance = i*.05
+        header = template.header
+        header.stamp.sec, header.stamp.nanosec = divmod(ns, 1_000_000_000)
+        cloud = create_cloud(header, template.fields, np.column_stack([world-[distance+.05, 0, .85], original['rgb']]).astype('f4'))
+        wheel = Odometry()
+        wheel.header.stamp = header.stamp
+        wheel.header.frame_id, wheel.child_frame_id = 'sirius3/odom', 'sirius3/base_footprint'
+        wheel.pose.pose.position.x = 5+distance
+        wheel.pose.pose.orientation.w = 1.
+        lio = Odometry()
+        lio.header.stamp = header.stamp
+        lio.header.frame_id, lio.child_frame_id = 'camera_init', 'body'
+        lio.pose.pose.position.x, lio.pose.pose.position.z = 17., .3
+        lio.pose.pose.orientation.w = 1.
+        imu = Imu()
+        imu.header.stamp = header.stamp
+        imu.orientation.w = 1.
+        for topic, msg in [('/velodyne_points', cloud), ('/odom', wheel), ('/Odometry', lio), ('/imu', imu)]:
+            writer.write(topic, serialize_message(msg), ns)
+    del writer
+    shutil.copytree(synthetic_bag/'capture', bag/'capture')
+    assert m.main([str(bag), '--no-loop']) == 0
+    out = bag/'offline_3d'
+    report = json.loads((out/'report.json').read_text())
+    assert report['lio']['initialization'].startswith('wheel/IMU')
+    assert report['lio']['rejected_edges'] == report['keyframes']-1
+    trajectory = np.loadtxt(out/'trajectory.csv', delimiter=',', skiprows=1)
+    assert abs(trajectory[-1, 1]-10.) < .1
 
 
 @pytest.mark.parametrize('mode', ['wheel', 'optimize'])

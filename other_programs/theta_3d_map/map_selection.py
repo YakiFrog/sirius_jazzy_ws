@@ -5,7 +5,7 @@ from pathlib import Path
 
 def bag_candidates(directory):
     root = Path(directory).expanduser().resolve()
-    metadata = list(root.rglob('metadata.yaml'))
+    metadata = [p for p in root.rglob('metadata.yaml') if not (p.parent/'.mapping-diagnostic').exists()]
     return [p.parent for p in sorted(metadata, key=lambda p: p.stat().st_mtime, reverse=True)]
 
 
@@ -18,6 +18,10 @@ def map_candidates(directory):
     files = set()
     for root in search_roots(directory):
         for path in root.rglob('*.ply'):
+            if (path.parent/'.mapping-diagnostic').exists():
+                continue
+            if path.name in {'map_3d_unfiltered.ply', 'map_3d_colored_unfiltered.ply', 'dynamic_candidates.ply'}:
+                continue  # Diagnostics are explicitly available by path, not duplicate final maps.
             if path.name == 'map_3d.ply' and (path.parent / 'map_3d_colored.ply').is_file():
                 continue
             files.add(path)
