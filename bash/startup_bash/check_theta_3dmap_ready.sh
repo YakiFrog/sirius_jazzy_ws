@@ -74,6 +74,15 @@ echo "[配信レート]"
 check_rate /velodyne_points
 check_rate /velodyne_points_colored || true
 
+echo "[点群の色 (THETA色付け判定)]"
+color_out=$(timeout 20 python3 "${WS_DIR}/other_programs/theta_3d_map/cloud_color_check.py" 2>/dev/null)
+case "$color_out" in
+    theta:*) pass "色数 ${color_out#theta:}（THETA色付けON）";;
+    ring:*)  fail "色数 ${color_out#ring:} のみ＝リング色（Webシミュの「THETA 360°映像で色付け」をON）";;
+    no_rgb)  fail "RGBフィールドがありません";;
+    *)       warn "色数を判定できません（/velodyne_points 未受信など）";;
+esac
+
 echo "[TF]"
 check_tf sirius3/base_footprint sirius3/lidar_link
 check_tf sirius3/lidar_link sirius3/theta_link

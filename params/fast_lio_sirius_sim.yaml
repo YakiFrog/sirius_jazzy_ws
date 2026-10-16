@@ -7,6 +7,18 @@
         filter_size_map: 0.5
         cube_side_length: 1000.0
         runtime_pos_log_enable: false
+        # 車輪のchild frameでの速度をLIOの観測に融合。絶対位置は使わない。
+        wheel:
+            enabled: true
+            topic: /odom
+            child_frame: sirius3/base_footprint
+            max_age: 0.2
+            velocity_std: 0.05
+            yaw_rate_std: 0.05
+            imu_to_base_translation: [0.0, 0.0, -0.65]
+            imu_from_base_rotation: [1.0, 0.0, 0.0,
+                                     0.0, 1.0, 0.0,
+                                     0.0, 0.0, 1.0]
         map_file_path: "./test.pcd"
         common:
             lid_topic: "/velodyne_points"
@@ -14,11 +26,8 @@
             time_sync_en: false
             time_offset_lidar_to_imu: 0.0
         preprocess:
-            # Webシミュレータの点群は x/y/z/rgb のみ（ring/intensity/timeフィールド無し）。
-            # VELO16(2)だと層別の時間推定が破綻するため、0で汎用ハンドラ
-            # （全点を時刻0のスナップショットとして扱う。歪み補正なし）を使う。
-            # 1(AVIA)はLivox CustomMsg購読になるため使用しないこと。
-            lidar_type: 0
+            # 実機構成のWeb VLP16: intensity/ring/time(秒)付きの回転点群。
+            lidar_type: 2
             scan_line: 16
             scan_rate: 10
             timestamp_unit: 0
@@ -31,9 +40,8 @@
             fov_degree: 360.0
             det_range: 100.0
             extrinsic_est_en: false
-            # WebシミュのTF: base_footprint->lidar_link (0.05, 0, 0.85),
-            # base_footprint->imu_link (0, 0, 0.3) より、IMU基準のLiDAR位置
-            extrinsic_T: [0.05, 0.0, 0.55]
+            # 実機SDFに合わせる: LiDAR z=0.85m, IMU z=0.65m
+            extrinsic_T: [0.0, 0.0, 0.2]
             extrinsic_R: [1.0, 0.0, 0.0,
                           0.0, 1.0, 0.0,
                           0.0, 0.0, 1.0]

@@ -85,7 +85,8 @@ alias web_theta_bev='src && ros2 run sirius_navigation theta_bev_node --ros-args
 alias rviz2theta='src && rviz2 -d "$HOME/sirius_jazzy_ws/install/sirius_navigation/share/sirius_navigation/rviz/theta_bev.rviz"'
 
 # Foxglove Bridge 起動
-alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml'
+# ポートは8766固定（8765はDartsRobot monitor_dashboardが使用中のため）
+alias foxglove='echo "My IP: $(hostname -I)" && src && ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:=8766'
 
 # Unity上のZEDカメラのトピックをROS2に流す
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
@@ -340,11 +341,6 @@ alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_
 # 記録済みRosbagからTHETA BEV->地面点群->RTAB-Mapで路面地図を生成・保存（SAM3なし）
 alias run_offline_theta_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_theta_mapping.sh'
 
-# 3D色付き地図/オフラインSLAM用bag録画（色付き点群+生点群+IMU+THETA+TF+odom。実機）
-alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
-# 3D色付き地図/オフラインSLAM用bag録画（シミュレーション）
-alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'
-
 # 録画前に必須トピック・TF・レートが揃っているか検査（緑=OK）
 alias check_3dmap_ready='bash ~/sirius_jazzy_ws/bash/startup_bash/check_theta_3dmap_ready.sh'
 
@@ -422,6 +418,20 @@ alias colored3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_map.s
 
 # THETA色付き3D点群マップ生成 (Webシミュ用。ブラウザの色付き/velodyne_pointsをlio3d_sim姿勢で蓄積)
 alias colored3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_map.sh sim'
+
+# SUBGROUP: 3D地図の録画・後処理
+
+# 3D後処理用bag録画（生点群+RGB+IMU+車輪。実機、THETA画像は任意）
+alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
+# 3D後処理用bag録画（Webシミュ。RGB点群・IMU・/odom・/clockを必須確認）
+alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'
+
+# 車輪相対移動+IMU姿勢+縮退方向を抑制したICPで、3D地図と同一形状の色付き3D地図を生成
+# 使い方: offline_3dmap ~/rosbag2_data/<bag名> [--mode wheel] [-o 出力先]
+alias offline_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_3d_mapping.sh'
+
+# 生成済み3D地図をFoxgloveへ配信（引数なしで地図選択。通常・色付きの2トピック）
+alias view_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/view_3d_map.sh'
 
 # SUBGROUP: 3D自己位置推定
 
