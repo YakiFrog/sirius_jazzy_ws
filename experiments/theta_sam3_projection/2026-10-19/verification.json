@@ -5,5 +5,9 @@
   "theta_tests_passed": 58,
   "new_tests_passed": 7,
   "colcon_build": "passed",
-  "browser_screenshot": "reference/browser_review.png"
+  "browser_screenshot": "reference/browser_review.png",
+  "isolated_committed_navigation_tests_passed": 7,
+  "archive_commit": "96f512b",
+  "navigation_commit": "a112b96",
+  "pushed_root_and_navigation": true
 }
