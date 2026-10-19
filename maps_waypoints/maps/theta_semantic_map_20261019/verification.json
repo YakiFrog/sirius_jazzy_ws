@@ -1,0 +1,22 @@
+{
+  "frame_count": 170,
+  "skipped_count": 0,
+  "source_image_sha256_checked": 170,
+  "projection_roundtrip_max_abs_error_m": 1.7579299189662834e-06,
+  "original_observed_rgba_pixels_unchanged": true,
+  "semantic_cells_have_texture": true,
+  "overlay_outside_semantics_equals_texture": true,
+  "original_tactile_map_cells_retained": true,
+  "equal_image_viewports_and_dimensions": true,
+  "http_checks": {
+    "images.html": 200,
+    "seg3300/semantic.jpg": 200,
+    "seg3300/overlay.jpg": 200,
+    "seg3300/texture.jpg": 200,
+    "seg3300/three_views.jpg": 200,
+    "overview/three_views.jpg": 200
+  },
+  "new_tactile_cells": 53,
+  "new_tactile_area_m2": 0.13250000000000003,
+  "new_rgb_cells": 1364
+}
