@@ -1,0 +1,192 @@
+{
+  "tactile_plain": {
+    "0.8": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.0
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.65": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.03717073170731707
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.5": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.1633170731707317
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    }
+  },
+  "tactile_line": {
+    "0.8": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.14858536585365853
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.65": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.16390243902439025
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.5": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.22614634146341464
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    }
+  },
+  "tactile_yellow": {
+    "0.8": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.38858536585365855
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.65": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.7645853658536585
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.5": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.7645853658536585
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    }
+  },
+  "grass_plain": {
+    "0.8": {
+      "positive": {
+        "roi_count": 1,
+        "pixels": 248,
+        "labelled_fraction": 0.0
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.65": {
+      "positive": {
+        "roi_count": 1,
+        "pixels": 248,
+        "labelled_fraction": 0.8709677419354839
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.5": {
+      "positive": {
+        "roi_count": 1,
+        "pixels": 248,
+        "labelled_fraction": 0.8709677419354839
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    }
+  },
+  "grass_lawn": {
+    "0.8": {
+      "positive": {
+        "roi_count": 1,
+        "pixels": 248,
+        "labelled_fraction": 0.0
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.65": {
+      "positive": {
+        "roi_count": 1,
+        "pixels": 248,
+        "labelled_fraction": 0.0
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    },
+    "0.5": {
+      "positive": {
+        "roi_count": 1,
+        "pixels": 248,
+        "labelled_fraction": 0.0
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.0
+      }
+    }
+  }
+}

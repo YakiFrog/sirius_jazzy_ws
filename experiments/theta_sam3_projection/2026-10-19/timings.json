@@ -1,0 +1,2242 @@
+[
+  {
+    "frame": 284,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.4899540650076233,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 284,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7719162160065025,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 284,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.625807979988167,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 284,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.24687240101047792,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 284,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.46219630000996403,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 284,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 3.191346507985145,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 292,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.42706356901908293,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 292,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7658818660129327,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 292,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5280548730515875,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 292,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25213733498821966,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 292,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.43825437000487,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 292,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5142989630112424,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.4204433310078457,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7684908999945037,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5425731969589833,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22020282299490646,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.43711279600393027,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5456087560451124,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.638857119018212,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 300,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.30402614097693,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 308,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3883072419848759,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 308,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7421619950036984,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 308,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5192490789631847,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 308,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21897851399262436,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 308,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4057894890138414,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 308,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.545216520986287,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 316,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3875587299990002,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 316,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7609459930099547,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 316,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5168176520382985,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 316,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21801230698474683,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 316,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40581869598827325,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 316,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.512155470001744,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 884,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3953301710134838,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 884,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.76524637802504,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 884,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.524541506980313,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 884,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25209600300877355,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 884,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4062223140208516,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 884,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.561858910979936,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 892,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.4230400710075628,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 892,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7722218529961538,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 892,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.536670276982477,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 892,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22035007501835935,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 892,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4097389100061264,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 892,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5543279359990265,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3948260589968413,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7689811080053914,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5396732139633968,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25232395000057295,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.43680194101762027,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5536057779681869,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6384406719880644,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 900,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.2718958010082133,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 908,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3922823120083194,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 908,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7676503900147509,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 908,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.56727808501455,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 908,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21777341701090336,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 908,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40555216700886376,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 908,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5475434700201731,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 916,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3978111809992697,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 916,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7704781079955865,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 916,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5345445069833659,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 916,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25877471998683177,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 916,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.44867251900723204,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 916,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5491672190255485,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1484,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3908631199738011,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1484,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.76762240199605,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1484,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5374243090336677,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1484,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22328405702137388,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1484,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4101536989910528,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1484,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5486219869926572,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1492,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39756419401965104,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1492,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7688416259770747,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1492,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5251226530235726,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1492,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21819701700587757,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1492,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4083439719979651,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1492,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5162865070160478,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39093581796623766,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7639680500433315,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5199461700103711,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2192809620173648,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40792715799761936,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5443218800064642,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6425580609939061,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1500,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.2933388609671965,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1508,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3856778010085691,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1508,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7741514429799281,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1508,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5404354460479226,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1508,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2186967529996764,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1508,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.41084100797888823,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1508,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5821627099940088,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1516,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39458347199251875,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1516,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7750100109842606,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1516,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5130681760201696,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1516,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22904358099913225,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1516,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4094504000095185,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 1516,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5457498780160677,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2084,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3940757369855419,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2084,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.770530545967631,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2084,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5237166850129142,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2084,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22037368098972365,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2084,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40936429699650034,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2084,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.479076610004995,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2092,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3929898939677514,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2092,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7701855420018546,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2092,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5404464019811712,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2092,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21879983702092431,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2092,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4086658050073311,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2092,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.4833474640036002,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39627523699891753,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7704295330040623,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.504553908976959,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22003730799769983,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.41811307898024097,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5445073409937322,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6080055849743076,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2100,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.3000757829868235,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2108,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.4005023160134442,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2108,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7716860180080403,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2108,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.545296320982743,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2108,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22024825599510223,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2108,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40645843400852755,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2108,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.4880724199756514,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2116,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3948343380179722,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2116,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7609134859812912,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2116,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5331788769981358,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2116,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21968358298181556,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2116,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4060537320037838,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2116,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5462409750325605,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2684,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.38710300301318057,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2684,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7581821779895108,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2684,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5120964460074902,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2684,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2515173490101006,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2684,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4401554249925539,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2684,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5195185669872444,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2692,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.42577871700632386,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2692,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7632712410122622,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2692,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5198623309843242,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2692,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2528551040159073,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2692,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4055997319810558,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2692,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5480300470080692,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3978310069942381,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7674722430238035,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5356093569716904,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2567034910025541,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4147227500216104,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5506355259858537,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6300955170299858,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2700,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.2951035890146159,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2708,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3873694640060421,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2708,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7553287140035536,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2708,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5259472769976128,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2708,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2525076520105358,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2708,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.44021364199579693,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2708,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5507920789823402,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2716,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.38993243098957464,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2716,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7754956379940268,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2716,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5448721200227737,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2716,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2570533370017074,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2716,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.43806527499691583,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 2716,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5148303080059122,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3284,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3908418539795093,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3284,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7724012289836537,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3284,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.528397254034644,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3284,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25260597400483675,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3284,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.44082465799874626,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3284,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5508219150069635,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3292,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3928911050024908,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3292,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7734302710159682,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3292,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5021999420132488,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3292,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25377987598767504,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3292,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.44383620499866083,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3292,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5502366870059632,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.38915005695889704,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7936644660076126,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5356872709817253,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2552293469780125,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4392912939947564,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5853784670180175,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6665038100036327,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3300,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.291871933004586,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3308,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39346224497421645,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3308,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7729466589807998,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3308,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5284066519816406,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3308,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25043981298222207,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3308,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.46805654498166405,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3308,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5824529450328555,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3316,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.38744294401840307,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3316,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7583072850247845,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3316,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5335942579840776,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3316,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22059350198833272,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3316,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4399895389797166,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3316,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5580375449790154,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3884,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3947428819956258,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3884,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7677088139753323,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3884,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.531745521002449,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3884,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.26110079398495145,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3884,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.44599335198290646,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3884,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5192139569844585,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3892,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3913318690028973,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3892,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7616034760139883,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3892,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5226867579622194,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3892,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2528747390024364,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3892,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4074728399864398,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3892,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5562484289694112,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.4185752180055715,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7693158830225002,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5402900420012884,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2527972219977528,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4384905839979183,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5394984910381027,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6385303810238838,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3900,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.2943852949829306,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3908,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39208184197195806,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3908,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7683268070104532,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3908,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.547260642022593,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3908,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.25216668701614253,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3908,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.44061284902272746,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3908,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5223147620272357,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3916,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.38805318798404187,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3916,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7582844479766209,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3916,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.536977261013817,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3916,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21988069100189023,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3916,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40850727999350056,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 3916,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5151352949615102,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4484,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39650887402240187,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4484,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7728579160175286,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4484,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5135156459582504,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4484,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21851398001308553,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4484,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4124336100067012,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4484,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5129230300080962,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4492,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.38640695199137554,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4492,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7698675900173839,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4492,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.496615379001014,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4492,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2177137240068987,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4492,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40548662800574675,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4492,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5158533129724674,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39668348801205866,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7708262490050402,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5017762400093488,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22092551799141802,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.43937941099284217,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5237214060034603,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6430514139938168,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4500,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.2930941479862668,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4508,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3959384160116315,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4508,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7729349329893012,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4508,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5376422779809218,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4508,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21931720201973803,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4508,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.407239114982076,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4508,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5156101870234124,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4516,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3936077609832864,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4516,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7697455830057152,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4516,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.4971201960288454,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4516,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22138071499648504,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4516,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.40544196899281815,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 4516,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5506902099587023,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5084,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3946427849587053,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5084,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7683256599993911,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5084,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.529107353038853,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5084,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21812264001346193,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5084,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4052994009980466,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5084,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5457860420283396,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5092,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3926208699995186,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5092,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7719193749944679,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5092,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.539040011994075,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5092,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21781133901095018,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5092,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.41028327198000625,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5092,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5503294889931567,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39400351102813147,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7661491080070846,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5462292230222374,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22159034400829114,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.407379382988438,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5154465379891917,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6431376219843514,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5100,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.2986509750189725,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5108,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3862639089929871,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5108,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7448533750139177,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5108,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5011400610383134,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5108,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21574624101049267,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5108,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4054388939985074,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5108,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.513603896019049,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5116,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3940078169980552,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5116,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.741354516998399,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5116,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.4763082059507724,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5116,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.218083902989747,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5116,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.4102912690141238,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5116,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5486279190517962,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5634,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39077223400818184,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5634,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7646390169975348,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5634,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5451247779419646,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5634,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21875980601180345,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5634,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.37303155701374635,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5634,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5120792840025388,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5642,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.39450855800532736,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5642,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7579632150009274,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5642,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.4987186619837303,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5642,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.2181292829918675,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5642,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.37196654500439763,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5642,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5470201430143788,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3951312830031384,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7716201700095553,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5385240720643196,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.22315534899826162,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.41039089098921977,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5178576790203806,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "perspective2_targets_1008",
+    "views": 2,
+    "seconds": 0.6418635900190566,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5650,
+    "method": "equirect_ground4_targets_1008",
+    "views": 4,
+    "seconds": 1.2953925119654741,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5658,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3909550370008219,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5658,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7682996170187835,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5658,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.560794903023634,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5658,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.218420769990189,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5658,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.37871007999638095,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5658,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5181230550224427,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5666,
+    "method": "perspective2_512",
+    "views": 2,
+    "seconds": 0.3865237590216566,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5666,
+    "method": "perspective2_1008",
+    "views": 2,
+    "seconds": 0.7713095170038287,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5666,
+    "method": "perspective4_1008",
+    "views": 4,
+    "seconds": 1.5405228680174332,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5666,
+    "method": "equirect_full_512",
+    "views": 1,
+    "seconds": 0.21941851699375547,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5666,
+    "method": "equirect_full_1008",
+    "views": 1,
+    "seconds": 0.3721454900223762,
+    "view_timeout_2s_exceeded": 0
+  },
+  {
+    "frame": 5666,
+    "method": "equirect_ground4_1008",
+    "views": 4,
+    "seconds": 1.5450163219938986,
+    "view_timeout_2s_exceeded": 0
+  }
+]

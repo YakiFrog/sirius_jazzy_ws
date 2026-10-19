@@ -1,0 +1,45 @@
+{
+  "ids": {
+    "unknown": 0,
+    "wall": 1,
+    "floor": 2,
+    "grass": 3,
+    "tactile paving": 4,
+    "line-type tactile paving": 4,
+    "line type tactile paving": 4,
+    "roadway": 5,
+    "sidewalk": 6
+  },
+  "colors": {
+    "grass": [
+      0,
+      255,
+      0
+    ],
+    "tactile paving": [
+      255,
+      255,
+      0
+    ],
+    "line-type tactile paving": [
+      255,
+      255,
+      0
+    ],
+    "line type tactile paving": [
+      255,
+      255,
+      0
+    ],
+    "roadway": [
+      0,
+      0,
+      255
+    ],
+    "sidewalk": [
+      128,
+      128,
+      128
+    ]
+  }
+}

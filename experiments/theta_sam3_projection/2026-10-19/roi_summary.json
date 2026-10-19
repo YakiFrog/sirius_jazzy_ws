@@ -1,0 +1,722 @@
+{
+  "perspective2_512": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.04224390243902439
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.21370967741935484
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.15073170731707317
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.03942021483111169
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.3225806451612903
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.15092682926829268
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.04581338164876408
+        }
+      }
+    }
+  },
+  "perspective2_1008": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.18234146341463414
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.19785365853658538
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.19785365853658538
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  },
+  "perspective4_1008": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0646829268292683
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.06946341463414635
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.06946341463414635
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  },
+  "equirect_full_512": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.056451612903225805
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.056451612903225805
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.2022439024390244
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  },
+  "equirect_full_1008": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.9153225806451613
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.9153225806451613
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.2648780487804878
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  },
+  "equirect_ground4_1008": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8790322580645161
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8790322580645161
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8790322580645161
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  },
+  "perspective2_targets_1008": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.21073170731707316
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.2271219512195122
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.22731707317073171
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  },
+  "equirect_ground4_targets_1008": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8790322580645161
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8790322580645161
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.0
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8790322580645161
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.33463414634146343
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  },
+  "perspective2_yellow_1008": {
+    "0.8": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.6289756097560976
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.65": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.6303414634146342
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "3": {
+        "positive": {
+          "roi_count": 1,
+          "pixels": 248,
+          "labelled_fraction": 0.8830645161290323
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      },
+      "4": {
+        "positive": {
+          "roi_count": 6,
+          "pixels": 10250,
+          "labelled_fraction": 0.6303414634146342
+        },
+        "negative": {
+          "roi_count": 10,
+          "pixels": 38635,
+          "labelled_fraction": 0.0
+        }
+      }
+    }
+  }
+}
