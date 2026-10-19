@@ -1,0 +1,9 @@
+{
+  "complete": true,
+  "frames": 170,
+  "views": 340,
+  "methods": [
+    "causal",
+    "bidirectional"
+  ]
+}

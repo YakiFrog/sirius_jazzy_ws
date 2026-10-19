@@ -1,0 +1,117 @@
+Tactile evaluated 300
+Tactile evaluated 900
+Tactile evaluated 1500
+Tactile evaluated 2100
+Tactile evaluated 2700
+Tactile evaluated 3300
+Tactile evaluated 3900
+Tactile evaluated 4500
+Tactile evaluated 5100
+Tactile evaluated 5650
+{
+  "roi_summary": {
+    "baseline": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.15092682926829268
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    },
+    "causal": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.15092682926829268
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    },
+    "bidirectional": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.15092682926829268
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    },
+    "unrestricted": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.15092682926829268
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    }
+  },
+  "aligned_tactile_temporal_metrics": {
+    "baseline": {
+      "flips": 378937,
+      "stable_intersection": 423971,
+      "temporal_union": 802908,
+      "common_union": 830521,
+      "valid_correspondences": 53985340,
+      "yellow_flips": 45161,
+      "yellow_intersection": 60056,
+      "yellow_union": 105217,
+      "flip_fraction_common_union": 0.4562642004235895,
+      "yellow_temporal_iou": 0.5707822880333026,
+      "temporal_iou": 0.5280443089370139
+    },
+    "causal": {
+      "flips": 374057,
+      "stable_intersection": 430795,
+      "temporal_union": 804852,
+      "common_union": 830521,
+      "valid_correspondences": 53985340,
+      "yellow_flips": 40236,
+      "yellow_intersection": 66875,
+      "yellow_union": 107111,
+      "flip_fraction_common_union": 0.4503883706733484,
+      "yellow_temporal_iou": 0.6243523074194061,
+      "temporal_iou": 0.5352474740697669
+    },
+    "bidirectional": {
+      "flips": 360553,
+      "stable_intersection": 445074,
+      "temporal_union": 805627,
+      "common_union": 830521,
+      "valid_correspondences": 53985340,
+      "yellow_flips": 26801,
+      "yellow_intersection": 81086,
+      "yellow_union": 107887,
+      "flip_fraction_common_union": 0.4341286975284189,
+      "yellow_temporal_iou": 0.7515826744649494,
+      "temporal_iou": 0.5524566579819197
+    },
+    "unrestricted": {
+      "flips": 316253,
+      "stable_intersection": 513449,
+      "temporal_union": 829702,
+      "common_union": 830521,
+      "valid_correspondences": 53985340,
+      "yellow_flips": 26250,
+      "yellow_intersection": 81766,
+      "yellow_union": 108016,
+      "flip_fraction_common_union": 0.38078868565635304,
+      "yellow_temporal_iou": 0.7569804473411347,
+      "temporal_iou": 0.6188354373015854
+    }
+  },
+  "note": "Stability is not semantic accuracy. ROI labels are provisional, 6 tactile and10 normal pavement interiors. The unrestricted diagnostic can propagate false pavement labels."
+}

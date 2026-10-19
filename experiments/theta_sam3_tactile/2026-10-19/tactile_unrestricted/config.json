@@ -1,0 +1,19 @@
+{
+  "score_min": 0.5,
+  "internal_resolution": 512,
+  "max_gap_sec": 0.85,
+  "neighbor_radius_frames": 3,
+  "min_support": 2,
+  "min_alignment_reliability": 0.4,
+  "min_mean_mask_score": 0.55,
+  "mask_interior_erosion_px": 1,
+  "original_detections_unchanged": true,
+  "no_recursive_feedback": true,
+  "protected_classes": [
+    1,
+    2,
+    3
+  ],
+  "future_required_offline": true,
+  "cv2_version": "4.6.0"
+}

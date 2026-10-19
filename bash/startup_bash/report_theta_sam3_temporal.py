@@ -47,7 +47,7 @@ def main():
     (p/'road_roi_checks.json').write_text(json.dumps(roi_rows,indent=2));(p/'evaluation.json').write_text(json.dumps(summary,indent=2))
     data=json.dumps({'centers':m['centers'],'summary':summary,'metrics':metrics,'ungated':oldmetrics})
     html='''<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SAM3 時系列比較</title><style>body{font:16px system-ui;background:#101820;color:#edf2f7;margin:16px;line-height:1.6}h1{font-size:24px}select,input,button{font-size:16px;padding:8px;margin:4px}a{color:#84d5ff}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}img{width:100%}figure{margin:0}.note{padding:12px;background:#243442}#stats{overflow:auto}table{border-collapse:collapse}th,td{padding:7px;border:1px solid #526274}#source{max-width:640px}@media(max-width:800px){.grid{grid-template-columns:1fr}body{margin:10px}}</style>
-<h1>SAM3 時系列整合：現行モデル・閾値0.5</h1><p>10区間 × 17連続フレーム × 前後。内部解像度512・既存プロンプトを維持。</p>
+<p><a href="tactile/comparison.html">点字ブロックのちらつき比較へ</a></p><h1>SAM3 時系列整合：現行モデル・閾値0.5</h1><p>10区間 × 17連続フレーム × 前後。内部解像度512・既存プロンプトを維持。</p>
 <div class="note">位置合わせ・遮蔽除外・複数観測の一致・信頼度差を条件に、車道5／歩道6だけを補正。点字・芝生・未知ラベルは変更しません。<br>重要：今回の中央画像19確認領域では、最終補正による正解率の改善は確認できませんでした。周辺フレームでの局所的な変更はありますが、持続する誤認識は時系列多数決だけでは直せません。初期版には誤認識の拡散例があり、信頼度の条件を追加しました。</div>
 <p><label>区間<select id="seg"></select></label><label>向き<select id="yaw"><option value="0">前方</option><option value="180">後方</option></select></label></p>
 <p><button id="play">再生</button><label>フレーム <input type="range" id="offset" min="-8" max="8" value="0"></label><span id="frame"></span></p>

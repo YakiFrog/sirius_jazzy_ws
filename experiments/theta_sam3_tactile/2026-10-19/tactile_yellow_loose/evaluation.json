@@ -1,0 +1,91 @@
+{
+  "roi_summary": {
+    "baseline": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.15092682926829268
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    },
+    "causal": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.23892682926829267
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    },
+    "bidirectional": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.15092682926829268
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    },
+    "unrestricted": {
+      "positive": {
+        "roi_count": 6,
+        "pixels": 10250,
+        "labelled_fraction": 0.15092682926829268
+      },
+      "negative": {
+        "roi_count": 10,
+        "pixels": 38635,
+        "labelled_fraction": 0.04581338164876408
+      }
+    }
+  },
+  "aligned_tactile_temporal_metrics": {
+    "baseline": {
+      "flips": 378937,
+      "stable_intersection": 423971,
+      "temporal_union": 802908,
+      "common_union": 843273,
+      "valid_correspondences": 53985340,
+      "flip_fraction_common_union": 0.4493645592826997,
+      "temporal_iou": 0.5280443089370139
+    },
+    "causal": {
+      "flips": 359915,
+      "stable_intersection": 464161,
+      "temporal_union": 824076,
+      "common_union": 843273,
+      "valid_correspondences": 53985340,
+      "flip_fraction_common_union": 0.4268072142710605,
+      "temporal_iou": 0.5632502342016998
+    },
+    "bidirectional": {
+      "flips": 339650,
+      "stable_intersection": 473427,
+      "temporal_union": 813077,
+      "common_union": 843273,
+      "valid_correspondences": 53985340,
+      "flip_fraction_common_union": 0.4027758507624459,
+      "temporal_iou": 0.5822658862567752
+    },
+    "unrestricted": {
+      "flips": 316253,
+      "stable_intersection": 513449,
+      "temporal_union": 829702,
+      "common_union": 843273,
+      "valid_correspondences": 53985340,
+      "flip_fraction_common_union": 0.375030387549465,
+      "temporal_iou": 0.6188354373015854
+    }
+  },
+  "note": "Stability is not semantic accuracy. ROI labels are provisional, 6 tactile and10 normal pavement interiors. The unrestricted diagnostic can propagate false pavement labels."
+}

@@ -1,0 +1,101 @@
+Arguments (pass arguments as '<name>:=<value>'):
+
+    'use_sim_time':
+        Use simulation (rosbag) clock
+        (default: 'true')
+
+    'rviz':
+        Launch RViz2 to preview the map during replay
+        (default: 'false')
+
+    'rviz_config':
+        RViz2 config（デバッグは theta_debug.rviz を指定）
+        (default: '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/share/sirius_navigation/rviz/theta_offline.rviz')
+
+    'calibration':
+        校正YAML（実機は theta_calibration_real.yaml を指定）
+        (default: '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/share/sirius_navigation/config/theta_calibration.yaml')
+
+    'min_radius':
+        地面点群に含める最小半径[m]（自機の足元を除外）
+        (default: '1.2')
+
+    'max_radius':
+        地面点群に含める最大半径[m]。狭い曲がり角では小さくすると食い合いを軽減
+        (default: '4.8')
+
+    'grid_range_max':
+        RTAB-Map Grid/RangeMax。max_radius に合わせて小さくすると安定
+        (default: '7.0')
+
+    'lidar_topic':
+        Scan3(2D LiDAR)のトピック。指定するとフリースペースで地面点を制限可能
+        (default: '')
+
+    'lidar_gate':
+        true で /scan3 のフリースペース内の地面点だけを残す（食い合い軽減）
+        (default: 'false')
+
+    'lidar_strict_visibility':
+        同期LiDARとTFで遮蔽を判定。スキャン不明時は路面を取り込まない
+        (default: 'false')
+
+    'lidar_obstacle_padding_m':
+        厳密な遮蔽判定で障害物の周囲に付ける余白の半径[m]
+        (default: '0.0')
+
+    'rear_observation_weight':
+        後方の観測重み。前方=1、側方は滑らかに補間（0..1）
+        (default: '1.0')
+
+    'min_relative_observation_weight':
+        各セルの最良観測に対して採用する最低品質比。0=保護無効（0..1）
+        (default: '0.0')
+
+    'quality_weight_enable':
+        地面点に観測品質weight（入射角cosのべき乗）を付与する
+        (default: 'true')
+
+    'quality_power':
+        weight=(h/sqrt(ρ²+h²))^p の指数p。大きいほど遠方を薄くする
+        (default: '2.0')
+
+    'quality_weight_floor':
+        weight<floor の点を除外（0=全点保持）
+        (default: '0.0')
+
+    'use_observation_weight':
+        地図蓄積でweightを使う（false=従来の等重み・後勝ちに近い動作）
+        (default: 'true')
+
+    'texture_decay':
+        テクスチャ重み付きEMAの減衰率（0-1）
+        (default: '0.7')
+
+    'class_weight_switch':
+        クラス上書きに必要な重み比（新観測 >= 現重み×switch）
+        (default: '1.0')
+
+    'semantic_min_weight':
+        セマンティック採用に必要な重み合計の下限
+        (default: '0.3')
+
+    'sam3':
+        Run theta_sam3_perspective_node (needs sam3 docker server)
+        (default: 'false')
+
+    'sam3_temporal':
+        Trial causal flow-aligned road/sidewalk correction; dense observations required
+        (default: 'false')
+
+    'sam3_tactile_temporal':
+        Trial short yellow tactile-mask gap restoration from matched prior detections
+        (default: 'false')
+
+    'publish_raw':
+        Republish decoded dual fisheye as raw Image (for RViz debug)
+        (default: 'false')
+
+    'publish_debug':
+        Publish SAM3 view/mask/overlay and semantic-colored cloud for RViz
+        (default: 'false')

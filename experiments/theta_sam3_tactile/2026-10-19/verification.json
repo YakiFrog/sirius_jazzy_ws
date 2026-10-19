@@ -1,0 +1,12 @@
+{
+  "new_source_artifacts_hash_checked": 8180,
+  "zip_entries_checked": 8160,
+  "theta_tests_passed": 72,
+  "build": "passed",
+  "phone_browser": "phone_review.png",
+  "baseline_root_commit": "b27b0f8",
+  "navigation_before": "39b8d3d6b7697517e1488a97306a41d8a270f4cd",
+  "server_not_modified": true,
+  "causal_tactile_enabled_by_default_next_launch": true,
+  "front_interval2100_added_pixels": 0
+}

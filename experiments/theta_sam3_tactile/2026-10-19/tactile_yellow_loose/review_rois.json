@@ -1,0 +1,451 @@
+{
+  "description": "Small conservative visual check regions drawn by the assistant. Not complete masks, not expert/user-verified ground truth. Grass has only one clear positive region in this systematic sample.",
+  "reference_size": [
+    640,
+    480
+  ],
+  "rois": [
+    {
+      "id": "tactile_900_rear",
+      "segment": 900,
+      "frame": 900,
+      "yaw": 180,
+      "class_id": 4,
+      "polygon": [
+        [
+          410,
+          365
+        ],
+        [
+          426,
+          365
+        ],
+        [
+          459,
+          419
+        ],
+        [
+          437,
+          419
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "tactile_2700_dark",
+      "segment": 2700,
+      "frame": 2700,
+      "yaw": 0,
+      "class_id": 4,
+      "polygon": [
+        [
+          411,
+          350
+        ],
+        [
+          425,
+          350
+        ],
+        [
+          468,
+          435
+        ],
+        [
+          448,
+          435
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "tactile_3300_front",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "class_id": 4,
+      "polygon": [
+        [
+          369,
+          380
+        ],
+        [
+          387,
+          380
+        ],
+        [
+          411,
+          441
+        ],
+        [
+          387,
+          441
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "tactile_3300_warning",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 180,
+      "class_id": 4,
+      "polygon": [
+        [
+          169,
+          370
+        ],
+        [
+          214,
+          370
+        ],
+        [
+          205,
+          403
+        ],
+        [
+          151,
+          403
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "tactile_3900_front",
+      "segment": 3900,
+      "frame": 3900,
+      "yaw": 0,
+      "class_id": 4,
+      "polygon": [
+        [
+          321,
+          350
+        ],
+        [
+          341,
+          350
+        ],
+        [
+          354,
+          430
+        ],
+        [
+          309,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "tactile_4500_rear",
+      "segment": 4500,
+      "frame": 4500,
+      "yaw": 180,
+      "class_id": 4,
+      "polygon": [
+        [
+          487,
+          370
+        ],
+        [
+          507,
+          370
+        ],
+        [
+          546,
+          438
+        ],
+        [
+          516,
+          438
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "grass_3300_tree_plot",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "class_id": 3,
+      "polygon": [
+        [
+          250,
+          297
+        ],
+        [
+          273,
+          294
+        ],
+        [
+          276,
+          301
+        ],
+        [
+          246,
+          306
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_300",
+      "segment": 300,
+      "frame": 300,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          230,
+          350
+        ],
+        [
+          290,
+          350
+        ],
+        [
+          290,
+          420
+        ],
+        [
+          230,
+          420
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_900",
+      "segment": 900,
+      "frame": 900,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          470,
+          360
+        ],
+        [
+          550,
+          360
+        ],
+        [
+          550,
+          420
+        ],
+        [
+          470,
+          420
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_1500",
+      "segment": 1500,
+      "frame": 1500,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          250,
+          350
+        ],
+        [
+          310,
+          350
+        ],
+        [
+          310,
+          410
+        ],
+        [
+          250,
+          410
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_2100",
+      "segment": 2100,
+      "frame": 2100,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          240,
+          370
+        ],
+        [
+          300,
+          370
+        ],
+        [
+          300,
+          430
+        ],
+        [
+          240,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_2700",
+      "segment": 2700,
+      "frame": 2700,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          280,
+          370
+        ],
+        [
+          330,
+          370
+        ],
+        [
+          330,
+          430
+        ],
+        [
+          280,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_3300",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          280,
+          340
+        ],
+        [
+          325,
+          340
+        ],
+        [
+          325,
+          410
+        ],
+        [
+          280,
+          410
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_3900",
+      "segment": 3900,
+      "frame": 3900,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          220,
+          365
+        ],
+        [
+          270,
+          365
+        ],
+        [
+          270,
+          425
+        ],
+        [
+          220,
+          425
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_4500",
+      "segment": 4500,
+      "frame": 4500,
+      "yaw": 180,
+      "class_id": 0,
+      "polygon": [
+        [
+          220,
+          380
+        ],
+        [
+          280,
+          380
+        ],
+        [
+          280,
+          435
+        ],
+        [
+          220,
+          435
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_5100",
+      "segment": 5100,
+      "frame": 5100,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          250,
+          365
+        ],
+        [
+          320,
+          365
+        ],
+        [
+          320,
+          430
+        ],
+        [
+          250,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    },
+    {
+      "id": "plain_pavement_5650",
+      "segment": 5650,
+      "frame": 5650,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          300,
+          360
+        ],
+        [
+          370,
+          360
+        ],
+        [
+          370,
+          420
+        ],
+        [
+          300,
+          420
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified"
+    }
+  ]
+}
