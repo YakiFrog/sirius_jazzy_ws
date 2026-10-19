@@ -1,0 +1,5 @@
+{
+  "verified_prefix_pngs": 5182,
+  "all_identical": true,
+  "optimization": "Skip flow only when previous tactile track is empty."
+}

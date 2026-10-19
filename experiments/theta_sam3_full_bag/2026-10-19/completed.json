@@ -1,0 +1,13 @@
+{
+  "full_bag": true,
+  "total_frames": 5956,
+  "total_observations": 11912,
+  "fresh_inferences": 9049,
+  "reused_verified_study": 272,
+  "cached_this_run": 2591,
+  "started_unix": 1792398351.6070657,
+  "complete": true,
+  "full_camera_coverage": true,
+  "bidirectional_observations": 11912,
+  "elapsed_sec": 2076.721435070038
+}

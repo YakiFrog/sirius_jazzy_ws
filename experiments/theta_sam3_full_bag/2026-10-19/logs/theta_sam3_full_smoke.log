@@ -1,0 +1,7 @@
+Loaded 25 images, 31306 scans and recorded TF
+[INFO] [1792397886.156028991] [theta_bev]: Dual Fisheye JPEG -> BEV 準備完了（平面地面仮定, 姿勢取得元: TF sirius3/base_footprint <- sirius3/theta_link）
+[INFO] [1792397886.161008367] [theta_ground_cloud]: BEV 512x512 (10.0m) -> /theta/ground_cloud frame=sirius3/base_footprint stride=2 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+[INFO] [1792397886.171607747] [theta_bev]: THETA姿勢をTFから取得: 位置=[0.0, 0.0, 1.135] rpy=[0.0, -0.0, 0.0]
+[INFO] [1792397886.287146579] [theta_ground_cloud]: Road visibility: kept 25728/43549 samples
+{"phase": "mapping", "mapped_frames": 25, "last_frame": 24, "input_frames": 25, "skipped_frames": 0}
+MAP COMPLETE 25 frames; 0 changed semantic cells

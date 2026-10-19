@@ -1,0 +1,27 @@
+{
+  "full_bag_camera_frames": 5956,
+  "front_rear_observations": 11912,
+  "mapped_frames": 5956,
+  "skipped_frames": 0,
+  "geometry_rgb_weights_compared_frames": 5956,
+  "existing_observed_rgba_unchanged": true,
+  "semantic_within_observed_rgb": true,
+  "unclassified_texture_unchanged": true,
+  "three_views_identical_dimensions": true,
+  "http_status": {
+    "images.html": 200,
+    "overview/semantic.jpg": 200,
+    "overview/overlay.jpg": 200,
+    "overview/texture.jpg": 200,
+    "overview/three_views.jpg": 200,
+    "seg3300/three_views.jpg": 200
+  },
+  "backend_restoration": {
+    "settings_restored": true,
+    "registry_unchanged": true,
+    "errors": []
+  },
+  "tests": "83 passed",
+  "colcon_build": "passed",
+  "archived_prediction_track_files": 142944
+}

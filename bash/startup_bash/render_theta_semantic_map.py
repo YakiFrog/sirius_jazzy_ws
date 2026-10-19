@@ -22,7 +22,7 @@ def frame(image,title,subtitle,res,width=1200,show_legend=True):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('map',type=Path);a=p.parse_args();root=a.map
-    meta=json.loads((root/'manifest.json').read_text());res=meta['grid']['resolution'];origin=np.asarray(meta['grid']['origin']);h=meta['grid']['height'];w=meta['grid']['width']
+    meta=json.loads((root/'manifest.json').read_text());res=meta['grid']['resolution'];origin=np.asarray(meta['grid']['origin']);h=meta['grid']['height'];w=meta['grid']['width'];full_bag=bool(meta.get('full_bag'))
     labels=cv2.imread(str(root/'road_temporal.colored.pgm'),0);texture=cv2.imread(str(root/'road_temporal.texture.png'),-1)
     assert labels.shape==texture.shape[:2]==(h,w)
     valid=texture[...,3]>0;rgb=texture[...,:3].copy();rgb[~valid]=248
@@ -34,21 +34,27 @@ def main():
     cv2.imwrite(str(root/'semantic_layer_rgba.png'),np.dstack([fullsem,(labels>0).astype(np.uint8)*255]))
     groups={'overview':(0,0,w,h)}
     for center in sorted({f['segment'] for f in meta['frames']}):
-        positions=np.asarray([f['xyz'][:2] for f in meta['frames'] if f['segment']==center]);lo=np.floor((positions.min(axis=0)-5-origin)/res).astype(int);hi=np.ceil((positions.max(axis=0)+5-origin)/res).astype(int)
+        selected=[f for f in meta['frames'] if (abs(f['frame']-center)<=8 if full_bag else f['segment']==center)]
+        if not selected:continue
+        positions=np.asarray([f['xyz'][:2] for f in selected]);lo=np.floor((positions.min(axis=0)-5-origin)/res).astype(int);hi=np.ceil((positions.max(axis=0)+5-origin)/res).astype(int)
         lo=np.maximum(lo,0);hi=np.minimum(hi,[w,h]);groups[f'seg{center}']=(int(lo[0]),int(h-hi[1]),int(hi[0]),int(h-lo[1]))
     detail={};titles={'semantic':'① セマンティック対象のみ','overlay':'② 路面テクスチャ ＋ セマンティック','texture':'③ 路面テクスチャのみ'}
     for name,(x0,y0,x1,y1) in groups.items():
         target=root/name;target.mkdir(exist_ok=True);images=[]
         subtitle=('検証済み10区間の分類／全区間の路面テクスチャ' if name=='overview' else f'検証区間 {name[3:]} ｜ '+('黄色い点字＋画像追跡' if meta.get('semantic_dir')=='yellow' else '前後の時系列補完')+' ｜ 同じ範囲・縮尺')
+        if full_bag:
+            subtitle=(f'ROSBAG全区間 ｜ {meta["input_camera_frames"]:,}フレームを推論 ｜ 同じ範囲・縮尺' if name=='overview' else f'全区間地図の拡大 {name[3:]} ｜ 黄色い点字＋画像追跡 ｜ 同じ範囲・縮尺')
         for kind,source in [('semantic',fullsem),('overlay',over),('texture',rgb)]:
             image=source[y0:y1,x0:x1];rendered=frame(image,titles[kind],subtitle,res,1200 if name!='overview' else 1600,show_legend=kind!='texture');rendered.save(target/(kind+'.jpg'),quality=95,subsampling=0);images.append(rendered)
         contact=Image.new('RGB',(images[0].width,sum(x.height for x in images)),'white');yy=0
         for image in images:contact.paste(image,(0,yy));yy+=image.height
         contact.save(target/'three_views.jpg',quality=94,subsampling=0);detail[name]={'pixel_bbox':[x0,y0,x1,y1],'world_bbox_m':[float(origin[0]+x0*res),float(origin[1]+(h-y1)*res),float(origin[0]+x1*res),float(origin[1]+(h-y0)*res)]}
-    (root/'rendering.json').write_text(json.dumps({'display_palette_rgb':COLORS,'class_ids_unchanged':True,'views':detail,'existing_observed_rgb_unchanged':True,'texture_holes_filled_cells':meta['texture_holes_filled_cells'],'semantic_frames':meta['frame_count'],'semantic_coverage':'ten evaluated intervals only'},indent=2))
+    (root/'rendering.json').write_text(json.dumps({'display_palette_rgb':COLORS,'class_ids_unchanged':True,'views':detail,'existing_observed_rgb_unchanged':True,'texture_holes_filled_cells':meta['texture_holes_filled_cells'],'semantic_frames':meta['frame_count'],'semantic_coverage':('full bag; valid TF and scan-visible ground only' if full_bag else 'ten evaluated intervals only')},indent=2))
     html='''<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>路面セマンティック地図・3種類</title><style>body{font:16px system-ui;margin:12px;background:#101820;color:#eef4f8;line-height:1.6}h1{font-size:24px}img{display:block;width:100%;max-width:1200px;margin:8px 0 24px}a{color:#8ed8ff}nav{margin:12px 0}figure{margin:0}.note{padding:12px;background:#253643}</style><h1>路面地図：3種類の画像</h1><div class="note">点字の補完を検証した区間3300の拡大図です。3枚とも同じ範囲・縮尺です。背景には既存の全区間RGB地図を使用し、未観測の穴は今回の観測で補っています。新しいセマンティックは検証済み10区間・170フレームから作成しました。未分類は白。認識誤りや欠けは残っています。</div><nav><a href="seg3300/three_views.jpg">拡大図3枚を1画像で開く</a> · <a href="#overview">全体図へ</a> · <a href="manifest.json">生成記録</a></nav>'''
-    for name in ['seg3300','overview']:
-        html+=f'<h2 id="{name}">{"改善区間3300" if name=="seg3300" else "全体図（セマンティックは検証した部分のみ）"}</h2>'
+    if full_bag:
+        html=html[:html.index('<div class="note">')]+f'<div class="note">ROSBAG全区間・{meta["input_camera_frames"]:,}フレームの前後画像を推論しました。記録された姿勢・レーザの可視性を確認できた{meta["frame_count"]:,}フレームを地図に反映しています。黄色い点字の認識＋前後方向の画像追跡を適用。3種類とも同じ範囲・縮尺です。未分類は白。背景の既存RGBは保持しています。</div><nav><a href="overview/three_views.jpg">全体図3枚を1画像で開く</a> · <a href="#seg3300">拡大図へ</a> · <a href="manifest.json">生成記録</a></nav>'
+    for name in (['overview','seg3300'] if full_bag else ['seg3300','overview']):
+        html+=f'<h2 id="{name}">{"拡大区間3300" if name=="seg3300" else "全体図（ROSBAG全区間）" if full_bag else "全体図（セマンティックは検証した部分のみ）"}</h2>'
         for kind,title in titles.items():html+=f'<figure><figcaption>{title}</figcaption><a href="{name}/{kind}.jpg"><img src="{name}/{kind}.jpg" alt="{title}" loading="lazy"></a></figure>'
     html+='<h2>ほかの検証区間</h2><nav>'+ ' · '.join(f'<a href="seg{c}/three_views.jpg">{c}</a>' for c in sorted({f['segment'] for f in meta['frames']}))+'</nav></html>'
     if meta.get('semantic_dir')=='yellow':html=html.replace('点字の補完を検証した区間3300','黄色い点字の認識・追跡を検証した区間3300')

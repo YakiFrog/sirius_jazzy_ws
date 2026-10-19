@@ -1,0 +1,14 @@
+{
+  "bag": "/home/kotantu-desktop/rosbag2_data/0920/real_both_mapping_20260920_113447_recovered",
+  "files": {
+    "real_both_mapping_20260920_113447_0.mcap": {
+      "bytes": 5002271043,
+      "sha256": "ca53cbfec43179ff420dc8ffdf3da91ad6df84b5447625064e4862fe8b733036"
+    },
+    "metadata.yaml": {
+      "bytes": 9129,
+      "sha256": "a4f80352631e4199d9353fcdfae14f3867aec283ab5b2a6b12dc807c132cf929"
+    }
+  },
+  "camera_frames": 5956
+}

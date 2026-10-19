@@ -1,0 +1,14 @@
+{
+  "full_bag": true,
+  "total_frames": 5956,
+  "total_observations": 11912,
+  "fresh_inferences": 9049,
+  "reused_verified_study": 272,
+  "cached_this_run": 2591,
+  "started_unix": 1792398351.6070657,
+  "phase": "reverse_tracking",
+  "yaw": 180,
+  "completed_frames": 5956,
+  "last_frame": 0,
+  "elapsed_sec": 2076.721323490143
+}

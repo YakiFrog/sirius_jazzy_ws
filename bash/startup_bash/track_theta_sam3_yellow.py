@@ -3,7 +3,7 @@ import argparse,json
 from pathlib import Path
 import cv2,numpy as np
 from PIL import Image,ImageDraw,ImageFont
-from sirius_navigation.theta_semantic_temporal import CausalTactileConsistency,Observation,warp_with_flow
+from sirius_navigation.theta_semantic_temporal import CausalTactileConsistency,Observation,warp_with_flow,merge_tactile_tracks
 from compare_theta_sam3_projection import overlay
 
 FONT='/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
@@ -35,7 +35,7 @@ def main():
                     target[i]=tracker.apply(sources[i],ids,score,-stamp if reverse else stamp)
             for i in indices:
                 folder=out/f'seg{center}'/f'frame{i}';ids,scores=load(root,center,i,yaw,'yellow');f,fs,stats=forward[i];b,bs,_=backward[i]
-                fused=f.copy();ss=fs.copy();take=(b==4)&~np.isin(ids,(1,2,3));fused[take]=4;ss[take]=np.maximum(ss[take],bs[take])
+                fused,ss=merge_tactile_tracks(ids,f,fs,b,bs)
                 for method,cls,conf in [('causal',f,fs),('bidirectional',fused,ss)]:
                     cv2.imwrite(str(folder/f'yaw{yaw}.{method}.classes.png'),cls);cv2.imwrite(str(folder/f'yaw{yaw}.{method}.scores.png'),conf)
                 counts={}

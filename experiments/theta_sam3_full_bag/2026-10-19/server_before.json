@@ -1,0 +1,44 @@
+{
+  "mode": "camera",
+  "depth_mode": "zed",
+  "has_network_frame": true,
+  "has_network_frame_r": false,
+  "network_frame_sim_time": null,
+  "network_frame_version": 5597,
+  "sam3_inference_frame_version": 5597,
+  "pc_binary_len": 0,
+  "pc_version": 79,
+  "pc_sim_time": null,
+  "num_masked": 0,
+  "num_bg": 331,
+  "camera_params": {
+    "fx": 448.14,
+    "fy": 448.14,
+    "cx": 640.0,
+    "cy": 360.0,
+    "baseline": 0.12
+  },
+  "class_scores": {
+    "grass": [
+      0.55078125
+    ],
+    "yellow tactile paving": [],
+    "roadway": [],
+    "sidewalk": [
+      0.78857421875
+    ]
+  },
+  "sam3_settings": {
+    "prompt": "grass, tactile paving, roadway, sidewalk",
+    "confidence_threshold": 0.5,
+    "class_thresholds": {},
+    "resolution": 512,
+    "color_mode": "semantic"
+  },
+  "depth_settings": {
+    "method": "zed",
+    "downsample": 4,
+    "fast_iters": 4,
+    "max_distance_m": 15.0
+  }
+}

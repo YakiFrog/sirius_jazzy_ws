@@ -1,0 +1,13 @@
+{
+  "full_bag": true,
+  "total_frames": 5956,
+  "total_observations": 11912,
+  "fresh_inferences": 2482,
+  "reused_verified_study": 68,
+  "cached_this_run": 0,
+  "started_unix": 1792397736.8556342,
+  "phase": "inference_and_causal_tracking",
+  "completed_frames": 1275,
+  "last_frame": 1274,
+  "elapsed_sec": 562.8377323150635
+}

@@ -1,0 +1,321 @@
+Loaded 5956 images, 31306 scans and recorded TF
+[INFO] [1792400508.500732231] [theta_bev]: Dual Fisheye JPEG -> BEV 準備完了（平面地面仮定, 姿勢取得元: TF sirius3/base_footprint <- sirius3/theta_link）
+[INFO] [1792400508.504788274] [theta_ground_cloud]: BEV 512x512 (10.0m) -> /theta/ground_cloud frame=sirius3/base_footprint stride=2 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+[INFO] [1792400508.513686544] [theta_bev]: THETA姿勢をTFから取得: 位置=[0.0, 0.0, 1.135] rpy=[0.0, -0.0, 0.0]
+[INFO] [1792400508.620537667] [theta_ground_cloud]: Road visibility: kept 25728/43549 samples
+{"phase": "mapping", "mapped_frames": 25, "last_frame": 24, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 50, "last_frame": 49, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400513.645380586] [theta_ground_cloud]: Road visibility: kept 25872/43345 samples
+{"phase": "mapping", "mapped_frames": 75, "last_frame": 74, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 100, "last_frame": 99, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 125, "last_frame": 124, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400518.655946863] [theta_ground_cloud]: Road visibility: kept 25545/43081 samples
+{"phase": "mapping", "mapped_frames": 150, "last_frame": 149, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 175, "last_frame": 174, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 200, "last_frame": 199, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400523.666770758] [theta_ground_cloud]: Road visibility: kept 25371/43645 samples
+{"phase": "mapping", "mapped_frames": 225, "last_frame": 224, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 250, "last_frame": 249, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 275, "last_frame": 274, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400528.707952486] [theta_ground_cloud]: Road visibility: kept 26011/42825 samples
+{"phase": "mapping", "mapped_frames": 300, "last_frame": 299, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 325, "last_frame": 324, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 350, "last_frame": 349, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400533.734313958] [theta_ground_cloud]: Road visibility: kept 32573/42997 samples
+{"phase": "mapping", "mapped_frames": 375, "last_frame": 374, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 400, "last_frame": 399, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400538.751373436] [theta_ground_cloud]: Road visibility: kept 38889/42901 samples
+{"phase": "mapping", "mapped_frames": 425, "last_frame": 424, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 450, "last_frame": 449, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 475, "last_frame": 474, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400543.793606378] [theta_ground_cloud]: Road visibility: kept 41018/44010 samples
+{"phase": "mapping", "mapped_frames": 500, "last_frame": 499, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 525, "last_frame": 524, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 550, "last_frame": 549, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400548.809542331] [theta_ground_cloud]: Road visibility: kept 35861/41982 samples
+{"phase": "mapping", "mapped_frames": 575, "last_frame": 574, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 600, "last_frame": 599, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400553.843513612] [theta_ground_cloud]: Road visibility: kept 39434/43843 samples
+{"phase": "mapping", "mapped_frames": 625, "last_frame": 624, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 650, "last_frame": 649, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 675, "last_frame": 674, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400558.866571215] [theta_ground_cloud]: Road visibility: kept 41413/43942 samples
+{"phase": "mapping", "mapped_frames": 700, "last_frame": 699, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 725, "last_frame": 724, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 750, "last_frame": 749, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400563.903141951] [theta_ground_cloud]: Road visibility: kept 33183/41348 samples
+{"phase": "mapping", "mapped_frames": 775, "last_frame": 774, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 800, "last_frame": 799, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400568.906599845] [theta_ground_cloud]: Road visibility: kept 29771/42280 samples
+{"phase": "mapping", "mapped_frames": 825, "last_frame": 824, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 850, "last_frame": 849, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 875, "last_frame": 874, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400573.929247167] [theta_ground_cloud]: Road visibility: kept 28111/42811 samples
+{"phase": "mapping", "mapped_frames": 900, "last_frame": 899, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 925, "last_frame": 924, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 950, "last_frame": 949, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400578.943602366] [theta_ground_cloud]: Road visibility: kept 33563/42872 samples
+{"phase": "mapping", "mapped_frames": 975, "last_frame": 974, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1000, "last_frame": 999, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1025, "last_frame": 1024, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400583.949185219] [theta_ground_cloud]: Road visibility: kept 14916/43099 samples
+{"phase": "mapping", "mapped_frames": 1050, "last_frame": 1049, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1075, "last_frame": 1074, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1100, "last_frame": 1099, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400588.950884682] [theta_ground_cloud]: Road visibility: kept 22890/37567 samples
+{"phase": "mapping", "mapped_frames": 1125, "last_frame": 1124, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1150, "last_frame": 1149, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400593.979004582] [theta_ground_cloud]: Road visibility: kept 35650/43485 samples
+{"phase": "mapping", "mapped_frames": 1175, "last_frame": 1174, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1200, "last_frame": 1199, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1225, "last_frame": 1224, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400599.002034379] [theta_ground_cloud]: Road visibility: kept 40068/43903 samples
+{"phase": "mapping", "mapped_frames": 1250, "last_frame": 1249, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1275, "last_frame": 1274, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1300, "last_frame": 1299, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400604.004135373] [theta_ground_cloud]: Road visibility: kept 36645/43621 samples
+{"phase": "mapping", "mapped_frames": 1325, "last_frame": 1324, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1350, "last_frame": 1349, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400609.050578690] [theta_ground_cloud]: Road visibility: kept 39180/43746 samples
+{"phase": "mapping", "mapped_frames": 1375, "last_frame": 1374, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1400, "last_frame": 1399, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1425, "last_frame": 1424, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400614.073848584] [theta_ground_cloud]: Road visibility: kept 37553/43140 samples
+{"phase": "mapping", "mapped_frames": 1450, "last_frame": 1449, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1475, "last_frame": 1474, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1500, "last_frame": 1499, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400619.086641692] [theta_ground_cloud]: Road visibility: kept 35720/42461 samples
+{"phase": "mapping", "mapped_frames": 1525, "last_frame": 1524, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1550, "last_frame": 1549, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1575, "last_frame": 1574, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400624.094297010] [theta_ground_cloud]: Road visibility: kept 35311/41988 samples
+{"phase": "mapping", "mapped_frames": 1600, "last_frame": 1599, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1625, "last_frame": 1624, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400629.116529384] [theta_ground_cloud]: Road visibility: kept 25840/35533 samples
+{"phase": "mapping", "mapped_frames": 1650, "last_frame": 1649, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1675, "last_frame": 1674, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1700, "last_frame": 1699, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400634.126612795] [theta_ground_cloud]: Road visibility: kept 26139/31853 samples
+{"phase": "mapping", "mapped_frames": 1725, "last_frame": 1724, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1750, "last_frame": 1749, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1775, "last_frame": 1774, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400639.135909602] [theta_ground_cloud]: Road visibility: kept 26165/33739 samples
+{"phase": "mapping", "mapped_frames": 1800, "last_frame": 1799, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1825, "last_frame": 1824, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1850, "last_frame": 1849, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400644.156531852] [theta_ground_cloud]: Road visibility: kept 30382/38692 samples
+{"phase": "mapping", "mapped_frames": 1875, "last_frame": 1874, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1900, "last_frame": 1899, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1925, "last_frame": 1924, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400649.160139223] [theta_ground_cloud]: Road visibility: kept 34727/40581 samples
+{"phase": "mapping", "mapped_frames": 1950, "last_frame": 1949, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 1975, "last_frame": 1974, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400654.199349782] [theta_ground_cloud]: Road visibility: kept 30698/40608 samples
+{"phase": "mapping", "mapped_frames": 2000, "last_frame": 1999, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2025, "last_frame": 2024, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2050, "last_frame": 2049, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400659.207516998] [theta_ground_cloud]: Road visibility: kept 34416/41720 samples
+{"phase": "mapping", "mapped_frames": 2075, "last_frame": 2074, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2100, "last_frame": 2099, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2125, "last_frame": 2124, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400664.211394989] [theta_ground_cloud]: Road visibility: kept 36154/42206 samples
+{"phase": "mapping", "mapped_frames": 2150, "last_frame": 2149, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2175, "last_frame": 2174, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2200, "last_frame": 2199, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400669.221974870] [theta_ground_cloud]: Road visibility: kept 34266/41765 samples
+{"phase": "mapping", "mapped_frames": 2225, "last_frame": 2224, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2250, "last_frame": 2249, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400674.223355674] [theta_ground_cloud]: Road visibility: kept 29939/40488 samples
+{"phase": "mapping", "mapped_frames": 2275, "last_frame": 2274, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2300, "last_frame": 2299, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2325, "last_frame": 2324, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400679.261613642] [theta_ground_cloud]: Road visibility: kept 26420/39733 samples
+{"phase": "mapping", "mapped_frames": 2350, "last_frame": 2349, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2375, "last_frame": 2374, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2400, "last_frame": 2399, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400684.291912850] [theta_ground_cloud]: Road visibility: kept 18072/37895 samples
+{"phase": "mapping", "mapped_frames": 2425, "last_frame": 2424, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2450, "last_frame": 2449, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2475, "last_frame": 2474, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400689.293917329] [theta_ground_cloud]: Road visibility: kept 10452/34035 samples
+{"phase": "mapping", "mapped_frames": 2500, "last_frame": 2499, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2525, "last_frame": 2524, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2550, "last_frame": 2549, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400694.309795928] [theta_ground_cloud]: Road visibility: kept 10904/20632 samples
+{"phase": "mapping", "mapped_frames": 2575, "last_frame": 2574, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2600, "last_frame": 2599, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2625, "last_frame": 2624, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400699.335152883] [theta_ground_cloud]: Road visibility: kept 12401/29472 samples
+{"phase": "mapping", "mapped_frames": 2650, "last_frame": 2649, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2675, "last_frame": 2674, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2700, "last_frame": 2699, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400704.345599347] [theta_ground_cloud]: Road visibility: kept 10942/29148 samples
+{"phase": "mapping", "mapped_frames": 2725, "last_frame": 2724, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2750, "last_frame": 2749, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2775, "last_frame": 2774, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400709.371997498] [theta_ground_cloud]: Road visibility: kept 7273/30344 samples
+{"phase": "mapping", "mapped_frames": 2800, "last_frame": 2799, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2825, "last_frame": 2824, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2850, "last_frame": 2849, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400714.392976378] [theta_ground_cloud]: Road visibility: kept 13789/33409 samples
+{"phase": "mapping", "mapped_frames": 2875, "last_frame": 2874, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2900, "last_frame": 2899, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2925, "last_frame": 2924, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400719.398793649] [theta_ground_cloud]: Road visibility: kept 10661/30981 samples
+{"phase": "mapping", "mapped_frames": 2950, "last_frame": 2949, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 2975, "last_frame": 2974, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3000, "last_frame": 2999, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400724.406810019] [theta_ground_cloud]: Road visibility: kept 9692/31029 samples
+{"phase": "mapping", "mapped_frames": 3025, "last_frame": 3024, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3050, "last_frame": 3049, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3075, "last_frame": 3074, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400729.418385767] [theta_ground_cloud]: Road visibility: kept 13049/33033 samples
+{"phase": "mapping", "mapped_frames": 3100, "last_frame": 3099, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3125, "last_frame": 3124, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3150, "last_frame": 3149, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400734.419983095] [theta_ground_cloud]: Road visibility: kept 27799/37974 samples
+{"phase": "mapping", "mapped_frames": 3175, "last_frame": 3174, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3200, "last_frame": 3199, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3225, "last_frame": 3224, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3250, "last_frame": 3249, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400739.423240438] [theta_ground_cloud]: Road visibility: kept 38124/43695 samples
+{"phase": "mapping", "mapped_frames": 3275, "last_frame": 3274, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3300, "last_frame": 3299, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3325, "last_frame": 3324, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400744.454527670] [theta_ground_cloud]: Road visibility: kept 9123/36881 samples
+{"phase": "mapping", "mapped_frames": 3350, "last_frame": 3349, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3375, "last_frame": 3374, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3400, "last_frame": 3399, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400749.464411560] [theta_ground_cloud]: Road visibility: kept 10739/28752 samples
+{"phase": "mapping", "mapped_frames": 3425, "last_frame": 3424, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3450, "last_frame": 3449, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3475, "last_frame": 3474, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400754.480000025] [theta_ground_cloud]: Road visibility: kept 12076/36293 samples
+{"phase": "mapping", "mapped_frames": 3500, "last_frame": 3499, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3525, "last_frame": 3524, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3550, "last_frame": 3549, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400759.480551396] [theta_ground_cloud]: Road visibility: kept 11641/40442 samples
+{"phase": "mapping", "mapped_frames": 3575, "last_frame": 3574, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3600, "last_frame": 3599, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3625, "last_frame": 3624, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400764.501764290] [theta_ground_cloud]: Road visibility: kept 8964/38790 samples
+{"phase": "mapping", "mapped_frames": 3650, "last_frame": 3649, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3675, "last_frame": 3674, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3700, "last_frame": 3699, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400769.514596089] [theta_ground_cloud]: Road visibility: kept 36586/41974 samples
+{"phase": "mapping", "mapped_frames": 3725, "last_frame": 3724, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3750, "last_frame": 3749, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3775, "last_frame": 3774, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400774.552562753] [theta_ground_cloud]: Road visibility: kept 12737/37382 samples
+{"phase": "mapping", "mapped_frames": 3800, "last_frame": 3799, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3825, "last_frame": 3824, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3850, "last_frame": 3849, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400779.557735494] [theta_ground_cloud]: Road visibility: kept 11251/37356 samples
+{"phase": "mapping", "mapped_frames": 3875, "last_frame": 3874, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3900, "last_frame": 3899, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3925, "last_frame": 3924, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 3950, "last_frame": 3949, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400784.574887774] [theta_ground_cloud]: Road visibility: kept 31053/43630 samples
+{"phase": "mapping", "mapped_frames": 3975, "last_frame": 3974, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4000, "last_frame": 3999, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4025, "last_frame": 4024, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400789.584857358] [theta_ground_cloud]: Road visibility: kept 32753/43868 samples
+{"phase": "mapping", "mapped_frames": 4050, "last_frame": 4049, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4075, "last_frame": 4074, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4100, "last_frame": 4099, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400794.601149251] [theta_ground_cloud]: Road visibility: kept 39065/44069 samples
+{"phase": "mapping", "mapped_frames": 4125, "last_frame": 4124, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4150, "last_frame": 4149, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4175, "last_frame": 4174, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4200, "last_frame": 4199, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400799.628664405] [theta_ground_cloud]: Road visibility: kept 38529/43923 samples
+{"phase": "mapping", "mapped_frames": 4225, "last_frame": 4224, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4250, "last_frame": 4249, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4275, "last_frame": 4274, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400804.643862526] [theta_ground_cloud]: Road visibility: kept 38267/44143 samples
+{"phase": "mapping", "mapped_frames": 4300, "last_frame": 4299, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4325, "last_frame": 4324, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4350, "last_frame": 4349, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4375, "last_frame": 4374, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400809.646269303] [theta_ground_cloud]: Road visibility: kept 39805/43709 samples
+{"phase": "mapping", "mapped_frames": 4400, "last_frame": 4399, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4425, "last_frame": 4424, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4450, "last_frame": 4449, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400814.668717917] [theta_ground_cloud]: Road visibility: kept 36720/43713 samples
+{"phase": "mapping", "mapped_frames": 4475, "last_frame": 4474, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4500, "last_frame": 4499, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4525, "last_frame": 4524, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4550, "last_frame": 4549, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400819.677377969] [theta_ground_cloud]: Road visibility: kept 32912/42958 samples
+{"phase": "mapping", "mapped_frames": 4575, "last_frame": 4574, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4600, "last_frame": 4599, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4625, "last_frame": 4624, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400824.686929292] [theta_ground_cloud]: Road visibility: kept 34362/43247 samples
+{"phase": "mapping", "mapped_frames": 4650, "last_frame": 4649, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4675, "last_frame": 4674, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4700, "last_frame": 4699, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4725, "last_frame": 4724, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400829.701771544] [theta_ground_cloud]: Road visibility: kept 41020/44248 samples
+{"phase": "mapping", "mapped_frames": 4750, "last_frame": 4749, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4775, "last_frame": 4774, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4800, "last_frame": 4799, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4825, "last_frame": 4824, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400834.718480000] [theta_ground_cloud]: Road visibility: kept 39608/43343 samples
+{"phase": "mapping", "mapped_frames": 4850, "last_frame": 4849, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4875, "last_frame": 4874, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4900, "last_frame": 4899, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400839.750040214] [theta_ground_cloud]: Road visibility: kept 24850/44353 samples
+{"phase": "mapping", "mapped_frames": 4925, "last_frame": 4924, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4950, "last_frame": 4949, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 4975, "last_frame": 4974, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5000, "last_frame": 4999, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400844.769923952] [theta_ground_cloud]: Road visibility: kept 37812/43484 samples
+{"phase": "mapping", "mapped_frames": 5025, "last_frame": 5024, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5050, "last_frame": 5049, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5075, "last_frame": 5074, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5100, "last_frame": 5099, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400849.793874608] [theta_ground_cloud]: Road visibility: kept 36612/43375 samples
+{"phase": "mapping", "mapped_frames": 5125, "last_frame": 5124, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5150, "last_frame": 5149, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5175, "last_frame": 5174, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400854.810372926] [theta_ground_cloud]: Road visibility: kept 16837/35427 samples
+{"phase": "mapping", "mapped_frames": 5200, "last_frame": 5199, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5225, "last_frame": 5224, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5250, "last_frame": 5249, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5275, "last_frame": 5274, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400859.810579140] [theta_ground_cloud]: Road visibility: kept 6867/35269 samples
+{"phase": "mapping", "mapped_frames": 5300, "last_frame": 5299, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5325, "last_frame": 5324, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5350, "last_frame": 5349, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400864.811201963] [theta_ground_cloud]: Road visibility: kept 27477/44268 samples
+{"phase": "mapping", "mapped_frames": 5375, "last_frame": 5374, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5400, "last_frame": 5399, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5425, "last_frame": 5424, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5450, "last_frame": 5449, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400869.831751950] [theta_ground_cloud]: Road visibility: kept 33953/44128 samples
+{"phase": "mapping", "mapped_frames": 5475, "last_frame": 5474, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5500, "last_frame": 5499, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5525, "last_frame": 5524, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400874.843976231] [theta_ground_cloud]: Road visibility: kept 35582/44085 samples
+{"phase": "mapping", "mapped_frames": 5550, "last_frame": 5549, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5575, "last_frame": 5574, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5600, "last_frame": 5599, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400879.854690515] [theta_ground_cloud]: Road visibility: kept 30875/43192 samples
+{"phase": "mapping", "mapped_frames": 5625, "last_frame": 5624, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5650, "last_frame": 5649, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5675, "last_frame": 5674, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5700, "last_frame": 5699, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400884.871768664] [theta_ground_cloud]: Road visibility: kept 12454/35817 samples
+{"phase": "mapping", "mapped_frames": 5725, "last_frame": 5724, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5750, "last_frame": 5749, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5775, "last_frame": 5774, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5800, "last_frame": 5799, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400889.882098524] [theta_ground_cloud]: Road visibility: kept 10258/37319 samples
+{"phase": "mapping", "mapped_frames": 5825, "last_frame": 5824, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5850, "last_frame": 5849, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5875, "last_frame": 5874, "input_frames": 5956, "skipped_frames": 0}
+[INFO] [1792400894.906751085] [theta_ground_cloud]: Road visibility: kept 8924/39695 samples
+{"phase": "mapping", "mapped_frames": 5900, "last_frame": 5899, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5925, "last_frame": 5924, "input_frames": 5956, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 5950, "last_frame": 5949, "input_frames": 5956, "skipped_frames": 0}
+MAP COMPLETE 5956 frames; 19779 changed semantic cells

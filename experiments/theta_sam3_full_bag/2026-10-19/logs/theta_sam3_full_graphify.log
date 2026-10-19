@@ -1,0 +1,54 @@
+Re-extracting code files in . (no LLM needed)...
+  AST extraction: 100/4021 uncached files (2%) [28 workers]
+  AST extraction: 200/4021 uncached files (4%) [28 workers]
+  AST extraction: 300/4021 uncached files (7%) [28 workers]
+  AST extraction: 400/4021 uncached files (9%) [28 workers]
+  AST extraction: 500/4021 uncached files (12%) [28 workers]
+  AST extraction: 600/4021 uncached files (14%) [28 workers]
+  AST extraction: 700/4021 uncached files (17%) [28 workers]
+  AST extraction: 800/4021 uncached files (19%) [28 workers]
+  AST extraction: 900/4021 uncached files (22%) [28 workers]
+  AST extraction: 1000/4021 uncached files (24%) [28 workers]
+  AST extraction: 1100/4021 uncached files (27%) [28 workers]
+  AST extraction: 1200/4021 uncached files (29%) [28 workers]
+  AST extraction: 1300/4021 uncached files (32%) [28 workers]
+  AST extraction: 1400/4021 uncached files (34%) [28 workers]
+  AST extraction: 1500/4021 uncached files (37%) [28 workers]
+  AST extraction: 1600/4021 uncached files (39%) [28 workers]
+  AST extraction: 1700/4021 uncached files (42%) [28 workers]
+  AST extraction: 1800/4021 uncached files (44%) [28 workers]
+  AST extraction: 1900/4021 uncached files (47%) [28 workers]
+  AST extraction: 2000/4021 uncached files (49%) [28 workers]
+  AST extraction: 2100/4021 uncached files (52%) [28 workers]
+  AST extraction: 2200/4021 uncached files (54%) [28 workers]
+  AST extraction: 2300/4021 uncached files (57%) [28 workers]
+  AST extraction: 2400/4021 uncached files (59%) [28 workers]
+  AST extraction: 2500/4021 uncached files (62%) [28 workers]
+  AST extraction: 2600/4021 uncached files (64%) [28 workers]
+  AST extraction: 2700/4021 uncached files (67%) [28 workers]
+  AST extraction: 2800/4021 uncached files (69%) [28 workers]
+  AST extraction: 2900/4021 uncached files (72%) [28 workers]
+  AST extraction: 3000/4021 uncached files (74%) [28 workers]
+  AST extraction: 3100/4021 uncached files (77%) [28 workers]
+  AST extraction: 3200/4021 uncached files (79%) [28 workers]
+  AST extraction: 3300/4021 uncached files (82%) [28 workers]
+  AST extraction: 3400/4021 uncached files (84%) [28 workers]
+  AST extraction: 3500/4021 uncached files (87%) [28 workers]
+  AST extraction: 3600/4021 uncached files (89%) [28 workers]
+  AST extraction: 3700/4021 uncached files (92%) [28 workers]
+  AST extraction: 3800/4021 uncached files (94%) [28 workers]
+  AST extraction: 3900/4021 uncached files (96%) [28 workers]
+  AST extraction: 4000/4021 uncached files (99%) [28 workers]
+  AST extraction: 4021/4021 uncached files (100%) [28 workers]
+  warning: 4001 source file(s) produced zero nodes and are absent from the graph: environment.json, bag_files.json, theta_direction_metrics_first.json, reproducibility.json, source_revisions.json (+3996 more). A re-run will retry them (empties are no longer cached); if it persists, please report the file(s) (#1666).
+  warning: 25 file(s) are classified as code but graphify has no AST extractor for their language, so they contributed nothing to the graph: .m (25). Please open an issue to request support for these (#1689).
+  warning: 9 .sql file(s) contributed nothing to the graph because a dependency is missing: tree_sitter_sql not installed. Install it with: pip install "graphifyy[sql]" (#1745)
+[graphify watch] community set changed since labeling (2124 saved labels, 2115 communities now; renamed 500 community(ies) by their hub). Run `graphify label` to refresh names with the LLM.
+[graphify] backed up curated graph (4 files) -> 2026-10-19/
+Graph has 45655 nodes (above 5000 limit). Building aggregated community view...
+graph.html written (aggregated: 2115 community nodes, 4619 cross-community edges)
+Tip: run with --obsidian for full node-level detail.
+[graphify watch] Rebuilt: 45655 nodes, 86087 edges, 2115 communities
+[graphify watch] graph.json, graph.html and GRAPH_REPORT.md updated in graphify-out
+Code graph updated. For doc/paper/image changes run /graphify --update in your AI assistant.
+Tip: set GEMINI_API_KEY or GOOGLE_API_KEY to use Gemini for semantic extraction.
