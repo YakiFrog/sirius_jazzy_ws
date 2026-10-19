@@ -1,0 +1,1787 @@
+{
+  "baseline": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "local_shape/radius0_35_strength2_5": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "local_shape/radius0_35_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "local_shape/radius0_6_strength2_5": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "local_shape/radius0_6_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 26,
+        "changed_cells": 7
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 31,
+        "cells": 2114
+      }
+    }
+  },
+  "local_shape/radius0_9_strength2_5": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 38,
+        "changed_cells": 19
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 43,
+        "cells": 2114
+      }
+    }
+  },
+  "local_shape/radius0_9_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 10,
+        "changed_cells": 5
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 297,
+        "changed_cells": 278
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 307,
+        "cells": 2114
+      }
+    }
+  },
+  "radius0_35_strength2_5": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "radius0_35_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "radius0_6_strength2_5": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "radius0_6_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "radius0_9_strength2_5": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "radius0_9_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 5,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 19,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 24,
+        "cells": 2114
+      }
+    }
+  },
+  "wider_context/radius1_2_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 0,
+        "changed_cells": 0
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 78,
+        "changed_cells": 73
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 363,
+        "changed_cells": 363
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 431,
+        "changed_cells": 412
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 872,
+        "cells": 2114
+      }
+    }
+  },
+  "wider_context/radius1_2_strength8_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 418,
+        "changed_cells": 418
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 238,
+        "changed_cells": 233
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 412,
+        "changed_cells": 412
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 434,
+        "changed_cells": 415
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 1502,
+        "cells": 2114
+      }
+    }
+  },
+  "wider_context/radius1_6_strength5_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 305,
+        "changed_cells": 305
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 447,
+        "changed_cells": 442
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 480,
+        "changed_cells": 480
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 434,
+        "changed_cells": 415
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 1666,
+        "cells": 2114
+      }
+    }
+  },
+  "wider_context/radius1_6_strength8_0": {
+    "rois": [
+      {
+        "name": "floor_1250",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1220,
+          2300,
+          1260
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 461,
+        "changed_cells": 461
+      },
+      {
+        "name": "floor_1400",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2285,
+          1370,
+          2300,
+          1410
+        ],
+        "evaluated_cells": 600,
+        "correct_cells": 600,
+        "changed_cells": 595
+      },
+      {
+        "name": "floor_1500",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2276,
+          1470,
+          2288,
+          1510
+        ],
+        "evaluated_cells": 480,
+        "correct_cells": 480,
+        "changed_cells": 480
+      },
+      {
+        "name": "floor_1750",
+        "expected_class": 6,
+        "pixel_bbox": [
+          2263,
+          1720,
+          2274,
+          1760
+        ],
+        "evaluated_cells": 434,
+        "correct_cells": 434,
+        "changed_cells": 415
+      },
+      {
+        "name": "road_beyond_tactile_end_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          484,
+          2471,
+          504,
+          2491
+        ],
+        "evaluated_cells": 400,
+        "correct_cells": 285,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_left_curb_3300",
+        "expected_class": 5,
+        "pixel_bbox": [
+          444,
+          2401,
+          454,
+          2441
+        ],
+        "evaluated_cells": 394,
+        "correct_cells": 385,
+        "changed_cells": 0
+      },
+      {
+        "name": "road_near_curb_3900",
+        "expected_class": 5,
+        "pixel_bbox": [
+          917,
+          1108,
+          928,
+          1131
+        ],
+        "evaluated_cells": 253,
+        "correct_cells": 253,
+        "changed_cells": 0
+      }
+    ],
+    "by_class": {
+      "5": {
+        "correct": 923,
+        "cells": 1047
+      },
+      "6": {
+        "correct": 1975,
+        "cells": 2114
+      }
+    }
+  }
+}

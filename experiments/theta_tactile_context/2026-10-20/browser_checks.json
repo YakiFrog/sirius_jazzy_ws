@@ -1,0 +1,16 @@
+{
+  "tactile_context": {
+    "viewport": 390,
+    "all_images_decoded": true,
+    "horizontal_overflow": false,
+    "image_count": 3,
+    "status": 200
+  },
+  "tactile_context_map": {
+    "viewport": 390,
+    "all_images_decoded": true,
+    "horizontal_overflow": false,
+    "image_count": 6,
+    "status": 200
+  }
+}

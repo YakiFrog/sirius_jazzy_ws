@@ -1,0 +1,75 @@
+{
+  "status": "Exploratory same-recording source-texture interior rectangles; not expert ground truth. Not used by the algorithm.",
+  "rois": [
+    {
+      "name": "floor_1250",
+      "expected_class": 6,
+      "pixel_bbox": [
+        2285,
+        1220,
+        2300,
+        1260
+      ]
+    },
+    {
+      "name": "floor_1400",
+      "expected_class": 6,
+      "pixel_bbox": [
+        2285,
+        1370,
+        2300,
+        1410
+      ]
+    },
+    {
+      "name": "floor_1500",
+      "expected_class": 6,
+      "pixel_bbox": [
+        2276,
+        1470,
+        2288,
+        1510
+      ]
+    },
+    {
+      "name": "floor_1750",
+      "expected_class": 6,
+      "pixel_bbox": [
+        2263,
+        1720,
+        2274,
+        1760
+      ]
+    },
+    {
+      "name": "road_beyond_tactile_end_3300",
+      "expected_class": 5,
+      "pixel_bbox": [
+        484,
+        2471,
+        504,
+        2491
+      ]
+    },
+    {
+      "name": "road_left_curb_3300",
+      "expected_class": 5,
+      "pixel_bbox": [
+        444,
+        2401,
+        454,
+        2441
+      ]
+    },
+    {
+      "name": "road_near_curb_3900",
+      "expected_class": 5,
+      "pixel_bbox": [
+        917,
+        1108,
+        928,
+        1131
+      ]
+    }
+  ]
+}

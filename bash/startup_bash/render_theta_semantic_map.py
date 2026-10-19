@@ -47,6 +47,8 @@ def main():
         if meta.get('shadow_rescue') and name=='overview':subtitle=f'全区間地図 ｜ 日陰{meta["shadow_rescue"]["camera_frames"]}フレームを追加認識 ｜ 同じ範囲・縮尺'
         if meta.get('road_region_consistency'):
             subtitle=('全区間地図' if name=='overview' else f'全区間地図の拡大 {name[3:]}')+' ｜ 歩道・車道の境界と連続性を補正 ｜ 同じ範囲・縮尺'
+        if meta.get('tactile_context'):
+            subtitle=('全区間地図' if name=='overview' else f'全区間地図の拡大 {name[3:]}')+' ｜ 点字周辺の歩道らしさを追加 ｜ 同じ範囲・縮尺'
         for kind,source in [('semantic',fullsem),('overlay',over),('texture',rgb)]:
             image=source[y0:y1,x0:x1];rendered=frame(image,titles[kind],subtitle,res,1200 if name!='overview' else 1600,show_legend=kind!='texture');rendered.save(target/(kind+'.jpg'),quality=95,subsampling=0);images.append(rendered)
         contact=Image.new('RGB',(images[0].width,sum(x.height for x in images)),'white');yy=0
@@ -60,6 +62,7 @@ def main():
     if meta.get('road_region_consistency'):
         html=html.replace('既存の分類と路面テクスチャは保持しています。','暗所の点字を保持したうえで、下記の歩道・車道補正を追加しました。')
         html+='<p class="note">路面の連続性を使い、歩道・車道の細かな混在を抑えた版です。画像の境界を越えにくくし、複数観測の分類を参照します。点字・芝生・未分類・元のRGB・座標と縮尺は保持しています。縁石の高さを測った補正ではなく、誤判定は残る可能性があります。</p>'
+    if meta.get('tactile_context'):html+='<p class="note">点字の文脈を追加した比較用地図です。連続した点字の途中を歩道の手掛かりにします。短い断片・広い警告部・端点や分岐付近は手掛かりから除外し、周囲を歩道と判断しやすくしています。車道を含む全区間での正しさを保証する処理ではなく、広い誤認識も残っています。</p>'
     focus='seg2700' if meta.get('shadow_rescue') else 'seg3300'
     if meta.get('shadow_rescue'):html=html.replace('#seg3300','#seg2700')
     if meta.get('road_region_consistency'):

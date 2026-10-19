@@ -1,0 +1,250 @@
+{
+  "status": "exploratory source-texture interior ROIs; no independent ground truth",
+  "excluded_classes": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "rois": [
+    {
+      "name": "300_6_0",
+      "center": 300,
+      "expected_class": 6,
+      "pixel_bbox": [
+        2281,
+        653,
+        2319,
+        720
+      ],
+      "normalized_bbox": [
+        0.68,
+        0.42,
+        0.85,
+        0.75
+      ]
+    },
+    {
+      "name": "900_6_1",
+      "center": 900,
+      "expected_class": 6,
+      "pixel_bbox": [
+        2150,
+        2117,
+        2186,
+        2156
+      ],
+      "normalized_bbox": [
+        0.32,
+        0.27,
+        0.5,
+        0.44
+      ]
+    },
+    {
+      "name": "900_5_2",
+      "center": 900,
+      "expected_class": 5,
+      "pixel_bbox": [
+        2182,
+        2197,
+        2210,
+        2260
+      ],
+      "normalized_bbox": [
+        0.48,
+        0.62,
+        0.62,
+        0.9
+      ]
+    },
+    {
+      "name": "1500_6_3",
+      "center": 1500,
+      "expected_class": 6,
+      "pixel_bbox": [
+        1921,
+        3640,
+        2023,
+        3719
+      ],
+      "normalized_bbox": [
+        0.25,
+        0.25,
+        0.75,
+        0.6
+      ]
+    },
+    {
+      "name": "2100_6_4",
+      "center": 2100,
+      "expected_class": 6,
+      "pixel_bbox": [
+        785,
+        3809,
+        878,
+        3873
+      ],
+      "normalized_bbox": [
+        0.3,
+        0.45,
+        0.7,
+        0.75
+      ]
+    },
+    {
+      "name": "2700_6_5",
+      "center": 2700,
+      "expected_class": 6,
+      "pixel_bbox": [
+        273,
+        3081,
+        294,
+        3141
+      ],
+      "normalized_bbox": [
+        0.5,
+        0.44,
+        0.6,
+        0.7
+      ]
+    },
+    {
+      "name": "3300_6_6",
+      "center": 3300,
+      "expected_class": 6,
+      "pixel_bbox": [
+        507,
+        2325,
+        531,
+        2395
+      ],
+      "normalized_bbox": [
+        0.59,
+        0.1,
+        0.7,
+        0.4
+      ]
+    },
+    {
+      "name": "3300_5_7",
+      "center": 3300,
+      "expected_class": 5,
+      "pixel_bbox": [
+        405,
+        2414,
+        444,
+        2490
+      ],
+      "normalized_bbox": [
+        0.12,
+        0.48,
+        0.3,
+        0.8
+      ]
+    },
+    {
+      "name": "3900_6_8",
+      "center": 3900,
+      "expected_class": 6,
+      "pixel_bbox": [
+        982,
+        1092,
+        1025,
+        1194
+      ],
+      "normalized_bbox": [
+        0.65,
+        0.18,
+        0.85,
+        0.62
+      ]
+    },
+    {
+      "name": "3900_5_9",
+      "center": 3900,
+      "expected_class": 5,
+      "pixel_bbox": [
+        881,
+        1120,
+        911,
+        1161
+      ],
+      "normalized_bbox": [
+        0.18,
+        0.3,
+        0.32,
+        0.48
+      ]
+    },
+    {
+      "name": "4500_6_10",
+      "center": 4500,
+      "expected_class": 6,
+      "pixel_bbox": [
+        1930,
+        756,
+        1978,
+        793
+      ],
+      "normalized_bbox": [
+        0.28,
+        0.48,
+        0.5,
+        0.66
+      ]
+    },
+    {
+      "name": "4500_5_11",
+      "center": 4500,
+      "expected_class": 5,
+      "pixel_bbox": [
+        2029,
+        715,
+        2067,
+        739
+      ],
+      "normalized_bbox": [
+        0.73,
+        0.28,
+        0.9,
+        0.4
+      ]
+    },
+    {
+      "name": "5100_6_12",
+      "center": 5100,
+      "expected_class": 6,
+      "pixel_bbox": [
+        2480,
+        245,
+        2526,
+        321
+      ],
+      "normalized_bbox": [
+        0.5,
+        0.45,
+        0.7,
+        0.8
+      ]
+    },
+    {
+      "name": "5650_6_13",
+      "center": 5650,
+      "expected_class": 6,
+      "pixel_bbox": [
+        2532,
+        774,
+        2568,
+        815
+      ],
+      "normalized_bbox": [
+        0.55,
+        0.47,
+        0.72,
+        0.65
+      ]
+    }
+  ]
+}

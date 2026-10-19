@@ -1,0 +1,833 @@
+{
+  "resolution": 0.05,
+  "origin": [
+    -110.30067416341491,
+    -167.9387912057118
+  ],
+  "width": 2698,
+  "height": 4026,
+  "palette": [
+    [
+      127,
+      127,
+      127
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      255,
+      255,
+      255
+    ],
+    [
+      0,
+      255,
+      0
+    ],
+    [
+      255,
+      255,
+      0
+    ],
+    [
+      0,
+      0,
+      255
+    ],
+    [
+      128,
+      128,
+      128
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      64
+    ],
+    [
+      0,
+      0,
+      128
+    ],
+    [
+      0,
+      0,
+      192
+    ],
+    [
+      0,
+      0,
+      255
+    ],
+    [
+      0,
+      64,
+      0
+    ],
+    [
+      0,
+      64,
+      64
+    ],
+    [
+      0,
+      64,
+      128
+    ],
+    [
+      0,
+      64,
+      192
+    ],
+    [
+      0,
+      64,
+      255
+    ],
+    [
+      0,
+      128,
+      0
+    ],
+    [
+      0,
+      128,
+      64
+    ],
+    [
+      0,
+      128,
+      128
+    ],
+    [
+      0,
+      128,
+      192
+    ],
+    [
+      0,
+      128,
+      255
+    ],
+    [
+      0,
+      192,
+      0
+    ],
+    [
+      0,
+      192,
+      64
+    ],
+    [
+      0,
+      192,
+      128
+    ],
+    [
+      0,
+      192,
+      192
+    ],
+    [
+      0,
+      192,
+      255
+    ],
+    [
+      0,
+      255,
+      0
+    ],
+    [
+      0,
+      255,
+      64
+    ],
+    [
+      0,
+      255,
+      128
+    ],
+    [
+      0,
+      255,
+      192
+    ],
+    [
+      0,
+      255,
+      255
+    ],
+    [
+      64,
+      0,
+      0
+    ],
+    [
+      64,
+      0,
+      64
+    ],
+    [
+      64,
+      0,
+      128
+    ],
+    [
+      64,
+      0,
+      192
+    ],
+    [
+      64,
+      0,
+      255
+    ],
+    [
+      64,
+      64,
+      0
+    ],
+    [
+      64,
+      64,
+      64
+    ],
+    [
+      64,
+      64,
+      128
+    ],
+    [
+      64,
+      64,
+      192
+    ],
+    [
+      64,
+      64,
+      255
+    ],
+    [
+      64,
+      128,
+      0
+    ],
+    [
+      64,
+      128,
+      64
+    ],
+    [
+      64,
+      128,
+      128
+    ],
+    [
+      64,
+      128,
+      192
+    ],
+    [
+      64,
+      128,
+      255
+    ],
+    [
+      64,
+      192,
+      0
+    ],
+    [
+      64,
+      192,
+      64
+    ],
+    [
+      64,
+      192,
+      128
+    ],
+    [
+      64,
+      192,
+      192
+    ],
+    [
+      64,
+      192,
+      255
+    ],
+    [
+      64,
+      255,
+      0
+    ],
+    [
+      64,
+      255,
+      64
+    ],
+    [
+      64,
+      255,
+      128
+    ],
+    [
+      64,
+      255,
+      192
+    ],
+    [
+      64,
+      255,
+      255
+    ],
+    [
+      128,
+      0,
+      0
+    ],
+    [
+      128,
+      0,
+      64
+    ],
+    [
+      128,
+      0,
+      128
+    ],
+    [
+      128,
+      0,
+      192
+    ],
+    [
+      128,
+      0,
+      255
+    ],
+    [
+      128,
+      64,
+      0
+    ],
+    [
+      128,
+      64,
+      64
+    ],
+    [
+      128,
+      64,
+      128
+    ],
+    [
+      128,
+      64,
+      192
+    ],
+    [
+      128,
+      64,
+      255
+    ],
+    [
+      128,
+      128,
+      0
+    ],
+    [
+      128,
+      128,
+      64
+    ],
+    [
+      128,
+      128,
+      128
+    ],
+    [
+      128,
+      128,
+      192
+    ],
+    [
+      128,
+      128,
+      255
+    ],
+    [
+      128,
+      192,
+      0
+    ],
+    [
+      128,
+      192,
+      64
+    ],
+    [
+      128,
+      192,
+      128
+    ],
+    [
+      128,
+      192,
+      192
+    ],
+    [
+      128,
+      192,
+      255
+    ],
+    [
+      128,
+      255,
+      0
+    ],
+    [
+      128,
+      255,
+      64
+    ],
+    [
+      128,
+      255,
+      128
+    ],
+    [
+      128,
+      255,
+      192
+    ],
+    [
+      128,
+      255,
+      255
+    ],
+    [
+      192,
+      0,
+      0
+    ],
+    [
+      192,
+      0,
+      64
+    ],
+    [
+      192,
+      0,
+      128
+    ],
+    [
+      192,
+      0,
+      192
+    ],
+    [
+      192,
+      0,
+      255
+    ],
+    [
+      192,
+      64,
+      0
+    ],
+    [
+      192,
+      64,
+      64
+    ],
+    [
+      192,
+      64,
+      128
+    ],
+    [
+      192,
+      64,
+      192
+    ],
+    [
+      192,
+      64,
+      255
+    ],
+    [
+      192,
+      128,
+      0
+    ],
+    [
+      192,
+      128,
+      64
+    ],
+    [
+      192,
+      128,
+      128
+    ],
+    [
+      192,
+      128,
+      192
+    ],
+    [
+      192,
+      128,
+      255
+    ],
+    [
+      192,
+      192,
+      0
+    ],
+    [
+      192,
+      192,
+      64
+    ],
+    [
+      192,
+      192,
+      128
+    ],
+    [
+      192,
+      192,
+      192
+    ],
+    [
+      192,
+      192,
+      255
+    ],
+    [
+      192,
+      255,
+      0
+    ],
+    [
+      192,
+      255,
+      64
+    ],
+    [
+      192,
+      255,
+      128
+    ],
+    [
+      192,
+      255,
+      192
+    ],
+    [
+      192,
+      255,
+      255
+    ],
+    [
+      255,
+      0,
+      0
+    ],
+    [
+      255,
+      0,
+      64
+    ],
+    [
+      255,
+      0,
+      128
+    ],
+    [
+      255,
+      0,
+      192
+    ],
+    [
+      255,
+      0,
+      255
+    ],
+    [
+      255,
+      64,
+      0
+    ],
+    [
+      255,
+      64,
+      64
+    ],
+    [
+      255,
+      64,
+      128
+    ],
+    [
+      255,
+      64,
+      192
+    ],
+    [
+      255,
+      64,
+      255
+    ],
+    [
+      255,
+      128,
+      0
+    ],
+    [
+      255,
+      128,
+      64
+    ],
+    [
+      255,
+      128,
+      128
+    ],
+    [
+      255,
+      128,
+      192
+    ],
+    [
+      255,
+      128,
+      255
+    ],
+    [
+      255,
+      192,
+      0
+    ],
+    [
+      255,
+      192,
+      64
+    ],
+    [
+      255,
+      192,
+      128
+    ],
+    [
+      255,
+      192,
+      192
+    ],
+    [
+      255,
+      192,
+      255
+    ],
+    [
+      255,
+      255,
+      0
+    ],
+    [
+      255,
+      255,
+      64
+    ],
+    [
+      255,
+      255,
+      128
+    ],
+    [
+      255,
+      255,
+      192
+    ],
+    [
+      255,
+      255,
+      255
+    ]
+  ],
+  "labels": {
+    "0": {
+      "name": "unknown",
+      "color": [
+        127,
+        127,
+        127
+      ],
+      "global_cost": 0,
+      "local_cost": 0
+    },
+    "1": {
+      "name": "wall",
+      "color": [
+        0,
+        0,
+        0
+      ],
+      "global_cost": 0,
+      "local_cost": 0
+    },
+    "2": {
+      "name": "floor",
+      "color": [
+        255,
+        255,
+        255
+      ],
+      "global_cost": 0,
+      "local_cost": 0
+    },
+    "3": {
+      "name": "grass",
+      "color": [
+        0,
+        255,
+        0
+      ],
+      "global_cost": 100,
+      "local_cost": 70
+    },
+    "4": {
+      "name": "tactile paving",
+      "color": [
+        255,
+        255,
+        0
+      ],
+      "global_cost": 0,
+      "local_cost": 50
+    },
+    "5": {
+      "name": "roadway",
+      "color": [
+        0,
+        0,
+        255
+      ],
+      "global_cost": 100,
+      "local_cost": 100
+    },
+    "6": {
+      "name": "sidewalk",
+      "color": [
+        128,
+        128,
+        128
+      ],
+      "global_cost": 0,
+      "local_cost": 10
+    }
+  },
+  "semantic_encoding": "class_id",
+  "semantic_source": "road-region consistency with tactile-context prior",
+  "temporal_method": "bidirectional",
+  "shadow_rescue": {
+    "camera_frames": 701,
+    "first_frame": 2350,
+    "last_frame": 3050,
+    "prompt": "yellow tactile paving in shadow",
+    "method": "shadow white balance + gamma0.45, auxiliary target-only512, dark/color gates, bidirectional tracking",
+    "score_min": 0.5,
+    "yellow_fraction": 0.2,
+    "saturation_min": 45,
+    "original_component_median_v_max": 90,
+    "only_tactile_additions": true,
+    "same_point_counts_and_poses_checked": true,
+    "subtraction_roundoff_minimum": 0.0
+  },
+  "road_region_consistency": {
+    "strengths_m": [
+      0.8
+    ],
+    "color_sigma_lab": 3.0,
+    "guide_blur_m": 0.08,
+    "probability_clip": 0.1,
+    "integer_scale": 10000,
+    "connectivity": 8,
+    "adoption_policy": "road-to-sidewalk",
+    "tactile_connectivity_only": true,
+    "strength_m": 0.8,
+    "reference_map": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_semantic_shadow_map_20261020",
+    "5": {
+      "cells": 275723,
+      "components": 888,
+      "components_below_025_m2": 850
+    },
+    "6": {
+      "cells": 893821,
+      "components": 1706,
+      "components_below_025_m2": 1676
+    },
+    "changed_cells": 27687,
+    "road_to_sidewalk": 27687,
+    "sidewalk_to_road": 0,
+    "protected_cells_unchanged": true,
+    "flow": 6743423,
+    "seconds": 3.26
+  },
+  "tactile_context": {
+    "radii_m": [
+      1.2,
+      1.6
+    ],
+    "prior_strengths": [
+      5.0,
+      8.0
+    ],
+    "endpoint_guard_m": 1.0,
+    "anchor_mode": "local-shape",
+    "distance_mode": "connectivity",
+    "minimum_strip_length_m": 3.0,
+    "maximum_strip_width_m": 0.45,
+    "color_sigma_lab": 3,
+    "guide_blur_m": 0.08,
+    "connectivity": 8,
+    "smoothing_strength_m": 0.8,
+    "adoption_policy": "road-to-sidewalk",
+    "raw_tactile_cells": 47057,
+    "skeleton_cells": 6140,
+    "safe_anchor_cells": 3402,
+    "unsafe_skeleton_cells": 2738,
+    "radius_m": 1.6,
+    "prior_strength": 8.0,
+    "5": {
+      "cells": 261756,
+      "components": 880,
+      "components_below_025_m2": 844
+    },
+    "6": {
+      "cells": 907788,
+      "components": 1635,
+      "components_below_025_m2": 1607
+    },
+    "changed_cells": 13967,
+    "road_to_sidewalk": 13967,
+    "sidewalk_to_road": 0,
+    "protected_cells_unchanged": true,
+    "flow": 7486893,
+    "seconds": 3.795,
+    "prior_floor_cells": 196561
+  }
+}

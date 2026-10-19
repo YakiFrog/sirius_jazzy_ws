@@ -1,0 +1,13 @@
+{
+  "base_git_commit": "70df1db14c294d4b3bf9d7deb9c8ff50e8e21a6e",
+  "working_source_sha256": {
+    "bash/startup_bash/experiment_theta_tactile_context.py": "0deeca9d89e85ef8741a7db0b73bc882f30c88bc281d958db5c9b06f881cd595",
+    "bash/startup_bash/review_theta_tactile_context.py": "7aefedd88eb74d5ede87cafe66f8d182f08df192b0f864d536cbe00335b648df",
+    "bash/startup_bash/tests/test_theta_tactile_context.py": "93a2162dbe34c401afe8aed732a70bb643367b5458e0cdf9c966d54538131b7a",
+    "bash/startup_bash/refine_theta_road_regions.py": "3c70c2bde679ee3c64d70ff95497140d5485104febad77ab3ee4c33b2b7f8e01",
+    "bash/startup_bash/evaluate_theta_road_regions.py": "a9842c431bae6b18903428a9e558da150b4dc8754fed8235417162c1028b3b07",
+    "bash/startup_bash/render_theta_semantic_map.py": "677d838899228d365837664adf57c34a7e859bdd1d14fe4c6ab3ad2a37ff2f25"
+  },
+  "opencv": "4.6.0",
+  "numpy": "1.26.4"
+}

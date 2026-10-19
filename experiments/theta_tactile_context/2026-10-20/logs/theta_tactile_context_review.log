@@ -1,0 +1,37 @@
+RENDER COMPLETE 11 viewports
+{
+  "selected_trial": "wider_context/radius1_6_strength8_0",
+  "total_camera_frames": 5956,
+  "all_rgb_bytes_identical": true,
+  "protected_classes_unchanged": true,
+  "input_and_output_grid_equal": true,
+  "semantic_outside_texture_cells": 0,
+  "roi_status": "Exploratory same-recording interiors; not independent accuracy assessment.",
+  "roi_evaluation": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 27193,
+      "fraction": 0.8853905512323772
+    }
+  },
+  "changed_cells": 13967,
+  "tactile_context_roi_status": "exploratory same-recording interior ROIs; not expert or independent ground truth",
+  "tactile_context_roi_evaluation": {
+    "5": {
+      "correct": 923,
+      "cells": 1047
+    },
+    "6": {
+      "correct": 1975,
+      "cells": 2114
+    }
+  },
+  "context_road_control_changed_cells": 0,
+  "trial_conditions": 16,
+  "unit_tests_passed": 16
+}

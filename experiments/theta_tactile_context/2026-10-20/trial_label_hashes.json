@@ -1,0 +1,130 @@
+{
+  "local_shape/radius0_35_strength2_5": {
+    "pgm_sha256": "4ed5793d793d9d68c7c9b2d61e3ca7cd0cdf8c32edf12029812b32b0272e7747",
+    "decoded_label_sha256": "50d4f93f82275f19e8e6f7ad6168c187a0951cae265a34ad1a45a41bf806b8d2",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "local_shape/radius0_35_strength5_0": {
+    "pgm_sha256": "e2e59e2e0ce90d1a1b250ee15612d11446097deef5627d6564dff08a16c64bae",
+    "decoded_label_sha256": "ec7fda1918d8d625ecf324f71470f547a1ddd5f37dd5932f3490e4ae6ca4e5e8",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "local_shape/radius0_6_strength2_5": {
+    "pgm_sha256": "55fbbbe5b00c6621c9dbca0c9d87ba9dae7b9bfaf0e71b3f06363f92a300ca6b",
+    "decoded_label_sha256": "2e0ef3e44305a1adc6d25308acda6036b8db3b577e6bb693f9ef65708d6af2a7",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "local_shape/radius0_6_strength5_0": {
+    "pgm_sha256": "e8aa861a69ccc3f0013b3688d5cf875a4585cfbcf6612bc6cc87616a1f209849",
+    "decoded_label_sha256": "8207e86a63ee7299fe0f810af8604151cf496b9b9dcd4785065c9b967022b034",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "local_shape/radius0_9_strength2_5": {
+    "pgm_sha256": "759f77548cdf455934f7d7942433fc424ce67a04b0e151b9ede2c0983ae5e39d",
+    "decoded_label_sha256": "b41c61714d96d26bf43129ad60ff4c9dbc7e1f53166f952ebbd471bcc59c79f2",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "local_shape/radius0_9_strength5_0": {
+    "pgm_sha256": "22d27a5ebaa4fd22a26581117321f3463f38f47d198c2d799d6222f00ef27c89",
+    "decoded_label_sha256": "13a88003f990a0313a293ddbb59fbee82947041651b52e115b851265acbbb4bd",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "radius0_35_strength2_5": {
+    "pgm_sha256": "b44ea2b785ad131f1c230761bfed6c86e13ccbedfab5f45002474ea449a08885",
+    "decoded_label_sha256": "0bc7477ed26cc2c7ed56233aea93691581c37f514480b1a0a3d257ac85f7f411",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "radius0_35_strength5_0": {
+    "pgm_sha256": "5479ba3903cd11036ab488a85ba38a163e22a36f220a6b092bce243bdd0fb42a",
+    "decoded_label_sha256": "de0fa7ec115273919e461899c25c18031e177b2fffbc6f8a919ca5574669c05c",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "radius0_6_strength2_5": {
+    "pgm_sha256": "2dcd7c73c17c8d7d9ad28cc2a164deb65798458c5b04a0b59b0f100c872b64c1",
+    "decoded_label_sha256": "7f0737a08761527cb33da240731cd15f2bfb2ef0fa1d7027baa49e9795c44a79",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "radius0_6_strength5_0": {
+    "pgm_sha256": "98bf839dc053abd1331f7cfb178d0f2154170c217694279b2754788766d4caf9",
+    "decoded_label_sha256": "1e04eb53708153c9abcc91b330dddfb1af6f7fafa918df22203ebb060dbfe285",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "radius0_9_strength2_5": {
+    "pgm_sha256": "32e6f62fa2c5170a25803c61887f5151b9c63d302026888530c91039b8b45036",
+    "decoded_label_sha256": "922f71c21a8063599358651d253776073652929dfb53383071f572f4d0c7e0c0",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "radius0_9_strength5_0": {
+    "pgm_sha256": "e21822f210d5704005d5546adcf21d97aa6d89572b75885456af8e614f6176ad",
+    "decoded_label_sha256": "2e9b1d6c963325f4d4aa7f670a7e586bd8c761d3655101842c21924a72e0a4ba",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "wider_context/radius1_2_strength5_0": {
+    "pgm_sha256": "cefa51e49d4a7c3d7cd294fa211796e07b8c37d84f1f72b88058714f25e99f1e",
+    "decoded_label_sha256": "7dbd0a5909fb2fb8ffc1282acfdbc67412a9aa8b87d57af865aecbc608002082",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "wider_context/radius1_2_strength8_0": {
+    "pgm_sha256": "c65ef8dfd81d6d4ae28a7be474ee3463e79176a74e714aec23e8dca9c1df43f3",
+    "decoded_label_sha256": "7653ab387b3a01f9eeab56e520c689bf864333a1462aaacb02911fda79f0468c",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "wider_context/radius1_6_strength5_0": {
+    "pgm_sha256": "761ffa5179410cf60859240ce9a63a877b4f23a7027dc642523582554027e884",
+    "decoded_label_sha256": "7458189c16a2c5b96649e081d801481751dc0e1d4eb7670b552c99035a7f457a",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "wider_context/radius1_6_strength8_0": {
+    "pgm_sha256": "fb4f057eb417bc390b86f4d67260b045859eeca96f58b14c47025dd2a7dc6644",
+    "decoded_label_sha256": "aee3ee9a46e3cfba53b096c11a60983802fbde45752e95123b8154bb6824fd48",
+    "shape": [
+      4026,
+      2698
+    ]
+  }
+}
