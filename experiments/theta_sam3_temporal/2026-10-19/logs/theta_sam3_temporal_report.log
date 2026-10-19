@@ -1,0 +1,68 @@
+Evaluated 300
+Evaluated 900
+Evaluated 1500
+Evaluated 2100
+Evaluated 2700
+Evaluated 3300
+Evaluated 3900
+Evaluated 4500
+Evaluated 5100
+Evaluated 5650
+{
+  "roi_count": 19,
+  "annotated_centers": 7,
+  "unannotated_ambiguous_centers": [
+    300,
+    5100,
+    5650
+  ],
+  "roi_summary": {
+    "baseline": {
+      "pixels": 66184,
+      "correct_fraction": 0.863078689713526,
+      "opposite_fraction": 0.006451710383174181,
+      "unknown_or_other_fraction": 0.1304695999032999
+    },
+    "causal": {
+      "pixels": 66184,
+      "correct_fraction": 0.863078689713526,
+      "opposite_fraction": 0.006451710383174181,
+      "unknown_or_other_fraction": 0.1304695999032999
+    },
+    "bidirectional": {
+      "pixels": 66184,
+      "correct_fraction": 0.863078689713526,
+      "opposite_fraction": 0.006451710383174181,
+      "unknown_or_other_fraction": 0.1304695999032999
+    },
+    "bidirectional_ungated": {
+      "pixels": 66184,
+      "correct_fraction": 0.863078689713526,
+      "opposite_fraction": 0.006451710383174181,
+      "unknown_or_other_fraction": 0.1304695999032999
+    }
+  },
+  "aligned_flip_rates": {
+    "baseline": {
+      "pixels": 11189048,
+      "flips": 137694,
+      "flip_fraction": 0.01230614079053017
+    },
+    "causal": {
+      "pixels": 11189048,
+      "flips": 137444,
+      "flip_fraction": 0.01228379751342563
+    },
+    "bidirectional": {
+      "pixels": 11189048,
+      "flips": 136619,
+      "flip_fraction": 0.012210064698980646
+    },
+    "bidirectional_ungated": {
+      "pixels": 11189048,
+      "flips": 114572,
+      "flip_fraction": 0.010239655777685465
+    }
+  },
+  "note": "Provisional manually chosen ROI interiors. Flip reduction is stability, not correctness; no whole-image ground truth."
+}

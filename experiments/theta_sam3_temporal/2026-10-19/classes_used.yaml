@@ -1,0 +1,46 @@
+class_thresholds:
+  grass: 0.5
+  line type tactile paving: 0.5
+  line-type tactile paving: 0.5
+  roadway: 0.5
+  sidewalk: 0.5
+  tactile paving: 0.5
+classes:
+  grass:
+    color:
+    - 0
+    - 255
+    - 0
+    id: 3
+  line type tactile paving:
+    color:
+    - 255
+    - 255
+    - 0
+    id: 4
+  line-type tactile paving:
+    color:
+    - 255
+    - 255
+    - 0
+    id: 4
+  roadway:
+    color:
+    - 0
+    - 0
+    - 255
+    id: 5
+  sidewalk:
+    color:
+    - 128
+    - 128
+    - 128
+    id: 6
+  tactile paving:
+    color:
+    - 255
+    - 255
+    - 0
+    id: 4
+prompt: grass, tactile paving, line-type tactile paving, line type tactile paving,
+  roadway, sidewalk

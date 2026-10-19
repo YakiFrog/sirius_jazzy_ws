@@ -1,0 +1,20 @@
+{
+  "neighbor_radius_frames": 4,
+  "min_support": 3,
+  "agreement": 0.75,
+  "score_min": 0.5,
+  "max_neighbor_age_sec": 1.5,
+  "photometric_limit_gray": 30,
+  "fb_pixel_limit": 1.5,
+  "vote_decay_seconds": 2.0,
+  "confidence_gain": 0.05,
+  "protected_ids": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "flow": "OpenCV DIS MEDIUM, forward/backward consistency",
+  "cv2_version": "4.6.0"
+}

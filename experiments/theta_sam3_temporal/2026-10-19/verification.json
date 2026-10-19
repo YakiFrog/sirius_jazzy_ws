@@ -1,0 +1,16 @@
+{
+  "original_files_hash_verified": 6002,
+  "zip_entries_hash_verified": 5984,
+  "theta_tests_passed": 65,
+  "new_tests_passed": 7,
+  "build": "passed",
+  "launch_show_args": "passed",
+  "phone_render": "phone_review.png",
+  "server_settings_restored": {
+    "settings_restored": true,
+    "registry_unchanged": true,
+    "errors": []
+  },
+  "navigation_commit": "39b8d3d",
+  "frame306_final_and_ungated_exact_reproduction": true
+}
