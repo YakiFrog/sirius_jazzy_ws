@@ -1,0 +1,17 @@
+{
+  "auxiliary_method": "shade_wb45",
+  "auxiliary_prompt": "yellow tactile paving in shadow",
+  "auxiliary_resolution": 512,
+  "score_min": 0.5,
+  "minimum_yellow_fraction": 0.2,
+  "minimum_saturation": 45,
+  "dark_component_median_original_max_v": 90,
+  "component_min_area": 16,
+  "protected_classes": [
+    1,
+    2,
+    3
+  ],
+  "original_labels_only_changed_to_4": true,
+  "texture_or_geometry_changes": false
+}

@@ -1,0 +1,42 @@
+Loaded 701 images, 31306 scans and recorded TF
+[INFO] [1792426413.347753523] [theta_bev]: Dual Fisheye JPEG -> BEV 準備完了（平面地面仮定, 姿勢取得元: TF sirius3/base_footprint <- sirius3/theta_link）
+[INFO] [1792426413.352091459] [theta_ground_cloud]: BEV 512x512 (10.0m) -> /theta/ground_cloud frame=sirius3/base_footprint stride=2 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+[INFO] [1792426413.359995279] [theta_bev]: THETA姿勢をTFから取得: 位置=[0.0, 0.0, 1.135] rpy=[0.0, -0.0, 0.0]
+[INFO] [1792426413.466054841] [theta_ground_cloud]: Road visibility: kept 26598/40177 samples
+{"phase": "mapping", "mapped_frames": 25, "last_frame": 2374, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 50, "last_frame": 2399, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 75, "last_frame": 2424, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426418.466234559] [theta_ground_cloud]: Road visibility: kept 19110/37793 samples
+{"phase": "mapping", "mapped_frames": 100, "last_frame": 2449, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 125, "last_frame": 2474, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 150, "last_frame": 2499, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426423.468047435] [theta_ground_cloud]: Road visibility: kept 15873/32423 samples
+{"phase": "mapping", "mapped_frames": 175, "last_frame": 2524, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 200, "last_frame": 2549, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 225, "last_frame": 2574, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426428.479287085] [theta_ground_cloud]: Road visibility: kept 11549/25155 samples
+{"phase": "mapping", "mapped_frames": 250, "last_frame": 2599, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 275, "last_frame": 2624, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 300, "last_frame": 2649, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426433.488118231] [theta_ground_cloud]: Road visibility: kept 12693/29123 samples
+{"phase": "mapping", "mapped_frames": 325, "last_frame": 2674, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 350, "last_frame": 2699, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 375, "last_frame": 2724, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426438.504464956] [theta_ground_cloud]: Road visibility: kept 13400/32432 samples
+{"phase": "mapping", "mapped_frames": 400, "last_frame": 2749, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 425, "last_frame": 2774, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 450, "last_frame": 2799, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426443.511219550] [theta_ground_cloud]: Road visibility: kept 13433/32131 samples
+{"phase": "mapping", "mapped_frames": 475, "last_frame": 2824, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 500, "last_frame": 2849, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 525, "last_frame": 2874, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426448.523270589] [theta_ground_cloud]: Road visibility: kept 12334/33278 samples
+{"phase": "mapping", "mapped_frames": 550, "last_frame": 2899, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 575, "last_frame": 2924, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 600, "last_frame": 2949, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 625, "last_frame": 2974, "input_frames": 701, "skipped_frames": 0}
+[INFO] [1792426453.552108779] [theta_ground_cloud]: Road visibility: kept 8924/30247 samples
+{"phase": "mapping", "mapped_frames": 650, "last_frame": 2999, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 675, "last_frame": 3024, "input_frames": 701, "skipped_frames": 0}
+{"phase": "mapping", "mapped_frames": 700, "last_frame": 3049, "input_frames": 701, "skipped_frames": 0}
+MAP COMPLETE 701 frames; 5363 changed semantic cells

@@ -1,0 +1,948 @@
+{
+  "note": "Exploratory single-frame detector output at cutoff0.5; provisional photo-interior ROIs. Distinct from dense evaluation against the full-map temporal baseline.",
+  "methods": [
+    {
+      "method": "gamma65",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14647,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 2498,
+          "original_color_gate": 1476,
+          "enhanced_color_gate": 1476,
+          "raw_fraction": 0.3836584242051912,
+          "enhanced_gate_fraction": 0.22669328828136998
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1572,
+          "original_color_gate": 1572,
+          "enhanced_color_gate": 1572,
+          "raw_fraction": 0.6348949919224556,
+          "enhanced_gate_fraction": 0.6348949919224556
+        }
+      }
+    },
+    {
+      "method": "clahe2",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14648,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 917,
+          "original_color_gate": 917,
+          "enhanced_color_gate": 917,
+          "raw_fraction": 0.14083858086315465,
+          "enhanced_gate_fraction": 0.14083858086315465
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1557,
+          "original_color_gate": 1557,
+          "enhanced_color_gate": 1557,
+          "raw_fraction": 0.6288368336025848,
+          "enhanced_gate_fraction": 0.6288368336025848
+        }
+      }
+    },
+    {
+      "method": "gamma45",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14679,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 2857,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 1836,
+          "raw_fraction": 0.4387958838888036,
+          "enhanced_gate_fraction": 0.2819843342036554
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1578,
+          "original_color_gate": 1578,
+          "enhanced_color_gate": 1578,
+          "raw_fraction": 0.6373182552504039,
+          "enhanced_gate_fraction": 0.6373182552504039
+        }
+      }
+    },
+    {
+      "method": "gamma30",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14680,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 2855,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 1836,
+          "raw_fraction": 0.4384887114114575,
+          "enhanced_gate_fraction": 0.2819843342036554
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1584,
+          "original_color_gate": 1584,
+          "enhanced_color_gate": 1584,
+          "raw_fraction": 0.6397415185783522,
+          "enhanced_gate_fraction": 0.6397415185783522
+        }
+      }
+    },
+    {
+      "method": "clahe4",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14681,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 968,
+          "original_color_gate": 968,
+          "enhanced_color_gate": 968,
+          "raw_fraction": 0.14867147903547842,
+          "enhanced_gate_fraction": 0.14867147903547842
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1558,
+          "original_color_gate": 1558,
+          "enhanced_color_gate": 1558,
+          "raw_fraction": 0.6292407108239095,
+          "enhanced_gate_fraction": 0.6292407108239095
+        }
+      }
+    },
+    {
+      "method": "wb65",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14727,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 1860,
+          "original_color_gate": 842,
+          "enhanced_color_gate": 1860,
+          "raw_fraction": 0.2856704039318077,
+          "enhanced_gate_fraction": 0.2856704039318077
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1568,
+          "original_color_gate": 1568,
+          "enhanced_color_gate": 1568,
+          "raw_fraction": 0.6332794830371568,
+          "enhanced_gate_fraction": 0.6332794830371568
+        }
+      }
+    },
+    {
+      "method": "wb45",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14728,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 2857,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 2857,
+          "raw_fraction": 0.4387958838888036,
+          "enhanced_gate_fraction": 0.4387958838888036
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1576,
+          "original_color_gate": 1576,
+          "enhanced_color_gate": 1576,
+          "raw_fraction": 0.6365105008077544,
+          "enhanced_gate_fraction": 0.6365105008077544
+        }
+      }
+    },
+    {
+      "method": "hi_identity",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 1008,
+      "views": 16,
+      "first_server_frame": 14759,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 360,
+          "original_color_gate": 336,
+          "enhanced_color_gate": 336,
+          "raw_fraction": 0.14539579967689822,
+          "enhanced_gate_fraction": 0.13570274636510501
+        }
+      }
+    },
+    {
+      "method": "hi_gamma45",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 1008,
+      "views": 16,
+      "first_server_frame": 14760,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 897,
+          "original_color_gate": 897,
+          "enhanced_color_gate": 897,
+          "raw_fraction": 0.13776685608969436,
+          "enhanced_gate_fraction": 0.13776685608969436
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 776,
+          "original_color_gate": 767,
+          "enhanced_color_gate": 767,
+          "raw_fraction": 0.3134087237479806,
+          "enhanced_gate_fraction": 0.30977382875605813
+        }
+      }
+    },
+    {
+      "method": "hi_wb45",
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "resolution": 1008,
+      "views": 16,
+      "first_server_frame": 14761,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 918,
+          "original_color_gate": 918,
+          "enhanced_color_gate": 918,
+          "raw_fraction": 0.1409921671018277,
+          "enhanced_gate_fraction": 0.1409921671018277
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1765,
+          "original_color_gate": 1765,
+          "enhanced_color_gate": 1765,
+          "raw_fraction": 0.712843295638126,
+          "enhanced_gate_fraction": 0.712843295638126
+        }
+      }
+    },
+    {
+      "method": "shape_identity",
+      "prompt": "grass, tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14807,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        }
+      }
+    },
+    {
+      "method": "shape_gamma45",
+      "prompt": "grass, tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14808,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        }
+      }
+    },
+    {
+      "method": "shape_wb45",
+      "prompt": "grass, tactile paving, roadway, sidewalk",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14809,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        }
+      }
+    },
+    {
+      "method": "solo_identity",
+      "prompt": "yellow tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14855,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 2852,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 1836,
+          "raw_fraction": 0.4380279526954385,
+          "enhanced_gate_fraction": 0.2819843342036554
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1544,
+          "original_color_gate": 1544,
+          "enhanced_color_gate": 1544,
+          "raw_fraction": 0.6235864297253635,
+          "enhanced_gate_fraction": 0.6235864297253635
+        }
+      }
+    },
+    {
+      "method": "solo_gamma45",
+      "prompt": "yellow tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14856,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 2857,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 1836,
+          "raw_fraction": 0.4387958838888036,
+          "enhanced_gate_fraction": 0.2819843342036554
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1578,
+          "original_color_gate": 1578,
+          "enhanced_color_gate": 1578,
+          "raw_fraction": 0.6373182552504039,
+          "enhanced_gate_fraction": 0.6373182552504039
+        }
+      }
+    },
+    {
+      "method": "solo_wb45",
+      "prompt": "yellow tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14857,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 4507,
+          "original_color_gate": 2667,
+          "enhanced_color_gate": 4023,
+          "raw_fraction": 0.6922131776992781,
+          "enhanced_gate_fraction": 0.617877438181539
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1576,
+          "original_color_gate": 1576,
+          "enhanced_color_gate": 1576,
+          "raw_fraction": 0.6365105008077544,
+          "enhanced_gate_fraction": 0.6365105008077544
+        }
+      }
+    },
+    {
+      "method": "line_identity",
+      "prompt": "line-type tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14903,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 1833,
+          "original_color_gate": 1833,
+          "enhanced_color_gate": 1833,
+          "raw_fraction": 0.2815235754876363,
+          "enhanced_gate_fraction": 0.2815235754876363
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 1770,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.10653665583243048,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 430,
+          "original_color_gate": 430,
+          "enhanced_color_gate": 430,
+          "raw_fraction": 0.17366720516962844,
+          "enhanced_gate_fraction": 0.17366720516962844
+        }
+      }
+    },
+    {
+      "method": "line_gamma45",
+      "prompt": "line-type tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14904,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 918,
+          "original_color_gate": 918,
+          "enhanced_color_gate": 918,
+          "raw_fraction": 0.1409921671018277,
+          "enhanced_gate_fraction": 0.1409921671018277
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 1759,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.1058745636210425,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 460,
+          "original_color_gate": 460,
+          "enhanced_color_gate": 460,
+          "raw_fraction": 0.18578352180936994,
+          "enhanced_gate_fraction": 0.18578352180936994
+        }
+      }
+    },
+    {
+      "method": "line_wb45",
+      "prompt": "line-type tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 14905,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 1836,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 1836,
+          "raw_fraction": 0.2819843342036554,
+          "enhanced_gate_fraction": 0.2819843342036554
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 1527,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.09191043698085952,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        }
+      }
+    },
+    {
+      "method": "crop_gamma45",
+      "prompt": "yellow tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 15223,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 2817,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 1836,
+          "raw_fraction": 0.43265243434188294,
+          "enhanced_gate_fraction": 0.2819843342036554
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1466,
+          "original_color_gate": 1466,
+          "enhanced_color_gate": 1466,
+          "raw_fraction": 0.5920840064620355,
+          "enhanced_gate_fraction": 0.5920840064620355
+        }
+      }
+    },
+    {
+      "method": "crop_wb45",
+      "prompt": "yellow tactile paving",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 15224,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 3682,
+          "original_color_gate": 1836,
+          "enhanced_color_gate": 3682,
+          "raw_fraction": 0.5655045307940408,
+          "enhanced_gate_fraction": 0.5655045307940408
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1471,
+          "original_color_gate": 1471,
+          "enhanced_color_gate": 1471,
+          "raw_fraction": 0.5941033925686591,
+          "enhanced_gate_fraction": 0.5941033925686591
+        }
+      }
+    },
+    {
+      "method": "shade_wb45",
+      "prompt": "yellow tactile paving in shadow",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 15255,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 5278,
+          "original_color_gate": 2672,
+          "enhanced_color_gate": 4561,
+          "raw_fraction": 0.8106281677161726,
+          "enhanced_gate_fraction": 0.700506834587621
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 1572,
+          "original_color_gate": 1572,
+          "enhanced_color_gate": 1572,
+          "raw_fraction": 0.6348949919224556,
+          "enhanced_gate_fraction": 0.6348949919224556
+        }
+      }
+    },
+    {
+      "method": "strip_wb45",
+      "prompt": "tactile paving strip",
+      "resolution": 512,
+      "views": 16,
+      "first_server_frame": 15271,
+      "stats": {
+        "shadow_positive": {
+          "area": 6511,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "shadow_negative": {
+          "area": 46108,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "control_negative": {
+          "area": 16614,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        },
+        "normal_positive": {
+          "area": 2476,
+          "raw": 0,
+          "original_color_gate": 0,
+          "enhanced_color_gate": 0,
+          "raw_fraction": 0.0,
+          "enhanced_gate_fraction": 0.0
+        }
+      }
+    }
+  ]
+}

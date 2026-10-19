@@ -1,0 +1,37 @@
+{
+  "original_full_map_frames": 5956,
+  "shadow_frames": 701,
+  "shadow_auxiliary_views": 1402,
+  "exploratory_methods": 23,
+  "exploratory_views": 368,
+  "dense_comparison_frames": 136,
+  "dense_gray_control_views": 68,
+  "gray_control_added_pixels": 0,
+  "new_tactile_cells": 5256,
+  "new_area_m2": 13.14,
+  "changed_original_classes": {
+    "unknown": 37,
+    "sidewalk": 5219
+  },
+  "no_original_tactile_removed": true,
+  "original_grass_roadway_preserved": true,
+  "entire_rgba_texture_identical": true,
+  "geometry_and_quality_weights_compared_frames": 701,
+  "recorded_poses_and_point_counts_match_full_map": true,
+  "native_subset_skips": 0,
+  "semantic_inside_observed_rgb": true,
+  "three_views_same_dimensions": true,
+  "backend_restored": true,
+  "tests": "84 passed",
+  "build": "passed",
+  "http": {
+    "shadow/images.html": 200,
+    "shadow/map_before_after.jpg": 200,
+    "shadow/shade_wb45_comparison_2650_0.jpg": 200,
+    "shadow_map/images.html": 200,
+    "shadow_map/seg2700/semantic.jpg": 200,
+    "shadow_map/seg2700/overlay.jpg": 200,
+    "shadow_map/seg2700/texture.jpg": 200,
+    "shadow_map/overview/overlay.jpg": 200
+  }
+}

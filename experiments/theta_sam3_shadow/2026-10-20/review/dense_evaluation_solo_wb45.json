@@ -1,0 +1,744 @@
+{
+  "roi_summary": {
+    "shadow_positive": {
+      "area": 6511,
+      "methods": {
+        "baseline": 0.26447550299493167,
+        "raw_add": 0.6747043464905544,
+        "tracked": 0.6825372446628782
+      }
+    },
+    "shadow_negative": {
+      "area": 46108,
+      "methods": {
+        "baseline": 0.0,
+        "raw_add": 0.0,
+        "tracked": 0.0
+      }
+    },
+    "control_negative": {
+      "area": 16614,
+      "methods": {
+        "baseline": 0.0,
+        "raw_add": 0.0,
+        "tracked": 0.0
+      }
+    },
+    "normal_positive": {
+      "area": 2476,
+      "methods": {
+        "baseline": 0.6732633279483037,
+        "raw_add": 0.6732633279483037,
+        "tracked": 0.6732633279483037
+      }
+    }
+  },
+  "rois": [
+    {
+      "id": "shadow_2500_0",
+      "frame": 2500,
+      "yaw": 0,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          430,
+          375
+        ],
+        [
+          444,
+          375
+        ],
+        [
+          502,
+          425
+        ],
+        [
+          478,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 1024,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 1021,
+        "tracked": 1024
+      }
+    },
+    {
+      "id": "gray_shadow_2500_0",
+      "frame": 2500,
+      "yaw": 0,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          240,
+          365
+        ],
+        [
+          315,
+          365
+        ],
+        [
+          315,
+          440
+        ],
+        [
+          240,
+          440
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5776,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "shadow_2500_180",
+      "frame": 2500,
+      "yaw": 180,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          240,
+          375
+        ],
+        [
+          253,
+          375
+        ],
+        [
+          217,
+          425
+        ],
+        [
+          199,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 842,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 831,
+        "tracked": 831
+      }
+    },
+    {
+      "id": "gray_shadow_2500_180",
+      "frame": 2500,
+      "yaw": 180,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          430,
+          355
+        ],
+        [
+          510,
+          355
+        ],
+        [
+          510,
+          425
+        ],
+        [
+          430,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5751,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "shadow_2650_0",
+      "frame": 2650,
+      "yaw": 0,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          435,
+          375
+        ],
+        [
+          448,
+          375
+        ],
+        [
+          501,
+          425
+        ],
+        [
+          488,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 717,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "gray_shadow_2650_0",
+      "frame": 2650,
+      "yaw": 0,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          240,
+          365
+        ],
+        [
+          315,
+          365
+        ],
+        [
+          315,
+          440
+        ],
+        [
+          240,
+          440
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5776,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "shadow_2650_180",
+      "frame": 2650,
+      "yaw": 180,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          200,
+          375
+        ],
+        [
+          211,
+          375
+        ],
+        [
+          172,
+          425
+        ],
+        [
+          160,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 637,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "gray_shadow_2650_180",
+      "frame": 2650,
+      "yaw": 180,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          430,
+          355
+        ],
+        [
+          510,
+          355
+        ],
+        [
+          510,
+          425
+        ],
+        [
+          430,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5751,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "shadow_2800_0",
+      "frame": 2800,
+      "yaw": 0,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          485,
+          375
+        ],
+        [
+          501,
+          375
+        ],
+        [
+          546,
+          425
+        ],
+        [
+          530,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 867,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 819,
+        "tracked": 867
+      }
+    },
+    {
+      "id": "gray_shadow_2800_0",
+      "frame": 2800,
+      "yaw": 0,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          240,
+          365
+        ],
+        [
+          315,
+          365
+        ],
+        [
+          315,
+          440
+        ],
+        [
+          240,
+          440
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5776,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "shadow_2800_180",
+      "frame": 2800,
+      "yaw": 180,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          221,
+          375
+        ],
+        [
+          232,
+          375
+        ],
+        [
+          179,
+          425
+        ],
+        [
+          169,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 588,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "gray_shadow_2800_180",
+      "frame": 2800,
+      "yaw": 180,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          430,
+          355
+        ],
+        [
+          510,
+          355
+        ],
+        [
+          510,
+          425
+        ],
+        [
+          430,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5751,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "shadow_2950_0",
+      "frame": 2950,
+      "yaw": 0,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          381,
+          375
+        ],
+        [
+          397,
+          375
+        ],
+        [
+          413,
+          425
+        ],
+        [
+          395,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 918,
+      "counts": {
+        "baseline": 804,
+        "raw_add": 804,
+        "tracked": 804
+      }
+    },
+    {
+      "id": "gray_shadow_2950_0",
+      "frame": 2950,
+      "yaw": 0,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          240,
+          365
+        ],
+        [
+          315,
+          365
+        ],
+        [
+          315,
+          440
+        ],
+        [
+          240,
+          440
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5776,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "shadow_2950_180",
+      "frame": 2950,
+      "yaw": 180,
+      "kind": "shadow_positive",
+      "polygon": [
+        [
+          274,
+          375
+        ],
+        [
+          290,
+          375
+        ],
+        [
+          276,
+          425
+        ],
+        [
+          258,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 918,
+      "counts": {
+        "baseline": 918,
+        "raw_add": 918,
+        "tracked": 918
+      }
+    },
+    {
+      "id": "gray_shadow_2950_180",
+      "frame": 2950,
+      "yaw": 180,
+      "kind": "shadow_negative",
+      "polygon": [
+        [
+          430,
+          355
+        ],
+        [
+          510,
+          355
+        ],
+        [
+          510,
+          425
+        ],
+        [
+          430,
+          425
+        ]
+      ],
+      "provisional_not_expert_verified": true,
+      "area": 5751,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "tactile_900_rear",
+      "segment": 900,
+      "frame": 900,
+      "yaw": 180,
+      "class_id": 4,
+      "polygon": [
+        [
+          410,
+          365
+        ],
+        [
+          426,
+          365
+        ],
+        [
+          459,
+          419
+        ],
+        [
+          437,
+          419
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "kind": "normal_positive",
+      "provisional_not_expert_verified": true,
+      "area": 1112,
+      "counts": {
+        "baseline": 1112,
+        "raw_add": 1112,
+        "tracked": 1112
+      }
+    },
+    {
+      "id": "tactile_3300_front",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "class_id": 4,
+      "polygon": [
+        [
+          369,
+          380
+        ],
+        [
+          387,
+          380
+        ],
+        [
+          411,
+          441
+        ],
+        [
+          387,
+          441
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "kind": "normal_positive",
+      "provisional_not_expert_verified": true,
+      "area": 1364,
+      "counts": {
+        "baseline": 555,
+        "raw_add": 555,
+        "tracked": 555
+      }
+    },
+    {
+      "id": "plain_pavement_900",
+      "segment": 900,
+      "frame": 900,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          470,
+          360
+        ],
+        [
+          550,
+          360
+        ],
+        [
+          550,
+          420
+        ],
+        [
+          470,
+          420
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "kind": "control_negative",
+      "provisional_not_expert_verified": true,
+      "area": 4941,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "plain_pavement_2100",
+      "segment": 2100,
+      "frame": 2100,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          240,
+          370
+        ],
+        [
+          300,
+          370
+        ],
+        [
+          300,
+          430
+        ],
+        [
+          240,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "kind": "control_negative",
+      "provisional_not_expert_verified": true,
+      "area": 3721,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "plain_pavement_3300",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          280,
+          340
+        ],
+        [
+          325,
+          340
+        ],
+        [
+          325,
+          410
+        ],
+        [
+          280,
+          410
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "kind": "control_negative",
+      "provisional_not_expert_verified": true,
+      "area": 3266,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    },
+    {
+      "id": "plain_pavement_5100",
+      "segment": 5100,
+      "frame": 5100,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          250,
+          365
+        ],
+        [
+          320,
+          365
+        ],
+        [
+          320,
+          430
+        ],
+        [
+          250,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "kind": "control_negative",
+      "provisional_not_expert_verified": true,
+      "area": 4686,
+      "counts": {
+        "baseline": 0,
+        "raw_add": 0,
+        "tracked": 0
+      }
+    }
+  ],
+  "gray_control_added_pixels": 0,
+  "normal_control_added_pixels": 73,
+  "frames": 136,
+  "views": 272,
+  "all_original_tactile_and_other_classes_preserved": true,
+  "note": "Provisional interior ROIs, not full or expert ground truth. Additional detections only; normal inference labels preserved. No semantic accuracy claim from coverage alone."
+}

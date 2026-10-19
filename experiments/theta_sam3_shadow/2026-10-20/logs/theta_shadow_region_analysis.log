@@ -1,0 +1,45 @@
+Shadow tracking 2700 complete
+{
+  "roi_summary": {
+    "shadow_positive": {
+      "area": 6511,
+      "methods": {
+        "baseline": 0.26447550299493167,
+        "raw_add": 0.7931193365074489,
+        "tracked": 0.7960374750422362
+      }
+    },
+    "shadow_negative": {
+      "area": 46108,
+      "methods": {
+        "baseline": 0.0,
+        "raw_add": 0.0,
+        "tracked": 0.0
+      }
+    },
+    "control_negative": {
+      "area": 0,
+      "methods": {
+        "baseline": 0.0,
+        "raw_add": 0.0,
+        "tracked": 0.0
+      }
+    },
+    "normal_positive": {
+      "area": 0,
+      "methods": {
+        "baseline": 0.0,
+        "raw_add": 0.0,
+        "tracked": 0.0
+      }
+    }
+  },
+  "gray_control_views": 0,
+  "normal_control_views": 0,
+  "gray_control_added_pixels": 0,
+  "normal_control_added_pixels": 0,
+  "frames": 701,
+  "views": 1402,
+  "all_original_tactile_and_other_classes_preserved": true,
+  "note": "Provisional interior ROIs, not full or expert ground truth. Additional detections only; normal inference labels preserved. No semantic accuracy claim from coverage alone."
+}

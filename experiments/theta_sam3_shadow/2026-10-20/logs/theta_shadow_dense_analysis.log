@@ -1,0 +1,50 @@
+Shadow tracking 2500 complete
+Shadow tracking 2650 complete
+Shadow tracking 2800 complete
+Shadow tracking 2950 complete
+Shadow tracking 2100 complete
+Shadow tracking 5100 complete
+Shadow tracking 900 complete
+Shadow tracking 3300 complete
+{
+  "roi_summary": {
+    "shadow_positive": {
+      "area": 6511,
+      "methods": {
+        "baseline": 0.26447550299493167,
+        "raw_add": 0.6747043464905544,
+        "tracked": 0.6825372446628782
+      }
+    },
+    "shadow_negative": {
+      "area": 46108,
+      "methods": {
+        "baseline": 0.0,
+        "raw_add": 0.0,
+        "tracked": 0.0
+      }
+    },
+    "control_negative": {
+      "area": 16614,
+      "methods": {
+        "baseline": 0.0,
+        "raw_add": 0.0,
+        "tracked": 0.0
+      }
+    },
+    "normal_positive": {
+      "area": 2476,
+      "methods": {
+        "baseline": 0.6732633279483037,
+        "raw_add": 0.6732633279483037,
+        "tracked": 0.6732633279483037
+      }
+    }
+  },
+  "gray_control_added_pixels": 0,
+  "normal_control_added_pixels": 73,
+  "frames": 136,
+  "views": 272,
+  "all_original_tactile_and_other_classes_preserved": true,
+  "note": "Provisional interior ROIs, not full or expert ground truth. Additional detections only; normal inference labels preserved. No semantic accuracy claim from coverage alone."
+}

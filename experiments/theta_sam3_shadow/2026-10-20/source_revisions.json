@@ -1,0 +1,15 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "opencv": "4.6.0",
+  "numpy": "1.26.4",
+  "root_base": "c0b349defb55e29c7eaf7a9bdd9e2a33e5ab2d98",
+  "navigation": "ef8049cbbb03cef703fc129a094ce6aeb43b52fe",
+  "working_source_sha256": {
+    "bash/startup_bash/experiment_theta_sam3_shadow.py": "b09524e84b33dab1437db8ff96012290f5d6c5934a23265367294d7bccabce2c",
+    "bash/startup_bash/analyze_theta_sam3_shadow.py": "3ead67c313bc90a872be9a22ab5effea7839f13dbd97d9e4cc93d4885eb44ed8",
+    "bash/startup_bash/patch_theta_shadow_map.py": "ba8aaec204bd24fe72f154b9587866c4061b631d56d49d52beebc89e01d4ecb4",
+    "bash/startup_bash/map_theta_sam3_tactile.py": "4b828c16036e83362b2d7f83d41c92b5f9ee7b3aedfa4725abf9caa63d0743e3",
+    "bash/startup_bash/render_theta_semantic_map.py": "d19cd4aff464b214f93d7b8bf1a3e0e3af1a5e8c59c6345d513c4db9109d32b0",
+    "src/sirius/sirius_navigation/sirius_navigation/theta_semantic_temporal.py": "2bbf5465b80a3e2c717a49d058bb6240af21333601ee2bdc898a0a313a37e825"
+  }
+}

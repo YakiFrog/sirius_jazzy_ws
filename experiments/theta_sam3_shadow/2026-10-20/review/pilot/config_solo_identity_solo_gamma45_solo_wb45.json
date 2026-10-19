@@ -1,0 +1,38 @@
+{
+  "source": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_sam3_yellow_full_20261019",
+  "centers": [
+    2500,
+    2650,
+    2800,
+    2950,
+    2100,
+    5100,
+    900,
+    3300
+  ],
+  "radius": 0,
+  "frames": [
+    900,
+    2100,
+    2500,
+    2650,
+    2800,
+    2950,
+    3300,
+    5100
+  ],
+  "methods": [
+    "solo_identity",
+    "solo_gamma45",
+    "solo_wb45"
+  ],
+  "prompt": "yellow tactile paving",
+  "resolution": 512,
+  "score_min": 0.5,
+  "no_geometry_or_texture_changes": true,
+  "gamma_gain_cap": 6.0,
+  "clahe_tile_grid": [
+    8,
+    8
+  ]
+}

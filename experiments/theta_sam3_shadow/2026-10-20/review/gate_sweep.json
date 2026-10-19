@@ -1,0 +1,106 @@
+[
+  {
+    "minimum_saturation": 45,
+    "minimum_yellow_fraction": 0.35,
+    "stats": {
+      "shadow_positive": {
+        "hit": 4023,
+        "area": 6511,
+        "fraction": 0.617877438181539
+      },
+      "shadow_negative": {
+        "hit": 0,
+        "area": 46108,
+        "fraction": 0.0
+      },
+      "control_negative": {
+        "hit": 0,
+        "area": 16614,
+        "fraction": 0.0
+      },
+      "normal_positive": {
+        "hit": 1576,
+        "area": 2476,
+        "fraction": 0.6365105008077544
+      }
+    }
+  },
+  {
+    "minimum_saturation": 45,
+    "minimum_yellow_fraction": 0.2,
+    "stats": {
+      "shadow_positive": {
+        "hit": 4507,
+        "area": 6511,
+        "fraction": 0.6922131776992781
+      },
+      "shadow_negative": {
+        "hit": 0,
+        "area": 46108,
+        "fraction": 0.0
+      },
+      "control_negative": {
+        "hit": 0,
+        "area": 16614,
+        "fraction": 0.0
+      },
+      "normal_positive": {
+        "hit": 1576,
+        "area": 2476,
+        "fraction": 0.6365105008077544
+      }
+    }
+  },
+  {
+    "minimum_saturation": 30,
+    "minimum_yellow_fraction": 0.35,
+    "stats": {
+      "shadow_positive": {
+        "hit": 4507,
+        "area": 6511,
+        "fraction": 0.6922131776992781
+      },
+      "shadow_negative": {
+        "hit": 0,
+        "area": 46108,
+        "fraction": 0.0
+      },
+      "control_negative": {
+        "hit": 0,
+        "area": 16614,
+        "fraction": 0.0
+      },
+      "normal_positive": {
+        "hit": 1576,
+        "area": 2476,
+        "fraction": 0.6365105008077544
+      }
+    }
+  },
+  {
+    "minimum_saturation": 30,
+    "minimum_yellow_fraction": 0.2,
+    "stats": {
+      "shadow_positive": {
+        "hit": 4507,
+        "area": 6511,
+        "fraction": 0.6922131776992781
+      },
+      "shadow_negative": {
+        "hit": 0,
+        "area": 46108,
+        "fraction": 0.0
+      },
+      "control_negative": {
+        "hit": 0,
+        "area": 16614,
+        "fraction": 0.0
+      },
+      "normal_positive": {
+        "hit": 1576,
+        "area": 2476,
+        "fraction": 0.6365105008077544
+      }
+    }
+  }
+]

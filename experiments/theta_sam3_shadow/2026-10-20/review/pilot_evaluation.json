@@ -1,0 +1,742 @@
+[
+  {
+    "method": "baseline",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 156,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.023959453232990324,
+        "adapted_fraction": 0.0
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1544,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.6235864297253635,
+        "adapted_fraction": 0.0
+      }
+    }
+  },
+  {
+    "method": "gamma65",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 2498,
+        "old_gate": 1476,
+        "adapted_gate": 1476,
+        "raw_fraction": 0.3836584242051912,
+        "adapted_fraction": 0.22669328828136998
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1572,
+        "old_gate": 1572,
+        "adapted_gate": 1572,
+        "raw_fraction": 0.6348949919224556,
+        "adapted_fraction": 0.6348949919224556
+      }
+    }
+  },
+  {
+    "method": "gamma45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 2857,
+        "old_gate": 1836,
+        "adapted_gate": 1836,
+        "raw_fraction": 0.4387958838888036,
+        "adapted_fraction": 0.2819843342036554
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1578,
+        "old_gate": 1578,
+        "adapted_gate": 1578,
+        "raw_fraction": 0.6373182552504039,
+        "adapted_fraction": 0.6373182552504039
+      }
+    }
+  },
+  {
+    "method": "gamma30",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 2855,
+        "old_gate": 1836,
+        "adapted_gate": 1836,
+        "raw_fraction": 0.4384887114114575,
+        "adapted_fraction": 0.2819843342036554
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1584,
+        "old_gate": 1584,
+        "adapted_gate": 1584,
+        "raw_fraction": 0.6397415185783522,
+        "adapted_fraction": 0.6397415185783522
+      }
+    }
+  },
+  {
+    "method": "clahe2",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 917,
+        "old_gate": 917,
+        "adapted_gate": 917,
+        "raw_fraction": 0.14083858086315465,
+        "adapted_fraction": 0.14083858086315465
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1557,
+        "old_gate": 1557,
+        "adapted_gate": 1557,
+        "raw_fraction": 0.6288368336025848,
+        "adapted_fraction": 0.6288368336025848
+      }
+    }
+  },
+  {
+    "method": "clahe4",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 968,
+        "old_gate": 968,
+        "adapted_gate": 968,
+        "raw_fraction": 0.14867147903547842,
+        "adapted_fraction": 0.14867147903547842
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1558,
+        "old_gate": 1558,
+        "adapted_gate": 1558,
+        "raw_fraction": 0.6292407108239095,
+        "adapted_fraction": 0.6292407108239095
+      }
+    }
+  },
+  {
+    "method": "wb65",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 1860,
+        "old_gate": 842,
+        "adapted_gate": 1860,
+        "raw_fraction": 0.2856704039318077,
+        "adapted_fraction": 0.2856704039318077
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1568,
+        "old_gate": 1568,
+        "adapted_gate": 1568,
+        "raw_fraction": 0.6332794830371568,
+        "adapted_fraction": 0.6332794830371568
+      }
+    }
+  },
+  {
+    "method": "wb45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 2857,
+        "old_gate": 1836,
+        "adapted_gate": 2857,
+        "raw_fraction": 0.4387958838888036,
+        "adapted_fraction": 0.4387958838888036
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1576,
+        "old_gate": 1576,
+        "adapted_gate": 1576,
+        "raw_fraction": 0.6365105008077544,
+        "adapted_fraction": 0.6365105008077544
+      }
+    }
+  },
+  {
+    "method": "hi_identity",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 360,
+        "old_gate": 336,
+        "adapted_gate": 336,
+        "raw_fraction": 0.14539579967689822,
+        "adapted_fraction": 0.13570274636510501
+      }
+    }
+  },
+  {
+    "method": "hi_gamma45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 897,
+        "old_gate": 897,
+        "adapted_gate": 897,
+        "raw_fraction": 0.13776685608969436,
+        "adapted_fraction": 0.13776685608969436
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 776,
+        "old_gate": 767,
+        "adapted_gate": 767,
+        "raw_fraction": 0.3134087237479806,
+        "adapted_fraction": 0.30977382875605813
+      }
+    }
+  },
+  {
+    "method": "hi_wb45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 918,
+        "old_gate": 918,
+        "adapted_gate": 918,
+        "raw_fraction": 0.1409921671018277,
+        "adapted_fraction": 0.1409921671018277
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1765,
+        "old_gate": 1765,
+        "adapted_gate": 1765,
+        "raw_fraction": 0.712843295638126,
+        "adapted_fraction": 0.712843295638126
+      }
+    }
+  },
+  {
+    "method": "shape_identity",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      }
+    }
+  },
+  {
+    "method": "shape_gamma45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      }
+    }
+  },
+  {
+    "method": "shape_wb45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      }
+    }
+  },
+  {
+    "method": "solo_identity",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 2852,
+        "old_gate": 1836,
+        "adapted_gate": 1836,
+        "raw_fraction": 0.4380279526954385,
+        "adapted_fraction": 0.2819843342036554
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1544,
+        "old_gate": 1544,
+        "adapted_gate": 1544,
+        "raw_fraction": 0.6235864297253635,
+        "adapted_fraction": 0.6235864297253635
+      }
+    }
+  },
+  {
+    "method": "solo_gamma45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 2857,
+        "old_gate": 1836,
+        "adapted_gate": 1836,
+        "raw_fraction": 0.4387958838888036,
+        "adapted_fraction": 0.2819843342036554
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1578,
+        "old_gate": 1578,
+        "adapted_gate": 1578,
+        "raw_fraction": 0.6373182552504039,
+        "adapted_fraction": 0.6373182552504039
+      }
+    }
+  },
+  {
+    "method": "solo_wb45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 4507,
+        "old_gate": 2667,
+        "adapted_gate": 4023,
+        "raw_fraction": 0.6922131776992781,
+        "adapted_fraction": 0.617877438181539
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 1576,
+        "old_gate": 1576,
+        "adapted_gate": 1576,
+        "raw_fraction": 0.6365105008077544,
+        "adapted_fraction": 0.6365105008077544
+      }
+    }
+  },
+  {
+    "method": "line_identity",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 1833,
+        "old_gate": 1833,
+        "adapted_gate": 1833,
+        "raw_fraction": 0.2815235754876363,
+        "adapted_fraction": 0.2815235754876363
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 1770,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.10653665583243048,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 430,
+        "old_gate": 430,
+        "adapted_gate": 430,
+        "raw_fraction": 0.17366720516962844,
+        "adapted_fraction": 0.17366720516962844
+      }
+    }
+  },
+  {
+    "method": "line_gamma45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 918,
+        "old_gate": 918,
+        "adapted_gate": 918,
+        "raw_fraction": 0.1409921671018277,
+        "adapted_fraction": 0.1409921671018277
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 1759,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.1058745636210425,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 460,
+        "old_gate": 460,
+        "adapted_gate": 460,
+        "raw_fraction": 0.18578352180936994,
+        "adapted_fraction": 0.18578352180936994
+      }
+    }
+  },
+  {
+    "method": "line_wb45",
+    "stats": {
+      "shadow_positive": {
+        "area": 6511,
+        "raw": 1836,
+        "old_gate": 1836,
+        "adapted_gate": 1836,
+        "raw_fraction": 0.2819843342036554,
+        "adapted_fraction": 0.2819843342036554
+      },
+      "shadow_negative": {
+        "area": 46108,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      },
+      "control_negative": {
+        "area": 16614,
+        "raw": 1527,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.09191043698085952,
+        "adapted_fraction": 0.0
+      },
+      "normal_positive": {
+        "area": 2476,
+        "raw": 0,
+        "old_gate": 0,
+        "adapted_gate": 0,
+        "raw_fraction": 0.0,
+        "adapted_fraction": 0.0
+      }
+    }
+  }
+]
