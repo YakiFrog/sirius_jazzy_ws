@@ -1,0 +1,16 @@
+{
+  "regions": {
+    "viewport": 390,
+    "all_images_decoded": true,
+    "horizontal_overflow": false,
+    "image_count": 10,
+    "status": 200
+  },
+  "regions_map": {
+    "viewport": 390,
+    "all_images_decoded": true,
+    "horizontal_overflow": false,
+    "image_count": 6,
+    "status": 200
+  }
+}

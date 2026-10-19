@@ -1,0 +1,1 @@
+0.8 {'5': {'cells': 275723, 'components': 888, 'components_below_025_m2': 850}, '6': {'cells': 893821, 'components': 1706, 'components_below_025_m2': 1676}, 'changed_cells': 27687, 'road_to_sidewalk': 27687, 'sidewalk_to_road': 0, 'protected_cells_unchanged': True, 'flow': 6743423, 'seconds': 3.26}

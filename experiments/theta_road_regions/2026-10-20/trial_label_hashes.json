@@ -1,0 +1,74 @@
+{
+  "conservative/lambda0_8": {
+    "original_pgm_sha256": "20b881e24062742ccbce7a6c924048c91e682f653a6d59974d7441469c416257",
+    "label_pixels_sha256": "bea86d4d7846cb84a2e43edf0eedc2f35a682690fa25502b483fb105b708488c",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "edge_strong/lambda0_2": {
+    "original_pgm_sha256": "00e6e438c568cea62088e2941d7f46322b7fbd7201193c85404cafa04e70a2ea",
+    "label_pixels_sha256": "a1866c3e7fafd3ff9aa26150a73240e12f31d56f2a978e552fc063ad919ec106",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "edge_strong/lambda0_4": {
+    "original_pgm_sha256": "c92769473ee866c92a7377bc9d09bb2592692fcd014f5d2228350a6b2349ab3d",
+    "label_pixels_sha256": "3c53bf8f8f1d71da83a05ea89cd7f284b00f52f5a42595ceb5249bee4c93d7a1",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "edge_strong/lambda0_8": {
+    "original_pgm_sha256": "a65210b1e27cb1dcaaf2c0ff8535264ad33bd2a1c64b9f677f0dd51c64ac6dc3",
+    "label_pixels_sha256": "5f5bfe2d68f778d9eb3c71f49cade581cce38d25ca55fdee857755ea2be8ea93",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "isotropic/lambda0_4": {
+    "original_pgm_sha256": "faa27482e2cb26d902fd95865939136f9744d495882d9e6e17595655ddc7b471",
+    "label_pixels_sha256": "912d3975f1dd15d82cb3f8b2c3cb3550c01b711ef2d9eca20c9e41fa0683bd61",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "isotropic/lambda0_8": {
+    "original_pgm_sha256": "b698596caf0cb2f25213d32757e35657d445f231f7dbd2179b64a7964af7f9b5",
+    "label_pixels_sha256": "334cc08d263fa6b6e24d1bc92a606e1929d322b603637a3e8edf4c2731a28a9f",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "lambda0_08": {
+    "original_pgm_sha256": "87c71ca65f0b3531dd1aec4018f32b7a8acb194ec4935c94fcc9f43220797eee",
+    "label_pixels_sha256": "70e684df5d1b4e157ff0080494a6a30f3a5a8f870970a09edc1c20f1f221cbfe",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "lambda0_2": {
+    "original_pgm_sha256": "32ccbe2b3fb68ed4517f0c4c518c93eea6241804d0b9ec411eee08afe5ee763c",
+    "label_pixels_sha256": "1c6bf751cbb661a04f3d0842792d0d16218637cafd1647eec6aff060bd299c87",
+    "shape": [
+      4026,
+      2698
+    ]
+  },
+  "lambda0_4": {
+    "original_pgm_sha256": "b3fcc68e812d4b0c2ac767e64c9a6c0908d9942fc295428b235fba4f055d69d7",
+    "label_pixels_sha256": "02579035b5989c55d69dadcaef993b1786b79a016a693ecf5f87427bcf86c824",
+    "shape": [
+      4026,
+      2698
+    ]
+  }
+}

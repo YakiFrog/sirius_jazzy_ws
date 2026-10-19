@@ -1,0 +1,29 @@
+{
+  "selected_trial": "conservative/lambda0_8",
+  "total_camera_frames": 5956,
+  "all_rgb_bytes_identical": true,
+  "protected_classes_unchanged": true,
+  "input_and_output_grid_equal": true,
+  "semantic_outside_texture_cells": 0,
+  "roi_status": "Exploratory same-recording interiors; not independent accuracy assessment.",
+  "roi_evaluation": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 27193,
+      "fraction": 0.8853905512323772
+    }
+  },
+  "changed_cells": 27687,
+  "rendered_overlay_matches_final_labels": true,
+  "rendered_semantic_matches_final_labels": true,
+  "only_road_to_sidewalk_changes": true,
+  "unit_tests_passed": 7,
+  "trial_conditions": 9,
+  "road_components_below_025_m2_before": 2448,
+  "road_components_below_025_m2_after": 850
+}

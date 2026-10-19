@@ -1,0 +1,94 @@
+{
+  "reference": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_semantic_shadow_map_20261020",
+  "parameters": {
+    "strengths_m": [
+      0.08,
+      0.2,
+      0.4
+    ],
+    "color_sigma_lab": 12.0,
+    "guide_blur_m": 0.08,
+    "probability_clip": 0.1,
+    "integer_scale": 10000,
+    "connectivity": 4,
+    "tactile_connectivity_only": true,
+    "adoption_policy": "both"
+  },
+  "reference_sha256": {
+    "road_temporal.colored.pgm": "05fe0269e97561bf74c1a24b132da8280ef9c89bb009bde26eb9ac3547dcfbda",
+    "road_temporal.texture.png": "1e2012365c3e8fd379dcfbc295e1b6589f51128f4cf3e20f34f0b05ebb61abed",
+    "map_evidence.npz": "ec3a4de9514509654885dcf9e2713ba60195b287f040d70f9952d026aa7496f2"
+  },
+  "baseline": {
+    "5": {
+      "cells": 303410,
+      "components": 2517,
+      "components_below_025_m2": 2448
+    },
+    "6": {
+      "cells": 866134,
+      "components": 2172,
+      "components_below_025_m2": 2139
+    },
+    "changed_cells": 0,
+    "road_to_sidewalk": 0,
+    "sidewalk_to_road": 0,
+    "protected_cells_unchanged": true
+  },
+  "trials": {
+    "0.08": {
+      "5": {
+        "cells": 298984,
+        "components": 655,
+        "components_below_025_m2": 593
+      },
+      "6": {
+        "cells": 870560,
+        "components": 877,
+        "components_below_025_m2": 855
+      },
+      "changed_cells": 20788,
+      "road_to_sidewalk": 12607,
+      "sidewalk_to_road": 8181,
+      "protected_cells_unchanged": true,
+      "flow": 5555040,
+      "seconds": 1.373
+    },
+    "0.2": {
+      "5": {
+        "cells": 297623,
+        "components": 612,
+        "components_below_025_m2": 559
+      },
+      "6": {
+        "cells": 871921,
+        "components": 860,
+        "components_below_025_m2": 839
+      },
+      "changed_cells": 27567,
+      "road_to_sidewalk": 16677,
+      "sidewalk_to_road": 10890,
+      "protected_cells_unchanged": true,
+      "flow": 5969645,
+      "seconds": 1.721
+    },
+    "0.4": {
+      "5": {
+        "cells": 295422,
+        "components": 602,
+        "components_below_025_m2": 556
+      },
+      "6": {
+        "cells": 874122,
+        "components": 847,
+        "components_below_025_m2": 829
+      },
+      "changed_cells": 34860,
+      "road_to_sidewalk": 21424,
+      "sidewalk_to_road": 13436,
+      "protected_cells_unchanged": true,
+      "flow": 6516198,
+      "seconds": 1.85
+    }
+  }
+}

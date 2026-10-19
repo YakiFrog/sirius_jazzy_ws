@@ -1,0 +1,122 @@
+{
+  "baseline": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 25413,
+      "fraction": 0.8274346367987497
+    }
+  },
+  "conservative/lambda0_8": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 27193,
+      "fraction": 0.8853905512323772
+    }
+  },
+  "edge_strong/lambda0_2": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 25964,
+      "fraction": 0.8453749226711816
+    }
+  },
+  "edge_strong/lambda0_4": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 25947,
+      "fraction": 0.8448214111288379
+    }
+  },
+  "edge_strong/lambda0_8": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 26789,
+      "fraction": 0.8722365122260932
+    }
+  },
+  "isotropic/lambda0_4": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 26146,
+      "fraction": 0.8513007521245075
+    }
+  },
+  "isotropic/lambda0_8": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 26821,
+      "fraction": 0.8732784163057988
+    }
+  },
+  "lambda0_08": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 25896,
+      "fraction": 0.843160876501807
+    }
+  },
+  "lambda0_2": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 25967,
+      "fraction": 0.845472601178654
+    }
+  },
+  "lambda0_4": {
+    "5": {
+      "cells": 6870,
+      "correct": 6870,
+      "fraction": 1.0
+    },
+    "6": {
+      "cells": 30713,
+      "correct": 26307,
+      "fraction": 0.8565428320255266
+    }
+  }
+}

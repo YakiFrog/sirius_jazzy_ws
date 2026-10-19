@@ -1,0 +1,11 @@
+{
+  "base_git_commit": "8e695815bee2a008e82b6b6369cca2888220b30e",
+  "working_source_sha256": {
+    "bash/startup_bash/refine_theta_road_regions.py": "3c70c2bde679ee3c64d70ff95497140d5485104febad77ab3ee4c33b2b7f8e01",
+    "bash/startup_bash/evaluate_theta_road_regions.py": "a9842c431bae6b18903428a9e558da150b4dc8754fed8235417162c1028b3b07",
+    "bash/startup_bash/render_theta_semantic_map.py": "cb1ab4389bbd7463814c62fc5823234750d663f8cf60912249d38e9e1165f306",
+    "bash/startup_bash/tests/test_refine_theta_road_regions.py": "f6fafb561309ba14be2fc74fadf543e168bb711c4f893a3ab9775ea6e9832191"
+  },
+  "opencv": "4.6.0",
+  "numpy": "1.26.4"
+}

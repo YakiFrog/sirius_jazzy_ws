@@ -45,6 +45,8 @@ def main():
         if full_bag:
             subtitle=(f'ROSBAG全区間 ｜ {meta["input_camera_frames"]:,}フレームを推論 ｜ 同じ範囲・縮尺' if name=='overview' else f'全区間地図の拡大 {name[3:]} ｜ 黄色い点字＋画像追跡 ｜ 同じ範囲・縮尺')
         if meta.get('shadow_rescue') and name=='overview':subtitle=f'全区間地図 ｜ 日陰{meta["shadow_rescue"]["camera_frames"]}フレームを追加認識 ｜ 同じ範囲・縮尺'
+        if meta.get('road_region_consistency'):
+            subtitle=('全区間地図' if name=='overview' else f'全区間地図の拡大 {name[3:]}')+' ｜ 歩道・車道の境界と連続性を補正 ｜ 同じ範囲・縮尺'
         for kind,source in [('semantic',fullsem),('overlay',over),('texture',rgb)]:
             image=source[y0:y1,x0:x1];rendered=frame(image,titles[kind],subtitle,res,1200 if name!='overview' else 1600,show_legend=kind!='texture');rendered.save(target/(kind+'.jpg'),quality=95,subsampling=0);images.append(rendered)
         contact=Image.new('RGB',(images[0].width,sum(x.height for x in images)),'white');yy=0
@@ -55,8 +57,13 @@ def main():
     if full_bag:
         html=html[:html.index('<div class="note">')]+f'<div class="note">ROSBAG全区間・{meta["input_camera_frames"]:,}フレームの前後画像を推論しました。記録された姿勢・レーザの可視性を確認できた{meta["frame_count"]:,}フレームを地図に反映しています。黄色い点字の認識＋前後方向の画像追跡を適用。3種類とも同じ範囲・縮尺です。未分類は白。背景の既存RGBは保持しています。</div><nav><a href="overview/three_views.jpg">全体図3枚を1画像で開く</a> · <a href="#seg3300">拡大図へ</a> · <a href="manifest.json">生成記録</a></nav>'
     if meta.get('shadow_rescue'):html+='<p class="note">暗所補完版：日陰'+str(meta['shadow_rescue']['camera_frames'])+'フレームを追加認識し、点字の追加だけを反映しています。既存の分類と路面テクスチャは保持しています。</p>'
+    if meta.get('road_region_consistency'):
+        html=html.replace('既存の分類と路面テクスチャは保持しています。','暗所の点字を保持したうえで、下記の歩道・車道補正を追加しました。')
+        html+='<p class="note">路面の連続性を使い、歩道・車道の細かな混在を抑えた版です。画像の境界を越えにくくし、複数観測の分類を参照します。点字・芝生・未分類・元のRGB・座標と縮尺は保持しています。縁石の高さを測った補正ではなく、誤判定は残る可能性があります。</p>'
     focus='seg2700' if meta.get('shadow_rescue') else 'seg3300'
     if meta.get('shadow_rescue'):html=html.replace('#seg3300','#seg2700')
+    if meta.get('road_region_consistency'):
+        focus='seg3900';html=html.replace('#seg2700','#seg3900').replace('#seg3300','#seg3900')
     for name in (['overview',focus] if full_bag else [focus,'overview']):
         html+=f'<h2 id="{name}">{"拡大区間"+name[3:] if name!="overview" else "全体図（ROSBAG全区間）" if full_bag else "全体図（セマンティックは検証した部分のみ）"}</h2>'
         for kind,title in titles.items():html+=f'<figure><figcaption>{title}</figcaption><a href="{name}/{kind}.jpg"><img src="{name}/{kind}.jpg" alt="{title}" loading="lazy"></a></figure>'
