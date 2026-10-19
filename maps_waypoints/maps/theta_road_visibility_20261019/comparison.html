@@ -1,0 +1,39 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>THETA路面 遮蔽除外比較</title><style>body{font:16px system-ui;background:#f4f5f6;color:#222;max-width:1500px;margin:32px auto;padding:0 20px}img{max-width:100%;background:white}pre{padding:16px;background:white}a{color:#167}</style><!-- padded025-result --><p style="background:#e4f0ff;padding:16px"><strong>更新：</strong><a href="../theta_road_visibility_20261019_padded025/comparison.html">遮蔽を25cm広く除外した再生成結果はこちら</a></p><!-- direction-weight-result --><p style="background:#e4f0ff;padding:16px"><strong>局所比較：</strong><a href="../theta_direction_trial_20261019/comparison.html">4区間で前後の重みを比較した結果はこちら</a></p><h1>THETA路面マッピング：LiDAR遮蔽除外の試験</h1><p>real_both_mapping_20260920_113447_recovered / 5 cm grid / 同じBAGを同時再生。</p><p>左：通常版。右：同期LiDARとTFで床の可視範囲に限定。人・車などの物体クラス検出は追加していません。両版とも未知領域の穴埋めは無効です。</p><p>2D LiDARの高さに当たらない物体や柵の隙間などは残るため、動的障害物の完全除去を保証する試験ではありません。再生速度4倍・入力点群stride 4の比較試験です。既存の地図は変更していません。</p><h2>全体の路面RGB</h2><img src="map_comparison.jpg"><h2>代表観測：通常・除外部分・採用部分</h2><img src="observation_comparison.jpg"><h2>保存結果</h2><pre>{
+  "baseline": {
+    "observed_cells": 2091404,
+    "observed_area_m2": 5228.510000000001,
+    "origin": [
+      -110.50061430815602,
+      -167.9387912057118
+    ],
+    "size": [
+      2703,
+      4026
+    ],
+    "semantic_cells": {
+      "3": 9726,
+      "4": 1970,
+      "5": 22383,
+      "6": 82086
+    }
+  },
+  "visible": {
+    "observed_cells": 2022376,
+    "observed_area_m2": 5055.940000000001,
+    "origin": [
+      -110.48511736631042,
+      -167.9387912057118
+    ],
+    "size": [
+      2702,
+      4026
+    ],
+    "semantic_cells": {
+      "3": 7641,
+      "4": 1866,
+      "5": 20828,
+      "6": 90174
+    }
+  },
+  "coverage_ratio": 0.9669944209727054
+}</pre><p>物体によって隠れた床は、別の観測から得られた場合のみ地図に入ります。未観測の床の色は生成しません。観測面積の保持率は残像除去率を意味しません。</p></html>

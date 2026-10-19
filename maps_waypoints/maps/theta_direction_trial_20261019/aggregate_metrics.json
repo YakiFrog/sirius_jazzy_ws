@@ -1,0 +1,72 @@
+{
+  "equal": {
+    "mean_rgb_error": 15.867098349651645,
+    "observed_cells": 254738,
+    "rear_weight": 1.0,
+    "min_relative_weight": 0.0,
+    "obstacle_padding_m": 0.0
+  },
+  "rear050": {
+    "mean_rgb_error": 15.351977871907044,
+    "observed_cells": 254738,
+    "rear_weight": 0.5,
+    "min_relative_weight": 0.0,
+    "obstacle_padding_m": 0.0
+  },
+  "rear020": {
+    "mean_rgb_error": 14.317171261255005,
+    "observed_cells": 254738,
+    "rear_weight": 0.2,
+    "min_relative_weight": 0.0,
+    "obstacle_padding_m": 0.0
+  },
+  "rear005": {
+    "mean_rgb_error": 12.07296946971275,
+    "observed_cells": 254738,
+    "rear_weight": 0.05,
+    "min_relative_weight": 0.0,
+    "obstacle_padding_m": 0.0
+  },
+  "equal_keep050": {
+    "mean_rgb_error": 8.975661412401916,
+    "observed_cells": 254738,
+    "rear_weight": 1.0,
+    "min_relative_weight": 0.5,
+    "obstacle_padding_m": 0.0
+  },
+  "equal_keep080": {
+    "mean_rgb_error": 8.09593662477143,
+    "observed_cells": 254738,
+    "rear_weight": 1.0,
+    "min_relative_weight": 0.8,
+    "obstacle_padding_m": 0.0
+  },
+  "rear050_keep050": {
+    "mean_rgb_error": 8.19690762215587,
+    "observed_cells": 254738,
+    "rear_weight": 0.5,
+    "min_relative_weight": 0.5,
+    "obstacle_padding_m": 0.0
+  },
+  "rear020_keep050": {
+    "mean_rgb_error": 8.773609471564475,
+    "observed_cells": 254738,
+    "rear_weight": 0.2,
+    "min_relative_weight": 0.5,
+    "obstacle_padding_m": 0.0
+  },
+  "rear020_keep080": {
+    "mean_rgb_error": 9.335844733004652,
+    "observed_cells": 254738,
+    "rear_weight": 0.2,
+    "min_relative_weight": 0.8,
+    "obstacle_padding_m": 0.0
+  },
+  "equal_pad025": {
+    "mean_rgb_error": 13.55932458394093,
+    "observed_cells": 233958,
+    "rear_weight": 1.0,
+    "min_relative_weight": 0.0,
+    "obstacle_padding_m": 0.25
+  }
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "archive_path": "workspace/bash/startup_bash/compare_theta_road_visibility.py",
+    "sha256": "34cddbc41a15063dd80fcb85ef4e0ef3f648c03358c642163535717c9d60550a"
+  },
+  {
+    "archive_path": "workspace/bash/startup_bash/compare_theta_road_weights.py",
+    "sha256": "0b749485c70a6f3856ec52775229396519aca571f934143b54103d2c6b734a18"
+  },
+  {
+    "archive_path": "workspace/bash/startup_bash/report_theta_road_weights.py",
+    "sha256": "6e49983bc9811c6c380433694937d2a99de485210fb67d26772adb34d08541c2"
+  },
+  {
+    "archive_path": "workspace/bash/startup_bash/sam3_colored_map_select.sh",
+    "sha256": "c570ea320d683a96f4c61d7a2be87e6b0e37df1190329eec668593c701c34c72"
+  },
+  {
+    "archive_path": "navigation/config/sam3_classes.yaml",
+    "sha256": "4d5ef56944104f8f04fb074622399404fec7ab6a8dc4d5f9f2a48a8ba46c3f58"
+  },
+  {
+    "archive_path": "navigation/config/semantic_costs.yaml",
+    "sha256": "7d66eb8751f24989089bb78e7ff3d8ee703f2ff4107a26bee5031e41de5948c7"
+  },
+  {
+    "archive_path": "navigation/config/theta_calibration.yaml",
+    "sha256": "7fec19f9fc547b05fb4145c2ef5fe268f33a900f7f384111a0f357aadcd08561"
+  },
+  {
+    "archive_path": "navigation/config/theta_calibration_real.yaml",
+    "sha256": "e36a3aa68ee8f5e787acbb3bcbe792fd42e930eda80c272b7aec16444f4e3902"
+  },
+  {
+    "archive_path": "navigation/config/theta_sam3.yaml",
+    "sha256": "20749e7dbc22a2bba9bc8d80b3580fbe3fcd8797015d87f6573124e81abe4354"
+  },
+  {
+    "archive_path": "navigation/launch/theta_offline_mapping.launch.py",
+    "sha256": "d471542553edc1894f259b0bda49e1e40080f56a9e0e1a745b307e523f8bb2c2"
+  },
+  {
+    "archive_path": "navigation/launch/theta_road_visibility_trial.launch.py",
+    "sha256": "9c861505c7063ea6f0260ba1e6f651799de795d527861610c7eb4d4247d9ce58"
+  },
+  {
+    "archive_path": "navigation/package.xml",
+    "sha256": "4d16e17fb752bf4e6fb64bc6841ec2ec2a8368723408fb68e06f2428b87ba46d"
+  },
+  {
+    "archive_path": "navigation/setup.py",
+    "sha256": "7e344b85c8558e8ae535af293bda22b22cc70b1db7e499779c52f1dfb56eeea2"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/sam3_classes.py",
+    "sha256": "830826b82e64cfd2a55dbaa9a111b818fc1e28f400d975b8f1b243ce9bcc48dd"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/semantic_costs.py",
+    "sha256": "eb8db8e1d49e7d341b4edbbbd91d9a1cba3131cad00dc46780d1ca9c2a899ba7"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_bev_node.py",
+    "sha256": "1f2de8b5ece2cfe46192a1f51a17b1c1cdbbba80f22b784dc29813c82466040a"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_bev_projection.py",
+    "sha256": "e76e81295b25465a95f92fa3327854411b0bd61b731de51566878ddb0ead04b0"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_ground_cloud_node.py",
+    "sha256": "861e520fb44c626358fe955ebe8ffbe9181bc90fa0009a6fcfb8a6565b95ee9c"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_indexed_map_node.py",
+    "sha256": "9126350d382c3b61ba9ed106260742c282aca52116ce6244b62caa5026b45525"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_perspective.py",
+    "sha256": "cd9d102f979dbb0f2bec436726de1b08d994c2f347ed7f8387a4b5e63912cf52"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_road_visibility.py",
+    "sha256": "7ac03162dc15ae0f57ab33055c2eafdf273684c1b727bcb3b9bae1fc80c287af"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_road_weights.py",
+    "sha256": "57caafa095002163f1034a89a3074f7ec78ddde36334366d4ad2761f194afcd5"
+  },
+  {
+    "archive_path": "navigation/sirius_navigation/theta_sam3_perspective_node.py",
+    "sha256": "8177d34b960d5f2c3da6e110b23e7f003304c2656ce2d52465f1bd23d8663519"
+  },
+  {
+    "archive_path": "navigation/test/test_theta_road_visibility.py",
+    "sha256": "4a1e3e61b4e4c5e085c72184357384a88d79b44565eab0b8cc85e65eb43e970c"
+  },
+  {
+    "archive_path": "navigation/test/test_theta_road_weights.py",
+    "sha256": "8d826549547071c77292a824bb9cbbe9304bdd30282249c6bac51867d5cd6820"
+  }
+]

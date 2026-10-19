@@ -1,0 +1,18 @@
+{
+  "original_3_segments_8_conditions_reproduced_exactly": true,
+  "segments": [
+    "1500",
+    "3000",
+    "4500"
+  ],
+  "conditions": [
+    "equal",
+    "rear050",
+    "rear020",
+    "rear005",
+    "rear050_keep050",
+    "rear020_keep050",
+    "rear020_keep080",
+    "equal_pad025"
+  ]
+}

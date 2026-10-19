@@ -1,0 +1,23 @@
+[
+  {
+    "frame": 1500,
+    "candidate_pixels": 682195,
+    "excluded_pixels": 113276,
+    "previous_excluded_pixels": 37945,
+    "extra_excluded_pixels": 75331
+  },
+  {
+    "frame": 3000,
+    "candidate_pixels": 496656,
+    "excluded_pixels": 339118,
+    "previous_excluded_pixels": 199473,
+    "extra_excluded_pixels": 139645
+  },
+  {
+    "frame": 4500,
+    "candidate_pixels": 691434,
+    "excluded_pixels": 172489,
+    "previous_excluded_pixels": 50823,
+    "extra_excluded_pixels": 121666
+  }
+]

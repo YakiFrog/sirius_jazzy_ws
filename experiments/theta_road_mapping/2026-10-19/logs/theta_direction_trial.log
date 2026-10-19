@@ -1,0 +1,158 @@
+Loaded 195 images, 31306 scans and recorded TF
+[INFO] [1792374625.744732402] [theta_bev]: Dual Fisheye JPEG -> BEV 準備完了（平面地面仮定, 姿勢取得元: TF sirius3/base_footprint <- sirius3/theta_link）
+[INFO] [1792374625.752595856] [theta_ground_cloud]: BEV 1024x1024 (10.0m) -> /theta/ground_cloud frame=sirius3/base_footprint stride=4 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+[INFO] [1792374625.765418077] [theta_bev]: THETA姿勢をTFから取得: 位置=[0.0, 0.0, 1.135] rpy=[0.0, -0.0, 0.0]
+[INFO] [1792374626.529887066] [theta_ground_cloud]: Road visibility: kept 41141/43168 samples
+Projected 30/195
+Projected 60/195
+[INFO] [1792374631.535058123] [theta_ground_cloud]: Road visibility: kept 10282/31815 samples
+Projected 90/195
+Projected 120/195
+Projected 150/195
+[INFO] [1792374636.548518050] [theta_ground_cloud]: Road visibility: kept 39448/43014 samples
+Projected 180/195
+[INFO] [1792374637.776832150] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374638.676924651] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374639.152058429] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_equal/road.colored (grid=set, painted=84733)
+[INFO] [1792374639.164175878] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_equal/road.colored.pgm / .json
+[INFO] [1792374639.164711590] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=84733 saved_painted(>=3)=84733 struct_idx=False
+Segment 1500: equal saved
+[INFO] [1792374639.177043808] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374639.178593054] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374639.682082606] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear050/road.colored (grid=set, painted=84733)
+[INFO] [1792374639.694531609] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear050/road.colored.pgm / .json
+[INFO] [1792374639.695035943] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=84733 saved_painted(>=3)=84733 struct_idx=False
+Segment 1500: rear050 saved
+[INFO] [1792374639.702811229] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374639.704176781] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374640.201208099] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear020/road.colored (grid=set, painted=84733)
+[INFO] [1792374640.214445275] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear020/road.colored.pgm / .json
+[INFO] [1792374640.215023582] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=84733 saved_painted(>=3)=84733 struct_idx=False
+Segment 1500: rear020 saved
+[INFO] [1792374640.224950699] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374640.226808622] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374640.782328435] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear005/road.colored (grid=set, painted=84733)
+[INFO] [1792374640.795664339] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear005/road.colored.pgm / .json
+[INFO] [1792374640.796244500] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=84733 saved_painted(>=3)=84733 struct_idx=False
+Segment 1500: rear005 saved
+[INFO] [1792374640.831435393] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374640.833465566] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374641.397640385] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear050_keep050/road.colored (grid=set, painted=84733)
+[INFO] [1792374641.408806886] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear050_keep050/road.colored.pgm / .json
+[INFO] [1792374641.409297659] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=84733 saved_painted(>=3)=84733 struct_idx=False
+Segment 1500: rear050_keep050 saved
+[INFO] [1792374641.417385161] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374641.418749836] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374641.788382442] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear020_keep050/road.colored (grid=set, painted=84733)
+[INFO] [1792374641.800155953] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear020_keep050/road.colored.pgm / .json
+[INFO] [1792374641.800669107] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=84733 saved_painted(>=3)=84733 struct_idx=False
+Segment 1500: rear020_keep050 saved
+[INFO] [1792374641.808934118] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374641.810485654] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374642.156936178] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear020_keep080/road.colored (grid=set, painted=84733)
+[INFO] [1792374642.169976672] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_rear020_keep080/road.colored.pgm / .json
+[INFO] [1792374642.170540907] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=84733 saved_painted(>=3)=84733 struct_idx=False
+Segment 1500: rear020_keep080 saved
+[INFO] [1792374642.179964598] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374642.180690958] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872076.33458332)
+[INFO] [1792374642.645590700] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_equal_pad025/road.colored (grid=set, painted=82210)
+[INFO] [1792374642.659273422] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg1500_equal_pad025/road.colored.pgm / .json
+[INFO] [1792374642.659899313] [theta_indexed_map_node]: [save] grid=306x574 origin=[-19.350000381469727, -163.85000610351562] painted(>=3)=82210 saved_painted(>=3)=82210 struct_idx=False
+Segment 1500: equal_pad025 saved
+[INFO] [1792374642.814600565] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374643.280588732] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374643.521840824] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_equal/road.colored (grid=set, painted=18129)
+[INFO] [1792374643.527134239] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_equal/road.colored.pgm / .json
+[INFO] [1792374643.527564664] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=18129 saved_painted(>=3)=18129 struct_idx=False
+Segment 3000: equal saved
+[INFO] [1792374643.536362834] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374643.537579738] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374643.773083466] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear050/road.colored (grid=set, painted=18129)
+[INFO] [1792374643.777590751] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear050/road.colored.pgm / .json
+[INFO] [1792374643.777944931] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=18129 saved_painted(>=3)=18129 struct_idx=False
+Segment 3000: rear050 saved
+[INFO] [1792374643.788380790] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374643.789139027] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374644.012444282] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear020/road.colored (grid=set, painted=18129)
+[INFO] [1792374644.016962856] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear020/road.colored.pgm / .json
+[INFO] [1792374644.017313250] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=18129 saved_painted(>=3)=18129 struct_idx=False
+Segment 3000: rear020 saved
+[INFO] [1792374644.023694727] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374644.024431087] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374644.246172392] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear005/road.colored (grid=set, painted=18129)
+[INFO] [1792374644.251077122] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear005/road.colored.pgm / .json
+[INFO] [1792374644.251435361] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=18129 saved_painted(>=3)=18129 struct_idx=False
+Segment 3000: rear005 saved
+[INFO] [1792374644.257765315] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374644.258440507] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374644.508252181] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear050_keep050/road.colored (grid=set, painted=18129)
+[INFO] [1792374644.512948292] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear050_keep050/road.colored.pgm / .json
+[INFO] [1792374644.513298406] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=18129 saved_painted(>=3)=18129 struct_idx=False
+Segment 3000: rear050_keep050 saved
+[INFO] [1792374644.519649871] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374644.520326981] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374644.782617620] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear020_keep050/road.colored (grid=set, painted=18129)
+[INFO] [1792374644.787270217] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear020_keep050/road.colored.pgm / .json
+[INFO] [1792374644.787633331] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=18129 saved_painted(>=3)=18129 struct_idx=False
+Segment 3000: rear020_keep050 saved
+[INFO] [1792374644.794219776] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374644.794889150] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374645.028822649] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear020_keep080/road.colored (grid=set, painted=18129)
+[INFO] [1792374645.033772205] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_rear020_keep080/road.colored.pgm / .json
+[INFO] [1792374645.034142696] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=18129 saved_painted(>=3)=18129 struct_idx=False
+Segment 3000: rear020_keep080 saved
+[INFO] [1792374645.044450897] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374645.045208484] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872489.456833895)
+[INFO] [1792374645.164703475] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_equal_pad025/road.colored (grid=set, painted=8594)
+[INFO] [1792374645.168847116] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg3000_equal_pad025/road.colored.pgm / .json
+[INFO] [1792374645.169214575] [theta_indexed_map_node]: [save] grid=261x282 origin=[-98.4000015258789, -112.1500015258789] painted(>=3)=8594 saved_painted(>=3)=8594 struct_idx=False
+Segment 3000: equal_pad025 saved
+[INFO] [1792374645.391010192] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374646.275236457] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374646.760277789] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_equal/road.colored (grid=set, painted=58277)
+[INFO] [1792374646.769507579] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_equal/road.colored.pgm / .json
+[INFO] [1792374646.769995846] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=58277 saved_painted(>=3)=58277 struct_idx=False
+Segment 4500: equal saved
+[INFO] [1792374646.779882736] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374646.781174955] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374647.317794423] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear050/road.colored (grid=set, painted=58277)
+[INFO] [1792374647.327622772] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear050/road.colored.pgm / .json
+[INFO] [1792374647.328159001] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=58277 saved_painted(>=3)=58277 struct_idx=False
+Segment 4500: rear050 saved
+[INFO] [1792374647.337490537] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374647.338973602] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374647.932791564] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear020/road.colored (grid=set, painted=58277)
+[INFO] [1792374647.942642606] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear020/road.colored.pgm / .json
+[INFO] [1792374647.943144318] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=58277 saved_painted(>=3)=58277 struct_idx=False
+Segment 4500: rear020 saved
+[INFO] [1792374647.952300910] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374647.953708968] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374648.609978025] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear005/road.colored (grid=set, painted=58277)
+[INFO] [1792374648.618757433] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear005/road.colored.pgm / .json
+[INFO] [1792374648.619244056] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=58277 saved_painted(>=3)=58277 struct_idx=False
+Segment 4500: rear005 saved
+[INFO] [1792374648.628402334] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374648.630269748] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374649.046218184] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear050_keep050/road.colored (grid=set, painted=58277)
+[INFO] [1792374649.055388402] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear050_keep050/road.colored.pgm / .json
+[INFO] [1792374649.055838152] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=58277 saved_painted(>=3)=58277 struct_idx=False
+Segment 4500: rear050_keep050 saved
+[INFO] [1792374649.063775939] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374649.065922589] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374649.448668179] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear020_keep050/road.colored (grid=set, painted=58277)
+[INFO] [1792374649.457674522] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear020_keep050/road.colored.pgm / .json
+[INFO] [1792374649.458147373] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=58277 saved_painted(>=3)=58277 struct_idx=False
+Segment 4500: rear020_keep050 saved
+[INFO] [1792374649.466433742] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374649.468039860] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374649.813899393] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear020_keep080/road.colored (grid=set, painted=58277)
+[INFO] [1792374649.823172041] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_rear020_keep080/road.colored.pgm / .json
+[INFO] [1792374649.823598504] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=58277 saved_painted(>=3)=58277 struct_idx=False
+Segment 4500: rear020_keep080 saved
+[INFO] [1792374649.831743353] [theta_indexed_map_node]: THETA indexed map ready: /theta/ground_cloud -> /theta/colored_map_grid (palette 132 colors)
+[INFO] [1792374649.832630903] [theta_indexed_map_node]: [cloud] first ground cloud received (frame=map, stamp=1789872879.991547100)
+[INFO] [1792374650.229758583] [theta_indexed_map_node]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_equal_pad025/road.colored (grid=set, painted=55141)
+[INFO] [1792374650.238630105] [theta_indexed_map_node]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019/seg4500_equal_pad025/road.colored.pgm / .json
+[INFO] [1792374650.239090371] [theta_indexed_map_node]: [save] grid=402x349 origin=[-23.200000762939453, -11.550000190734863] painted(>=3)=55141 saved_painted(>=3)=55141 struct_idx=False
+Segment 4500: equal_pad025 saved
+COMPLETE /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_direction_trial_20261019

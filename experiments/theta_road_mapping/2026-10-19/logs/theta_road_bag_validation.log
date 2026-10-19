@@ -1,0 +1,12 @@
+必須トピック:
+  ✓ /theta/dual_fisheye/image_raw/compressed: 5956件 (3.77 Hz) - THETA Dual Fisheye画像
+  ✓ /tf: 110557件 (69.91 Hz) - 動的TF
+  ✓ /tf_static: 1件 (0.00 Hz) - 静的TF
+  ✓ /odom/filtered: 31610件 (19.99 Hz) - 補正前オドメトリ
+  ✓ /scan3: 31306件 (19.80 Hz) - LiDAR
+TF構成:
+  ✓ SLAM Toolbox補正TF: map親フレームを78946件確認
+  ✓ map → base_footprint
+  ✓ base_footprint → theta_link
+=========================================================
+✓ このRosbagにはTHETA路面マッピングの必須情報が入っています。

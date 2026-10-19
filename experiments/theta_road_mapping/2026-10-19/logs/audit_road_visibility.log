@@ -1,0 +1,4 @@
+[INFO] [1792370398.192210182] [theta_ground_cloud]: BEV 1024x1024 (10.0m) -> /theta/ground_cloud frame=sirius3/base_footprint stride=1 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+{'frame': 1500, 'candidate_pixels': 682195, 'excluded_pixels': 37945}
+{'frame': 3000, 'candidate_pixels': 496656, 'excluded_pixels': 199473}
+{'frame': 4500, 'candidate_pixels': 691434, 'excluded_pixels': 50823}

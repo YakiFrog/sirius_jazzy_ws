@@ -1,0 +1,46 @@
+{
+  "baseline": {
+    "observed_cells": 2088863,
+    "area_m2": 5222.16,
+    "resolution": 0.05,
+    "origin": [
+      -110.50061430815602,
+      -167.9387912057118
+    ],
+    "size": [
+      2695,
+      4025
+    ],
+    "tactile_semantic_cells": 219
+  },
+  "previous": {
+    "observed_cells": 2022376,
+    "area_m2": 5055.94,
+    "resolution": 0.05,
+    "origin": [
+      -110.48511736631042,
+      -167.9387912057118
+    ],
+    "size": [
+      2702,
+      4026
+    ],
+    "tactile_semantic_cells": 1866
+  },
+  "padded": {
+    "observed_cells": 1774380,
+    "area_m2": 4435.95,
+    "resolution": 0.05,
+    "origin": [
+      -110.30067416341491,
+      -167.9387912057118
+    ],
+    "size": [
+      2698,
+      4026
+    ],
+    "tactile_semantic_cells": 298
+  },
+  "padded_vs_current_baseline_area_ratio": 0.8494477617727921,
+  "padded_vs_previous_area_ratio": 0.8773739403553048
+}

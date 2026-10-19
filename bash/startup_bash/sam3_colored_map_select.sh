@@ -15,7 +15,10 @@ echo "------------------------------------------------"
 
 # マップファイルのリストを取得
 cd "$MAP_DIR" || exit
-maps=($(find . -maxdepth 3 -name "*.pgm" ! -name "*.colored.pgm" 2>/dev/null | sed 's|^\./||' | sed 's/\.pgm$//' | sort))
+# 路面RGB試験など、構造地図(.pgm)を持たない .colored.pgm も選択できる。
+# 両形式を持つ地図は同じprefixにまとめ、空白を含む名前も保持する。
+mapfile -t maps < <(find . -maxdepth 3 -type f -name "*.pgm" 2>/dev/null |
+    sed 's|^\./||; s/\.colored\.pgm$//; s/\.pgm$//' | sort -u)
 
 if [ ${#maps[@]} -eq 0 ]; then
     echo "エラー: $MAP_DIR にマップが見つかりません。"

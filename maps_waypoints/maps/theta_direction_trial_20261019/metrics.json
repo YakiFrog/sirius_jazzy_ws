@@ -1,0 +1,410 @@
+{
+  "1500": {
+    "equal": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 15.610837785889363,
+      "median_rgb_error": 10.0
+    },
+    "rear050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 15.130702357650462,
+      "median_rgb_error": 9.333333333333334
+    },
+    "rear020": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 14.208891004955122,
+      "median_rgb_error": 8.333333333333334
+    },
+    "rear005": {
+      "rear_weight": 0.05,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 12.17323528893121,
+      "median_rgb_error": 6.666666666666667
+    },
+    "equal_keep050": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 8.287238357227247,
+      "median_rgb_error": 5.666666666666667
+    },
+    "equal_keep080": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 7.529457405350121,
+      "median_rgb_error": 5.0
+    },
+    "rear050_keep050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 8.234177996437955,
+      "median_rgb_error": 5.0
+    },
+    "rear020_keep050": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 9.159163448482603,
+      "median_rgb_error": 5.333333333333333
+    },
+    "rear020_keep080": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 84733,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 9.966125306388756,
+      "median_rgb_error": 5.666666666666667
+    },
+    "equal_pad025": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.25,
+      "observed_cells": 82210,
+      "stable_reference_coverage": 0.9960480556433765,
+      "evaluation_cells": 18903,
+      "mean_rgb_error": 11.892979950272444,
+      "median_rgb_error": 7.666666666666667
+    }
+  },
+  "2200": {
+    "equal": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 23.756397112221798,
+      "median_rgb_error": 18.666666666666668
+    },
+    "rear050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 22.553248750480584,
+      "median_rgb_error": 17.666666666666668
+    },
+    "rear020": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 20.05051475928062,
+      "median_rgb_error": 15.333333333333334
+    },
+    "rear005": {
+      "rear_weight": 0.05,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 14.770387457815369,
+      "median_rgb_error": 11.0
+    },
+    "equal_keep050": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 12.151736511598104,
+      "median_rgb_error": 8.666666666666666
+    },
+    "equal_keep080": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 10.557328377974285,
+      "median_rgb_error": 7.0
+    },
+    "rear050_keep050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 10.036289461318297,
+      "median_rgb_error": 6.666666666666667
+    },
+    "rear020_keep050": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 10.287154513221411,
+      "median_rgb_error": 6.666666666666667
+    },
+    "rear020_keep080": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 93599,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 10.669272502029136,
+      "median_rgb_error": 7.0
+    },
+    "equal_pad025": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.25,
+      "observed_cells": 88013,
+      "stable_reference_coverage": 0.9963608504117986,
+      "evaluation_cells": 15606,
+      "mean_rgb_error": 21.46136101499423,
+      "median_rgb_error": 16.333333333333332
+    }
+  },
+  "3000": {
+    "equal": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.2698136465811038,
+      "median_rgb_error": 1.0
+    },
+    "rear050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.2699586686969764,
+      "median_rgb_error": 1.0
+    },
+    "rear020": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.2701762018707854,
+      "median_rgb_error": 1.0
+    },
+    "rear005": {
+      "rear_weight": 0.05,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.2699586686969764,
+      "median_rgb_error": 1.0
+    },
+    "equal_keep050": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.2698136465811038,
+      "median_rgb_error": 1.0
+    },
+    "equal_keep080": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 3.0692480603292,
+      "median_rgb_error": 1.3333333333333333
+    },
+    "rear050_keep050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.2699586686969764,
+      "median_rgb_error": 1.0
+    },
+    "rear020_keep050": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.3536364295555072,
+      "median_rgb_error": 1.0
+    },
+    "rear020_keep080": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 18129,
+      "stable_reference_coverage": 0.9996871578288753,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 3.276629686027119,
+      "median_rgb_error": 1.3333333333333333
+    },
+    "equal_pad025": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.25,
+      "observed_cells": 8594,
+      "stable_reference_coverage": 0.7190677303300484,
+      "evaluation_cells": 4597,
+      "mean_rgb_error": 1.7611485751577118,
+      "median_rgb_error": 1.0
+    }
+  },
+  "4500": {
+    "equal": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 13.100713590658449,
+      "median_rgb_error": 9.333333333333334
+    },
+    "rear050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 13.002252495765308,
+      "median_rgb_error": 9.0
+    },
+    "rear020": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 12.833189173604355,
+      "median_rgb_error": 9.0
+    },
+    "rear005": {
+      "rear_weight": 0.05,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 12.379500486539085,
+      "median_rgb_error": 8.333333333333334
+    },
+    "equal_keep050": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 8.91463942047789,
+      "median_rgb_error": 5.0
+    },
+    "equal_keep080": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 7.847442966807224,
+      "median_rgb_error": 4.333333333333333
+    },
+    "rear050_keep050": {
+      "rear_weight": 0.5,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 8.328449922514146,
+      "median_rgb_error": 4.666666666666667
+    },
+    "rear020_keep050": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.5,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 8.946660900277507,
+      "median_rgb_error": 5.0
+    },
+    "rear020_keep080": {
+      "rear_weight": 0.2,
+      "min_relative_weight": 0.8,
+      "obstacle_padding_m": 0.0,
+      "observed_cells": 58277,
+      "stable_reference_coverage": 1.0,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 9.072602443507405,
+      "median_rgb_error": 5.0
+    },
+    "equal_pad025": {
+      "rear_weight": 1.0,
+      "min_relative_weight": 0.0,
+      "obstacle_padding_m": 0.25,
+      "observed_cells": 55141,
+      "stable_reference_coverage": 0.995425926922456,
+      "evaluation_cells": 18498,
+      "mean_rgb_error": 11.527534508235123,
+      "median_rgb_error": 8.0
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "archived_at_jst": "2026-10-19T11:35:28.079669+09:00",
+  "workspace_base_commit": "0bc30d044e6980818aa9c72b2778df5739179679",
+  "navigation_commit": "30d2255fc5b93f7db8b64400147e933932455142",
+  "workspace_remote": "https://github.com/YakiFrog/sirius_jazzy_ws.git",
+  "navigation_remote": "https://github.com/YakiFrog/sirius_navigation.git",
+  "branch": "master",
+  "note": "Only road experiment changes are committed; unrelated workspace changes are excluded."
+}

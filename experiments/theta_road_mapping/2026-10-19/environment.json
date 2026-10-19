@@ -1,0 +1,19 @@
+{
+  "saved_at_jst": "2026-10-19T11:33:16.069804+09:00",
+  "python": "3.12.3",
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "numpy": "1.26.4",
+  "opencv": "4.6.0",
+  "scipy": "1.11.4",
+  "pyyaml": "6.0.1",
+  "ros_distro": "jazzy",
+  "experiment_ros_domain_id": 154,
+  "openblas_num_threads": 2,
+  "omp_num_threads": 2,
+  "ros_packages": [
+    "ros-jazzy-rclpy 7.1.5-1noble.20250814.074931",
+    "ros-jazzy-rosbag2-py 0.26.9-1noble.20250814.100654",
+    "ros-jazzy-rosbag2-storage-mcap 0.26.9-1noble.20250814.095933",
+    "ros-jazzy-tf2-ros-py 0.36.14-1noble.20250814.075550"
+  ]
+}

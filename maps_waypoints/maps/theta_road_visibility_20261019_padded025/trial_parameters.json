@@ -1,0 +1,6 @@
+{
+  "bag": "/home/kotantu-desktop/rosbag2_data/0920/real_both_mapping_20260920_113447_recovered",
+  "rate": 4.0,
+  "obstacle_padding_m": 0.25,
+  "radial_margin_m": 0.1
+}

@@ -1,0 +1,15 @@
+{
+  "candidate": "rear050_keep050",
+  "parameters": {
+    "rear_observation_weight": 0.5,
+    "direction_transition_degrees": 30.0,
+    "min_relative_observation_weight": 0.5
+  },
+  "evidence": {
+    "segments": 4,
+    "conditions": 10,
+    "reference_error_reduction_percent": 48.34022301036642,
+    "observed_cells_vs_baseline": 1.0
+  },
+  "limitation": "Single BAG, local RGB comparison. Reference is not ground truth; no full-map/default change."
+}

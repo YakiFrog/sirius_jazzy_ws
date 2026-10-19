@@ -1,0 +1,6 @@
+# THETA マッピング固有の SAM3 パラメータ。
+# クラス登録簿（prompt / classes / class_thresholds）は共有ファイル
+# config/sam3_classes.yaml に集約した。このファイルにはTHETA固有の
+# しきい値だけを置く（ランチャーの SAM3設定ダイアログが保存する）。
+threshold: 1.0
+score_min: 0.8

@@ -1,0 +1,713 @@
+[INFO] [launch]: All log files can be found below /home/kotantu-desktop/.ros/log/2026-10-19-09-37-45-948799-kotantu-desktop-System-Product-Name-2668005
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [theta_bev_node-1]: process started with pid [2668014]
+[INFO] [theta_sam3_perspective_node-2]: process started with pid [2668015]
+[INFO] [theta_ground_cloud_node-3]: process started with pid [2668016]
+[INFO] [theta_indexed_map_node-4]: process started with pid [2668017]
+[INFO] [theta_ground_cloud_node-5]: process started with pid [2668018]
+[INFO] [theta_indexed_map_node-6]: process started with pid [2668021]
+[theta_ground_cloud_node-5] [INFO] [1792370266.350834023] [trial_visible_ground]: BEV 1024x1024 (10.0m) -> /trial/visible/immediate frame=sirius3/base_footprint stride=4 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+[theta_ground_cloud_node-3] [INFO] [1792370266.367046526] [trial_baseline_ground]: BEV 1024x1024 (10.0m) -> /trial/baseline/immediate frame=sirius3/base_footprint stride=4 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+[theta_bev_node-1] [INFO] [1792370266.433214215] [trial_bev]: Dual Fisheye JPEG -> BEV 準備完了（平面地面仮定, 姿勢取得元: TF sirius3/base_footprint <- sirius3/theta_link）
+[theta_sam3_perspective_node-2] [INFO] [1792370266.523044199] [trial_road_semantics]: 共有クラス登録簿を読み込み: /home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/share/sirius_navigation/config/sam3_classes.yaml (6 classes, prompt="grass, tactile paving, line-type tactile paving, line type tactile paving, roadway, sidewalk")
+[theta_sam3_perspective_node-2] [INFO] [1792370266.523527421] [trial_road_semantics]: SAM3設定を読み込み: /home/kotantu-desktop/sirius_jazzy_ws/src/sirius/sirius_navigation/config/theta_sam3.yaml (threshold=1.0, score_min=0.8)
+[theta_sam3_perspective_node-2] [INFO] [1792370266.531043045] [trial_road_semantics]: THETA SAM3 perspective: /theta/dual_fisheye/image_raw/compressed -> /theta/bev_semantic views=[0.0, 180.0] hfov=120.0 server=http://localhost:8080 debug=False
+[theta_indexed_map_node-4] [INFO] [1792370266.587955536] [trial_baseline_map]: THETA indexed map ready: /trial/baseline/cloud -> /trial/baseline/grid (palette 132 colors)
+[theta_indexed_map_node-6] [INFO] [1792370266.587955554] [trial_visible_map]: THETA indexed map ready: /trial/visible/cloud -> /trial/visible/grid (palette 132 colors)
+[theta_bev_node-1] [INFO] [1792370272.857368964] [trial_bev]: THETA姿勢をTFから取得: 位置=[0.0, 0.0, 1.135] rpy=[0.0, -0.0, 0.0]
+[theta_ground_cloud_node-5] [INFO] [1792370273.370683056] [trial_visible_ground]: Road visibility: kept 35584/43542 samples
+[theta_sam3_perspective_node-2] [INFO] [1792370273.487186340] [trial_road_semantics]: Built perspective remaps for input 1280x720 (mount_from_tf=False, camera_position=[0.0, 0.0, 1.135])
+[theta_indexed_map_node-6] [INFO] [1792370277.174069213] [trial_visible_map]: [cloud] first ground cloud received (frame=sirius3/base_footprint, stamp=1789871709.984626499)
+[theta_indexed_map_node-6] [INFO] [1792370277.174296961] [trial_visible_map]: [cloud] painting directly (grid=None will be allocated on first successful transform)
+[theta_indexed_map_node-4] [INFO] [1792370277.175157629] [trial_baseline_map]: [cloud] first ground cloud received (frame=sirius3/base_footprint, stamp=1789871709.984626499)
+[theta_indexed_map_node-4] [INFO] [1792370277.175384991] [trial_baseline_map]: [cloud] painting directly (grid=None will be allocated on first successful transform)
+[theta_indexed_map_node-6] [INFO] [1792370277.177482767] [trial_visible_map]: Grid canvas created: 232x232
+[theta_indexed_map_node-4] [INFO] [1792370277.179913029] [trial_baseline_map]: Grid canvas created: 232x232
+[theta_ground_cloud_node-5] [INFO] [1792370278.380635139] [trial_visible_ground]: Road visibility: kept 35703/43031 samples
+[theta_indexed_map_node-6] [INFO] [1792370279.384383020] [trial_visible_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-6] [INFO] [1792370280.254453968] [trial_visible_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-4] [INFO] [1792370280.260484592] [trial_baseline_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-6] [INFO] [1792370281.582790690] [trial_visible_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-4] [INFO] [1792370281.591180946] [trial_baseline_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-4] [INFO] [1792370281.629442581] [trial_baseline_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-6] [INFO] [1792370281.633644986] [trial_visible_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-4] [INFO] [1792370282.104732515] [trial_baseline_map]: Grid canvas expanded: 232x232
+[theta_indexed_map_node-6] [INFO] [1792370282.119300472] [trial_visible_map]: Grid canvas expanded: 232x232
+[theta_ground_cloud_node-5] [INFO] [1792370283.426477164] [trial_visible_ground]: Road visibility: kept 33028/43106 samples
+[theta_indexed_map_node-4] [INFO] [1792370285.156135427] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370285.163358506] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370285.710721679] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370285.716067778] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370286.205243153] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370286.207381009] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370286.280579885] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370286.281832152] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370286.383053993] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370286.386109678] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370287.230060052] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_ground_cloud_node-5] [INFO] [1792370288.454177879] [trial_visible_ground]: Road visibility: kept 36035/42999 samples
+[theta_indexed_map_node-6] [INFO] [1792370289.283758964] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370289.290602438] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370289.703509087] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370289.709133278] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.316281498] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.455853627] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.507938435] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370290.515258178] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.524769570] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370290.543909144] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.663284642] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370290.671739679] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.686187014] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370290.694511943] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.781277936] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370290.802908198] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370290.913076011] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370290.928623819] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370290.968667140] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.006066465] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.013579091] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.090187100] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.092136333] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.154263861] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.159047652] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.203760017] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.279354980] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.293631906] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.329675405] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.335522028] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.404271169] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.416646734] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.529469682] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.531259773] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.559484210] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.564958021] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.657426102] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.662278479] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.709068334] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.712928377] [trial_baseline_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-6] [INFO] [1792370291.757636550] [trial_visible_map]: Grid canvas expanded: 232x234
+[theta_indexed_map_node-4] [INFO] [1792370291.807422684] [trial_baseline_map]: Grid canvas expanded: 240x236
+[theta_indexed_map_node-6] [INFO] [1792370291.816089672] [trial_visible_map]: Grid canvas expanded: 240x236
+[theta_indexed_map_node-6] [INFO] [1792370292.796250311] [trial_visible_map]: Grid canvas expanded: 258x237
+[theta_indexed_map_node-4] [INFO] [1792370292.803979362] [trial_baseline_map]: Grid canvas expanded: 258x238
+[theta_ground_cloud_node-5] [INFO] [1792370293.476983396] [trial_visible_ground]: Road visibility: kept 36200/43647 samples
+[theta_indexed_map_node-4] [INFO] [1792370294.757543515] [trial_baseline_map]: Grid canvas expanded: 296x242
+[theta_indexed_map_node-6] [INFO] [1792370294.761251071] [trial_visible_map]: Grid canvas expanded: 296x241
+[theta_indexed_map_node-6] [INFO] [1792370295.956756513] [trial_visible_map]: Grid canvas expanded: 296x241
+[theta_indexed_map_node-4] [INFO] [1792370296.029228489] [trial_baseline_map]: Grid canvas expanded: 296x242
+[theta_indexed_map_node-6] [INFO] [1792370296.034788009] [trial_visible_map]: Grid canvas expanded: 296x242
+[theta_indexed_map_node-4] [INFO] [1792370296.105667027] [trial_baseline_map]: Grid canvas expanded: 296x243
+[theta_indexed_map_node-6] [INFO] [1792370296.107609299] [trial_visible_map]: Grid canvas expanded: 296x243
+[theta_indexed_map_node-6] [INFO] [1792370296.194600017] [trial_visible_map]: Grid canvas expanded: 299x243
+[theta_indexed_map_node-4] [INFO] [1792370296.200744179] [trial_baseline_map]: Grid canvas expanded: 299x243
+[theta_indexed_map_node-4] [INFO] [1792370296.330945078] [trial_baseline_map]: Grid canvas expanded: 299x244
+[theta_indexed_map_node-6] [INFO] [1792370296.331443608] [trial_visible_map]: Grid canvas expanded: 299x243
+[theta_indexed_map_node-4] [INFO] [1792370296.378482468] [trial_baseline_map]: Grid canvas expanded: 299x244
+[theta_indexed_map_node-6] [INFO] [1792370296.386163481] [trial_visible_map]: Grid canvas expanded: 299x244
+[theta_indexed_map_node-4] [INFO] [1792370296.454974329] [trial_baseline_map]: Grid canvas expanded: 299x244
+[theta_indexed_map_node-6] [INFO] [1792370296.529999258] [trial_visible_map]: Grid canvas expanded: 299x245
+[theta_indexed_map_node-4] [INFO] [1792370296.578920728] [trial_baseline_map]: Grid canvas expanded: 299x245
+[theta_indexed_map_node-4] [INFO] [1792370298.057886426] [trial_baseline_map]: Grid canvas expanded: 299x245
+[theta_ground_cloud_node-5] [INFO] [1792370298.600003863] [trial_visible_ground]: Road visibility: kept 36777/42981 samples
+[theta_indexed_map_node-4] [INFO] [1792370300.107063099] [trial_baseline_map]: Grid canvas expanded: 299x245
+[theta_indexed_map_node-6] [INFO] [1792370300.121520592] [trial_visible_map]: Grid canvas expanded: 299x246
+[theta_indexed_map_node-4] [INFO] [1792370301.130112889] [trial_baseline_map]: Grid canvas expanded: 300x326
+[theta_indexed_map_node-6] [INFO] [1792370301.142001248] [trial_visible_map]: Grid canvas expanded: 300x327
+[theta_indexed_map_node-4] [INFO] [1792370302.149802958] [trial_baseline_map]: Grid canvas expanded: 301x384
+[theta_ground_cloud_node-5] [INFO] [1792370303.629310269] [trial_visible_ground]: Road visibility: kept 37279/41808 samples
+[theta_indexed_map_node-6] [INFO] [1792370304.265516804] [trial_visible_map]: Grid canvas expanded: 304x468
+[theta_indexed_map_node-4] [INFO] [1792370305.175051223] [trial_baseline_map]: Grid canvas expanded: 301x523
+[theta_indexed_map_node-4] [INFO] [1792370306.433780666] [trial_baseline_map]: Grid canvas expanded: 301x523
+[theta_indexed_map_node-4] [INFO] [1792370306.457585285] [trial_baseline_map]: Grid canvas expanded: 301x523
+[theta_indexed_map_node-4] [INFO] [1792370306.521568406] [trial_baseline_map]: Grid canvas expanded: 301x560
+[theta_indexed_map_node-4] [INFO] [1792370306.583945966] [trial_baseline_map]: Grid canvas expanded: 302x560
+[theta_indexed_map_node-6] [INFO] [1792370307.451080596] [trial_visible_map]: Grid canvas expanded: 304x620
+[theta_indexed_map_node-4] [INFO] [1792370307.704441508] [trial_baseline_map]: Grid canvas expanded: 302x560
+[theta_indexed_map_node-4] [INFO] [1792370307.787324134] [trial_baseline_map]: Grid canvas expanded: 302x560
+[theta_indexed_map_node-4] [INFO] [1792370307.941940721] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.105357075] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.179453009] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.256419123] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.357345536] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.431946129] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-6] [INFO] [1792370308.496811659] [trial_visible_map]: Grid canvas expanded: 304x660
+[theta_indexed_map_node-4] [INFO] [1792370308.516679911] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_ground_cloud_node-5] [INFO] [1792370308.629487146] [trial_visible_ground]: Road visibility: kept 41798/43279 samples
+[theta_indexed_map_node-4] [INFO] [1792370308.633483376] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.815820101] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.879644354] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370308.956633141] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370309.019486305] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370309.057672647] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370309.208464153] [trial_baseline_map]: Grid canvas expanded: 303x560
+[theta_indexed_map_node-4] [INFO] [1792370309.466450366] [trial_baseline_map]: Grid canvas expanded: 304x560
+[theta_indexed_map_node-4] [INFO] [1792370309.617209680] [trial_baseline_map]: Grid canvas expanded: 304x705
+[theta_indexed_map_node-6] [INFO] [1792370310.615892156] [trial_visible_map]: Grid canvas expanded: 304x753
+[theta_indexed_map_node-4] [INFO] [1792370312.568620741] [trial_baseline_map]: Grid canvas expanded: 304x833
+[theta_indexed_map_node-6] [INFO] [1792370312.573840665] [trial_visible_map]: Grid canvas expanded: 304x834
+[theta_indexed_map_node-4] [INFO] [1792370313.481678742] [trial_baseline_map]: Grid canvas expanded: 304x878
+[theta_indexed_map_node-6] [INFO] [1792370313.491188738] [trial_visible_map]: Grid canvas expanded: 304x879
+[theta_ground_cloud_node-5] [INFO] [1792370313.675994565] [trial_visible_ground]: Road visibility: kept 42976/43755 samples
+[theta_indexed_map_node-6] [INFO] [1792370314.611055741] [trial_visible_map]: Grid canvas expanded: 304x918
+[theta_indexed_map_node-4] [INFO] [1792370316.032445244] [trial_baseline_map]: Grid canvas expanded: 304x962
+[theta_indexed_map_node-6] [INFO] [1792370318.048074362] [trial_visible_map]: Grid canvas expanded: 304x1066
+[theta_ground_cloud_node-5] [INFO] [1792370318.694938864] [trial_visible_ground]: Road visibility: kept 43136/43983 samples
+[theta_indexed_map_node-4] [INFO] [1792370320.996673887] [trial_baseline_map]: Grid canvas expanded: 304x966
+[theta_indexed_map_node-4] [INFO] [1792370321.026931392] [trial_baseline_map]: Grid canvas expanded: 304x968
+[theta_indexed_map_node-4] [INFO] [1792370321.089218478] [trial_baseline_map]: Grid canvas expanded: 304x970
+[theta_indexed_map_node-4] [INFO] [1792370321.166503245] [trial_baseline_map]: Grid canvas expanded: 304x973
+[theta_indexed_map_node-4] [INFO] [1792370321.247340127] [trial_baseline_map]: Grid canvas expanded: 304x976
+[theta_indexed_map_node-4] [INFO] [1792370321.298795641] [trial_baseline_map]: Grid canvas expanded: 304x1220
+[theta_indexed_map_node-6] [INFO] [1792370322.298379772] [trial_visible_map]: Grid canvas expanded: 304x1293
+[theta_indexed_map_node-4] [INFO] [1792370322.306049462] [trial_baseline_map]: Grid canvas expanded: 304x1292
+[theta_indexed_map_node-4] [INFO] [1792370323.152138282] [trial_baseline_map]: Grid canvas expanded: 304x1344
+[theta_ground_cloud_node-5] [INFO] [1792370323.705049336] [trial_visible_ground]: Road visibility: kept 43023/43886 samples
+[theta_indexed_map_node-4] [INFO] [1792370324.025898863] [trial_baseline_map]: Grid canvas expanded: 304x1388
+[theta_indexed_map_node-6] [INFO] [1792370325.076844418] [trial_visible_map]: Grid canvas expanded: 304x1433
+[theta_indexed_map_node-4] [INFO] [1792370325.097222596] [trial_baseline_map]: Grid canvas expanded: 304x1432
+[theta_indexed_map_node-6] [INFO] [1792370326.237587366] [trial_visible_map]: Grid canvas expanded: 304x1489
+[theta_indexed_map_node-4] [INFO] [1792370328.412387762] [trial_baseline_map]: Grid canvas expanded: 304x1603
+[theta_ground_cloud_node-5] [INFO] [1792370328.756409871] [trial_visible_ground]: Road visibility: kept 38056/42916 samples
+[theta_indexed_map_node-6] [INFO] [1792370331.442141407] [trial_visible_map]: Grid canvas expanded: 304x1493
+[theta_indexed_map_node-6] [INFO] [1792370331.519148121] [trial_visible_map]: Grid canvas expanded: 304x1497
+[theta_indexed_map_node-6] [INFO] [1792370331.568390044] [trial_visible_map]: Grid canvas expanded: 304x1500
+[theta_indexed_map_node-6] [INFO] [1792370331.625166801] [trial_visible_map]: Grid canvas expanded: 304x1503
+[theta_indexed_map_node-6] [INFO] [1792370331.691586176] [trial_visible_map]: Grid canvas expanded: 304x1507
+[theta_indexed_map_node-6] [INFO] [1792370331.811768195] [trial_visible_map]: Grid canvas expanded: 304x1514
+[theta_indexed_map_node-6] [INFO] [1792370332.093999030] [trial_visible_map]: Grid canvas expanded: 304x1522
+[theta_indexed_map_node-6] [INFO] [1792370332.117513447] [trial_visible_map]: Grid canvas expanded: 304x1524
+[theta_indexed_map_node-6] [INFO] [1792370332.171586485] [trial_visible_map]: Grid canvas expanded: 304x1528
+[theta_indexed_map_node-6] [INFO] [1792370332.199955164] [trial_visible_map]: Grid canvas expanded: 304x1532
+[theta_indexed_map_node-6] [INFO] [1792370332.237673486] [trial_visible_map]: Grid canvas expanded: 304x1535
+[theta_indexed_map_node-6] [INFO] [1792370332.287085128] [trial_visible_map]: Grid canvas expanded: 304x1539
+[theta_indexed_map_node-6] [INFO] [1792370332.346348896] [trial_visible_map]: Grid canvas expanded: 304x1542
+[theta_indexed_map_node-6] [INFO] [1792370332.404649816] [trial_visible_map]: Grid canvas expanded: 304x1545
+[theta_indexed_map_node-6] [INFO] [1792370332.469469253] [trial_visible_map]: Grid canvas expanded: 304x1549
+[theta_indexed_map_node-6] [INFO] [1792370332.542661556] [trial_visible_map]: Grid canvas expanded: 304x1553
+[theta_indexed_map_node-4] [INFO] [1792370332.564200128] [trial_baseline_map]: Grid canvas expanded: 317x1719
+[theta_indexed_map_node-6] [INFO] [1792370332.577259474] [trial_visible_map]: Grid canvas expanded: 316x1724
+[theta_indexed_map_node-4] [INFO] [1792370333.670015520] [trial_baseline_map]: Grid canvas expanded: 317x1736
+[theta_indexed_map_node-6] [INFO] [1792370333.674431740] [trial_visible_map]: Grid canvas expanded: 316x1741
+[theta_ground_cloud_node-5] [INFO] [1792370333.803029170] [trial_visible_ground]: Road visibility: kept 35872/42412 samples
+[theta_indexed_map_node-4] [INFO] [1792370334.601475595] [trial_baseline_map]: Grid canvas expanded: 317x1781
+[theta_indexed_map_node-6] [INFO] [1792370334.615282813] [trial_visible_map]: Grid canvas expanded: 316x1786
+[theta_indexed_map_node-4] [INFO] [1792370336.219571544] [trial_baseline_map]: Grid canvas expanded: 317x1781
+[theta_indexed_map_node-4] [INFO] [1792370336.618421266] [trial_baseline_map]: Grid canvas expanded: 317x1781
+[theta_indexed_map_node-4] [INFO] [1792370336.889117704] [trial_baseline_map]: Grid canvas expanded: 319x1883
+[theta_indexed_map_node-4] [INFO] [1792370338.055899498] [trial_baseline_map]: Grid canvas expanded: 319x1920
+[theta_indexed_map_node-6] [INFO] [1792370338.393805880] [trial_visible_map]: Grid canvas expanded: 316x1786
+[theta_ground_cloud_node-5] [INFO] [1792370338.860638021] [trial_visible_ground]: Road visibility: kept 37438/42248 samples
+[theta_indexed_map_node-4] [INFO] [1792370339.083116284] [trial_baseline_map]: Grid canvas expanded: 320x1968
+[theta_indexed_map_node-6] [INFO] [1792370339.093238469] [trial_visible_map]: Grid canvas expanded: 319x1973
+[theta_indexed_map_node-4] [INFO] [1792370341.218410006] [trial_baseline_map]: Grid canvas expanded: 327x2022
+[theta_indexed_map_node-4] [INFO] [1792370342.243945171] [trial_baseline_map]: Grid canvas expanded: 327x2022
+[theta_indexed_map_node-6] [INFO] [1792370342.254469695] [trial_visible_map]: Grid canvas expanded: 326x2027
+[theta_indexed_map_node-4] [INFO] [1792370343.146859438] [trial_baseline_map]: Grid canvas expanded: 327x2029
+[theta_indexed_map_node-6] [INFO] [1792370343.148839351] [trial_visible_map]: Grid canvas expanded: 326x2034
+[theta_ground_cloud_node-5] [INFO] [1792370343.875889227] [trial_visible_ground]: Road visibility: kept 39542/42660 samples
+[theta_indexed_map_node-4] [INFO] [1792370344.217119152] [trial_baseline_map]: Grid canvas expanded: 329x2062
+[theta_indexed_map_node-4] [INFO] [1792370347.299626821] [trial_baseline_map]: Grid canvas expanded: 341x2225
+[theta_indexed_map_node-4] [INFO] [1792370348.288371673] [trial_baseline_map]: Grid canvas expanded: 346x2270
+[theta_indexed_map_node-6] [INFO] [1792370348.288451682] [trial_visible_map]: Grid canvas expanded: 345x2275
+[theta_ground_cloud_node-5] [INFO] [1792370348.954013232] [trial_visible_ground]: Road visibility: kept 37135/42770 samples
+[theta_indexed_map_node-6] [INFO] [1792370351.340567445] [trial_visible_map]: Grid canvas expanded: 413x2408
+[theta_indexed_map_node-4] [INFO] [1792370353.648309687] [trial_baseline_map]: Grid canvas expanded: 347x2274
+[theta_indexed_map_node-4] [INFO] [1792370353.741703977] [trial_baseline_map]: Grid canvas expanded: 347x2278
+[theta_ground_cloud_node-5] [INFO] [1792370353.999926577] [trial_visible_ground]: Road visibility: kept 35531/38333 samples
+[theta_indexed_map_node-4] [INFO] [1792370354.145385113] [trial_baseline_map]: Grid canvas expanded: 350x2301
+[theta_indexed_map_node-4] [INFO] [1792370354.320260092] [trial_baseline_map]: Grid canvas expanded: 352x2307
+[theta_indexed_map_node-4] [INFO] [1792370354.372238854] [trial_baseline_map]: Grid canvas expanded: 353x2309
+[theta_indexed_map_node-4] [INFO] [1792370354.577009626] [trial_baseline_map]: Grid canvas expanded: 357x2320
+[theta_indexed_map_node-4] [INFO] [1792370354.701483492] [trial_baseline_map]: Grid canvas expanded: 360x2325
+[theta_indexed_map_node-4] [INFO] [1792370354.726533631] [trial_baseline_map]: Grid canvas expanded: 361x2327
+[theta_indexed_map_node-4] [INFO] [1792370355.682304540] [trial_baseline_map]: Grid canvas expanded: 388x2368
+[theta_indexed_map_node-4] [INFO] [1792370356.269286648] [trial_baseline_map]: Grid canvas expanded: 406x2392
+[theta_indexed_map_node-6] [INFO] [1792370356.544850377] [trial_visible_map]: Grid canvas expanded: 480x2686
+[theta_indexed_map_node-4] [INFO] [1792370356.717314867] [trial_baseline_map]: Grid canvas expanded: 420x2407
+[theta_indexed_map_node-4] [INFO] [1792370357.142337242] [trial_baseline_map]: Grid canvas expanded: 433x2421
+[theta_indexed_map_node-4] [INFO] [1792370357.196142476] [trial_baseline_map]: Grid canvas expanded: 435x2424
+[theta_indexed_map_node-4] [INFO] [1792370357.253412195] [trial_baseline_map]: Grid canvas expanded: 437x2427
+[theta_indexed_map_node-4] [INFO] [1792370357.357063534] [trial_baseline_map]: Grid canvas expanded: 439x2431
+[theta_indexed_map_node-4] [INFO] [1792370357.692258813] [trial_baseline_map]: Grid canvas expanded: 483x2717
+[theta_ground_cloud_node-5] [INFO] [1792370359.076618279] [trial_visible_ground]: Road visibility: kept 42194/43802 samples
+[theta_indexed_map_node-6] [INFO] [1792370359.524169356] [trial_visible_map]: Grid canvas expanded: 484x2725
+[theta_indexed_map_node-4] [INFO] [1792370359.529500217] [trial_baseline_map]: Grid canvas expanded: 484x2720
+[theta_indexed_map_node-4] [INFO] [1792370362.436840955] [trial_baseline_map]: Grid canvas expanded: 484x2760
+[theta_ground_cloud_node-5] [INFO] [1792370364.105025897] [trial_visible_ground]: Road visibility: kept 39924/43484 samples
+[theta_indexed_map_node-6] [INFO] [1792370364.337622018] [trial_visible_map]: Grid canvas expanded: 496x2859
+[theta_indexed_map_node-4] [INFO] [1792370366.806565259] [trial_baseline_map]: Grid canvas expanded: 486x2760
+[theta_indexed_map_node-4] [INFO] [1792370366.988061568] [trial_baseline_map]: Grid canvas expanded: 486x2760
+[theta_indexed_map_node-4] [INFO] [1792370367.861218689] [trial_baseline_map]: Grid canvas expanded: 486x2763
+[theta_indexed_map_node-4] [INFO] [1792370367.945407998] [trial_baseline_map]: Grid canvas expanded: 486x2766
+[theta_indexed_map_node-4] [INFO] [1792370368.130010207] [trial_baseline_map]: Grid canvas expanded: 486x2775
+[theta_indexed_map_node-4] [INFO] [1792370368.300105809] [trial_baseline_map]: Grid canvas expanded: 486x2783
+[theta_indexed_map_node-4] [INFO] [1792370368.442276115] [trial_baseline_map]: Grid canvas expanded: 486x2791
+[theta_indexed_map_node-4] [INFO] [1792370368.508707662] [trial_baseline_map]: Grid canvas expanded: 486x2794
+[theta_indexed_map_node-4] [INFO] [1792370368.647882755] [trial_baseline_map]: Grid canvas expanded: 487x2802
+[theta_indexed_map_node-4] [INFO] [1792370368.737952709] [trial_baseline_map]: Grid canvas expanded: 488x2806
+[theta_indexed_map_node-4] [INFO] [1792370368.767723259] [trial_baseline_map]: Grid canvas expanded: 488x2809
+[theta_indexed_map_node-4] [INFO] [1792370368.955888679] [trial_baseline_map]: Grid canvas expanded: 490x2820
+[theta_indexed_map_node-4] [INFO] [1792370369.065837177] [trial_baseline_map]: Grid canvas expanded: 493x2823
+[theta_ground_cloud_node-5] [INFO] [1792370369.111220327] [trial_visible_ground]: Road visibility: kept 41597/43768 samples
+[theta_indexed_map_node-4] [INFO] [1792370369.207455140] [trial_baseline_map]: Grid canvas expanded: 494x2831
+[theta_indexed_map_node-4] [INFO] [1792370369.293378227] [trial_baseline_map]: Grid canvas expanded: 494x2836
+[theta_indexed_map_node-4] [INFO] [1792370369.326456280] [trial_baseline_map]: Grid canvas expanded: 494x2839
+[theta_indexed_map_node-4] [INFO] [1792370369.781024365] [trial_baseline_map]: Grid canvas expanded: 495x2863
+[theta_indexed_map_node-6] [INFO] [1792370369.797692503] [trial_visible_map]: Grid canvas expanded: 497x2865
+[theta_indexed_map_node-4] [INFO] [1792370369.828564058] [trial_baseline_map]: Grid canvas expanded: 495x2867
+[theta_indexed_map_node-6] [INFO] [1792370370.047159016] [trial_visible_map]: Grid canvas expanded: 498x2880
+[theta_indexed_map_node-6] [INFO] [1792370370.249297605] [trial_visible_map]: Grid canvas expanded: 499x2891
+[theta_indexed_map_node-6] [INFO] [1792370370.297344302] [trial_visible_map]: Grid canvas expanded: 499x2894
+[theta_indexed_map_node-4] [INFO] [1792370370.355709700] [trial_baseline_map]: Grid canvas expanded: 497x2894
+[theta_indexed_map_node-6] [INFO] [1792370370.385026935] [trial_visible_map]: Grid canvas expanded: 499x2897
+[theta_indexed_map_node-4] [INFO] [1792370370.423259986] [trial_baseline_map]: Grid canvas expanded: 497x2897
+[theta_indexed_map_node-6] [INFO] [1792370370.438545810] [trial_visible_map]: Grid canvas expanded: 499x2900
+[theta_indexed_map_node-4] [INFO] [1792370370.487901291] [trial_baseline_map]: Grid canvas expanded: 497x2901
+[theta_indexed_map_node-6] [INFO] [1792370370.492098315] [trial_visible_map]: Grid canvas expanded: 499x2904
+[theta_indexed_map_node-6] [INFO] [1792370370.548253333] [trial_visible_map]: Grid canvas expanded: 499x2908
+[theta_indexed_map_node-4] [INFO] [1792370370.575737418] [trial_baseline_map]: Grid canvas expanded: 497x2905
+[theta_indexed_map_node-6] [INFO] [1792370370.669695306] [trial_visible_map]: Grid canvas expanded: 499x2912
+[theta_indexed_map_node-4] [INFO] [1792370370.711281333] [trial_baseline_map]: Grid canvas expanded: 497x2912
+[theta_indexed_map_node-6] [INFO] [1792370370.756905082] [trial_visible_map]: Grid canvas expanded: 499x2915
+[theta_indexed_map_node-4] [INFO] [1792370370.802434577] [trial_baseline_map]: Grid canvas expanded: 497x2915
+[theta_indexed_map_node-6] [INFO] [1792370370.841638953] [trial_visible_map]: Grid canvas expanded: 499x2918
+[theta_indexed_map_node-4] [INFO] [1792370370.854998631] [trial_baseline_map]: Grid canvas expanded: 497x2917
+[theta_indexed_map_node-4] [INFO] [1792370371.064082584] [trial_baseline_map]: Grid canvas expanded: 498x2921
+[theta_indexed_map_node-6] [INFO] [1792370371.066818613] [trial_visible_map]: Grid canvas expanded: 499x2920
+[theta_indexed_map_node-4] [INFO] [1792370371.130014245] [trial_baseline_map]: Grid canvas expanded: 498x2927
+[theta_indexed_map_node-6] [INFO] [1792370371.134698486] [trial_visible_map]: Grid canvas expanded: 500x2924
+[theta_indexed_map_node-6] [INFO] [1792370371.228452938] [trial_visible_map]: Grid canvas expanded: 500x2928
+[theta_indexed_map_node-4] [INFO] [1792370371.239977288] [trial_baseline_map]: Grid canvas expanded: 498x2931
+[theta_indexed_map_node-6] [INFO] [1792370371.290119510] [trial_visible_map]: Grid canvas expanded: 500x2931
+[theta_indexed_map_node-4] [INFO] [1792370371.310971970] [trial_baseline_map]: Grid canvas expanded: 498x2934
+[theta_indexed_map_node-6] [INFO] [1792370371.349743925] [trial_visible_map]: Grid canvas expanded: 500x2935
+[theta_indexed_map_node-6] [INFO] [1792370371.408989739] [trial_visible_map]: Grid canvas expanded: 500x2938
+[theta_indexed_map_node-4] [INFO] [1792370371.425035994] [trial_baseline_map]: Grid canvas expanded: 499x2946
+[theta_indexed_map_node-6] [INFO] [1792370371.470838442] [trial_visible_map]: Grid canvas expanded: 501x2946
+[theta_indexed_map_node-4] [INFO] [1792370371.489758275] [trial_baseline_map]: Grid canvas expanded: 499x2948
+[theta_indexed_map_node-6] [INFO] [1792370371.535791161] [trial_visible_map]: Grid canvas expanded: 522x3205
+[theta_indexed_map_node-4] [INFO] [1792370371.560532882] [trial_baseline_map]: Grid canvas expanded: 499x2952
+[theta_indexed_map_node-4] [INFO] [1792370371.620997896] [trial_baseline_map]: Grid canvas expanded: 499x2954
+[theta_indexed_map_node-4] [INFO] [1792370371.735627735] [trial_baseline_map]: Grid canvas expanded: 499x2959
+[theta_indexed_map_node-4] [INFO] [1792370371.802607414] [trial_baseline_map]: Grid canvas expanded: 499x2961
+[theta_indexed_map_node-4] [INFO] [1792370371.872509711] [trial_baseline_map]: Grid canvas expanded: 500x2967
+[theta_indexed_map_node-4] [INFO] [1792370371.941357885] [trial_baseline_map]: Grid canvas expanded: 501x2970
+[theta_indexed_map_node-4] [INFO] [1792370372.124649694] [trial_baseline_map]: Grid canvas expanded: 501x2977
+[theta_indexed_map_node-4] [INFO] [1792370372.188738625] [trial_baseline_map]: Grid canvas expanded: 501x2982
+[theta_indexed_map_node-4] [INFO] [1792370372.285559034] [trial_baseline_map]: Grid canvas expanded: 502x2992
+[theta_indexed_map_node-4] [INFO] [1792370372.355474904] [trial_baseline_map]: Grid canvas expanded: 502x2994
+[theta_indexed_map_node-4] [INFO] [1792370372.546701569] [trial_baseline_map]: Grid canvas expanded: 503x3005
+[theta_indexed_map_node-4] [INFO] [1792370372.606910067] [trial_baseline_map]: Grid canvas expanded: 503x3007
+[theta_indexed_map_node-4] [INFO] [1792370372.703565624] [trial_baseline_map]: Grid canvas expanded: 503x3009
+[theta_indexed_map_node-4] [INFO] [1792370372.948105905] [trial_baseline_map]: Grid canvas expanded: 505x3024
+[theta_indexed_map_node-4] [INFO] [1792370373.021855245] [trial_baseline_map]: Grid canvas expanded: 506x3027
+[theta_indexed_map_node-4] [INFO] [1792370373.145135480] [trial_baseline_map]: Grid canvas expanded: 506x3032
+[theta_indexed_map_node-4] [INFO] [1792370373.209669364] [trial_baseline_map]: Grid canvas expanded: 506x3034
+[theta_indexed_map_node-4] [INFO] [1792370373.316606266] [trial_baseline_map]: Grid canvas expanded: 507x3041
+[theta_indexed_map_node-4] [INFO] [1792370374.076918283] [trial_baseline_map]: Grid canvas expanded: 510x3074
+[theta_ground_cloud_node-5] [INFO] [1792370374.130187833] [trial_visible_ground]: Road visibility: kept 41395/43031 samples
+[theta_indexed_map_node-4] [INFO] [1792370374.226244614] [trial_baseline_map]: Grid canvas expanded: 511x3081
+[theta_indexed_map_node-4] [INFO] [1792370374.306876340] [trial_baseline_map]: Grid canvas expanded: 511x3084
+[theta_indexed_map_node-4] [INFO] [1792370374.371554648] [trial_baseline_map]: Grid canvas expanded: 511x3087
+[theta_indexed_map_node-4] [INFO] [1792370374.434096960] [trial_baseline_map]: Grid canvas expanded: 511x3089
+[theta_indexed_map_node-6] [INFO] [1792370374.863320079] [trial_visible_map]: Grid canvas expanded: 536x3314
+[theta_indexed_map_node-4] [INFO] [1792370375.016456537] [trial_baseline_map]: Grid canvas expanded: 513x3117
+[theta_indexed_map_node-4] [INFO] [1792370375.368786581] [trial_baseline_map]: Grid canvas expanded: 514x3138
+[theta_indexed_map_node-4] [INFO] [1792370375.460476237] [trial_baseline_map]: Grid canvas expanded: 514x3141
+[theta_indexed_map_node-4] [INFO] [1792370375.539761997] [trial_baseline_map]: Grid canvas expanded: 514x3148
+[theta_indexed_map_node-4] [INFO] [1792370375.726164945] [trial_baseline_map]: Grid canvas expanded: 515x3158
+[theta_indexed_map_node-4] [INFO] [1792370376.609982885] [trial_baseline_map]: Grid canvas expanded: 519x3205
+[theta_indexed_map_node-4] [INFO] [1792370376.662165712] [trial_baseline_map]: Grid canvas expanded: 519x3208
+[theta_indexed_map_node-4] [INFO] [1792370376.710361762] [trial_baseline_map]: Grid canvas expanded: 519x3211
+[theta_indexed_map_node-4] [INFO] [1792370376.877689031] [trial_baseline_map]: Grid canvas expanded: 519x3218
+[theta_indexed_map_node-6] [INFO] [1792370377.015003581] [trial_visible_map]: Grid canvas expanded: 544x3360
+[theta_indexed_map_node-4] [INFO] [1792370377.040483839] [trial_baseline_map]: Grid canvas expanded: 519x3221
+[theta_indexed_map_node-4] [INFO] [1792370377.156220002] [trial_baseline_map]: Grid canvas expanded: 519x3225
+[theta_indexed_map_node-4] [INFO] [1792370377.236626832] [trial_baseline_map]: Grid canvas expanded: 520x3229
+[theta_indexed_map_node-4] [INFO] [1792370377.324524207] [trial_baseline_map]: Grid canvas expanded: 520x3231
+[theta_indexed_map_node-4] [INFO] [1792370377.377903692] [trial_baseline_map]: Grid canvas expanded: 520x3234
+[theta_indexed_map_node-4] [INFO] [1792370377.447073066] [trial_baseline_map]: Grid canvas expanded: 521x3241
+[theta_indexed_map_node-4] [INFO] [1792370377.515338054] [trial_baseline_map]: Grid canvas expanded: 521x3242
+[theta_indexed_map_node-4] [INFO] [1792370377.583693336] [trial_baseline_map]: Grid canvas expanded: 521x3244
+[theta_indexed_map_node-4] [INFO] [1792370377.694938398] [trial_baseline_map]: Grid canvas expanded: 521x3247
+[theta_indexed_map_node-4] [INFO] [1792370377.802889993] [trial_baseline_map]: Grid canvas expanded: 522x3251
+[theta_indexed_map_node-4] [INFO] [1792370377.872959407] [trial_baseline_map]: Grid canvas expanded: 522x3253
+[theta_indexed_map_node-4] [INFO] [1792370377.945632079] [trial_baseline_map]: Grid canvas expanded: 522x3254
+[theta_indexed_map_node-6] [INFO] [1792370378.003019447] [trial_visible_map]: Grid canvas expanded: 548x3388
+[theta_indexed_map_node-4] [INFO] [1792370378.029575811] [trial_baseline_map]: Grid canvas expanded: 522x3255
+[theta_indexed_map_node-4] [INFO] [1792370378.107488206] [trial_baseline_map]: Grid canvas expanded: 522x3257
+[theta_indexed_map_node-4] [INFO] [1792370378.223782912] [trial_baseline_map]: Grid canvas expanded: 522x3259
+[theta_indexed_map_node-4] [INFO] [1792370378.302863984] [trial_baseline_map]: Grid canvas expanded: 522x3260
+[theta_indexed_map_node-4] [INFO] [1792370378.376883317] [trial_baseline_map]: Grid canvas expanded: 522x3262
+[theta_indexed_map_node-4] [INFO] [1792370378.446744551] [trial_baseline_map]: Grid canvas expanded: 522x3263
+[theta_indexed_map_node-4] [INFO] [1792370378.517479488] [trial_baseline_map]: Grid canvas expanded: 522x3265
+[theta_indexed_map_node-4] [INFO] [1792370378.590316363] [trial_baseline_map]: Grid canvas expanded: 522x3266
+[theta_indexed_map_node-4] [INFO] [1792370378.704094943] [trial_baseline_map]: Grid canvas expanded: 522x3268
+[theta_indexed_map_node-4] [INFO] [1792370378.780950184] [trial_baseline_map]: Grid canvas expanded: 522x3271
+[theta_indexed_map_node-4] [INFO] [1792370378.857157123] [trial_baseline_map]: Grid canvas expanded: 523x3275
+[theta_indexed_map_node-4] [INFO] [1792370378.966204385] [trial_baseline_map]: Grid canvas expanded: 523x3279
+[theta_indexed_map_node-4] [INFO] [1792370379.014585960] [trial_baseline_map]: Grid canvas expanded: 523x3280
+[theta_indexed_map_node-4] [INFO] [1792370379.091824106] [trial_baseline_map]: Grid canvas expanded: 523x3281
+[theta_indexed_map_node-4] [INFO] [1792370379.143343832] [trial_baseline_map]: Grid canvas expanded: 555x3422
+[theta_ground_cloud_node-5] [INFO] [1792370379.144930660] [trial_visible_ground]: Road visibility: kept 36108/40870 samples
+[theta_indexed_map_node-6] [INFO] [1792370379.155675325] [trial_visible_map]: Grid canvas expanded: 562x3428
+[theta_indexed_map_node-4] [INFO] [1792370381.452156345] [trial_baseline_map]: Grid canvas expanded: 642x3475
+[theta_ground_cloud_node-5] [INFO] [1792370384.152148893] [trial_visible_ground]: Road visibility: kept 32188/34507 samples
+[theta_indexed_map_node-6] [INFO] [1792370384.407284345] [trial_visible_map]: Grid canvas expanded: 563x3430
+[theta_indexed_map_node-6] [INFO] [1792370384.482621949] [trial_visible_map]: Grid canvas expanded: 565x3432
+[theta_indexed_map_node-6] [INFO] [1792370384.557769304] [trial_visible_map]: Grid canvas expanded: 567x3434
+[theta_indexed_map_node-4] [INFO] [1792370384.629704867] [trial_baseline_map]: Grid canvas expanded: 715x3475
+[theta_indexed_map_node-6] [INFO] [1792370384.635858558] [trial_visible_map]: Grid canvas expanded: 569x3436
+[theta_indexed_map_node-6] [INFO] [1792370384.766484397] [trial_visible_map]: Grid canvas expanded: 722x3477
+[theta_indexed_map_node-4] [INFO] [1792370386.128564321] [trial_baseline_map]: Grid canvas expanded: 740x3475
+[theta_indexed_map_node-6] [INFO] [1792370386.213420262] [trial_visible_map]: Grid canvas expanded: 722x3478
+[theta_indexed_map_node-6] [INFO] [1792370386.283502017] [trial_visible_map]: Grid canvas expanded: 722x3479
+[theta_indexed_map_node-4] [INFO] [1792370386.558475785] [trial_baseline_map]: Grid canvas expanded: 740x3475
+[theta_indexed_map_node-6] [INFO] [1792370386.568155628] [trial_visible_map]: Grid canvas expanded: 722x3481
+[theta_ground_cloud_node-5] [INFO] [1792370389.176418180] [trial_visible_ground]: Road visibility: kept 29128/30926 samples
+[theta_indexed_map_node-6] [INFO] [1792370389.912034467] [trial_visible_map]: Grid canvas expanded: 723x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.041190326] [trial_visible_map]: Grid canvas expanded: 725x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.126929643] [trial_visible_map]: Grid canvas expanded: 729x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.270177174] [trial_visible_map]: Grid canvas expanded: 730x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.351464031] [trial_visible_map]: Grid canvas expanded: 732x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.432432751] [trial_visible_map]: Grid canvas expanded: 733x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.514357625] [trial_visible_map]: Grid canvas expanded: 736x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.600610568] [trial_visible_map]: Grid canvas expanded: 737x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.729117529] [trial_visible_map]: Grid canvas expanded: 739x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.805741087] [trial_visible_map]: Grid canvas expanded: 740x3481
+[theta_indexed_map_node-6] [INFO] [1792370390.915469850] [trial_visible_map]: Grid canvas expanded: 743x3481
+[theta_indexed_map_node-6] [INFO] [1792370391.140900162] [trial_visible_map]: Grid canvas expanded: 746x3481
+[theta_indexed_map_node-4] [INFO] [1792370391.186317018] [trial_baseline_map]: Grid canvas expanded: 742x3475
+[theta_indexed_map_node-6] [INFO] [1792370391.235431996] [trial_visible_map]: Grid canvas expanded: 747x3481
+[theta_indexed_map_node-4] [INFO] [1792370391.253161184] [trial_baseline_map]: Grid canvas expanded: 744x3475
+[theta_indexed_map_node-4] [INFO] [1792370391.320603795] [trial_baseline_map]: Grid canvas expanded: 746x3475
+[theta_indexed_map_node-4] [INFO] [1792370391.387012494] [trial_baseline_map]: Grid canvas expanded: 747x3475
+[theta_indexed_map_node-6] [INFO] [1792370391.406743330] [trial_visible_map]: Grid canvas expanded: 748x3481
+[theta_indexed_map_node-4] [INFO] [1792370391.451549692] [trial_baseline_map]: Grid canvas expanded: 751x3475
+[theta_indexed_map_node-6] [INFO] [1792370391.509160232] [trial_visible_map]: Grid canvas expanded: 750x3481
+[theta_indexed_map_node-4] [INFO] [1792370391.524913022] [trial_baseline_map]: Grid canvas expanded: 755x3475
+[theta_indexed_map_node-6] [INFO] [1792370391.611233371] [trial_visible_map]: Grid canvas expanded: 756x3481
+[theta_indexed_map_node-4] [INFO] [1792370391.628286467] [trial_baseline_map]: Grid canvas expanded: 757x3475
+[theta_indexed_map_node-4] [INFO] [1792370391.750387938] [trial_baseline_map]: Grid canvas expanded: 759x3475
+[theta_indexed_map_node-6] [INFO] [1792370391.783607633] [trial_visible_map]: Grid canvas expanded: 760x3481
+[theta_indexed_map_node-4] [INFO] [1792370391.816342276] [trial_baseline_map]: Grid canvas expanded: 760x3475
+[theta_indexed_map_node-4] [INFO] [1792370391.886276810] [trial_baseline_map]: Grid canvas expanded: 762x3475
+[theta_indexed_map_node-6] [INFO] [1792370391.896946708] [trial_visible_map]: Grid canvas expanded: 920x3481
+[theta_indexed_map_node-4] [INFO] [1792370391.951648403] [trial_baseline_map]: Grid canvas expanded: 765x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.024655970] [trial_baseline_map]: Grid canvas expanded: 768x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.105221994] [trial_baseline_map]: Grid canvas expanded: 770x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.265018983] [trial_baseline_map]: Grid canvas expanded: 772x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.356622122] [trial_baseline_map]: Grid canvas expanded: 775x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.452699849] [trial_baseline_map]: Grid canvas expanded: 777x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.548503166] [trial_baseline_map]: Grid canvas expanded: 779x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.624082797] [trial_baseline_map]: Grid canvas expanded: 782x3475
+[theta_indexed_map_node-6] [INFO] [1792370392.646942680] [trial_visible_map]: Grid canvas expanded: 965x3481
+[theta_indexed_map_node-4] [INFO] [1792370392.729954158] [trial_baseline_map]: Grid canvas expanded: 784x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.796354483] [trial_baseline_map]: Grid canvas expanded: 790x3475
+[theta_indexed_map_node-4] [INFO] [1792370392.880649509] [trial_baseline_map]: Grid canvas expanded: 956x3475
+[theta_ground_cloud_node-5] [INFO] [1792370394.231593168] [trial_visible_ground]: Road visibility: kept 38345/40258 samples
+[theta_ground_cloud_node-5] [WARN] [1792370395.470592577] [trial_visible_ground]: Road visibility: matching TF unavailable; observation skipped
+[theta_indexed_map_node-6] [INFO] [1792370395.598025480] [trial_visible_map]: Grid canvas expanded: 1068x3481
+[theta_indexed_map_node-4] [INFO] [1792370397.771487880] [trial_baseline_map]: Grid canvas expanded: 958x3475
+[theta_indexed_map_node-4] [INFO] [1792370397.854491952] [trial_baseline_map]: Grid canvas expanded: 960x3475
+[theta_indexed_map_node-4] [INFO] [1792370397.979823374] [trial_baseline_map]: Grid canvas expanded: 962x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.105312200] [trial_baseline_map]: Grid canvas expanded: 967x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.237012845] [trial_baseline_map]: Grid canvas expanded: 970x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.452231212] [trial_baseline_map]: Grid canvas expanded: 972x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.546599117] [trial_baseline_map]: Grid canvas expanded: 974x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.630019529] [trial_baseline_map]: Grid canvas expanded: 976x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.764936635] [trial_baseline_map]: Grid canvas expanded: 978x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.846227051] [trial_baseline_map]: Grid canvas expanded: 985x3475
+[theta_indexed_map_node-4] [INFO] [1792370398.932994726] [trial_baseline_map]: Grid canvas expanded: 987x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.016078058] [trial_baseline_map]: Grid canvas expanded: 990x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.102510317] [trial_baseline_map]: Grid canvas expanded: 997x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.238220262] [trial_baseline_map]: Grid canvas expanded: 1004x3475
+[theta_ground_cloud_node-5] [INFO] [1792370399.276397718] [trial_visible_ground]: Road visibility: kept 35492/37460 samples
+[theta_indexed_map_node-4] [INFO] [1792370399.326711535] [trial_baseline_map]: Grid canvas expanded: 1007x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.412329240] [trial_baseline_map]: Grid canvas expanded: 1008x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.508494232] [trial_baseline_map]: Grid canvas expanded: 1014x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.678491844] [trial_baseline_map]: Grid canvas expanded: 1021x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.768500604] [trial_baseline_map]: Grid canvas expanded: 1023x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.860499289] [trial_baseline_map]: Grid canvas expanded: 1025x3475
+[theta_indexed_map_node-4] [INFO] [1792370399.960919111] [trial_baseline_map]: Grid canvas expanded: 1027x3475
+[theta_indexed_map_node-4] [INFO] [1792370400.084548883] [trial_baseline_map]: Grid canvas expanded: 1029x3475
+[theta_indexed_map_node-4] [INFO] [1792370400.209192589] [trial_baseline_map]: Grid canvas expanded: 1032x3475
+[theta_indexed_map_node-4] [INFO] [1792370400.413912623] [trial_baseline_map]: Grid canvas expanded: 1036x3475
+[theta_indexed_map_node-4] [INFO] [1792370400.544372414] [trial_baseline_map]: Grid canvas expanded: 1040x3475
+[theta_indexed_map_node-4] [INFO] [1792370400.671385496] [trial_baseline_map]: Grid canvas expanded: 1043x3475
+[theta_indexed_map_node-4] [INFO] [1792370400.871153830] [trial_baseline_map]: Grid canvas expanded: 1045x3475
+[theta_indexed_map_node-6] [INFO] [1792370401.029585349] [trial_visible_map]: Grid canvas expanded: 1070x3481
+[theta_indexed_map_node-4] [INFO] [1792370401.118635212] [trial_baseline_map]: Grid canvas expanded: 1047x3475
+[theta_indexed_map_node-6] [INFO] [1792370401.226236548] [trial_visible_map]: Grid canvas expanded: 1242x3481
+[theta_indexed_map_node-4] [INFO] [1792370401.237877310] [trial_baseline_map]: Grid canvas expanded: 1055x3475
+[theta_indexed_map_node-4] [INFO] [1792370401.396647827] [trial_baseline_map]: Grid canvas expanded: 1061x3475
+[theta_indexed_map_node-4] [INFO] [1792370401.506716301] [trial_baseline_map]: Grid canvas expanded: 1234x3475
+[theta_indexed_map_node-6] [INFO] [1792370402.056601102] [trial_visible_map]: Grid canvas expanded: 1296x3481
+[theta_indexed_map_node-6] [INFO] [1792370404.126366361] [trial_visible_map]: Grid canvas expanded: 1366x3481
+[theta_indexed_map_node-4] [INFO] [1792370404.217101496] [trial_baseline_map]: Grid canvas expanded: 1358x3475
+[theta_ground_cloud_node-5] [INFO] [1792370404.276456875] [trial_visible_ground]: Road visibility: kept 34965/37464 samples
+[theta_indexed_map_node-6] [INFO] [1792370407.442248329] [trial_visible_map]: Grid canvas expanded: 1478x3481
+[theta_indexed_map_node-4] [INFO] [1792370408.401266915] [trial_baseline_map]: Grid canvas expanded: 1504x3475
+[theta_ground_cloud_node-5] [INFO] [1792370409.451681091] [trial_visible_ground]: Road visibility: kept 36234/40570 samples
+[theta_indexed_map_node-6] [INFO] [1792370410.568639030] [trial_visible_map]: Grid canvas expanded: 1577x3481
+[theta_indexed_map_node-4] [INFO] [1792370411.509575808] [trial_baseline_map]: Grid canvas expanded: 1606x3475
+[theta_indexed_map_node-4] [INFO] [1792370412.591840868] [trial_baseline_map]: Grid canvas expanded: 1640x3475
+[theta_indexed_map_node-6] [INFO] [1792370412.632063113] [trial_visible_map]: Grid canvas expanded: 1648x3481
+[theta_indexed_map_node-4] [INFO] [1792370413.624242651] [trial_baseline_map]: Grid canvas expanded: 1670x3475
+[theta_indexed_map_node-6] [INFO] [1792370413.638831142] [trial_visible_map]: Grid canvas expanded: 1678x3481
+[theta_ground_cloud_node-5] [INFO] [1792370414.479294557] [trial_visible_ground]: Road visibility: kept 34060/41019 samples
+[theta_indexed_map_node-6] [INFO] [1792370417.573599636] [trial_visible_map]: Grid canvas expanded: 1813x3481
+[theta_indexed_map_node-4] [INFO] [1792370419.000500521] [trial_baseline_map]: Grid canvas expanded: 1836x3475
+[theta_indexed_map_node-6] [INFO] [1792370419.006810512] [trial_visible_map]: Grid canvas expanded: 1844x3481
+[theta_ground_cloud_node-5] [INFO] [1792370419.479820232] [trial_visible_ground]: Road visibility: kept 38343/41424 samples
+[theta_indexed_map_node-6] [INFO] [1792370419.949005005] [trial_visible_map]: Grid canvas expanded: 1888x3481
+[theta_indexed_map_node-6] [INFO] [1792370421.023337225] [trial_visible_map]: Grid canvas expanded: 1925x3481
+[theta_indexed_map_node-4] [INFO] [1792370421.071945083] [trial_baseline_map]: Grid canvas expanded: 1917x3475
+[theta_indexed_map_node-4] [INFO] [1792370422.256914889] [trial_baseline_map]: Grid canvas expanded: 1954x3475
+[theta_indexed_map_node-6] [INFO] [1792370423.322305756] [trial_visible_map]: Grid canvas expanded: 2001x3481
+[theta_ground_cloud_node-5] [INFO] [1792370424.524624824] [trial_visible_ground]: Road visibility: kept 39304/40897 samples
+[theta_indexed_map_node-4] [INFO] [1792370425.561467993] [trial_baseline_map]: Grid canvas expanded: 2057x3475
+[theta_indexed_map_node-6] [INFO] [1792370426.480608409] [trial_visible_map]: Grid canvas expanded: 2114x3481
+[theta_indexed_map_node-6] [INFO] [1792370428.499864158] [trial_visible_map]: Grid canvas expanded: 2146x3481
+[theta_ground_cloud_node-5] [INFO] [1792370429.531277911] [trial_visible_ground]: Road visibility: kept 37961/40995 samples
+[theta_indexed_map_node-4] [INFO] [1792370430.702871916] [trial_baseline_map]: Grid canvas expanded: 2065x3475
+[theta_indexed_map_node-4] [INFO] [1792370430.917961055] [trial_baseline_map]: Grid canvas expanded: 2068x3475
+[theta_indexed_map_node-4] [INFO] [1792370431.203543165] [trial_baseline_map]: Grid canvas expanded: 2070x3475
+[theta_indexed_map_node-4] [INFO] [1792370431.523909831] [trial_baseline_map]: Grid canvas expanded: 2072x3475
+[theta_indexed_map_node-4] [INFO] [1792370431.761833891] [trial_baseline_map]: Grid canvas expanded: 2074x3475
+[theta_indexed_map_node-4] [INFO] [1792370432.168822558] [trial_baseline_map]: Grid canvas expanded: 2078x3475
+[theta_indexed_map_node-4] [INFO] [1792370432.512812584] [trial_baseline_map]: Grid canvas expanded: 2154x3475
+[theta_indexed_map_node-6] [INFO] [1792370432.587926164] [trial_visible_map]: Grid canvas expanded: 2196x3481
+[theta_indexed_map_node-4] [INFO] [1792370433.295870315] [trial_baseline_map]: Grid canvas expanded: 2189x3475
+[theta_ground_cloud_node-5] [INFO] [1792370434.568882485] [trial_visible_ground]: Road visibility: kept 30909/37730 samples
+[theta_indexed_map_node-6] [INFO] [1792370435.068660115] [trial_visible_map]: Grid canvas expanded: 2267x3481
+[theta_indexed_map_node-4] [INFO] [1792370435.129142525] [trial_baseline_map]: Grid canvas expanded: 2260x3475
+[theta_indexed_map_node-6] [INFO] [1792370437.147147428] [trial_visible_map]: Grid canvas expanded: 2328x3481
+[theta_indexed_map_node-4] [INFO] [1792370437.252125625] [trial_baseline_map]: Grid canvas expanded: 2321x3475
+[theta_indexed_map_node-6] [INFO] [1792370439.079529987] [trial_visible_map]: Grid canvas expanded: 2380x3481
+[theta_indexed_map_node-4] [INFO] [1792370439.097060385] [trial_baseline_map]: Grid canvas expanded: 2373x3475
+[theta_ground_cloud_node-5] [INFO] [1792370439.609922085] [trial_visible_ground]: Road visibility: kept 21094/34841 samples
+[theta_indexed_map_node-4] [INFO] [1792370440.025495390] [trial_baseline_map]: Grid canvas expanded: 2381x3475
+[theta_indexed_map_node-6] [INFO] [1792370440.030659231] [trial_visible_map]: Grid canvas expanded: 2388x3481
+[theta_ground_cloud_node-5] [INFO] [1792370444.620134159] [trial_visible_ground]: Road visibility: kept 19480/25559 samples
+[theta_indexed_map_node-4] [INFO] [1792370445.435679584] [trial_baseline_map]: Grid canvas expanded: 2382x3475
+[theta_indexed_map_node-6] [INFO] [1792370445.527389908] [trial_visible_map]: Grid canvas expanded: 2389x3481
+[theta_indexed_map_node-6] [INFO] [1792370445.721895199] [trial_visible_map]: Grid canvas expanded: 2389x3481
+[theta_indexed_map_node-4] [INFO] [1792370445.729797335] [trial_baseline_map]: Grid canvas expanded: 2383x3475
+[theta_indexed_map_node-4] [INFO] [1792370446.005347197] [trial_baseline_map]: Grid canvas expanded: 2384x3475
+[theta_indexed_map_node-6] [INFO] [1792370446.073204641] [trial_visible_map]: Grid canvas expanded: 2389x3481
+[theta_indexed_map_node-6] [INFO] [1792370446.351770056] [trial_visible_map]: Grid canvas expanded: 2389x3481
+[theta_indexed_map_node-4] [INFO] [1792370446.664271358] [trial_baseline_map]: Grid canvas expanded: 2384x3475
+[theta_indexed_map_node-6] [INFO] [1792370446.795380045] [trial_visible_map]: Grid canvas expanded: 2389x3481
+[theta_ground_cloud_node-5] [INFO] [1792370449.637293446] [trial_visible_ground]: Road visibility: kept 18770/28713 samples
+[theta_ground_cloud_node-5] [INFO] [1792370454.789272794] [trial_visible_ground]: Road visibility: kept 19824/27968 samples
+[theta_ground_cloud_node-5] [INFO] [1792370459.792521363] [trial_visible_ground]: Road visibility: kept 18264/30992 samples
+[theta_ground_cloud_node-5] [INFO] [1792370464.836379061] [trial_visible_ground]: Road visibility: kept 19952/29066 samples
+[theta_ground_cloud_node-5] [INFO] [1792370469.948364348] [trial_visible_ground]: Road visibility: kept 18988/33565 samples
+[theta_ground_cloud_node-5] [INFO] [1792370474.971863341] [trial_visible_ground]: Road visibility: kept 17776/30859 samples
+[theta_ground_cloud_node-5] [INFO] [1792370480.025021508] [trial_visible_ground]: Road visibility: kept 19999/31748 samples
+[theta_ground_cloud_node-5] [INFO] [1792370485.100360768] [trial_visible_ground]: Road visibility: kept 18553/30933 samples
+[theta_ground_cloud_node-5] [INFO] [1792370490.127982202] [trial_visible_ground]: Road visibility: kept 32159/37958 samples
+[theta_ground_cloud_node-5] [INFO] [1792370495.148714597] [trial_visible_ground]: Road visibility: kept 27488/35919 samples
+[theta_ground_cloud_node-5] [INFO] [1792370500.162331089] [trial_visible_ground]: Road visibility: kept 20285/33988 samples
+[theta_ground_cloud_node-5] [WARN] [1792370504.210362336] [trial_visible_ground]: Road visibility: matching TF unavailable; observation skipped
+[theta_ground_cloud_node-5] [INFO] [1792370505.175064830] [trial_visible_ground]: Road visibility: kept 21819/37174 samples
+[theta_ground_cloud_node-5] [INFO] [1792370510.202089716] [trial_visible_ground]: Road visibility: kept 21507/34688 samples
+[theta_ground_cloud_node-5] [INFO] [1792370515.227481821] [trial_visible_ground]: Road visibility: kept 25640/40781 samples
+[theta_ground_cloud_node-5] [INFO] [1792370520.229154810] [trial_visible_ground]: Road visibility: kept 21844/38715 samples
+[theta_ground_cloud_node-5] [INFO] [1792370525.242831468] [trial_visible_ground]: Road visibility: kept 39454/42467 samples
+[theta_ground_cloud_node-5] [INFO] [1792370530.248927578] [trial_visible_ground]: Road visibility: kept 17602/32820 samples
+[theta_ground_cloud_node-5] [INFO] [1792370535.252097578] [trial_visible_ground]: Road visibility: kept 20391/33153 samples
+[theta_ground_cloud_node-5] [INFO] [1792370540.267984530] [trial_visible_ground]: Road visibility: kept 30375/43849 samples
+[theta_ground_cloud_node-5] [INFO] [1792370545.378981950] [trial_visible_ground]: Road visibility: kept 32213/43543 samples
+[theta_ground_cloud_node-5] [INFO] [1792370550.400559191] [trial_visible_ground]: Road visibility: kept 42416/43963 samples
+[theta_indexed_map_node-4] [INFO] [1792370554.696658378] [trial_baseline_map]: Grid canvas expanded: 2384x3482
+[theta_ground_cloud_node-5] [INFO] [1792370555.401235789] [trial_visible_ground]: Road visibility: kept 42305/44051 samples
+[theta_indexed_map_node-6] [INFO] [1792370556.728681405] [trial_visible_map]: Grid canvas expanded: 2389x3500
+[theta_indexed_map_node-4] [INFO] [1792370556.821117386] [trial_baseline_map]: Grid canvas expanded: 2384x3500
+[theta_indexed_map_node-4] [INFO] [1792370557.861072637] [trial_baseline_map]: Grid canvas expanded: 2384x3508
+[theta_indexed_map_node-4] [INFO] [1792370559.941874876] [trial_baseline_map]: Grid canvas expanded: 2384x3523
+[theta_indexed_map_node-6] [INFO] [1792370560.023277721] [trial_visible_map]: Grid canvas expanded: 2389x3523
+[theta_ground_cloud_node-5] [INFO] [1792370560.404841608] [trial_visible_ground]: Road visibility: kept 42338/44059 samples
+[theta_indexed_map_node-4] [INFO] [1792370565.341088273] [trial_baseline_map]: Grid canvas expanded: 2384x3523
+[theta_indexed_map_node-6] [INFO] [1792370565.375188924] [trial_visible_map]: Grid canvas expanded: 2389x3523
+[theta_ground_cloud_node-5] [INFO] [1792370565.429985953] [trial_visible_ground]: Road visibility: kept 42067/43874 samples
+[theta_indexed_map_node-4] [INFO] [1792370565.548519724] [trial_baseline_map]: Grid canvas expanded: 2384x3523
+[theta_indexed_map_node-6] [INFO] [1792370565.584497531] [trial_visible_map]: Grid canvas expanded: 2389x3523
+[theta_indexed_map_node-4] [INFO] [1792370565.750905838] [trial_baseline_map]: Grid canvas expanded: 2384x3524
+[theta_indexed_map_node-6] [INFO] [1792370565.789185091] [trial_visible_map]: Grid canvas expanded: 2389x3524
+[theta_indexed_map_node-4] [INFO] [1792370566.106650973] [trial_baseline_map]: Grid canvas expanded: 2384x3524
+[theta_indexed_map_node-6] [INFO] [1792370566.153817054] [trial_visible_map]: Grid canvas expanded: 2389x3524
+[theta_indexed_map_node-4] [INFO] [1792370566.361623937] [trial_baseline_map]: Grid canvas expanded: 2384x3524
+[theta_indexed_map_node-6] [INFO] [1792370566.413621315] [trial_visible_map]: Grid canvas expanded: 2389x3524
+[theta_indexed_map_node-4] [INFO] [1792370566.740028178] [trial_baseline_map]: Grid canvas expanded: 2384x3525
+[theta_indexed_map_node-6] [INFO] [1792370566.837772440] [trial_visible_map]: Grid canvas expanded: 2389x3525
+[theta_indexed_map_node-4] [INFO] [1792370567.252316898] [trial_baseline_map]: Grid canvas expanded: 2384x3525
+[theta_indexed_map_node-6] [INFO] [1792370567.326821038] [trial_visible_map]: Grid canvas expanded: 2389x3525
+[theta_indexed_map_node-4] [INFO] [1792370567.458145322] [trial_baseline_map]: Grid canvas expanded: 2384x3525
+[theta_indexed_map_node-6] [INFO] [1792370567.540485326] [trial_visible_map]: Grid canvas expanded: 2389x3525
+[theta_ground_cloud_node-5] [INFO] [1792370570.478185518] [trial_visible_ground]: Road visibility: kept 42357/43514 samples
+[theta_ground_cloud_node-5] [INFO] [1792370575.485584232] [trial_visible_ground]: Road visibility: kept 39660/43908 samples
+[theta_ground_cloud_node-5] [INFO] [1792370580.490892408] [trial_visible_ground]: Road visibility: kept 41731/43920 samples
+[theta_ground_cloud_node-5] [INFO] [1792370585.505058408] [trial_visible_ground]: Road visibility: kept 41057/43739 samples
+[theta_indexed_map_node-6] [INFO] [1792370585.714154038] [trial_visible_map]: Grid canvas expanded: 2389x3556
+[theta_indexed_map_node-6] [INFO] [1792370587.016543454] [trial_visible_map]: Grid canvas expanded: 2389x3594
+[theta_indexed_map_node-4] [INFO] [1792370588.060272604] [trial_baseline_map]: Grid canvas expanded: 2384x3642
+[theta_indexed_map_node-6] [INFO] [1792370588.126583435] [trial_visible_map]: Grid canvas expanded: 2389x3642
+[theta_indexed_map_node-4] [INFO] [1792370589.109282850] [trial_baseline_map]: Grid canvas expanded: 2384x3692
+[theta_indexed_map_node-6] [INFO] [1792370590.221655656] [trial_visible_map]: Grid canvas expanded: 2389x3731
+[theta_ground_cloud_node-5] [INFO] [1792370590.575880193] [trial_visible_ground]: Road visibility: kept 39583/44112 samples
+[theta_indexed_map_node-6] [INFO] [1792370591.090465965] [trial_visible_map]: Grid canvas expanded: 2389x3780
+[theta_indexed_map_node-4] [INFO] [1792370591.121663183] [trial_baseline_map]: Grid canvas expanded: 2384x3780
+[theta_indexed_map_node-4] [INFO] [1792370593.440260787] [trial_baseline_map]: Grid canvas expanded: 2384x3858
+[theta_indexed_map_node-6] [INFO] [1792370593.586423145] [trial_visible_map]: Grid canvas expanded: 2389x3858
+[theta_indexed_map_node-4] [INFO] [1792370594.383265979] [trial_baseline_map]: Grid canvas expanded: 2384x3910
+[theta_indexed_map_node-4] [INFO] [1792370595.339488278] [trial_baseline_map]: Grid canvas expanded: 2384x3943
+[theta_indexed_map_node-6] [INFO] [1792370595.572213325] [trial_visible_map]: Grid canvas expanded: 2389x3943
+[theta_ground_cloud_node-5] [INFO] [1792370595.605422811] [trial_visible_ground]: Road visibility: kept 41268/44282 samples
+[theta_indexed_map_node-6] [INFO] [1792370596.683900241] [trial_visible_map]: Grid canvas expanded: 2389x3982
+[theta_indexed_map_node-6] [INFO] [1792370598.055740215] [trial_visible_map]: Grid canvas expanded: 2389x4021
+[theta_indexed_map_node-4] [INFO] [1792370598.065585983] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370598.944791950] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-6] [INFO] [1792370599.070941371] [trial_visible_map]: Grid canvas expanded: 2389x4021
+[theta_indexed_map_node-4] [INFO] [1792370599.904391249] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_ground_cloud_node-5] [INFO] [1792370600.626655811] [trial_visible_ground]: Road visibility: kept 42808/43267 samples
+[theta_indexed_map_node-6] [INFO] [1792370602.745988578] [trial_visible_map]: Grid canvas expanded: 2389x4022
+[theta_indexed_map_node-4] [INFO] [1792370603.081665623] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370603.302615926] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-6] [INFO] [1792370603.521183060] [trial_visible_map]: Grid canvas expanded: 2389x4025
+[theta_indexed_map_node-4] [INFO] [1792370603.675696549] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370603.894001076] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370604.290084724] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370604.652409122] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370604.880622820] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370605.258350918] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-6] [INFO] [1792370605.465996258] [trial_visible_map]: Grid canvas expanded: 2430x4025
+[theta_indexed_map_node-4] [INFO] [1792370605.648369496] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_ground_cloud_node-5] [INFO] [1792370605.651426041] [trial_visible_ground]: Road visibility: kept 37240/44365 samples
+[theta_indexed_map_node-4] [INFO] [1792370605.863835125] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370606.297937983] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-4] [INFO] [1792370606.962022732] [trial_baseline_map]: Grid canvas expanded: 2384x4021
+[theta_indexed_map_node-6] [INFO] [1792370607.016942861] [trial_visible_map]: Grid canvas expanded: 2436x4025
+[theta_indexed_map_node-4] [INFO] [1792370607.424295112] [trial_baseline_map]: Grid canvas expanded: 2437x4021
+[theta_indexed_map_node-4] [INFO] [1792370607.994484035] [trial_baseline_map]: Grid canvas expanded: 2437x4022
+[theta_indexed_map_node-6] [INFO] [1792370608.227447964] [trial_visible_map]: Grid canvas expanded: 2458x4025
+[theta_indexed_map_node-4] [INFO] [1792370608.596723562] [trial_baseline_map]: Grid canvas expanded: 2437x4024
+[theta_indexed_map_node-6] [INFO] [1792370608.868298558] [trial_visible_map]: Grid canvas expanded: 2458x4026
+[theta_indexed_map_node-4] [INFO] [1792370609.014984817] [trial_baseline_map]: Grid canvas expanded: 2437x4026
+[theta_indexed_map_node-6] [INFO] [1792370609.501118562] [trial_visible_map]: Grid canvas expanded: 2458x4026
+[theta_indexed_map_node-4] [INFO] [1792370609.971821936] [trial_baseline_map]: Grid canvas expanded: 2518x4026
+[theta_ground_cloud_node-5] [INFO] [1792370610.653528194] [trial_visible_ground]: Road visibility: kept 40247/43336 samples
+[theta_indexed_map_node-4] [INFO] [1792370610.933664751] [trial_baseline_map]: Grid canvas expanded: 2546x4026
+[theta_indexed_map_node-6] [INFO] [1792370611.153386852] [trial_visible_map]: Grid canvas expanded: 2545x4026
+[theta_indexed_map_node-4] [INFO] [1792370612.466632875] [trial_baseline_map]: Grid canvas expanded: 2576x4026
+[theta_indexed_map_node-6] [INFO] [1792370612.708778365] [trial_visible_map]: Grid canvas expanded: 2575x4026
+[theta_indexed_map_node-4] [INFO] [1792370613.274002227] [trial_baseline_map]: Grid canvas expanded: 2611x4026
+[theta_indexed_map_node-6] [INFO] [1792370613.313482391] [trial_visible_map]: Grid canvas expanded: 2610x4026
+[theta_indexed_map_node-6] [INFO] [1792370615.047748944] [trial_visible_map]: Grid canvas expanded: 2664x4026
+[theta_indexed_map_node-4] [INFO] [1792370615.223778120] [trial_baseline_map]: Grid canvas expanded: 2664x4026
+[theta_ground_cloud_node-5] [INFO] [1792370615.665861057] [trial_visible_ground]: Road visibility: kept 39834/42069 samples
+[theta_indexed_map_node-6] [INFO] [1792370616.122201457] [trial_visible_map]: Grid canvas expanded: 2691x4026
+[theta_indexed_map_node-4] [INFO] [1792370616.364103307] [trial_baseline_map]: Grid canvas expanded: 2688x4026
+[theta_indexed_map_node-4] [INFO] [1792370617.646583666] [trial_baseline_map]: Grid canvas expanded: 2702x4026
+[theta_indexed_map_node-6] [INFO] [1792370617.950117074] [trial_visible_map]: Grid canvas expanded: 2701x4026
+[theta_ground_cloud_node-5] [INFO] [1792370620.730231837] [trial_visible_ground]: Road visibility: kept 40054/42776 samples
+[theta_indexed_map_node-6] [INFO] [1792370622.911494812] [trial_visible_map]: Grid canvas expanded: 2701x4026
+[theta_indexed_map_node-4] [INFO] [1792370622.953445779] [trial_baseline_map]: Grid canvas expanded: 2703x4026
+[theta_indexed_map_node-6] [INFO] [1792370623.322529192] [trial_visible_map]: Grid canvas expanded: 2702x4026
+[theta_ground_cloud_node-5] [INFO] [1792370625.765074722] [trial_visible_ground]: Road visibility: kept 29047/37876 samples
+[theta_ground_cloud_node-5] [INFO] [1792370630.775624785] [trial_visible_ground]: Road visibility: kept 18326/33933 samples
+[theta_ground_cloud_node-5] [INFO] [1792370635.852306167] [trial_visible_ground]: Road visibility: kept 40801/44116 samples
+[theta_ground_cloud_node-5] [INFO] [1792370640.853553166] [trial_visible_ground]: Road visibility: kept 40480/44097 samples
+[theta_ground_cloud_node-5] [INFO] [1792370645.875280924] [trial_visible_ground]: Road visibility: kept 36868/43192 samples
+[theta_ground_cloud_node-5] [INFO] [1792370650.906198828] [trial_visible_ground]: Road visibility: kept 37996/42747 samples
+[theta_ground_cloud_node-5] [INFO] [1792370655.955730334] [trial_visible_ground]: Road visibility: kept 20270/36119 samples
+[theta_ground_cloud_node-5] [INFO] [1792370661.002134258] [trial_visible_ground]: Road visibility: kept 19026/30941 samples
+[theta_ground_cloud_node-5] [INFO] [1792370666.075847106] [trial_visible_ground]: Road visibility: kept 15353/39982 samples
+[theta_ground_cloud_node-5] [INFO] [1792370671.109721549] [trial_visible_ground]: Road visibility: kept 15386/39686 samples
+[theta_indexed_map_node-4] [INFO] [1792370675.886609700] [trial_baseline_map]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_road_visibility_20261019/baseline/road_baseline.colored (grid=set, painted=2091404)
+[theta_indexed_map_node-6] [INFO] [1792370675.891028512] [trial_visible_map]: [save] request received: /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_road_visibility_20261019/visible/road_visible.colored (grid=set, painted=2022376)
+[theta_indexed_map_node-6] [INFO] [1792370676.993600483] [trial_visible_map]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_road_visibility_20261019/visible/road_visible.colored.pgm / .json
+[theta_indexed_map_node-6] [INFO] [1792370677.004507660] [trial_visible_map]: [save] grid=2702x4026 origin=[-110.48511736631042, -167.9387912057118] painted(>=3)=2022376 saved_painted(>=3)=2022376 struct_idx=False
+[theta_indexed_map_node-4] [INFO] [1792370677.031169912] [trial_baseline_map]: SUCCESS: Saved indexed map to /home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_road_visibility_20261019/baseline/road_baseline.colored.pgm / .json
+[theta_indexed_map_node-4] [INFO] [1792370677.041300351] [trial_baseline_map]: [save] grid=2703x4026 origin=[-110.50061430815602, -167.9387912057118] painted(>=3)=2091404 saved_painted(>=3)=2091404 struct_idx=False
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[INFO] [theta_indexed_map_node-6]: sending signal 'SIGINT' to process[theta_indexed_map_node-6]
+[INFO] [theta_ground_cloud_node-5]: sending signal 'SIGINT' to process[theta_ground_cloud_node-5]
+[INFO] [theta_indexed_map_node-4]: sending signal 'SIGINT' to process[theta_indexed_map_node-4]
+[INFO] [theta_ground_cloud_node-3]: sending signal 'SIGINT' to process[theta_ground_cloud_node-3]
+[INFO] [theta_sam3_perspective_node-2]: sending signal 'SIGINT' to process[theta_sam3_perspective_node-2]
+[INFO] [theta_bev_node-1]: sending signal 'SIGINT' to process[theta_bev_node-1]
+[theta_indexed_map_node-6] Traceback (most recent call last):
+[theta_indexed_map_node-6]   File "/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_indexed_map_node", line 33, in <module>
+[theta_indexed_map_node-6]     sys.exit(load_entry_point('sirius-navigation', 'console_scripts', 'theta_indexed_map_node')())
+[theta_indexed_map_node-6]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[theta_indexed_map_node-6]   File "/home/kotantu-desktop/sirius_jazzy_ws/build/sirius_navigation/sirius_navigation/theta_indexed_map_node.py", line 456, in main
+[theta_indexed_map_node-6]     node.destroy_node()
+[theta_indexed_map_node-6]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1959, in destroy_node
+[theta_ground_cloud_node-5] Traceback (most recent call last):
+[theta_ground_cloud_node-5]   File "/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_ground_cloud_node", line 33, in <module>
+[theta_indexed_map_node-6]     self.destroy_service(self._services[0])
+[theta_indexed_map_node-6]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1883, in destroy_service
+[theta_indexed_map_node-6]     service.destroy()
+[theta_indexed_map_node-6]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/service.py", line 123, in destroy
+[theta_ground_cloud_node-5]     sys.exit(load_entry_point('sirius-navigation', 'console_scripts', 'theta_ground_cloud_node')())
+[theta_ground_cloud_node-5]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[theta_ground_cloud_node-5]   File "/home/kotantu-desktop/sirius_jazzy_ws/build/sirius_navigation/sirius_navigation/theta_ground_cloud_node.py", line 387, in main
+[theta_indexed_map_node-6]     self.__service.destroy_when_not_in_use()
+[theta_indexed_map_node-6] KeyboardInterrupt
+[theta_ground_cloud_node-5]     node.destroy_node()
+[theta_ground_cloud_node-5]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1955, in destroy_node
+[theta_ground_cloud_node-5]     self.destroy_subscription(self._subscriptions[0])
+[theta_ground_cloud_node-5]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1851, in destroy_subscription
+[theta_indexed_map_node-4] Traceback (most recent call last):
+[theta_indexed_map_node-4]   File "/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_indexed_map_node", line 33, in <module>
+[theta_indexed_map_node-4]     sys.exit(load_entry_point('sirius-navigation', 'console_scripts', 'theta_indexed_map_node')())
+[theta_indexed_map_node-4]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[theta_indexed_map_node-4]   File "/home/kotantu-desktop/sirius_jazzy_ws/build/sirius_navigation/sirius_navigation/theta_indexed_map_node.py", line 456, in main
+[theta_indexed_map_node-4]     node.destroy_node()
+[theta_indexed_map_node-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1959, in destroy_node
+[theta_ground_cloud_node-5]     subscription.destroy()
+[theta_ground_cloud_node-5]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/subscription.py", line 97, in destroy
+[theta_ground_cloud_node-5]     self.handle.destroy_when_not_in_use()
+[theta_ground_cloud_node-5] KeyboardInterrupt
+[theta_indexed_map_node-4]     self.destroy_service(self._services[0])
+[theta_indexed_map_node-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1883, in destroy_service
+[theta_ground_cloud_node-3] Traceback (most recent call last):
+[theta_ground_cloud_node-3]   File "/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_ground_cloud_node", line 33, in <module>
+[theta_ground_cloud_node-3]     sys.exit(load_entry_point('sirius-navigation', 'console_scripts', 'theta_ground_cloud_node')())
+[theta_ground_cloud_node-3]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[theta_ground_cloud_node-3]   File "/home/kotantu-desktop/sirius_jazzy_ws/build/sirius_navigation/sirius_navigation/theta_ground_cloud_node.py", line 387, in main
+[theta_indexed_map_node-4]     service.destroy()
+[theta_indexed_map_node-4]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/service.py", line 123, in destroy
+[theta_ground_cloud_node-3]     node.destroy_node()
+[theta_ground_cloud_node-3]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1965, in destroy_node
+[theta_indexed_map_node-4]     self.__service.destroy_when_not_in_use()
+[theta_indexed_map_node-4] KeyboardInterrupt
+[theta_ground_cloud_node-3]     self.__node.destroy_when_not_in_use()
+[theta_ground_cloud_node-3] KeyboardInterrupt
+[theta_sam3_perspective_node-2] Traceback (most recent call last):
+[theta_sam3_perspective_node-2]   File "/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_sam3_perspective_node", line 33, in <module>
+[theta_bev_node-1] Traceback (most recent call last):
+[theta_bev_node-1]   File "/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_bev_node", line 33, in <module>
+[theta_bev_node-1]     sys.exit(load_entry_point('sirius-navigation', 'console_scripts', 'theta_bev_node')())
+[theta_bev_node-1]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[theta_bev_node-1]   File "/home/kotantu-desktop/sirius_jazzy_ws/build/sirius_navigation/sirius_navigation/theta_bev_node.py", line 204, in main
+[theta_sam3_perspective_node-2]     sys.exit(load_entry_point('sirius-navigation', 'console_scripts', 'theta_sam3_perspective_node')())
+[theta_sam3_perspective_node-2]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[theta_sam3_perspective_node-2]   File "/home/kotantu-desktop/sirius_jazzy_ws/build/sirius_navigation/sirius_navigation/theta_sam3_perspective_node.py", line 383, in main
+[theta_bev_node-1]     node.destroy_node()
+[theta_bev_node-1]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1965, in destroy_node
+[theta_sam3_perspective_node-2]     node.destroy_node()
+[theta_sam3_perspective_node-2]   File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/node.py", line 1965, in destroy_node
+[theta_bev_node-1]     self.__node.destroy_when_not_in_use()
+[theta_bev_node-1] KeyboardInterrupt
+[theta_sam3_perspective_node-2]     self.__node.destroy_when_not_in_use()
+[theta_sam3_perspective_node-2] KeyboardInterrupt
+[ERROR] [theta_ground_cloud_node-3]: process has died [pid 2668016, exit code -2, cmd '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_ground_cloud_node --ros-args -r __node:=trial_baseline_ground --params-file /tmp/launch_params_3zdh6tfi'].
+[ERROR] [theta_bev_node-1]: process has died [pid 2668014, exit code -2, cmd '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_bev_node --ros-args -r __node:=trial_bev --params-file /tmp/launch_params_gkuoyxdd'].
+[ERROR] [theta_ground_cloud_node-5]: process has died [pid 2668018, exit code -2, cmd '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_ground_cloud_node --ros-args -r __node:=trial_visible_ground --params-file /tmp/launch_params_herv026s'].
+[ERROR] [theta_sam3_perspective_node-2]: process has died [pid 2668015, exit code -2, cmd '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_sam3_perspective_node --ros-args -r __node:=trial_road_semantics --params-file /tmp/launch_params_00ghkl70'].
+[ERROR] [theta_indexed_map_node-6]: process has died [pid 2668021, exit code -2, cmd '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_indexed_map_node --ros-args -r __node:=trial_visible_map --params-file /tmp/launch_params_th94mj73'].
+[ERROR] [theta_indexed_map_node-4]: process has died [pid 2668017, exit code -2, cmd '/home/kotantu-desktop/sirius_jazzy_ws/install/sirius_navigation/lib/sirius_navigation/theta_indexed_map_node --ros-args -r __node:=trial_baseline_map --params-file /tmp/launch_params_tgkpdgnj'].

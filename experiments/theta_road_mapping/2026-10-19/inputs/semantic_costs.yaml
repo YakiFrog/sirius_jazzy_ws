@@ -1,0 +1,20 @@
+# セマンティッククラスのコスト設定（路面マッピング共通）
+#
+# 単位: OccupancyGrid 値 (0-100)
+#   global_cost : グローバルコストマップ用。100 = LETHAL（壁と同等）、0 = コストなし。
+#   local_cost  : ローカルコストマップ用のソフトコスト（0-100）。
+#
+# クラス名は .colored.json の labels[].name（大文字小文字は無視）と一致させてください。
+# ここに無いクラスは global_cost=0 / local_cost=0 として扱われます。
+#
+# コスト値を変えたい場合はこのファイルだけ編集すれば、
+# sam3_map_colorizer / sam3_indexed_map_node / theta_indexed_map_node が
+# 生成する .colored.json の global_cost / local_cost に反映されます。
+
+grass:          {global_cost: 100, local_cost: 70}
+tactile paving: {global_cost: 0,   local_cost: 50}
+roadway:        {global_cost: 100, local_cost: 100}
+sidewalk:       {global_cost: 0,   local_cost: 10}
+wall:           {global_cost: 0,   local_cost: 0}
+floor:          {global_cost: 0,   local_cost: 0}
+unknown:        {global_cost: 0,   local_cost: 0}

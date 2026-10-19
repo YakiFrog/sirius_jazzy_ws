@@ -1,0 +1,46 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><title>THETA路面 遮蔽余白25cm</title><style>body{font:16px/1.7 system-ui;background:#f4f5f6;color:#222;max-width:1800px;margin:32px auto;padding:0 20px}img{max-width:100%;background:white}pre{padding:16px;background:white;overflow:auto}a{color:#167}table{border-collapse:collapse;background:white}td,th{padding:8px 20px;border:1px solid #ddd}</style><!-- direction-weight-result --><p style="background:#e4f0ff;padding:16px"><strong>局所比較：</strong><a href="../theta_direction_trial_20261019/comparison.html">4区間で前後の重みを比較した結果はこちら</a></p><h1>路面マッピング：遮蔽の周囲を25cm広く除外</h1><p>real_both_mapping_20260920_113447_recovered / 解像度5cm / SAM3は路面分類のみ。</p><p>LiDARの各検出点の周囲に半径25cmの円を置き、その円と視線が交差する範囲まで遮蔽を広げました。前回の距離方向の余裕10cmも維持しています。距離やビーム数に応じて余白が変わらないよう、メートル単位で計算しています。</p><p>今回の観測面積は通常版の<strong>84.9%</strong>、前回の遮蔽除外版の<strong>87.7%</strong>。これは残像除去率ではありません。取り込まない観測が増えるため、一部の路面に欠けが増える可能性があります。</p><p>今回は路面RGBで効果を比較しています。SAM3が処理する撮影時刻は再生ごとに変わるため、意味ラベル数の差を切り取りの効果として評価していません。</p><h2>全体：通常版・前回・25cm拡張版</h2><a href="map_comparison.jpg"><img src="map_comparison.jpg"></a><h2>同じ代表フレーム：前回・追加除外部分（赤）・25cm拡張版</h2><a href="observation_comparison.jpg"><img src="observation_comparison.jpg"></a><p>床の色は生成せず、別時刻で実際に見えた観測だけで蓄積します。LiDARが捉えない障害物は、余白を増やしても除外できない場合があります。</p><details><summary>保存結果の数値</summary><pre>{
+  "baseline": {
+    "observed_cells": 2088863,
+    "area_m2": 5222.16,
+    "resolution": 0.05,
+    "origin": [
+      -110.50061430815602,
+      -167.9387912057118
+    ],
+    "size": [
+      2695,
+      4025
+    ],
+    "tactile_semantic_cells": 219
+  },
+  "previous": {
+    "observed_cells": 2022376,
+    "area_m2": 5055.94,
+    "resolution": 0.05,
+    "origin": [
+      -110.48511736631042,
+      -167.9387912057118
+    ],
+    "size": [
+      2702,
+      4026
+    ],
+    "tactile_semantic_cells": 1866
+  },
+  "padded": {
+    "observed_cells": 1774380,
+    "area_m2": 4435.95,
+    "resolution": 0.05,
+    "origin": [
+      -110.30067416341491,
+      -167.9387912057118
+    ],
+    "size": [
+      2698,
+      4026
+    ],
+    "tactile_semantic_cells": 298
+  },
+  "padded_vs_current_baseline_area_ratio": 0.8494477617727921,
+  "padded_vs_previous_area_ratio": 0.8773739403553048
+}</pre></details><p><a href="../theta_road_visibility_20261019/comparison.html">前回の比較</a> / <a href="visible/road_visible.texture.png">拡張版の路面RGB（原寸）</a> / <a href="trial_parameters.json">今回の設定</a></p></html>

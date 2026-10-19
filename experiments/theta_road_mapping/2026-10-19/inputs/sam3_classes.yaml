@@ -1,0 +1,33 @@
+# SAM3 セマンティッククラス登録簿（ZED / THETA 共通）
+#
+# 「検出プロンプト文字列」→「セマンティックID・代表色・しきい値」を定義する。
+# ZED オフライン(run_offline_mapping.sh) と THETA(theta_sam3_perspective_node) は
+# 起動時にこの内容を SAM3 サーバの /class_registry と /class_thresholds へ送信する。
+#
+# 同じ対象を別の言い方で検出したい場合は、同じ id を割り当てて行を追加する。
+# 例: "line-type tactile paving" は tactile paving と同じ id:4（黄）に統合。
+#     "grass" の類語（lawnturf 等）も同じ id:3 にすれば地図上は同じクラスになる。
+#
+# id は 3〜255（0=unknown, 1=wall, 2=floor は予約）。地図側の代表色・コストは
+# 正規名（grass / tactile paving / roadway / sidewalk）で解決されるため、
+# エイリアスを足しても config/semantic_costs.yaml の変更は不要。
+#
+# UI（Web :8080 / Launcher の SAM3設定ダイアログ）から id と色を編集できる。
+
+prompt: grass, tactile paving, line-type tactile paving, line type tactile paving, roadway, sidewalk
+
+classes:
+  grass:                    {id: 3, color: [0, 255, 0]}
+  tactile paving:           {id: 4, color: [255, 255, 0]}
+  line-type tactile paving: {id: 4, color: [255, 255, 0]}
+  line type tactile paving: {id: 4, color: [255, 255, 0]}
+  roadway:                  {id: 5, color: [0, 0, 255]}
+  sidewalk:                 {id: 6, color: [128, 128, 128]}
+
+class_thresholds:
+  grass: 0.5
+  tactile paving: 0.5
+  line-type tactile paving: 0.5
+  line type tactile paving: 0.5
+  roadway: 0.5
+  sidewalk: 0.5
