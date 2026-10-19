@@ -39,7 +39,7 @@ def main():
     detail={};titles={'semantic':'① セマンティック対象のみ','overlay':'② 路面テクスチャ ＋ セマンティック','texture':'③ 路面テクスチャのみ'}
     for name,(x0,y0,x1,y1) in groups.items():
         target=root/name;target.mkdir(exist_ok=True);images=[]
-        subtitle=('検証済み10区間の分類／全区間の路面テクスチャ' if name=='overview' else f'検証区間 {name[3:]} ｜ 前後の時系列補完 ｜ 3枚とも同じ範囲・縮尺')
+        subtitle=('検証済み10区間の分類／全区間の路面テクスチャ' if name=='overview' else f'検証区間 {name[3:]} ｜ '+('黄色い点字＋画像追跡' if meta.get('semantic_dir')=='yellow' else '前後の時系列補完')+' ｜ 同じ範囲・縮尺')
         for kind,source in [('semantic',fullsem),('overlay',over),('texture',rgb)]:
             image=source[y0:y1,x0:x1];rendered=frame(image,titles[kind],subtitle,res,1200 if name!='overview' else 1600,show_legend=kind!='texture');rendered.save(target/(kind+'.jpg'),quality=95,subsampling=0);images.append(rendered)
         contact=Image.new('RGB',(images[0].width,sum(x.height for x in images)),'white');yy=0
@@ -51,6 +51,7 @@ def main():
         html+=f'<h2 id="{name}">{"改善区間3300" if name=="seg3300" else "全体図（セマンティックは検証した部分のみ）"}</h2>'
         for kind,title in titles.items():html+=f'<figure><figcaption>{title}</figcaption><a href="{name}/{kind}.jpg"><img src="{name}/{kind}.jpg" alt="{title}" loading="lazy"></a></figure>'
     html+='<h2>ほかの検証区間</h2><nav>'+ ' · '.join(f'<a href="seg{c}/three_views.jpg">{c}</a>' for c in sorted({f['segment'] for f in meta['frames']}))+'</nav></html>'
+    if meta.get('semantic_dir')=='yellow':html=html.replace('点字の補完を検証した区間3300','黄色い点字の認識・追跡を検証した区間3300')
     (root/'images.html').write_text(html);print('RENDER COMPLETE',len(groups),'viewports',flush=True)
 
 

@@ -1,0 +1,12 @@
+{
+  "yellow": {
+    "all_images_decoded": true,
+    "horizontal_overflow": false,
+    "viewport_width": 390
+  },
+  "yellow_map": {
+    "all_images_decoded": true,
+    "horizontal_overflow": false,
+    "viewport_width": 390
+  }
+}

@@ -1,0 +1,6367 @@
+{
+  "roi_summary": {
+    "positive": {
+      "roi_count": 6,
+      "area": 10250,
+      "methods": {
+        "baseline": 1547,
+        "yellow": 6900,
+        "causal": 7442,
+        "bidirectional": 7556
+      }
+    },
+    "negative": {
+      "roi_count": 10,
+      "area": 38635,
+      "methods": {
+        "baseline": 1770,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    }
+  },
+  "rois": [
+    {
+      "id": "tactile_900_rear",
+      "segment": 900,
+      "frame": 900,
+      "yaw": 180,
+      "class_id": 4,
+      "polygon": [
+        [
+          410,
+          365
+        ],
+        [
+          426,
+          365
+        ],
+        [
+          459,
+          419
+        ],
+        [
+          437,
+          419
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 1112,
+      "counts": {
+        "baseline": 1112,
+        "yellow": 1112,
+        "causal": 1112,
+        "bidirectional": 1112
+      }
+    },
+    {
+      "id": "tactile_2700_dark",
+      "segment": 2700,
+      "frame": 2700,
+      "yaw": 0,
+      "class_id": 4,
+      "polygon": [
+        [
+          411,
+          350
+        ],
+        [
+          425,
+          350
+        ],
+        [
+          468,
+          435
+        ],
+        [
+          448,
+          435
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 1548,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "tactile_3300_front",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "class_id": 4,
+      "polygon": [
+        [
+          369,
+          380
+        ],
+        [
+          387,
+          380
+        ],
+        [
+          411,
+          441
+        ],
+        [
+          387,
+          441
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 1364,
+      "counts": {
+        "baseline": 434,
+        "yellow": 432,
+        "causal": 509,
+        "bidirectional": 525
+      }
+    },
+    {
+      "id": "tactile_3300_warning",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 180,
+      "class_id": 4,
+      "polygon": [
+        [
+          169,
+          370
+        ],
+        [
+          214,
+          370
+        ],
+        [
+          205,
+          403
+        ],
+        [
+          151,
+          403
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 1717,
+      "counts": {
+        "baseline": 0,
+        "yellow": 1116,
+        "causal": 1571,
+        "bidirectional": 1571
+      }
+    },
+    {
+      "id": "tactile_3900_front",
+      "segment": 3900,
+      "frame": 3900,
+      "yaw": 0,
+      "class_id": 4,
+      "polygon": [
+        [
+          321,
+          350
+        ],
+        [
+          341,
+          350
+        ],
+        [
+          354,
+          430
+        ],
+        [
+          309,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 2715,
+      "counts": {
+        "baseline": 1,
+        "yellow": 2446,
+        "causal": 2456,
+        "bidirectional": 2554
+      }
+    },
+    {
+      "id": "tactile_4500_rear",
+      "segment": 4500,
+      "frame": 4500,
+      "yaw": 180,
+      "class_id": 4,
+      "polygon": [
+        [
+          487,
+          370
+        ],
+        [
+          507,
+          370
+        ],
+        [
+          546,
+          438
+        ],
+        [
+          516,
+          438
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 1794,
+      "counts": {
+        "baseline": 0,
+        "yellow": 1794,
+        "causal": 1794,
+        "bidirectional": 1794
+      }
+    },
+    {
+      "id": "plain_pavement_300",
+      "segment": 300,
+      "frame": 300,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          230,
+          350
+        ],
+        [
+          290,
+          350
+        ],
+        [
+          290,
+          420
+        ],
+        [
+          230,
+          420
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 4331,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_900",
+      "segment": 900,
+      "frame": 900,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          470,
+          360
+        ],
+        [
+          550,
+          360
+        ],
+        [
+          550,
+          420
+        ],
+        [
+          470,
+          420
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 4941,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_1500",
+      "segment": 1500,
+      "frame": 1500,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          250,
+          350
+        ],
+        [
+          310,
+          350
+        ],
+        [
+          310,
+          410
+        ],
+        [
+          250,
+          410
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 3721,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_2100",
+      "segment": 2100,
+      "frame": 2100,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          240,
+          370
+        ],
+        [
+          300,
+          370
+        ],
+        [
+          300,
+          430
+        ],
+        [
+          240,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 3721,
+      "counts": {
+        "baseline": 1770,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_2700",
+      "segment": 2700,
+      "frame": 2700,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          280,
+          370
+        ],
+        [
+          330,
+          370
+        ],
+        [
+          330,
+          430
+        ],
+        [
+          280,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 3111,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_3300",
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          280,
+          340
+        ],
+        [
+          325,
+          340
+        ],
+        [
+          325,
+          410
+        ],
+        [
+          280,
+          410
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 3266,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_3900",
+      "segment": 3900,
+      "frame": 3900,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          220,
+          365
+        ],
+        [
+          270,
+          365
+        ],
+        [
+          270,
+          425
+        ],
+        [
+          220,
+          425
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 3111,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_4500",
+      "segment": 4500,
+      "frame": 4500,
+      "yaw": 180,
+      "class_id": 0,
+      "polygon": [
+        [
+          220,
+          380
+        ],
+        [
+          280,
+          380
+        ],
+        [
+          280,
+          435
+        ],
+        [
+          220,
+          435
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 3416,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_5100",
+      "segment": 5100,
+      "frame": 5100,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          250,
+          365
+        ],
+        [
+          320,
+          365
+        ],
+        [
+          320,
+          430
+        ],
+        [
+          250,
+          430
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 4686,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    },
+    {
+      "id": "plain_pavement_5650",
+      "segment": 5650,
+      "frame": 5650,
+      "yaw": 0,
+      "class_id": 0,
+      "polygon": [
+        [
+          300,
+          360
+        ],
+        [
+          370,
+          360
+        ],
+        [
+          370,
+          420
+        ],
+        [
+          300,
+          420
+        ]
+      ],
+      "status": "provisional_visual_ROI_not_user_verified",
+      "pixels": 4331,
+      "counts": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    }
+  ],
+  "temporal_consistency": {
+    "baseline": {
+      "intersection": 423971,
+      "union": 802908,
+      "flip_pixels": 378937,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.5280443089370139
+    },
+    "yellow": {
+      "intersection": 413588,
+      "union": 618307,
+      "flip_pixels": 204719,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.6689039587130665
+    },
+    "causal": {
+      "intersection": 639898,
+      "union": 702871,
+      "flip_pixels": 62973,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.9104060346777716
+    },
+    "bidirectional": {
+      "intersection": 872410,
+      "union": 897707,
+      "flip_pixels": 25297,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.9718204269321727
+    }
+  },
+  "frames": [
+    {
+      "segment": 300,
+      "frame": 292,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 293,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 294,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 295,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 296,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 297,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 298,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 299,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 300,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 301,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 302,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 303,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 304,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 305,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 306,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 307,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 308,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 292,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 293,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 294,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 295,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 296,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 297,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 298,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 299,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 300,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 301,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 302,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 303,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 304,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 305,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 306,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 307,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 300,
+      "frame": 308,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 892,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 893,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 894,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 895,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 896,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 897,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 898,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 899,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 900,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 901,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 902,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 903,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 904,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 905,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 906,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 907,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 908,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 892,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 16628,
+        "causal": 13098,
+        "bidirectional": 15131
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 13098,
+        "removed_tactile_pixels": 3530,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 893,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 13377,
+        "causal": 13569,
+        "bidirectional": 15331
+      },
+      "tracking": {
+        "filled_pixels": 192,
+        "original_tactile_pixels": 13377,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 8112
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 894,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 13463,
+        "causal": 13812,
+        "bidirectional": 15321
+      },
+      "tracking": {
+        "filled_pixels": 350,
+        "original_tactile_pixels": 13462,
+        "removed_tactile_pixels": 1,
+        "tracked_pixels": 10130
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 895,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13623,
+        "yellow": 13519,
+        "causal": 13910,
+        "bidirectional": 15398
+      },
+      "tracking": {
+        "filled_pixels": 391,
+        "original_tactile_pixels": 13519,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 11242
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 896,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13951,
+        "yellow": 13718,
+        "causal": 14113,
+        "bidirectional": 15413
+      },
+      "tracking": {
+        "filled_pixels": 395,
+        "original_tactile_pixels": 13718,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 11513
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 897,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13585,
+        "yellow": 13439,
+        "causal": 14033,
+        "bidirectional": 15933
+      },
+      "tracking": {
+        "filled_pixels": 594,
+        "original_tactile_pixels": 13439,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 9885
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 898,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13580,
+        "yellow": 17654,
+        "causal": 15345,
+        "bidirectional": 16130
+      },
+      "tracking": {
+        "filled_pixels": 398,
+        "original_tactile_pixels": 14947,
+        "removed_tactile_pixels": 2707,
+        "tracked_pixels": 10732
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 899,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13559,
+        "yellow": 13409,
+        "causal": 15189,
+        "bidirectional": 15964
+      },
+      "tracking": {
+        "filled_pixels": 1780,
+        "original_tactile_pixels": 13409,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 9432
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 900,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13805,
+        "yellow": 15387,
+        "causal": 14667,
+        "bidirectional": 16097
+      },
+      "tracking": {
+        "filled_pixels": 301,
+        "original_tactile_pixels": 14366,
+        "removed_tactile_pixels": 1021,
+        "tracked_pixels": 7263
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 901,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13409,
+        "yellow": 16764,
+        "causal": 15421,
+        "bidirectional": 15888
+      },
+      "tracking": {
+        "filled_pixels": 586,
+        "original_tactile_pixels": 14835,
+        "removed_tactile_pixels": 1929,
+        "tracked_pixels": 11085
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 902,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13299,
+        "yellow": 15505,
+        "causal": 15315,
+        "bidirectional": 15581
+      },
+      "tracking": {
+        "filled_pixels": 521,
+        "original_tactile_pixels": 14794,
+        "removed_tactile_pixels": 711,
+        "tracked_pixels": 12889
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 903,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13490,
+        "yellow": 16468,
+        "causal": 15274,
+        "bidirectional": 15605
+      },
+      "tracking": {
+        "filled_pixels": 1358,
+        "original_tactile_pixels": 13916,
+        "removed_tactile_pixels": 2552,
+        "tracked_pixels": 10827
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 904,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 14437,
+        "yellow": 14744,
+        "causal": 15947,
+        "bidirectional": 16203
+      },
+      "tracking": {
+        "filled_pixels": 1265,
+        "original_tactile_pixels": 14682,
+        "removed_tactile_pixels": 62,
+        "tracked_pixels": 11748
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 905,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 13989,
+        "yellow": 14377,
+        "causal": 14922,
+        "bidirectional": 15739
+      },
+      "tracking": {
+        "filled_pixels": 613,
+        "original_tactile_pixels": 14309,
+        "removed_tactile_pixels": 68,
+        "tracked_pixels": 11715
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 906,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 140,
+        "yellow": 17634,
+        "causal": 16275,
+        "bidirectional": 18968
+      },
+      "tracking": {
+        "filled_pixels": 755,
+        "original_tactile_pixels": 15520,
+        "removed_tactile_pixels": 2114,
+        "tracked_pixels": 10820
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 907,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 10879,
+        "causal": 20965,
+        "bidirectional": 22222
+      },
+      "tracking": {
+        "filled_pixels": 10325,
+        "original_tactile_pixels": 10640,
+        "removed_tactile_pixels": 239,
+        "tracked_pixels": 10798
+      }
+    },
+    {
+      "segment": 900,
+      "frame": 908,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 672,
+        "yellow": 12359,
+        "causal": 22322,
+        "bidirectional": 22322
+      },
+      "tracking": {
+        "filled_pixels": 10301,
+        "original_tactile_pixels": 12021,
+        "removed_tactile_pixels": 338,
+        "tracked_pixels": 13841
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1492,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1493,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1494,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1495,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1496,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1497,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1498,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1499,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1500,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1501,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1502,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1503,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1504,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1505,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1506,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1507,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1508,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1492,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1493,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1494,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1495,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1496,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1497,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1498,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1499,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1500,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1501,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1502,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1503,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1504,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1505,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1506,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1507,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 1500,
+      "frame": 1508,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2092,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2093,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2094,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2095,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 42,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2096,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2097,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2098,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2099,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 30178,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2100,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 68711,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2101,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 66288,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2102,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 69613,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2103,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 22437,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2104,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 26617,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2105,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 67558,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2106,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 65216,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2107,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 17931,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2108,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 1017,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2092,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2093,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2094,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2095,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2096,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2097,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2098,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2099,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2100,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2101,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2102,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2103,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2104,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2105,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2106,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 35217,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2107,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2100,
+      "frame": 2108,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2692,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2693,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2694,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2695,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2696,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2697,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2698,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2699,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2700,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2701,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2702,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2703,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2704,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2705,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2706,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2707,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2708,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2692,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2693,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2694,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2695,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2696,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2697,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2698,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2699,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2700,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2701,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2702,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2703,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2704,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2705,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2706,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2707,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 2700,
+      "frame": 2708,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3292,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 3971,
+        "yellow": 3963,
+        "causal": 3931,
+        "bidirectional": 6595
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 3931,
+        "removed_tactile_pixels": 32,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3293,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 1808,
+        "yellow": 1808,
+        "causal": 3300,
+        "bidirectional": 6387
+      },
+      "tracking": {
+        "filled_pixels": 1534,
+        "original_tactile_pixels": 1766,
+        "removed_tactile_pixels": 42,
+        "tracked_pixels": 2575
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3294,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 4357,
+        "yellow": 7587,
+        "causal": 7591,
+        "bidirectional": 7887
+      },
+      "tracking": {
+        "filled_pixels": 4,
+        "original_tactile_pixels": 7587,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 1016
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3295,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 4167,
+        "yellow": 7850,
+        "causal": 7918,
+        "bidirectional": 8130
+      },
+      "tracking": {
+        "filled_pixels": 68,
+        "original_tactile_pixels": 7850,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5933
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3296,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 4968,
+        "yellow": 4955,
+        "causal": 7617,
+        "bidirectional": 7827
+      },
+      "tracking": {
+        "filled_pixels": 2686,
+        "original_tactile_pixels": 4931,
+        "removed_tactile_pixels": 24,
+        "tracked_pixels": 7022
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3297,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7382,
+        "causal": 7597,
+        "bidirectional": 7774
+      },
+      "tracking": {
+        "filled_pixels": 215,
+        "original_tactile_pixels": 7382,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5400
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3298,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 7236,
+        "yellow": 7347,
+        "causal": 7578,
+        "bidirectional": 7706
+      },
+      "tracking": {
+        "filled_pixels": 231,
+        "original_tactile_pixels": 7347,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6566
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3299,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7154,
+        "causal": 7445,
+        "bidirectional": 7562
+      },
+      "tracking": {
+        "filled_pixels": 291,
+        "original_tactile_pixels": 7154,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5428
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 7106,
+        "yellow": 7093,
+        "causal": 7447,
+        "bidirectional": 7555
+      },
+      "tracking": {
+        "filled_pixels": 354,
+        "original_tactile_pixels": 7093,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6802
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3301,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6945,
+        "yellow": 6958,
+        "causal": 7276,
+        "bidirectional": 7382
+      },
+      "tracking": {
+        "filled_pixels": 318,
+        "original_tactile_pixels": 6958,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5109
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3302,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6854,
+        "yellow": 6886,
+        "causal": 7279,
+        "bidirectional": 7382
+      },
+      "tracking": {
+        "filled_pixels": 393,
+        "original_tactile_pixels": 6886,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6830
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3303,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6842,
+        "yellow": 6920,
+        "causal": 7345,
+        "bidirectional": 7436
+      },
+      "tracking": {
+        "filled_pixels": 425,
+        "original_tactile_pixels": 6920,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6770
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3304,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6804,
+        "yellow": 6863,
+        "causal": 7301,
+        "bidirectional": 7359
+      },
+      "tracking": {
+        "filled_pixels": 438,
+        "original_tactile_pixels": 6863,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6177
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3305,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6949,
+        "yellow": 7003,
+        "causal": 7431,
+        "bidirectional": 7479
+      },
+      "tracking": {
+        "filled_pixels": 428,
+        "original_tactile_pixels": 7003,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6763
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3306,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6816,
+        "yellow": 6892,
+        "causal": 7423,
+        "bidirectional": 7463
+      },
+      "tracking": {
+        "filled_pixels": 531,
+        "original_tactile_pixels": 6892,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 7348
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3307,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6607,
+        "yellow": 6917,
+        "causal": 7392,
+        "bidirectional": 7408
+      },
+      "tracking": {
+        "filled_pixels": 475,
+        "original_tactile_pixels": 6917,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6538
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3308,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6923,
+        "yellow": 6921,
+        "causal": 7272,
+        "bidirectional": 7272
+      },
+      "tracking": {
+        "filled_pixels": 351,
+        "original_tactile_pixels": 6921,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5187
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3292,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 1373
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3293,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 4629,
+        "causal": 4629,
+        "bidirectional": 5090
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 4629,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3294,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 8101,
+        "causal": 8193,
+        "bidirectional": 8902
+      },
+      "tracking": {
+        "filled_pixels": 92,
+        "original_tactile_pixels": 8101,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 936
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3295,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7304,
+        "causal": 7661,
+        "bidirectional": 9868
+      },
+      "tracking": {
+        "filled_pixels": 422,
+        "original_tactile_pixels": 7239,
+        "removed_tactile_pixels": 65,
+        "tracked_pixels": 3867
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3296,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 14588,
+        "causal": 14900,
+        "bidirectional": 15370
+      },
+      "tracking": {
+        "filled_pixels": 312,
+        "original_tactile_pixels": 14588,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4446
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3297,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 368,
+        "yellow": 16870,
+        "causal": 17528,
+        "bidirectional": 18251
+      },
+      "tracking": {
+        "filled_pixels": 658,
+        "original_tactile_pixels": 16870,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6130
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3298,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 16565,
+        "causal": 17102,
+        "bidirectional": 17711
+      },
+      "tracking": {
+        "filled_pixels": 537,
+        "original_tactile_pixels": 16565,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 8073
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3299,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 71,
+        "yellow": 12648,
+        "causal": 14899,
+        "bidirectional": 15240
+      },
+      "tracking": {
+        "filled_pixels": 2286,
+        "original_tactile_pixels": 12613,
+        "removed_tactile_pixels": 35,
+        "tracked_pixels": 8119
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3300,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 614,
+        "yellow": 9564,
+        "causal": 13142,
+        "bidirectional": 13968
+      },
+      "tracking": {
+        "filled_pixels": 3621,
+        "original_tactile_pixels": 9521,
+        "removed_tactile_pixels": 43,
+        "tracked_pixels": 9566
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3301,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 50,
+        "yellow": 6244,
+        "causal": 11606,
+        "bidirectional": 11606
+      },
+      "tracking": {
+        "filled_pixels": 5362,
+        "original_tactile_pixels": 6244,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 7952
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3302,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 51,
+        "causal": 7342,
+        "bidirectional": 7342
+      },
+      "tracking": {
+        "filled_pixels": 7342,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 57,
+        "tracked_pixels": 7342
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3303,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 49,
+        "causal": 5579,
+        "bidirectional": 5579
+      },
+      "tracking": {
+        "filled_pixels": 5579,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 49,
+        "tracked_pixels": 5579
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3304,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 106,
+        "causal": 4628,
+        "bidirectional": 4628
+      },
+      "tracking": {
+        "filled_pixels": 4612,
+        "original_tactile_pixels": 16,
+        "removed_tactile_pixels": 90,
+        "tracked_pixels": 4612
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3305,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 106,
+        "yellow": 118,
+        "causal": 3421,
+        "bidirectional": 3421
+      },
+      "tracking": {
+        "filled_pixels": 3421,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 118,
+        "tracked_pixels": 3421
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3306,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 126,
+        "yellow": 109,
+        "causal": 2893,
+        "bidirectional": 2893
+      },
+      "tracking": {
+        "filled_pixels": 2893,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 109,
+        "tracked_pixels": 2893
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3307,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 253,
+        "yellow": 173,
+        "causal": 2094,
+        "bidirectional": 2094
+      },
+      "tracking": {
+        "filled_pixels": 2094,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 173,
+        "tracked_pixels": 2094
+      }
+    },
+    {
+      "segment": 3300,
+      "frame": 3308,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 156,
+        "yellow": 118,
+        "causal": 1553,
+        "bidirectional": 1553
+      },
+      "tracking": {
+        "filled_pixels": 1553,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 118,
+        "tracked_pixels": 1553
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3892,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 6415,
+        "yellow": 7399,
+        "causal": 7399,
+        "bidirectional": 7824
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 7399,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3893,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 7414,
+        "yellow": 7263,
+        "causal": 7337,
+        "bidirectional": 7663
+      },
+      "tracking": {
+        "filled_pixels": 74,
+        "original_tactile_pixels": 7263,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6371
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3894,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 275,
+        "yellow": 7115,
+        "causal": 7243,
+        "bidirectional": 7538
+      },
+      "tracking": {
+        "filled_pixels": 128,
+        "original_tactile_pixels": 7115,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6103
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3895,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 7275,
+        "yellow": 7145,
+        "causal": 7311,
+        "bidirectional": 7606
+      },
+      "tracking": {
+        "filled_pixels": 166,
+        "original_tactile_pixels": 7145,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 3686
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3896,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 13,
+        "yellow": 7169,
+        "causal": 7457,
+        "bidirectional": 7744
+      },
+      "tracking": {
+        "filled_pixels": 288,
+        "original_tactile_pixels": 7169,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4952
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3897,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 8,
+        "yellow": 2,
+        "causal": 6645,
+        "bidirectional": 6954
+      },
+      "tracking": {
+        "filled_pixels": 6645,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 2,
+        "tracked_pixels": 6645
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3898,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 7518,
+        "yellow": 7373,
+        "causal": 7814,
+        "bidirectional": 8095
+      },
+      "tracking": {
+        "filled_pixels": 441,
+        "original_tactile_pixels": 7373,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6729
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3899,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 7470,
+        "yellow": 7305,
+        "causal": 7697,
+        "bidirectional": 7970
+      },
+      "tracking": {
+        "filled_pixels": 392,
+        "original_tactile_pixels": 7305,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4913
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3900,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 48,
+        "yellow": 7388,
+        "causal": 7810,
+        "bidirectional": 8068
+      },
+      "tracking": {
+        "filled_pixels": 422,
+        "original_tactile_pixels": 7388,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6968
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3901,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 30,
+        "yellow": 7313,
+        "causal": 7684,
+        "bidirectional": 7922
+      },
+      "tracking": {
+        "filled_pixels": 371,
+        "original_tactile_pixels": 7313,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5257
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3902,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 10,
+        "yellow": 7352,
+        "causal": 7758,
+        "bidirectional": 7946
+      },
+      "tracking": {
+        "filled_pixels": 406,
+        "original_tactile_pixels": 7352,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 6887
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3903,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 71,
+        "yellow": 7395,
+        "causal": 7942,
+        "bidirectional": 8106
+      },
+      "tracking": {
+        "filled_pixels": 547,
+        "original_tactile_pixels": 7395,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 7231
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3904,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7578,
+        "causal": 8008,
+        "bidirectional": 8155
+      },
+      "tracking": {
+        "filled_pixels": 430,
+        "original_tactile_pixels": 7578,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4948
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3905,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7553,
+        "causal": 8133,
+        "bidirectional": 8277
+      },
+      "tracking": {
+        "filled_pixels": 580,
+        "original_tactile_pixels": 7553,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 7156
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3906,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 35,
+        "yellow": 34,
+        "causal": 4866,
+        "bidirectional": 6321
+      },
+      "tracking": {
+        "filled_pixels": 4844,
+        "original_tactile_pixels": 22,
+        "removed_tactile_pixels": 12,
+        "tracked_pixels": 4844
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3907,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 1,
+        "yellow": 7471,
+        "causal": 7947,
+        "bidirectional": 8058
+      },
+      "tracking": {
+        "filled_pixels": 476,
+        "original_tactile_pixels": 7471,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5270
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3908,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 4583,
+        "yellow": 7517,
+        "causal": 7681,
+        "bidirectional": 7681
+      },
+      "tracking": {
+        "filled_pixels": 164,
+        "original_tactile_pixels": 7517,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4357
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3892,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 5884,
+        "yellow": 6427,
+        "causal": 6421,
+        "bidirectional": 6910
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 6421,
+        "removed_tactile_pixels": 6,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3893,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 6638,
+        "yellow": 6607,
+        "causal": 6694,
+        "bidirectional": 7163
+      },
+      "tracking": {
+        "filled_pixels": 87,
+        "original_tactile_pixels": 6607,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 3884
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3894,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 6433,
+        "yellow": 6654,
+        "causal": 6781,
+        "bidirectional": 7158
+      },
+      "tracking": {
+        "filled_pixels": 127,
+        "original_tactile_pixels": 6654,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4324
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3895,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 6649,
+        "causal": 6797,
+        "bidirectional": 7041
+      },
+      "tracking": {
+        "filled_pixels": 152,
+        "original_tactile_pixels": 6645,
+        "removed_tactile_pixels": 4,
+        "tracked_pixels": 4370
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3896,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 835,
+        "yellow": 797,
+        "causal": 5105,
+        "bidirectional": 6634
+      },
+      "tracking": {
+        "filled_pixels": 4327,
+        "original_tactile_pixels": 778,
+        "removed_tactile_pixels": 19,
+        "tracked_pixels": 4982
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3897,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 6537,
+        "yellow": 6465,
+        "causal": 6645,
+        "bidirectional": 6795
+      },
+      "tracking": {
+        "filled_pixels": 180,
+        "original_tactile_pixels": 6465,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 3922
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3898,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 2483,
+        "yellow": 6390,
+        "causal": 6750,
+        "bidirectional": 6904
+      },
+      "tracking": {
+        "filled_pixels": 360,
+        "original_tactile_pixels": 6390,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4482
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3899,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 3596,
+        "yellow": 3533,
+        "causal": 5603,
+        "bidirectional": 6712
+      },
+      "tracking": {
+        "filled_pixels": 2091,
+        "original_tactile_pixels": 3512,
+        "removed_tactile_pixels": 21,
+        "tracked_pixels": 4248
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3900,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 638,
+        "yellow": 658,
+        "causal": 3909,
+        "bidirectional": 5215
+      },
+      "tracking": {
+        "filled_pixels": 3253,
+        "original_tactile_pixels": 656,
+        "removed_tactile_pixels": 2,
+        "tracked_pixels": 3593
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3901,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 872,
+        "yellow": 850,
+        "causal": 3419,
+        "bidirectional": 6478
+      },
+      "tracking": {
+        "filled_pixels": 2602,
+        "original_tactile_pixels": 817,
+        "removed_tactile_pixels": 33,
+        "tracked_pixels": 2886
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3902,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 2021,
+        "yellow": 6483,
+        "causal": 6786,
+        "bidirectional": 6991
+      },
+      "tracking": {
+        "filled_pixels": 303,
+        "original_tactile_pixels": 6483,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 2719
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3903,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 96,
+        "yellow": 146,
+        "causal": 5316,
+        "bidirectional": 5908
+      },
+      "tracking": {
+        "filled_pixels": 5170,
+        "original_tactile_pixels": 146,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5297
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3904,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 147,
+        "causal": 4339,
+        "bidirectional": 5572
+      },
+      "tracking": {
+        "filled_pixels": 4192,
+        "original_tactile_pixels": 147,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4338
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3905,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 63,
+        "yellow": 6224,
+        "causal": 6600,
+        "bidirectional": 6621
+      },
+      "tracking": {
+        "filled_pixels": 376,
+        "original_tactile_pixels": 6224,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 3833
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3906,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 111,
+        "yellow": 122,
+        "causal": 4690,
+        "bidirectional": 4709
+      },
+      "tracking": {
+        "filled_pixels": 4598,
+        "original_tactile_pixels": 92,
+        "removed_tactile_pixels": 30,
+        "tracked_pixels": 4688
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3907,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 130,
+        "yellow": 105,
+        "causal": 3884,
+        "bidirectional": 3890
+      },
+      "tracking": {
+        "filled_pixels": 3779,
+        "original_tactile_pixels": 105,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 3848
+      }
+    },
+    {
+      "segment": 3900,
+      "frame": 3908,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 92,
+        "yellow": 80,
+        "causal": 3240,
+        "bidirectional": 3240
+      },
+      "tracking": {
+        "filled_pixels": 3160,
+        "original_tactile_pixels": 80,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 3218
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4492,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 5,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 6788
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4493,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 54,
+        "causal": 0,
+        "bidirectional": 8333
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 54,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4494,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 69,
+        "yellow": 50,
+        "causal": 0,
+        "bidirectional": 9654
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 50,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4495,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 102,
+        "causal": 102,
+        "bidirectional": 10409
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 102,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4496,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 39,
+        "yellow": 10,
+        "causal": 0,
+        "bidirectional": 11147
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 10,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4497,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 98,
+        "yellow": 186,
+        "causal": 36,
+        "bidirectional": 12015
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 36,
+        "removed_tactile_pixels": 150,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4498,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 12,
+        "causal": 0,
+        "bidirectional": 12825
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 12,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4499,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 299,
+        "yellow": 76,
+        "causal": 73,
+        "bidirectional": 14528
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 73,
+        "removed_tactile_pixels": 3,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4500,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 29,
+        "causal": 16,
+        "bidirectional": 15703
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 16,
+        "removed_tactile_pixels": 13,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4501,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 42,
+        "causal": 42,
+        "bidirectional": 19586
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 42,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4502,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 376,
+        "yellow": 131,
+        "causal": 18,
+        "bidirectional": 23736
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 18,
+        "removed_tactile_pixels": 113,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4503,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 8196,
+        "yellow": 27113,
+        "causal": 26944,
+        "bidirectional": 31699
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 26944,
+        "removed_tactile_pixels": 169,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4504,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 268,
+        "causal": 22324,
+        "bidirectional": 27910
+      },
+      "tracking": {
+        "filled_pixels": 22170,
+        "original_tactile_pixels": 154,
+        "removed_tactile_pixels": 114,
+        "tracked_pixels": 22246
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4505,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 9296,
+        "causal": 25265,
+        "bidirectional": 31841
+      },
+      "tracking": {
+        "filled_pixels": 16073,
+        "original_tactile_pixels": 9192,
+        "removed_tactile_pixels": 104,
+        "tracked_pixels": 21385
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4506,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 3989,
+        "causal": 12092,
+        "bidirectional": 18809
+      },
+      "tracking": {
+        "filled_pixels": 8145,
+        "original_tactile_pixels": 3947,
+        "removed_tactile_pixels": 42,
+        "tracked_pixels": 8758
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4507,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7804,
+        "causal": 14253,
+        "bidirectional": 19712
+      },
+      "tracking": {
+        "filled_pixels": 6480,
+        "original_tactile_pixels": 7773,
+        "removed_tactile_pixels": 31,
+        "tracked_pixels": 9864
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4508,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 16464,
+        "causal": 20702,
+        "bidirectional": 20702
+      },
+      "tracking": {
+        "filled_pixels": 4335,
+        "original_tactile_pixels": 16367,
+        "removed_tactile_pixels": 97,
+        "tracked_pixels": 10612
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4492,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 6203,
+        "causal": 6203,
+        "bidirectional": 6450
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 6203,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4493,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 6338,
+        "yellow": 6193,
+        "causal": 6273,
+        "bidirectional": 6451
+      },
+      "tracking": {
+        "filled_pixels": 80,
+        "original_tactile_pixels": 6193,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4010
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4494,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 6105,
+        "causal": 6378,
+        "bidirectional": 6569
+      },
+      "tracking": {
+        "filled_pixels": 273,
+        "original_tactile_pixels": 6105,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 4676
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4495,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 6395,
+        "yellow": 6240,
+        "causal": 6615,
+        "bidirectional": 6791
+      },
+      "tracking": {
+        "filled_pixels": 375,
+        "original_tactile_pixels": 6240,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5301
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4496,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 6841,
+        "yellow": 6697,
+        "causal": 6974,
+        "bidirectional": 7141
+      },
+      "tracking": {
+        "filled_pixels": 277,
+        "original_tactile_pixels": 6697,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 5315
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4497,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 7074,
+        "yellow": 6931,
+        "causal": 7280,
+        "bidirectional": 7443
+      },
+      "tracking": {
+        "filled_pixels": 353,
+        "original_tactile_pixels": 6927,
+        "removed_tactile_pixels": 4,
+        "tracked_pixels": 6404
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4498,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7217,
+        "causal": 7614,
+        "bidirectional": 7736
+      },
+      "tracking": {
+        "filled_pixels": 432,
+        "original_tactile_pixels": 7182,
+        "removed_tactile_pixels": 35,
+        "tracked_pixels": 7130
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4499,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7495,
+        "causal": 7934,
+        "bidirectional": 8003
+      },
+      "tracking": {
+        "filled_pixels": 453,
+        "original_tactile_pixels": 7481,
+        "removed_tactile_pixels": 14,
+        "tracked_pixels": 7491
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4500,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 7691,
+        "causal": 8200,
+        "bidirectional": 8256
+      },
+      "tracking": {
+        "filled_pixels": 538,
+        "original_tactile_pixels": 7662,
+        "removed_tactile_pixels": 29,
+        "tracked_pixels": 7764
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4501,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 8308,
+        "causal": 8772,
+        "bidirectional": 8823
+      },
+      "tracking": {
+        "filled_pixels": 521,
+        "original_tactile_pixels": 8251,
+        "removed_tactile_pixels": 57,
+        "tracked_pixels": 6561
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4502,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 8810,
+        "causal": 8964,
+        "bidirectional": 9057
+      },
+      "tracking": {
+        "filled_pixels": 293,
+        "original_tactile_pixels": 8671,
+        "removed_tactile_pixels": 139,
+        "tracked_pixels": 1506
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4503,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 8706,
+        "causal": 9015,
+        "bidirectional": 9050
+      },
+      "tracking": {
+        "filled_pixels": 420,
+        "original_tactile_pixels": 8595,
+        "removed_tactile_pixels": 111,
+        "tracked_pixels": 7312
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4504,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 6674,
+        "causal": 6877,
+        "bidirectional": 6877
+      },
+      "tracking": {
+        "filled_pixels": 380,
+        "original_tactile_pixels": 6497,
+        "removed_tactile_pixels": 177,
+        "tracked_pixels": 3311
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4505,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 1213,
+        "bidirectional": 1213
+      },
+      "tracking": {
+        "filled_pixels": 1213,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 1213
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4506,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4507,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 4500,
+      "frame": 4508,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5092,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5093,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5094,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5095,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5096,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5097,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5098,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5099,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5100,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5101,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5102,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5103,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5104,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5105,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5106,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5107,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5108,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5092,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5093,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5094,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5095,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5096,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5097,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5098,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5099,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5100,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5101,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5102,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5103,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5104,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5105,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5106,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5107,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5100,
+      "frame": 5108,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5642,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5643,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5644,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5645,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5646,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5647,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5648,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5649,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5650,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5651,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5652,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5653,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5654,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5655,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5656,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5657,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5658,
+      "yaw": 0,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5642,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5643,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5644,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5645,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5646,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5647,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5648,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5649,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5650,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5651,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5652,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5653,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5654,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5655,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5656,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5657,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    },
+    {
+      "segment": 5650,
+      "frame": 5658,
+      "yaw": 180,
+      "tactile_pixels": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      },
+      "tracking": {
+        "filled_pixels": 0,
+        "original_tactile_pixels": 0,
+        "removed_tactile_pixels": 0,
+        "tracked_pixels": 0
+      }
+    }
+  ],
+  "note": "ROI polygons are provisional non-expert visual checks. Temporal IoU is consistency, not accuracy. Same512 resolution, exact JPEGs, cutoff0.5."
+}

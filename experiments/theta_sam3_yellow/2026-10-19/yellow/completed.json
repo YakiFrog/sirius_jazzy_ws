@@ -1,0 +1,8 @@
+{
+  "complete": true,
+  "observations": 340,
+  "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+  "resolution": 512,
+  "score_min": 0.5,
+  "exact_jpeg_equal_to_baseline": true
+}

@@ -1,0 +1,16 @@
+{
+  "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+  "score_min": 0.5,
+  "resolution": 512,
+  "seed_yellow_hue": [
+    15,
+    40
+  ],
+  "seed_min_saturation": 45,
+  "seed_yellow_component_fraction": 0.35,
+  "seed_min_component_pixels": 16,
+  "track_min_alignment_reliability": 0.4,
+  "max_between_frame_gap_sec": 1.5,
+  "detector_miss_timeout_sec": null,
+  "method": "Explicit visual track; each step requires fresh flow, appearance and photometric evidence. Original detector score retained; not counted as a fresh detector confirmation. Offline bidirectional = union of independently tracked directions. Gray tactile predictions become unknown, never assumed sidewalk."
+}

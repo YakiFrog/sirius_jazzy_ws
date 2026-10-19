@@ -1,0 +1,24 @@
+{
+  "exact_jpeg_matches": 340,
+  "entire_texture_unchanged_from_previous_map": true,
+  "semantic_inside_observed_rgb": true,
+  "overlay_preserves_unclassified_texture": true,
+  "three_views_have_identical_dimensions": true,
+  "http_status": {
+    "yellow/images.html": 200,
+    "yellow/example_2103_0.jpg": 200,
+    "yellow/seg3300_tracking.gif": 200,
+    "yellow_map/images.html": 200,
+    "yellow_map/seg3300/semantic.jpg": 200,
+    "yellow_map/seg3300/overlay.jpg": 200,
+    "yellow_map/seg3300/texture.jpg": 200,
+    "yellow_map/seg2100/three_views.jpg": 200
+  },
+  "restoration": {
+    "settings_restored": true,
+    "registry_unchanged": true,
+    "errors": []
+  },
+  "tests": "82 passed",
+  "colcon_build": "sirius_navigation passed"
+}

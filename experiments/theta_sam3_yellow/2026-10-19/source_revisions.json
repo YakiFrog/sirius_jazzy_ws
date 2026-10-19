@@ -1,0 +1,10 @@
+{
+  "navigation": "276d017b98b8d83300ed40be139bd34072a96d7b",
+  "root_base": "b4e5c4851366dc5e51e8ac0b8b1774f5adab29d2",
+  "scripts_committed_with_this_experiment": [
+    "bash/startup_bash/collect_theta_sam3_yellow.py",
+    "bash/startup_bash/track_theta_sam3_yellow.py",
+    "bash/startup_bash/map_theta_sam3_tactile.py",
+    "bash/startup_bash/render_theta_semantic_map.py"
+  ]
+}

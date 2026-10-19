@@ -1,0 +1,64 @@
+Tracked yellow 300
+Tracked yellow 900
+Tracked yellow 1500
+Tracked yellow 2100
+Tracked yellow 2700
+Tracked yellow 3300
+Tracked yellow 3900
+Tracked yellow 4500
+Tracked yellow 5100
+Tracked yellow 5650
+{
+  "roi_summary": {
+    "positive": {
+      "roi_count": 6,
+      "area": 10250,
+      "methods": {
+        "baseline": 1547,
+        "yellow": 6900,
+        "causal": 7442,
+        "bidirectional": 7556
+      }
+    },
+    "negative": {
+      "roi_count": 0,
+      "area": 0,
+      "methods": {
+        "baseline": 0,
+        "yellow": 0,
+        "causal": 0,
+        "bidirectional": 0
+      }
+    }
+  },
+  "consistency": {
+    "baseline": {
+      "intersection": 423971,
+      "union": 802908,
+      "flip_pixels": 378937,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.5280443089370139
+    },
+    "yellow": {
+      "intersection": 413588,
+      "union": 618307,
+      "flip_pixels": 204719,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.6689039587130665
+    },
+    "causal": {
+      "intersection": 639898,
+      "union": 702871,
+      "flip_pixels": 62973,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.9104060346777716
+    },
+    "bidirectional": {
+      "intersection": 872410,
+      "union": 897707,
+      "flip_pixels": 25297,
+      "domain_pixels": 53985340,
+      "temporal_iou": 0.9718204269321727
+    }
+  }
+}

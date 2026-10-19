@@ -26,7 +26,7 @@ class Capture:
 
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('study',type=Path);p.add_argument('texture',type=Path);p.add_argument('output',type=Path);p.add_argument('--method',choices=['causal','bidirectional'],default='bidirectional');a=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('study',type=Path);p.add_argument('texture',type=Path);p.add_argument('output',type=Path);p.add_argument('--method',choices=['causal','bidirectional'],default='bidirectional');p.add_argument('--semantic-dir',type=Path,default=Path('tactile'));p.add_argument('--allow-reclassification',action='store_true',help='Permit removing incorrect original tactile labels when changing detector prompts');a=p.parse_args()
     root=a.study;out=a.output;out.mkdir(parents=True,exist_ok=True);manifest=json.loads((root/'manifest.json').read_text());calfile=root/'calibration_used.yaml';cal=yaml.safe_load(calfile.read_text())
     metadata=json.loads(a.texture.with_suffix('.json').read_text()) if a.texture.with_suffix('.json').exists() else json.loads(Path(str(a.texture).replace('.texture.png','.colored.json')).read_text())
     texture=cv2.imread(str(a.texture),-1);missing_texture=texture[...,3]==0
@@ -66,7 +66,7 @@ def main():
             samples=[]
             for yaw,(u,v,valid) in zip((0,180),maps):
                 folder=root/f'seg{center}'/f'frame{index}';stem=f'yaw{yaw}.'
-                if name=='temporal':folder=root/'tactile'/f'seg{center}'/f'frame{index}';stem+=a.method+'.'
+                if name=='temporal':folder=root/a.semantic_dir/f'seg{center}'/f'frame{index}';stem+=a.method+'.'
                 cls=cv2.imread(str(folder/(stem+'classes.png')),0);score=cv2.imread(str(folder/(stem+'scores.png')),0)
                 if cls is None or score is None:raise RuntimeError('Missing cached inference')
                 samples.append((cls,score,u,v,valid,False))
@@ -89,8 +89,10 @@ def main():
         if len(frame_rows)%25==0:print('Mapped',len(frame_rows),'frames',flush=True)
     labels={}
     for name,grid in votes.items():labels[name]=np.where(grid.sum(axis=2)>=.3,np.argmax(grid,axis=2)+3,0).astype(np.uint8)
-    assert np.all(labels['temporal'][labels['baseline']==4]==4),'Original tactile map cells were lost'
-    changed=labels['temporal']!=labels['baseline'];assert np.all(labels['temporal'][changed]==4),'Unexpected changes outside tactile class'
+    changed=labels['temporal']!=labels['baseline']
+    if not a.allow_reclassification:
+        assert np.all(labels['temporal'][labels['baseline']==4]==4),'Original tactile map cells were lost'
+        assert np.all(labels['temporal'][changed]==4),'Unexpected changes outside tactile class'
     prefix=out/'road_temporal';cv2.imwrite(str(prefix)+'.colored.pgm',labels['temporal'][::-1]);cv2.imwrite(str(out/'baseline.class_ids.png'),labels['baseline'][::-1]);cv2.imwrite(str(out/'semantic_coverage.png'),((coverage>0)*255).astype(np.uint8)[::-1]);merged=texture.copy();fill=(fill_weight>0)[::-1]&missing_texture
     color=np.rint(fill_sum/np.maximum(fill_weight,1e-8)[...,None]).clip(0,255).astype(np.uint8)[::-1]
     merged[fill,:3]=color[fill];merged[fill,3]=255
@@ -98,7 +100,7 @@ def main():
     assert not ((labels['temporal'][::-1]>0)&(merged[...,3]==0)).any(), 'Semantic cells outside RGB support'
     cv2.imwrite(str(prefix)+'.texture.png',merged)
     metadata.update({'semantic_encoding':'class_id','semantic_source':'ten evaluated dense intervals; all other regions unknown','temporal_method':a.method});(out/'road_temporal.colored.json').write_text(json.dumps(metadata,indent=2));(out/'calibration_used.yaml').write_text(yaml.safe_dump(bev.calibration));np.savez_compressed(out/'map_evidence.npz',baseline_votes=votes['baseline'],temporal_votes=votes['temporal'],sample_coverage=coverage)
-    result={'bag':manifest['bag'],'method':a.method,'frame_count':len(frame_rows),'frames':frame_rows,'skipped':skipped,'texture_source':str(a.texture.resolve()),'texture_sha256':hashlib.sha256(a.texture.read_bytes()).hexdigest(),'same_geometry_rgb_weights_asserted':True,'existing_observed_rgb_unchanged':True,'texture_holes_filled_cells':int(fill.sum()),'half_pixel_inverse_compensation':-.5,'semantic_min_weight':.3,'lidar_max_age_sec':.15,'lidar_margin_m':.10,'lidar_obstacle_padding_m':.25,'grid':{'origin':origin.tolist(),'resolution':res,'width':w,'height':h},'baseline_cells':{str(i):int((labels['baseline']==i).sum()) for i in range(3,7)},'temporal_cells':{str(i):int((labels['temporal']==i).sum()) for i in range(3,7)},'new_tactile_cells':int(changed.sum()),'semantic_observed_cells':int((labels['temporal']>0).sum()),'note':'Full-route RGB context; semantic inference only170 selected frames. Not a complete semantic map or occupancy-cost validation.'};(out/'manifest.json').write_text(json.dumps(result,indent=2));ground.destroy_node();bev.destroy_node();rclpy.shutdown();print('MAP COMPLETE',len(frame_rows),'frames;',int(changed.sum()),'new tactile cells',flush=True)
+    result={'bag':manifest['bag'],'method':a.method,'semantic_dir':str(a.semantic_dir),'allow_reclassification':a.allow_reclassification,'frame_count':len(frame_rows),'frames':frame_rows,'skipped':skipped,'texture_source':str(a.texture.resolve()),'texture_sha256':hashlib.sha256(a.texture.read_bytes()).hexdigest(),'same_geometry_rgb_weights_asserted':True,'existing_observed_rgb_unchanged':True,'texture_holes_filled_cells':int(fill.sum()),'half_pixel_inverse_compensation':-.5,'semantic_min_weight':.3,'lidar_max_age_sec':.15,'lidar_margin_m':.10,'lidar_obstacle_padding_m':.25,'grid':{'origin':origin.tolist(),'resolution':res,'width':w,'height':h},'baseline_cells':{str(i):int((labels['baseline']==i).sum()) for i in range(3,7)},'temporal_cells':{str(i):int((labels['temporal']==i).sum()) for i in range(3,7)},'new_tactile_cells':int(((labels['temporal']==4)&(labels['baseline']!=4)).sum()),'removed_tactile_cells':int(((labels['baseline']==4)&(labels['temporal']!=4)).sum()),'changed_semantic_cells':int(changed.sum()),'semantic_observed_cells':int((labels['temporal']>0).sum()),'note':'Full-route RGB context; semantic inference only170 selected frames. Not a complete semantic map or occupancy-cost validation.'};(out/'manifest.json').write_text(json.dumps(result,indent=2));ground.destroy_node();bev.destroy_node();rclpy.shutdown();print('MAP COMPLETE',len(frame_rows),'frames;',int(changed.sum()),'changed semantic cells',flush=True)
 
 
 if __name__=='__main__':main()
