@@ -13,6 +13,7 @@
 """
 import argparse
 import codecs
+from functools import lru_cache
 import os
 import pty
 import re
@@ -292,7 +293,7 @@ def alias_signatures():
             base = alias_signature(c)
             var = base
             m = re.search(r"\b(sim|real)\b", c)
-            if base and m:
+            if base and m and not base.startswith('ros2 launch '):
                 var = base + " " + m.group(1)
             _SIG_CACHE[n] = base
             _VAR_CACHE[n] = var
@@ -309,10 +310,39 @@ def best_alias_for(cmd):
     """cmdに一致する最も具体的な署名を持つエイリアス名を返す。"""
     best = ""
     best_len = 0
+    actual_params = launch_parameters(cmd)
     for n, var in alias_variant_signatures().items():
-        if var and len(var) >= 6 and var in cmd and len(var) > best_len:
-            best, best_len = n, len(var)
+        if not var or len(var) < 6 or var not in cmd:
+            continue
+        expected = launch_parameters(BUTTONS[n]) if var.startswith('ros2 launch ') else {}
+        actual = actual_params
+        if var == 'ros2 launch sirius_description display.launch.py':
+            # This launch starts RViz by default; a TF-only process must never
+            # be attributed to an alias which expects that default RViz window.
+            expected = {'rviz': 'true', **expected}
+            actual = {'rviz': 'true', **actual_params}
+        if any(actual.get(key) != value for key, value in expected.items()):
+            continue
+        # TF-only and RViz launches share a launch file. Explicit parameters
+        # identify the variant regardless of their order in the process argv.
+        specificity = len(var) + sum(len(key)+len(value)+3 for key, value in expected.items())
+        if specificity > best_len:
+            best, best_len = n, specificity
     return best
+
+
+@lru_cache(maxsize=1024)
+def launch_parameters(command):
+    """Literal ROS launch arguments; shell-expanded values cannot identify a variant."""
+    return {key: value.strip("\"'")
+            for key, value in re.findall(r'(?<!\S)([\w/.-]+):=([^\s]+)', command)
+            if '$' not in value and '~' not in value}
+
+
+def process_matches_alias(name, command):
+    """Use the same identity for display, duplicate detection and external stop."""
+    matched = best_alias_for(command)
+    return bool(matched and (matched == name or BUTTONS.get(matched) == BUTTONS.get(name)))
 
 
 # コマンド文字列に現れない固定ポート（launch既定値など）。このポートは
@@ -458,6 +488,8 @@ def load_aliases(path):
     global BUTTONS, GROUPS, PRESETS
     groups, presets, descs = parse_bash_aliases(path, include_group_descriptions=True)
     BUTTONS = {}
+    _SIG_CACHE.clear()
+    _VAR_CACHE.clear()
     GROUPS = []
     for gname, items in groups.items():
         its = []
@@ -513,7 +545,7 @@ def alias_actually_running(name):
     sig = alias_signature(BUTTONS.get(name, ""))
     if not sig or len(sig) < 6:
         return True
-    return any(sig in row["cmd"] for row in proc_rows())
+    return any(process_matches_alias(name, row["cmd"]) for row in proc_rows())
 
 
 def start_one(name, domain=""):
@@ -535,7 +567,7 @@ def start_one(name, domain=""):
     sig = alias_signature(BUTTONS.get(name, ""))
     if sig and len(sig) >= 6:
         for row in proc_rows():
-            if sig in row["cmd"]:
+            if process_matches_alias(name, row["cmd"]):
                 return True, f"already running (external pid {row['pid']})"
     # 専用ポートが使用中なら古いプロセスを停止してから起動する（例: foxgloveの8766）
     ports = alias_ports(BUTTONS.get(name, ""), name)
@@ -561,7 +593,7 @@ def stop_one(name):
         # 外部起動分（ランチャー経由でない）は署名一致で停止する
         sig = alias_signature(BUTTONS.get(name, ""))
         if sig and len(sig) >= 6:
-            targets = [r["pid"] for r in proc_rows() if sig in r["cmd"]]
+            targets = [r["pid"] for r in proc_rows() if process_matches_alias(name, r["cmd"])]
             if targets:
                 for pid in targets:
                     _kill_pid_tree(pid)
