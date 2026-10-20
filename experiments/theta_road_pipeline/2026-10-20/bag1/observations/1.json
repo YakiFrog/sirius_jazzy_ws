@@ -1,0 +1,123 @@
+[
+  {
+    "kind": "base",
+    "yaw": 0,
+    "network_frame_version": 17069,
+    "wall_seconds": 0.19755750300828367,
+    "duplicated_sbs_transport": false,
+    "input_shape": [
+      480,
+      640,
+      3
+    ],
+    "uploaded_jpeg_sha256": "1621a54808f218132f3fac7b8852d7ebe4075f6f4582d589bc3bd91ae233b9b3",
+    "class_scores": {
+      "grass": [],
+      "yellow tactile paving": [],
+      "roadway": [
+        0.791015625
+      ],
+      "sidewalk": [
+        0.6083984375
+      ]
+    },
+    "settings": {
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "confidence_threshold": 1.0,
+      "class_thresholds": {
+        "grass": 0.5,
+        "yellow tactile paving": 0.5,
+        "roadway": 0.5,
+        "sidewalk": 0.5
+      },
+      "resolution": 512,
+      "color_mode": "semantic"
+    }
+  },
+  {
+    "kind": "base",
+    "yaw": 180,
+    "network_frame_version": 17070,
+    "wall_seconds": 0.19514038995839655,
+    "duplicated_sbs_transport": false,
+    "input_shape": [
+      480,
+      640,
+      3
+    ],
+    "uploaded_jpeg_sha256": "a98465d3a3067b4b3783541f25e227f41b06c5cdea048d858945ec645da17a24",
+    "class_scores": {
+      "grass": [],
+      "yellow tactile paving": [],
+      "roadway": [
+        0.65185546875
+      ],
+      "sidewalk": [
+        0.5712890625,
+        0.5126953125
+      ]
+    },
+    "settings": {
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "confidence_threshold": 1.0,
+      "class_thresholds": {
+        "grass": 0.5,
+        "yellow tactile paving": 0.5,
+        "roadway": 0.5,
+        "sidewalk": 0.5
+      },
+      "resolution": 512,
+      "color_mode": "semantic"
+    }
+  },
+  {
+    "kind": "shadow",
+    "yaw": 0,
+    "network_frame_version": 17071,
+    "wall_seconds": 0.1310458950465545,
+    "duplicated_sbs_transport": false,
+    "input_shape": [
+      480,
+      640,
+      3
+    ],
+    "uploaded_jpeg_sha256": "70259287dc33574177c080ee1de4a55d5293056f11d9a8a08a28bff15190f454",
+    "class_scores": {
+      "yellow tactile paving in shadow": []
+    },
+    "settings": {
+      "prompt": "yellow tactile paving in shadow",
+      "confidence_threshold": 1.0,
+      "class_thresholds": {
+        "yellow tactile paving in shadow": 0.5
+      },
+      "resolution": 512,
+      "color_mode": "semantic"
+    }
+  },
+  {
+    "kind": "shadow",
+    "yaw": 180,
+    "network_frame_version": 17072,
+    "wall_seconds": 0.13321155396988615,
+    "duplicated_sbs_transport": false,
+    "input_shape": [
+      480,
+      640,
+      3
+    ],
+    "uploaded_jpeg_sha256": "e3c8e6e556bd7fbaca029da149f10cbac81309ca44f5d7b7c1b713f379a3fdad",
+    "class_scores": {
+      "yellow tactile paving in shadow": []
+    },
+    "settings": {
+      "prompt": "yellow tactile paving in shadow",
+      "confidence_threshold": 1.0,
+      "class_thresholds": {
+        "yellow tactile paving in shadow": 0.5
+      },
+      "resolution": 512,
+      "color_mode": "semantic"
+    }
+  }
+]

@@ -1,0 +1,66 @@
+# Sequential offline mapping. Distances are metres; no route/frame/ROI overrides.
+camera_topic: /theta/dual_fisheye/image_raw/compressed
+scan_topic: /scan3
+map_frame: map
+robot_frame: sirius3/base_footprint
+camera_frame: sirius3/theta_link
+resolution: 0.05
+max_grid_cells: 30000000
+projection:
+  bev_size: 512
+  stride: 2
+  min_radius: 1.2
+  max_radius: 4.8
+visibility:
+  strict: true
+  fixed_frame: sirius3/odom
+  max_age_sec: 0.15
+  margin_m: 0.10
+  obstacle_padding_m: 0.25
+texture:
+  # Collection prior: reduce rear weight only when rear observations are poorer.
+  # Set to 1.0 for equal front/rear quality. This is not a motion probability.
+  rear_weight: 0.5
+  relative_quality: 0.5
+  decay: 0.7
+  quality_power: 2.0
+semantic:
+  enabled: true
+  prompt: grass, yellow tactile paving, roadway, sidewalk
+  score_min: 0.5
+  resolution: 512
+  view_size: [640, 480]
+  view_yaws: [0, 180]
+  hfov_deg: 120.0
+  min_weight: 0.3
+  bidirectional: true
+  max_gap_sec: 1.5
+  yellow_fraction: 0.35
+  shadow:
+    enabled: true
+    prompt: yellow tactile paving in shadow
+    gamma: 0.45
+    max_gain: 6.0
+    max_original_value: 90
+    yellow_fraction: 0.20
+    min_saturation: 45
+    min_component_area: 16
+regions:
+  enabled: true
+  strength_m: 0.8
+  color_sigma: 3.0
+  policy: road-to-sidewalk
+  # Context prior for continuous yellow guidance strips on sidewalks.
+  # Disable for environments where these layout assumptions do not apply.
+  tactile_context: true
+  radius_m: 1.6
+  prior_strength: 8.0
+  endpoint_guard_m: 1.0
+  min_length_m: 3.0
+  max_width_m: 0.45
+grass:
+  # Separate candidate layer only: never silently change the final map.
+  candidates: false
+  radius_m: 0.25
+  fraction_min: 0.30
+  weight_min: 0.20

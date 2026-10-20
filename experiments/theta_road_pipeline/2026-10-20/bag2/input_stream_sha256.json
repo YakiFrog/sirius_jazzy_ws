@@ -1,0 +1,9 @@
+{
+  "sha256": "6a20f88f662982788ea79901ef673fbb8026302b51d6d055ef0c7a237868c464",
+  "topics": [
+    "/theta/dual_fisheye/image_raw/compressed",
+    "/scan3",
+    "/tf",
+    "/tf_static"
+  ]
+}

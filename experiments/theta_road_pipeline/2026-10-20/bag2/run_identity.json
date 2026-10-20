@@ -1,0 +1,170 @@
+{
+  "sha256": "c425b8b649f6f056744a11e1e06b235509eb13c9e5f3be0f22afb5e382555534",
+  "config": {
+    "camera_topic": "/theta/dual_fisheye/image_raw/compressed",
+    "scan_topic": "/scan3",
+    "map_frame": "map",
+    "robot_frame": "sirius3/base_footprint",
+    "camera_frame": "sirius3/theta_link",
+    "resolution": 0.05,
+    "max_grid_cells": 30000000,
+    "projection": {
+      "bev_size": 512,
+      "stride": 2,
+      "min_radius": 1.2,
+      "max_radius": 4.8
+    },
+    "visibility": {
+      "strict": true,
+      "fixed_frame": "sirius3/odom",
+      "max_age_sec": 0.15,
+      "margin_m": 0.1,
+      "obstacle_padding_m": 0.25
+    },
+    "texture": {
+      "rear_weight": 0.5,
+      "relative_quality": 0.5,
+      "decay": 0.7,
+      "quality_power": 2.0
+    },
+    "semantic": {
+      "enabled": true,
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "score_min": 0.5,
+      "resolution": 512,
+      "view_size": [
+        640,
+        480
+      ],
+      "view_yaws": [
+        0,
+        180
+      ],
+      "hfov_deg": 120.0,
+      "min_weight": 0.3,
+      "bidirectional": true,
+      "max_gap_sec": 1.5,
+      "yellow_fraction": 0.35,
+      "shadow": {
+        "enabled": true,
+        "prompt": "yellow tactile paving in shadow",
+        "gamma": 0.45,
+        "max_gain": 6.0,
+        "max_original_value": 90,
+        "yellow_fraction": 0.2,
+        "min_saturation": 45,
+        "min_component_area": 16
+      }
+    },
+    "regions": {
+      "enabled": true,
+      "strength_m": 0.8,
+      "color_sigma": 3.0,
+      "policy": "road-to-sidewalk",
+      "tactile_context": true,
+      "radius_m": 1.6,
+      "prior_strength": 8.0,
+      "endpoint_guard_m": 1.0,
+      "min_length_m": 3.0,
+      "max_width_m": 0.45
+    },
+    "grass": {
+      "candidates": false,
+      "radius_m": 0.25,
+      "fraction_min": 0.3,
+      "weight_min": 0.2
+    }
+  },
+  "calibration": {
+    "image_size": [
+      1920,
+      1080
+    ],
+    "camera_position": [
+      0.0,
+      0.0,
+      1.135
+    ],
+    "rpy_degrees": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "bev_size": 512,
+    "bev_extent_m": 10.0,
+    "front": {
+      "center": [
+        476.677889736212,
+        481.1479951439205
+      ],
+      "focal": [
+        285.2967189633426,
+        284.68160630513967
+      ],
+      "distortion": [
+        -0.0142007805130413,
+        -0.003307275278338743,
+        0.010745739281069422,
+        -0.004545517944273431
+      ],
+      "max_theta_degrees": 95.0,
+      "image_roll_degrees": -90.0
+    },
+    "back": {
+      "center": [
+        1441.0818631558166,
+        479.2128016066535
+      ],
+      "focal": [
+        287.0650350704337,
+        286.86893504520634
+      ],
+      "distortion": [
+        -0.02212650930709486,
+        0.0148135824324669,
+        -0.003638654157942095,
+        -0.0009170650565380191
+      ],
+      "max_theta_degrees": 95.0,
+      "image_roll_degrees": 90.0
+    }
+  },
+  "bag": "/home/kotantu-desktop/rosbag2_data/real_both_mapping_20260919_110949_recovered",
+  "max_frames": 4,
+  "input_files": {
+    "metadata.yaml": {
+      "size": 8663,
+      "mtime_ns": 1789808325446511929
+    },
+    "real_both_mapping_20260919_110949_0.mcap": {
+      "size": 4854665563,
+      "mtime_ns": 1789808310995751194
+    }
+  },
+  "pipeline_version": 1,
+  "server": "http://localhost:8080",
+  "libraries": {
+    "numpy": "1.26.4",
+    "opencv": "4.6.0"
+  },
+  "source_sha256": {
+    "generate_theta_road_map.py": "c5b281c84b6a40081e769cd178749973856eb69b5d53e1cd4a388b60b0423b9c",
+    "theta_road_pipeline.py": "cddcbb8628e45e85b4ebe4efe2aac284fea86d6a574bbf9e4da18634b48ccdbd",
+    "theta_texture_quality.py": "dcc1421771a18218506032bd8d72c942d5ad3c45cdfcb495c8483e2f32b596cb",
+    "refine_theta_road_regions.py": "3c70c2bde679ee3c64d70ff95497140d5485104febad77ab3ee4c33b2b7f8e01",
+    "experiment_theta_tactile_context.py": "0deeca9d89e85ef8741a7db0b73bc882f30c88bc281d958db5c9b06f881cd595",
+    "experiment_theta_grass_extent.py": "8671d8fc95f576457cb4b2c3fb550ceb3ad7c1a5c94dfca3014eda0fd740aa73",
+    "render_theta_semantic_map.py": "1c62f5d0e439495b0ce81e57618f9bf5398fdeb703b51ddc217944b5279814e9",
+    "compare_theta_sam3_projection.py": "3a383e173696f53b1c6cd7c2e697807cd68fa7bd499d9d898ed756516a355092",
+    "theta_bev_node.py": "1f2de8b5ece2cfe46192a1f51a17b1c1cdbbba80f22b784dc29813c82466040a",
+    "theta_bev_projection.py": "e76e81295b25465a95f92fa3327854411b0bd61b731de51566878ddb0ead04b0",
+    "theta_ground_cloud_node.py": "861e520fb44c626358fe955ebe8ffbe9181bc90fa0009a6fcfb8a6565b95ee9c",
+    "theta_perspective.py": "cd9d102f979dbb0f2bec436726de1b08d994c2f347ed7f8387a4b5e63912cf52",
+    "theta_semantic_temporal.py": "2bbf5465b80a3e2c717a49d058bb6240af21333601ee2bdc898a0a313a37e825",
+    "theta_road_weights.py": "57caafa095002163f1034a89a3074f7ec78ddde36334366d4ad2761f194afcd5",
+    "theta_road_visibility.py": "7ac03162dc15ae0f57ab33055c2eafdf273684c1b727bcb3b9bae1fc80c287af",
+    "theta_indexed_map_node.py": "9126350d382c3b61ba9ed106260742c282aca52116ce6244b62caa5026b45525",
+    "semantic_costs.py": "eb8db8e1d49e7d341b4edbbbd91d9a1cba3131cad00dc46780d1ca9c2a899ba7",
+    "sam3_experiment_client.py": "d439094f91c626a041d730741b2b65d6e333fa28c3d21561d7a55ad6015531b1"
+  }
+}

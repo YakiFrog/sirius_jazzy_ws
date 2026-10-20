@@ -1,0 +1,26 @@
+{
+  "bag1": {
+    "mapped_frames": 6,
+    "skipped": 0,
+    "server_restored": true,
+    "input_stream_sha256": "a27ae82910291f0ffa040ece468556dae0c55119441b33c400d74b72c0f8f57f"
+  },
+  "bag2": {
+    "mapped_frames": 4,
+    "skipped": 0,
+    "server_restored": true,
+    "input_stream_sha256": "6a20f88f662982788ea79901ef673fbb8026302b51d6d055ef0c7a237868c464"
+  },
+  "native_point_counts_and_poses_equal_reference": true,
+  "resume_map_bytes_identical": true,
+  "resume_no_sam3_upload": true,
+  "changed_config_refused": true,
+  "unrelated_directory_refused": true,
+  "first_map_sha256": {
+    "road_temporal.colored.pgm": "ac995c2f509301a34dc878c4638d53e9639ca409cc017a7d458b2e58f96a46e4",
+    "road_temporal.texture.png": "514820728d65aba9ca5301d65b91e99a3299ab3974628c896f2045788774e459",
+    "baseline.class_ids.png": "f874c2e5ef4a3fb64a28e21ab74637d22e52c1641e1551948a4926353b4a9131",
+    "map_evidence.npz": "0978805a1d8d576b8bd111e42a3411dbed8929beed879e0151974a11402f3984"
+  },
+  "limitation": "First 6/4 frames only; functionality checks, not full-route semantic accuracy."
+}

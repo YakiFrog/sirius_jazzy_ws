@@ -1,8 +1,8 @@
 #!/bin/bash
 # ==============================================================================
 # THETA オフライン路面マッピング 実行・保存スクリプト
-# 記録済み Rosbag を再生し、THETA BEV -> 地面点群 -> RTAB-Map で路面地図を生成します。
-# SAM3・ステレオ・深度は使用しません。
+# 通常は記録画像を逐次処理し、品質保護・暗所認識・時系列追跡・領域補正を適用します。
+# 従来のRosbag再生 + RTAB-Mapも選択できます。
 # ==============================================================================
 
 WS_DIR="${HOME}/sirius_jazzy_ws"
@@ -20,12 +20,18 @@ echo "================================================="
 # 0. 実行モードの選択（重ね合わせのみならマッピングを起動しない）
 echo ""
 echo "実行内容を選択してください:"
-echo "  [1] Rosbagを再生して新規マッピング"
+echo "  [1] 改善済みの逐次処理で新規マッピング（全画像・推奨）"
 echo "  [2] 既存の生成済み地図をSLAM Toolbox地図と重ね合わせる"
+echo "  [3] 従来のRosbag再生 + RTAB-Mapでマッピング"
 read -p "選択 [1]: " RUN_MODE
 RUN_MODE=${RUN_MODE:-1}
 if [ "$RUN_MODE" = "2" ]; then
     exec bash "$WS_DIR/bash/startup_bash/rebase_existing_map.sh"
+fi
+
+if [ "$RUN_MODE" != "1" ] && [ "$RUN_MODE" != "3" ]; then
+    echo "無効な実行内容です。"
+    exit 1
 fi
 
 # 1. 録画データ (Rosbag) の選択
@@ -112,7 +118,10 @@ if [ -f "$BAG_VALIDATOR" ]; then
         fi
     fi
 
-    if [ "$VALIDATION_STATUS" -eq 0 ]; then
+    # The sequential pipeline validates its configured topics and timestamped
+    # TF itself. The legacy validator requires fixed topic/frame names and an
+    # odometry topic that the new recorded-TF path does not need.
+    if [ "$VALIDATION_STATUS" -eq 0 ] && [ "$RUN_MODE" = "3" ]; then
         python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
         VALIDATION_STATUS=$?
     fi
@@ -139,8 +148,11 @@ if [ -f "$BAG_VALIDATOR" ]; then
         BAG_NAME=$(basename "$SELECTED_BAG")
         echo ""
         echo "復旧したRosbagを再検証中: $SELECTED_BAG"
-        python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
-        VALIDATION_STATUS=$?
+        VALIDATION_STATUS=0
+        if [ "$RUN_MODE" = "3" ]; then
+            python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
+            VALIDATION_STATUS=$?
+        fi
     fi
 
     if [ "$VALIDATION_STATUS" -ne 0 ]; then
@@ -151,7 +163,36 @@ if [ -f "$BAG_VALIDATOR" ]; then
     fi
 fi
 
-# 2. 再生速度の選択
+# 通常経路: 推論速度によるフレーム落ちを避け、記録されたTFとscan3で逐次生成。
+# 実験で使った特定の地図・座標・フレーム範囲には依存しない。
+if [ "$RUN_MODE" = "1" ]; then
+    ROAD_CONFIG="${THETA_ROAD_CONFIG:-$WS_DIR/params/theta_road_mapping.yaml}"
+    DEFAULT_CALIB="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration.yaml"
+    case "$BAG_NAME" in
+        real_*) DEFAULT_CALIB="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml" ;;
+    esac
+    echo ""
+    echo "共通設定: $ROAD_CONFIG"
+    read -r -p "校正YAML [$DEFAULT_CALIB]: " ROAD_CALIB
+    ROAD_CALIB="${ROAD_CALIB:-$DEFAULT_CALIB}"
+    read -r -p "SAM3セマンティック分類も行いますか？ (Y/n) [Y]: " ROAD_SAM3
+    ROAD_ARGS=()
+    case "${ROAD_SAM3,,}" in n|no) ROAD_ARGS+=(--no-semantic) ;; esac
+    ROAD_OUTPUT="$WS_DIR/maps_waypoints/maps/theta_road_${BAG_NAME}_$(date +%Y%m%d_%H%M%S)"
+    echo "全画像を順番に処理します。設定・元の分類・推論キャッシュも保存します。"
+    echo "出力先: $ROAD_OUTPUT"
+    if ! python3 "$WS_DIR/bash/startup_bash/generate_theta_road_map.py" \
+        "$SELECTED_BAG" "$ROAD_OUTPUT" --calibration "$ROAD_CALIB" \
+        --config "$ROAD_CONFIG" "${ROAD_ARGS[@]}"; then
+        echo "生成に失敗しました。原因と途中データは上記の出力先で確認できます。"
+        exit 1
+    fi
+    echo "✓ 地図生成が完了しました。Map Select: $(basename "$ROAD_OUTPUT")/road_temporal"
+    echo "比較画像: $ROAD_OUTPUT/images.html"
+    exit 0
+fi
+
+# 2. 従来経路の再生速度の選択
 echo ""
 read -p "再生速度を選択してください (例: 0.5, 1.0) [0.5]: " PLAY_RATE
 PLAY_RATE=${PLAY_RATE:-0.5}

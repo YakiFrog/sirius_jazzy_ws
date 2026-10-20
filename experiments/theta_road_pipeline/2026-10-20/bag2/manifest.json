@@ -1,0 +1,261 @@
+{
+  "bag": "/home/kotantu-desktop/rosbag2_data/real_both_mapping_20260919_110949_recovered",
+  "run_identity_sha256": "c425b8b649f6f056744a11e1e06b235509eb13c9e5f3be0f22afb5e382555534",
+  "input_stream_sha256": "6a20f88f662982788ea79901ef673fbb8026302b51d6d055ef0c7a237868c464",
+  "config": {
+    "camera_topic": "/theta/dual_fisheye/image_raw/compressed",
+    "scan_topic": "/scan3",
+    "map_frame": "map",
+    "robot_frame": "sirius3/base_footprint",
+    "camera_frame": "sirius3/theta_link",
+    "resolution": 0.05,
+    "max_grid_cells": 30000000,
+    "projection": {
+      "bev_size": 512,
+      "stride": 2,
+      "min_radius": 1.2,
+      "max_radius": 4.8
+    },
+    "visibility": {
+      "strict": true,
+      "fixed_frame": "sirius3/odom",
+      "max_age_sec": 0.15,
+      "margin_m": 0.1,
+      "obstacle_padding_m": 0.25
+    },
+    "texture": {
+      "rear_weight": 0.5,
+      "relative_quality": 0.5,
+      "decay": 0.7,
+      "quality_power": 2.0
+    },
+    "semantic": {
+      "enabled": true,
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "score_min": 0.5,
+      "resolution": 512,
+      "view_size": [
+        640,
+        480
+      ],
+      "view_yaws": [
+        0,
+        180
+      ],
+      "hfov_deg": 120.0,
+      "min_weight": 0.3,
+      "bidirectional": true,
+      "max_gap_sec": 1.5,
+      "yellow_fraction": 0.35,
+      "shadow": {
+        "enabled": true,
+        "prompt": "yellow tactile paving in shadow",
+        "gamma": 0.45,
+        "max_gain": 6.0,
+        "max_original_value": 90,
+        "yellow_fraction": 0.2,
+        "min_saturation": 45,
+        "min_component_area": 16
+      }
+    },
+    "regions": {
+      "enabled": true,
+      "strength_m": 0.8,
+      "color_sigma": 3.0,
+      "policy": "road-to-sidewalk",
+      "tactile_context": true,
+      "radius_m": 1.6,
+      "prior_strength": 8.0,
+      "endpoint_guard_m": 1.0,
+      "min_length_m": 3.0,
+      "max_width_m": 0.45
+    },
+    "grass": {
+      "candidates": false,
+      "radius_m": 0.25,
+      "fraction_min": 0.3,
+      "weight_min": 0.2
+    }
+  },
+  "full_bag": false,
+  "input_camera_frames": 5947,
+  "selected_camera_frames": 4,
+  "inferred_frames": 4,
+  "frame_count": 4,
+  "frames": [
+    {
+      "frame": 0,
+      "bag_ns": 1789783799381669801,
+      "occurrence": 0,
+      "stamp_ns": 1789783799381298788,
+      "sha256": "98dd296415c5e32e89541b80c506459540892e092d9e229fb807bf333a4c7fbc",
+      "xyz": [
+        3.129601763239218,
+        -11.169461014157148,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.6878727841842932,
+        0.7258312701851228
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 29527,
+      "scan_stamp_ns": 1789783799391138048
+    },
+    {
+      "frame": 1,
+      "bag_ns": 1789783799681613234,
+      "occurrence": 0,
+      "stamp_ns": 1789783799681279028,
+      "sha256": "9c31a8c7e0d353b19d3f15e8e729d373d6fe9695dabbba2d6636200b1e22987f",
+      "xyz": [
+        3.129601763239218,
+        -11.169461014157148,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.6878725011513428,
+        0.7258315384163159
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 29597,
+      "scan_stamp_ns": 1789783799693718528
+    },
+    {
+      "frame": 2,
+      "bag_ns": 1789783799881905232,
+      "occurrence": 0,
+      "stamp_ns": 1789783799881550894,
+      "sha256": "44752c6f04fe9a7140ad0be330250992fc747a928ce648337af864ce71445538",
+      "xyz": [
+        3.129601763239218,
+        -11.169461014157148,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.6878724027134816,
+        0.7258316317061291
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 30361,
+      "scan_stamp_ns": 1789783799895428608
+    },
+    {
+      "frame": 3,
+      "bag_ns": 1789783800081727290,
+      "occurrence": 0,
+      "stamp_ns": 1789783800081512034,
+      "sha256": "545817ea8d39339c9a34c4caf16697be6fc6398733ad602b133db4246659fb47",
+      "xyz": [
+        3.129601763239218,
+        -11.169461014157148,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.68787234273271,
+        0.7258316885500474
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 27685,
+      "scan_stamp_ns": 1789783800097141504
+    }
+  ],
+  "skipped": [],
+  "grid": {
+    "origin": [
+      -1.8,
+      -16.1
+    ],
+    "resolution": 0.05,
+    "width": 197,
+    "height": 197
+  },
+  "refinements": {
+    "regions": {
+      "5": {
+        "cells": 7368,
+        "components": 3,
+        "components_below_025_m2": 2
+      },
+      "6": {
+        "cells": 1793,
+        "components": 17,
+        "components_below_025_m2": 15
+      },
+      "changed_cells": 2,
+      "road_to_sidewalk": 2,
+      "sidewalk_to_road": 0,
+      "protected_cells_unchanged": true,
+      "flow": 27826,
+      "seconds": 0.003
+    }
+  },
+  "camera_sha256_verified": true,
+  "recorded_tf_only": true,
+  "no_coordinate_warp": true,
+  "unobserved_space_not_filled": true,
+  "semantic_cells": {
+    "3": 0,
+    "4": 0,
+    "5": 7368,
+    "6": 1793
+  },
+  "elapsed_sec": 12.277446985244751,
+  "status": "complete"
+}

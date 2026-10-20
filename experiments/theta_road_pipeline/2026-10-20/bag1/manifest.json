@@ -1,0 +1,327 @@
+{
+  "bag": "/home/kotantu-desktop/rosbag2_data/0920/real_both_mapping_20260920_113447_recovered",
+  "run_identity_sha256": "4de194a5382765c39bef2195329235fe6fc12fe5b29273bb0cbc813552f6958a",
+  "input_stream_sha256": "a27ae82910291f0ffa040ece468556dae0c55119441b33c400d74b72c0f8f57f",
+  "config": {
+    "camera_topic": "/theta/dual_fisheye/image_raw/compressed",
+    "scan_topic": "/scan3",
+    "map_frame": "map",
+    "robot_frame": "sirius3/base_footprint",
+    "camera_frame": "sirius3/theta_link",
+    "resolution": 0.05,
+    "max_grid_cells": 30000000,
+    "projection": {
+      "bev_size": 512,
+      "stride": 2,
+      "min_radius": 1.2,
+      "max_radius": 4.8
+    },
+    "visibility": {
+      "strict": true,
+      "fixed_frame": "sirius3/odom",
+      "max_age_sec": 0.15,
+      "margin_m": 0.1,
+      "obstacle_padding_m": 0.25
+    },
+    "texture": {
+      "rear_weight": 0.5,
+      "relative_quality": 0.5,
+      "decay": 0.7,
+      "quality_power": 2.0
+    },
+    "semantic": {
+      "enabled": true,
+      "prompt": "grass, yellow tactile paving, roadway, sidewalk",
+      "score_min": 0.5,
+      "resolution": 512,
+      "view_size": [
+        640,
+        480
+      ],
+      "view_yaws": [
+        0,
+        180
+      ],
+      "hfov_deg": 120.0,
+      "min_weight": 0.3,
+      "bidirectional": true,
+      "max_gap_sec": 1.5,
+      "yellow_fraction": 0.35,
+      "shadow": {
+        "enabled": true,
+        "prompt": "yellow tactile paving in shadow",
+        "gamma": 0.45,
+        "max_gain": 6.0,
+        "max_original_value": 90,
+        "yellow_fraction": 0.2,
+        "min_saturation": 45,
+        "min_component_area": 16
+      }
+    },
+    "regions": {
+      "enabled": true,
+      "strength_m": 0.8,
+      "color_sigma": 3.0,
+      "policy": "road-to-sidewalk",
+      "tactile_context": true,
+      "radius_m": 1.6,
+      "prior_strength": 8.0,
+      "endpoint_guard_m": 1.0,
+      "min_length_m": 3.0,
+      "max_width_m": 0.45
+    },
+    "grass": {
+      "candidates": false,
+      "radius_m": 0.25,
+      "fraction_min": 0.3,
+      "weight_min": 0.2
+    }
+  },
+  "full_bag": false,
+  "input_camera_frames": 5956,
+  "selected_camera_frames": 6,
+  "inferred_frames": 6,
+  "frame_count": 6,
+  "frames": [
+    {
+      "frame": 0,
+      "bag_ns": 1789871695393621594,
+      "occurrence": 0,
+      "stamp_ns": 1789871695393301429,
+      "sha256": "ae3223c988b84e7b97af54a9b47eb8a3f002b6f936ac5b70f735ad83905eb3dd",
+      "xyz": [
+        0.03567331782889238,
+        -0.4590495946158669,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.7090025278202614,
+        0.7052059383928069
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 25728,
+      "scan_stamp_ns": 1789871695398638592
+    },
+    {
+      "frame": 1,
+      "bag_ns": 1789871695694446895,
+      "occurrence": 0,
+      "stamp_ns": 1789871695694180436,
+      "sha256": "1d74295bdc2be96fa23176de2887102f09373cc38d794ef9d6679ae9e4bc49c2",
+      "xyz": [
+        0.035673317828891826,
+        -0.4590495946159728,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.7090024712387635,
+        0.7052059952789159
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 25645,
+      "scan_stamp_ns": 1789871695701230080
+    },
+    {
+      "frame": 2,
+      "bag_ns": 1789871695993219991,
+      "occurrence": 0,
+      "stamp_ns": 1789871695992948277,
+      "sha256": "cb3095c5cdcca19b09ce434be7576c1fcfac5f563cd0c1b469a9309dff213676",
+      "xyz": [
+        0.03567331782889191,
+        -0.4590495946159544,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.7090024407877357,
+        0.7052060258938755
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 24055,
+      "scan_stamp_ns": 1789871696003789056
+    },
+    {
+      "frame": 3,
+      "bag_ns": 1789871696193553964,
+      "occurrence": 0,
+      "stamp_ns": 1789871696193282250,
+      "sha256": "386c09fa12ef42876eafde2586f6dd086ea080ce160d99b8a63d2ad59648869c",
+      "xyz": [
+        0.035673317828891646,
+        -0.4590495946160009,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.709002430228223,
+        0.7052060365102341
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 24704,
+      "scan_stamp_ns": 1789871696205501440
+    },
+    {
+      "frame": 4,
+      "bag_ns": 1789871696489259158,
+      "occurrence": 0,
+      "stamp_ns": 1789871696489012938,
+      "sha256": "07afd42baf025e67b1f0c7e90a3bb545767813391ef1d6f86ec11f44202cfe81",
+      "xyz": [
+        0.035673317828891965,
+        -0.4590495946159393,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.7090024216962569,
+        0.705206045088131
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 24731,
+      "scan_stamp_ns": 1789871696508077568
+    },
+    {
+      "frame": 5,
+      "bag_ns": 1789871696789162896,
+      "occurrence": 0,
+      "stamp_ns": 1789871696788923879,
+      "sha256": "9c563d7c57b780ed802a1c11acc7a59a8b8e351583443635a452ae850eb48cb4",
+      "xyz": [
+        0.03567331782889181,
+        -0.4590495946159485,
+        0.0
+      ],
+      "quaternion": [
+        0.0,
+        0.0,
+        -0.7087477671296212,
+        0.7054619781311933
+      ],
+      "camera_mount": {
+        "position": [
+          0.0,
+          0.0,
+          1.135
+        ],
+        "rpy_degrees": [
+          0.0,
+          -0.0,
+          0.0
+        ],
+        "source": "tf"
+      },
+      "ground_points": 24791,
+      "scan_stamp_ns": 1789871696810644736
+    }
+  ],
+  "skipped": [],
+  "grid": {
+    "origin": [
+      -4.9,
+      -5.4
+    ],
+    "resolution": 0.05,
+    "width": 197,
+    "height": 197
+  },
+  "refinements": {
+    "regions": {
+      "5": {
+        "cells": 8098,
+        "components": 1,
+        "components_below_025_m2": 0
+      },
+      "6": {
+        "cells": 501,
+        "components": 89,
+        "components_below_025_m2": 87
+      },
+      "changed_cells": 1,
+      "road_to_sidewalk": 1,
+      "sidewalk_to_road": 0,
+      "protected_cells_unchanged": true,
+      "flow": 39663,
+      "seconds": 0.004
+    }
+  },
+  "camera_sha256_verified": true,
+  "recorded_tf_only": true,
+  "no_coordinate_warp": true,
+  "unobserved_space_not_filled": true,
+  "semantic_cells": {
+    "3": 0,
+    "4": 0,
+    "5": 8098,
+    "6": 501
+  },
+  "elapsed_sec": 9.813857555389404,
+  "status": "complete"
+}
