@@ -282,8 +282,8 @@ def main(argv=None):
         if memo is None:
             memo = ''
         print(f' 保存先     : {bag}', flush=True)
-        ans = ask(' 録画を開始しますか？ (y/N): ', 'n').lower()
-        if ans not in ('y', 'yes'):
+        ans = ask(' 録画を開始しますか？ (Y/n): ', 'y')
+        if ans is None or ans.lower() not in ('y', 'yes'):
             print('中止しました（録画していません）。', flush=True)
             return 0
     else:

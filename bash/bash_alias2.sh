@@ -22,6 +22,9 @@
 # PRESET: 3D自律移動セット
 # PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,twist_mux,nav2_3d
 
+# PRESET: 3D地図で自己位置推定（実機・録画は別）
+# PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,loc3d,foxglove
+
 # PRESET: 3D地図生成セット(Webシミュ)
 # PRESET_ITEMS: rosbridge,tf_sim,lio3d_sim
 

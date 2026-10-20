@@ -19,17 +19,38 @@ source /opt/ros/jazzy/setup.bash
 source "$WS/install/setup.bash"
 set -u
 
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/sirius_loc3d_${UID}_${ROS_DOMAIN_ID:-0}.lock"
+if ! flock -n 9; then
+    echo "3D自己位置推定は既に起動しています (ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0})"
+    exit 0
+fi
+# Also recognize a localizer started directly, before this wrapper owned the lock.
+if timeout 8 ros2 node list --no-daemon --spin-time 2 2>/dev/null | grep -Fxq '/map_localizer'; then
+    echo "map_localizer は既に起動しています。現在の位置推定を継続します。"
+    exit 0
+fi
+
 if [ "$MODE" = "sim" ]; then
     USE_SIM_TIME=true
+    USE_3DOF=true
 else
     USE_SIM_TIME=false
+    USE_3DOF=false
 fi
 
 entry=$(sirius3d_pick) || exit 1
 map3d="${entry%%|*}"
 echo "3D地図: $map3d"
 echo "モード: $MODE (use_sim_time=$USE_SIM_TIME)"
-echo "初期姿勢は RViz の「2D Pose Estimate」で与えられます（map_localizer が /initialpose を購読）。"
+PUBLISH_MAP=false
+case "$map3d" in
+    *.ply) PUBLISH_MAP=true ;;
+esac
+echo "Foxglove: 表示フレーム map / 地図 /localization/map（PLY地図）"
+echo "初期位置・向きが異なる場合は Foxglove/RViz から /initialpose を与えてください。"
+echo "検証用の録画は record_loc3d で別途開始します。"
 exec ros2 launch sirius_navigation theta_3d_localization.launch.py \
     map_path:="$map3d" \
-    use_sim_time:="$USE_SIM_TIME"
+    use_sim_time:="$USE_SIM_TIME" \
+    use_3dof:="${SIRIUS_LOCALIZATION_3DOF:-$USE_3DOF}" \
+    publish_map:="$PUBLISH_MAP"
