@@ -1,0 +1,26 @@
+{
+  "images.html": {
+    "status": 200,
+    "bytes": 743
+  },
+  "texture.jpg": {
+    "status": 200,
+    "bytes": 269203
+  },
+  "overlay.jpg": {
+    "status": 200,
+    "bytes": 264949
+  },
+  "semantic.jpg": {
+    "status": 200,
+    "bytes": 200167
+  },
+  "comparison/images.html": {
+    "status": 200,
+    "bytes": 1251
+  },
+  "comparison/frame4500.jpg": {
+    "status": 200,
+    "bytes": 745934
+  }
+}

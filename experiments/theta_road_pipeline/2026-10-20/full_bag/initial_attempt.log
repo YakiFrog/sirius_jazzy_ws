@@ -1,0 +1,37 @@
+[INFO] [1792462574.593347025] [theta_bev]: Dual Fisheye JPEG -> BEV 準備完了（平面地面仮定, 姿勢取得元: TF sirius3/base_footprint <- sirius3/theta_link）
+[INFO] [1792462574.597450606] [theta_ground_cloud]: BEV 512x512 (10.0m) -> /theta/ground_cloud frame=sirius3/base_footprint stride=2 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+[INFO] [1792462574.645264853] [theta_bev]: THETA姿勢をTFから取得: 位置=[0.0, 0.0, 1.135] rpy=[0.0, -0.0, 0.0]
+{"phase": "forward", "completed": 25, "frames": 5956, "elapsed_sec": 30.268558025360107}
+{"phase": "forward", "completed": 50, "frames": 5956, "elapsed_sec": 47.21731185913086}
+{"phase": "forward", "completed": 75, "frames": 5956, "elapsed_sec": 64.24272036552429}
+{"phase": "forward", "completed": 100, "frames": 5956, "elapsed_sec": 81.16982460021973}
+{"phase": "forward", "completed": 125, "frames": 5956, "elapsed_sec": 98.25060725212097}
+{"phase": "forward", "completed": 150, "frames": 5956, "elapsed_sec": 115.33677673339844}
+{"phase": "forward", "completed": 175, "frames": 5956, "elapsed_sec": 132.31264066696167}
+Traceback (most recent call last):
+  File "/home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/generate_theta_road_map.py", line 360, in run
+    packet = processor.infer(views)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/generate_theta_road_map.py", line 143, in infer
+    ids, score, meta = self.session.infer(image)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kotantu-desktop/sirius_jazzy_ws/build/sirius_navigation/sirius_navigation/sam3_experiment_client.py", line 57, in infer
+    time.sleep(.03)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/generate_theta_road_map.py", line 505, in <module>
+    main()
+  File "/home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/generate_theta_road_map.py", line 501, in main
+    run(args)
+  File "/home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/generate_theta_road_map.py", line 486, in run
+    rclpy.shutdown()
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/__init__.py", line 134, in shutdown
+    _shutdown(context=context)
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/utilities.py", line 82, in shutdown
+    context.shutdown()
+  File "/opt/ros/jazzy/lib/python3.12/site-packages/rclpy/context.py", line 129, in shutdown
+    self.__context.shutdown()
+rclpy._rclpy_pybind11.RCLError: failed to shutdown: rcl_shutdown already called on the given context, at ./src/rcl/init.c:333

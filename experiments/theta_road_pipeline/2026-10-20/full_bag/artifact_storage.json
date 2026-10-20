@@ -1,0 +1,8 @@
+{
+  "full_raw_run": "/media/kotantu-desktop/GS2MESH_HDD/theta_road_mapping_runs/theta_road_general_full_20261020_cached",
+  "map_directory": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_road_general_full_20261020",
+  "raw_observations_archived": true,
+  "source_hashes_match": true,
+  "archive_hashes_verified": true,
+  "all_camera_frames_retained": true
+}

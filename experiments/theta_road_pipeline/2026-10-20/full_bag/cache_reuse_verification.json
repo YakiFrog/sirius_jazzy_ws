@@ -1,0 +1,9 @@
+{
+  "checked_frames": 6,
+  "all_baseline_observations_reused": true,
+  "full_rgb_semantics_evidence_byte_identical_to_fresh_inference": true,
+  "legacy_cache_view_metadata_checked": 11912,
+  "legacy_cache_metadata_mismatches": 0,
+  "related_tests_passed": 40,
+  "world_crop_identity_verified": true
+}

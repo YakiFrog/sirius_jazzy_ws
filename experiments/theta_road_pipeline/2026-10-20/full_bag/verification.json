@@ -1,0 +1,126 @@
+{
+  "full_bag": true,
+  "camera_frames": 5956,
+  "mapped_frames": 5956,
+  "skipped": [],
+  "native_point_counts_and_poses_equal_reference": true,
+  "geometry_comparison_frames": 5956,
+  "protected_semantic_classes_preserved": true,
+  "all_semantics_inside_observed_rgb": true,
+  "rgb_support_equals_native_coverage": true,
+  "baseline_cache_frames": 5956,
+  "grid": {
+    "origin": [
+      -109.65,
+      -167.05
+    ],
+    "resolution": 0.05,
+    "width": 2668,
+    "height": 3991
+  },
+  "semantic_cells": {
+    "3": 76202,
+    "4": 48958,
+    "5": 262934,
+    "6": 905326
+  },
+  "refinements": {
+    "regions": {
+      "5": {
+        "cells": 275811,
+        "components": 898,
+        "components_below_025_m2": 858
+      },
+      "6": {
+        "cells": 892449,
+        "components": 1757,
+        "components_below_025_m2": 1727
+      },
+      "changed_cells": 27748,
+      "road_to_sidewalk": 27748,
+      "sidewalk_to_road": 0,
+      "protected_cells_unchanged": true,
+      "flow": 6729461,
+      "seconds": 3.175
+    },
+    "tactile_context": {
+      "raw_tactile_cells": 48958,
+      "skeleton_cells": 6372,
+      "safe_anchor_cells": 3510,
+      "unsafe_skeleton_cells": 2862,
+      "5": {
+        "cells": 262934,
+        "components": 886,
+        "components_below_025_m2": 847
+      },
+      "6": {
+        "cells": 905326,
+        "components": 1701,
+        "components_below_025_m2": 1672
+      },
+      "changed_cells": 12877,
+      "road_to_sidewalk": 12877,
+      "sidewalk_to_road": 0,
+      "protected_cells_unchanged": true,
+      "flow": 7395643,
+      "seconds": 3.173
+    }
+  },
+  "caveat": "Agreement with the reference generation, not independent geometry or semantic ground truth.",
+  "review_views": [
+    {
+      "frame": 900,
+      "world_center_m": [
+        -0.9937895601658572,
+        -75.05280515665751
+      ],
+      "span_m": 10.0,
+      "path": "frame900.jpg"
+    },
+    {
+      "frame": 1500,
+      "world_center_m": [
+        -11.674885169784973,
+        -151.39753328335425
+      ],
+      "span_m": 10.0,
+      "path": "frame1500.jpg"
+    },
+    {
+      "frame": 2700,
+      "world_center_m": [
+        -96.71679147018901,
+        -121.41989902483131
+      ],
+      "span_m": 10.0,
+      "path": "frame2700.jpg"
+    },
+    {
+      "frame": 3000,
+      "world_center_m": [
+        -91.45589897901675,
+        -104.86089044025051
+      ],
+      "span_m": 10.0,
+      "path": "frame3000.jpg"
+    },
+    {
+      "frame": 4500,
+      "world_center_m": [
+        -11.347979348078198,
+        -4.750586098470244
+      ],
+      "span_m": 10.0,
+      "path": "frame4500.jpg"
+    },
+    {
+      "frame": 5100,
+      "world_center_m": [
+        13.70698918075951,
+        20.625084594543765
+      ],
+      "span_m": 10.0,
+      "path": "frame5100.jpg"
+    }
+  ]
+}

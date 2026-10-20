@@ -1,0 +1,22 @@
+{
+  "files": 11912,
+  "camera_frames": 5956,
+  "archives": [
+    {
+      "name": "observations_part01.zip",
+      "bytes": 66465979,
+      "sha256": "8ee360409ca9590bb5062bc22320d75afc76bc7b45a5a91313fe2e7019d5e295"
+    },
+    {
+      "name": "observations_part02.zip",
+      "bytes": 66470568,
+      "sha256": "b60b12150122c0664bfbcc9245cb5233e988c68bfa933deead1a0c99591f3359"
+    },
+    {
+      "name": "observations_part03.zip",
+      "bytes": 20607885,
+      "sha256": "e76e5b5f9a490e07d8c2a8b5ff86a10b812767c487380e6dbe3a25a47f949c7f"
+    }
+  ],
+  "total_archive_bytes": 153544432
+}
