@@ -1,0 +1,75 @@
+{
+  "scatter_ema": {
+    "source": "native",
+    "mode": "ema",
+    "relative": 0,
+    "rear": false,
+    "lens": false
+  },
+  "scatter_protected": {
+    "source": "native",
+    "mode": "ema",
+    "relative": 0.5,
+    "rear": true,
+    "lens": false
+  },
+  "scatter_protected_lens": {
+    "source": "native",
+    "mode": "ema",
+    "relative": 0.5,
+    "rear": true,
+    "lens": true
+  },
+  "direct_ema": {
+    "source": "direct",
+    "mode": "ema",
+    "relative": 0,
+    "rear": false,
+    "lens": false
+  },
+  "direct_protected_no_lens": {
+    "source": "direct",
+    "mode": "ema",
+    "relative": 0.5,
+    "rear": true,
+    "lens": false
+  },
+  "direct_protected": {
+    "source": "direct",
+    "mode": "ema",
+    "relative": 0.5,
+    "rear": true,
+    "lens": true
+  },
+  "direct_best": {
+    "source": "direct",
+    "mode": "best",
+    "relative": 0,
+    "rear": true,
+    "lens": true
+  },
+  "direct_robust065_25": {
+    "source": "direct",
+    "mode": "robust",
+    "relative": 0.65,
+    "rear": true,
+    "lens": true,
+    "tolerance": 25
+  },
+  "direct_robust080_25": {
+    "source": "direct",
+    "mode": "robust",
+    "relative": 0.8,
+    "rear": true,
+    "lens": true,
+    "tolerance": 25
+  },
+  "direct_robust065_40": {
+    "source": "direct",
+    "mode": "robust",
+    "relative": 0.65,
+    "rear": true,
+    "lens": true,
+    "tolerance": 40
+  }
+}

@@ -1,0 +1,33 @@
+Compared segment 900
+Compared segment 1500
+Compared segment 2700
+Compared segment 3000
+Compared segment 4500
+Compared segment 5100
+Traceback (most recent call last):
+  File "/home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/compare_theta_texture_quality.py", line 99, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/kotantu-desktop/sirius_jazzy_ws/bash/startup_bash/compare_theta_texture_quality.py", line 96, in main
+    (out/'aggregate.json').write_text(json.dumps(aggregate,indent=2));(out/'viewports.json').write_text(json.dumps(viewports,indent=2));(out/'variants.json').write_text(json.dumps(VARIANTS,indent=2));print(json.dumps(aggregate,indent=2))
+                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/usr/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/usr/lib/python3.12/json/encoder.py", line 439, in _iterencode
+    o = _default(o)
+        ^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type int64 is not JSON serializable

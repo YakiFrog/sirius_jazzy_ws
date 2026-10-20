@@ -1,0 +1,163 @@
+[INFO] [1792459899.290417433] [theta_bev]: Dual Fisheye JPEG -> BEV 準備完了（平面地面仮定, 姿勢取得元: TF sirius3/base_footprint <- sirius3/theta_link）
+[INFO] [1792459899.294887804] [theta_ground_cloud]: BEV 512x512 (10.0m) -> /theta/ground_cloud frame=sirius3/base_footprint stride=2 min_radius=1.2 max_radius=4.8 semantic=/theta/bev_semantic
+Loaded recorded TF and 31306 scans
+[INFO] [1792459899.364703965] [theta_bev]: THETA姿勢をTFから取得: 位置=[0.0, 0.0, 1.135] rpy=[0.0, -0.0, 0.0]
+[INFO] [1792459899.461951995] [theta_ground_cloud]: Road visibility: kept 25728/43549 samples
+Projected 50 / 5956
+Projected 100 / 5956
+[INFO] [1792459904.462247756] [theta_ground_cloud]: Road visibility: kept 25661/43049 samples
+Projected 150 / 5956
+Projected 200 / 5956
+Projected 250 / 5956
+[INFO] [1792459909.489984930] [theta_ground_cloud]: Road visibility: kept 28607/42870 samples
+Projected 300 / 5956
+Projected 350 / 5956
+Projected 400 / 5956
+[INFO] [1792459914.523470661] [theta_ground_cloud]: Road visibility: kept 38513/43066 samples
+Projected 450 / 5956
+Projected 500 / 5956
+Projected 550 / 5956
+[INFO] [1792459919.528067755] [theta_ground_cloud]: Road visibility: kept 36323/42609 samples
+Projected 600 / 5956
+Projected 650 / 5956
+Projected 700 / 5956
+[INFO] [1792459924.544480852] [theta_ground_cloud]: Road visibility: kept 39292/44050 samples
+Projected 750 / 5956
+Projected 800 / 5956
+[INFO] [1792459929.572202881] [theta_ground_cloud]: Road visibility: kept 31603/43399 samples
+Projected 850 / 5956
+Projected 900 / 5956
+Projected 950 / 5956
+[INFO] [1792459934.603632803] [theta_ground_cloud]: Road visibility: kept 30693/42366 samples
+Projected 1000 / 5956
+Projected 1050 / 5956
+Projected 1100 / 5956
+[INFO] [1792459939.610137186] [theta_ground_cloud]: Road visibility: kept 28503/39986 samples
+Projected 1150 / 5956
+Projected 1200 / 5956
+Projected 1250 / 5956
+[INFO] [1792459944.630074397] [theta_ground_cloud]: Road visibility: kept 35939/43537 samples
+Projected 1300 / 5956
+Projected 1350 / 5956
+Projected 1400 / 5956
+[INFO] [1792459949.650337866] [theta_ground_cloud]: Road visibility: kept 33864/43223 samples
+Projected 1450 / 5956
+Projected 1500 / 5956
+Projected 1550 / 5956
+[INFO] [1792459954.666750686] [theta_ground_cloud]: Road visibility: kept 34836/42387 samples
+Projected 1600 / 5956
+Projected 1650 / 5956
+[INFO] [1792459959.699842111] [theta_ground_cloud]: Road visibility: kept 25208/32977 samples
+Projected 1700 / 5956
+Projected 1750 / 5956
+Projected 1800 / 5956
+[INFO] [1792459964.736065558] [theta_ground_cloud]: Road visibility: kept 31868/40842 samples
+Projected 1850 / 5956
+Projected 1900 / 5956
+Projected 1950 / 5956
+[INFO] [1792459969.740116687] [theta_ground_cloud]: Road visibility: kept 31683/40219 samples
+Projected 2000 / 5956
+Projected 2050 / 5956
+Projected 2100 / 5956
+[INFO] [1792459974.755304994] [theta_ground_cloud]: Road visibility: kept 33814/41122 samples
+Projected 2150 / 5956
+Projected 2200 / 5956
+Projected 2250 / 5956
+[INFO] [1792459979.766248735] [theta_ground_cloud]: Road visibility: kept 32937/41116 samples
+Projected 2300 / 5956
+Projected 2350 / 5956
+[INFO] [1792459984.778295083] [theta_ground_cloud]: Road visibility: kept 20557/33511 samples
+Projected 2400 / 5956
+Projected 2450 / 5956
+Projected 2500 / 5956
+Projected 2550 / 5956
+[INFO] [1792459989.798191683] [theta_ground_cloud]: Road visibility: kept 10795/16830 samples
+Projected 2600 / 5956
+Projected 2650 / 5956
+Projected 2700 / 5956
+[INFO] [1792459994.826170721] [theta_ground_cloud]: Road visibility: kept 12187/31824 samples
+Projected 2750 / 5956
+Projected 2800 / 5956
+Projected 2850 / 5956
+[INFO] [1792459999.848593451] [theta_ground_cloud]: Road visibility: kept 11946/32968 samples
+Projected 2900 / 5956
+Projected 2950 / 5956
+Projected 3000 / 5956
+Projected 3050 / 5956
+[INFO] [1792460004.872345754] [theta_ground_cloud]: Road visibility: kept 10206/31752 samples
+Projected 3100 / 5956
+Projected 3150 / 5956
+Projected 3200 / 5956
+[INFO] [1792460009.896979740] [theta_ground_cloud]: Road visibility: kept 36145/43068 samples
+Projected 3250 / 5956
+Projected 3300 / 5956
+Projected 3350 / 5956
+[INFO] [1792460014.917719070] [theta_ground_cloud]: Road visibility: kept 10873/31723 samples
+Projected 3400 / 5956
+Projected 3450 / 5956
+Projected 3500 / 5956
+Projected 3550 / 5956
+[INFO] [1792460019.920418407] [theta_ground_cloud]: Road visibility: kept 11466/40607 samples
+Projected 3600 / 5956
+Projected 3650 / 5956
+Projected 3700 / 5956
+[INFO] [1792460024.953373790] [theta_ground_cloud]: Road visibility: kept 36960/42111 samples
+Projected 3750 / 5956
+Projected 3800 / 5956
+Projected 3850 / 5956
+Projected 3900 / 5956
+[INFO] [1792460029.964851832] [theta_ground_cloud]: Road visibility: kept 31518/42637 samples
+Projected 3950 / 5956
+Projected 4000 / 5956
+Projected 4050 / 5956
+[INFO] [1792460034.993200772] [theta_ground_cloud]: Road visibility: kept 35430/43876 samples
+Projected 4100 / 5956
+Projected 4150 / 5956
+Projected 4200 / 5956
+[INFO] [1792460040.022577527] [theta_ground_cloud]: Road visibility: kept 38277/43775 samples
+Projected 4250 / 5956
+Projected 4300 / 5956
+Projected 4350 / 5956
+[INFO] [1792460045.022905078] [theta_ground_cloud]: Road visibility: kept 38669/43730 samples
+Projected 4400 / 5956
+Projected 4450 / 5956
+Projected 4500 / 5956
+Projected 4550 / 5956
+[INFO] [1792460050.028729150] [theta_ground_cloud]: Road visibility: kept 30021/43226 samples
+Projected 4600 / 5956
+Projected 4650 / 5956
+Projected 4700 / 5956
+[INFO] [1792460055.056818865] [theta_ground_cloud]: Road visibility: kept 40760/44276 samples
+Projected 4750 / 5956
+Projected 4800 / 5956
+Projected 4850 / 5956
+[INFO] [1792460060.081794193] [theta_ground_cloud]: Road visibility: kept 34071/43911 samples
+Projected 4900 / 5956
+Projected 4950 / 5956
+Projected 5000 / 5956
+[INFO] [1792460065.082276412] [theta_ground_cloud]: Road visibility: kept 38136/43222 samples
+Projected 5050 / 5956
+Projected 5100 / 5956
+Projected 5150 / 5956
+Projected 5200 / 5956
+[INFO] [1792460070.094995813] [theta_ground_cloud]: Road visibility: kept 12077/30949 samples
+Projected 5250 / 5956
+Projected 5300 / 5956
+Projected 5350 / 5956
+[INFO] [1792460075.104375539] [theta_ground_cloud]: Road visibility: kept 27424/44012 samples
+Projected 5400 / 5956
+Projected 5450 / 5956
+Projected 5500 / 5956
+Projected 5550 / 5956
+[INFO] [1792460080.126425878] [theta_ground_cloud]: Road visibility: kept 35411/44130 samples
+Projected 5600 / 5956
+Projected 5650 / 5956
+Projected 5700 / 5956
+Projected 5750 / 5956
+[INFO] [1792460085.137605184] [theta_ground_cloud]: Road visibility: kept 7808/30791 samples
+Projected 5800 / 5956
+Projected 5850 / 5956
+Projected 5900 / 5956
+[INFO] [1792460090.145791977] [theta_ground_cloud]: Road visibility: kept 8549/38642 samples
+Projected 5950 / 5956
+FULL TEXTURE COMPLETE {"variant": "scatter_protected", "parameters": {"source": "native", "mode": "ema", "relative": 0.5, "rear": true, "lens": false}, "texture_decay": 0.7, "camera_frames": 5956, "skipped_frames": 0, "reference_map": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_semantic_tactile_context_map_20261020", "reference_texture_sha256": "1e2012365c3e8fd379dcfbc295e1b6589f51128f4cf3e20f34f0b05ebb61abed", "all_native_point_counts_and_recorded_poses_checked": true, "observed_support_unchanged_between_fusion_conditions": true, "new_observed_rgb_cells": 0, "old_rgb_fallback_cells": 12963, "semantic_labels_unchanged": true, "world_grid_unchanged": true, "geometry_warp": false, "marking_specific_processing": false, "note": "Evaluated general observation fusion. Fixed camera model and recorded trajectory; residual projection/SLAM errors remain possible."}

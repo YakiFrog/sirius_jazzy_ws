@@ -1,0 +1,914 @@
+{
+  "900": {
+    "scatter_ema": {
+      "observed_cells": 60382,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 14.387802124023438,
+          "edge_distance_m": 0.0729211449623108
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 15.418052673339844,
+          "edge_distance_m": 0.06746244430541992
+        }
+      }
+    },
+    "scatter_protected": {
+      "observed_cells": 60382,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 12.472468376159668,
+          "edge_distance_m": 0.057216656208038334
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 13.590070724487305,
+          "edge_distance_m": 0.05283772945404053
+        }
+      }
+    },
+    "scatter_protected_lens": {
+      "observed_cells": 60382,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 11.506566047668457,
+          "edge_distance_m": 0.06520780324935914
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 12.599183082580566,
+          "edge_distance_m": 0.05833283662796021
+        }
+      }
+    },
+    "direct_ema": {
+      "observed_cells": 60191,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 14.556035995483398,
+          "edge_distance_m": 0.07443583011627197
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 15.246078491210938,
+          "edge_distance_m": 0.0698794186115265
+        }
+      }
+    },
+    "direct_protected_no_lens": {
+      "observed_cells": 60191,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 13.156967163085938,
+          "edge_distance_m": 0.06358875036239624
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 13.384654998779297,
+          "edge_distance_m": 0.06038955450057984
+        }
+      }
+    },
+    "direct_protected": {
+      "observed_cells": 60191,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 12.064126014709473,
+          "edge_distance_m": 0.06382559537887574
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 12.39613151550293,
+          "edge_distance_m": 0.056079113483428956
+        }
+      }
+    },
+    "direct_best": {
+      "observed_cells": 60191,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 17.832738876342773,
+          "edge_distance_m": 0.0855968177318573
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 18.124692916870117,
+          "edge_distance_m": 0.08035057783126831
+        }
+      }
+    },
+    "direct_robust065_25": {
+      "observed_cells": 60191,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 15.623040199279785,
+          "edge_distance_m": 0.07163752913475037
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 15.771416664123535,
+          "edge_distance_m": 0.07136989831924438
+        }
+      }
+    },
+    "direct_robust080_25": {
+      "observed_cells": 60191,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 15.9612455368042,
+          "edge_distance_m": 0.07404962778091431
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 16.036319732666016,
+          "edge_distance_m": 0.06833754181861877
+        }
+      }
+    },
+    "direct_robust065_40": {
+      "observed_cells": 60191,
+      "reference": {
+        "native": {
+          "evaluation_cells": 7870,
+          "mean_rgb_error": 14.823678016662598,
+          "edge_distance_m": 0.07955262660980225
+        },
+        "direct": {
+          "evaluation_cells": 7755,
+          "mean_rgb_error": 15.025102615356445,
+          "edge_distance_m": 0.07329234480857849
+        }
+      }
+    }
+  },
+  "1500": {
+    "scatter_ema": {
+      "observed_cells": 65592,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 13.228096008300781,
+          "edge_distance_m": 0.08350563049316406
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 13.270391464233398,
+          "edge_distance_m": 0.0755995512008667
+        }
+      }
+    },
+    "scatter_protected": {
+      "observed_cells": 65592,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 7.313432216644287,
+          "edge_distance_m": 0.05504554510116577
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 7.515932559967041,
+          "edge_distance_m": 0.05159555077552796
+        }
+      }
+    },
+    "scatter_protected_lens": {
+      "observed_cells": 65592,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 9.80158519744873,
+          "edge_distance_m": 0.07108089923858643
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 9.995702743530273,
+          "edge_distance_m": 0.06459023952484132
+        }
+      }
+    },
+    "direct_ema": {
+      "observed_cells": 65333,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 13.333476066589355,
+          "edge_distance_m": 0.08660908937454224
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 13.306262016296387,
+          "edge_distance_m": 0.07402057051658631
+        }
+      }
+    },
+    "direct_protected_no_lens": {
+      "observed_cells": 65333,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 7.454252243041992,
+          "edge_distance_m": 0.05816056728363037
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 7.5907440185546875,
+          "edge_distance_m": 0.05490398406982422
+        }
+      }
+    },
+    "direct_protected": {
+      "observed_cells": 65333,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 9.850797653198242,
+          "edge_distance_m": 0.06762251853942872
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 9.977899551391602,
+          "edge_distance_m": 0.06705807447433472
+        }
+      }
+    },
+    "direct_best": {
+      "observed_cells": 65333,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 14.297893524169922,
+          "edge_distance_m": 0.06336977481842042
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 14.503157615661621,
+          "edge_distance_m": 0.057834661006927496
+        }
+      }
+    },
+    "direct_robust065_25": {
+      "observed_cells": 65333,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 12.348814964294434,
+          "edge_distance_m": 0.075051748752594
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 12.518272399902344,
+          "edge_distance_m": 0.066672021150589
+        }
+      }
+    },
+    "direct_robust080_25": {
+      "observed_cells": 65333,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 12.820003509521484,
+          "edge_distance_m": 0.07696233391761781
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 12.994970321655273,
+          "edge_distance_m": 0.07127494812011718
+        }
+      }
+    },
+    "direct_robust065_40": {
+      "observed_cells": 65333,
+      "reference": {
+        "native": {
+          "evaluation_cells": 11691,
+          "mean_rgb_error": 12.008724212646484,
+          "edge_distance_m": 0.08146239519119264
+        },
+        "direct": {
+          "evaluation_cells": 11402,
+          "mean_rgb_error": 12.203648567199707,
+          "edge_distance_m": 0.07362748384475708
+        }
+      }
+    }
+  },
+  "2700": {
+    "scatter_ema": {
+      "observed_cells": 30288,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 6.729812145233154,
+          "edge_distance_m": 0.2863006591796875
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 6.97009801864624,
+          "edge_distance_m": 0.5
+        }
+      }
+    },
+    "scatter_protected": {
+      "observed_cells": 30288,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 3.2800686359405518,
+          "edge_distance_m": 0.1335441827774048
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 3.501225471496582,
+          "edge_distance_m": 0.15095044374465943
+        }
+      }
+    },
+    "scatter_protected_lens": {
+      "observed_cells": 30288,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 3.218634605407715,
+          "edge_distance_m": 0.2884636640548706
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 3.444117546081543,
+          "edge_distance_m": 0.2853374481201172
+        }
+      }
+    },
+    "direct_ema": {
+      "observed_cells": 29618,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 6.568195343017578,
+          "edge_distance_m": 0.283166766166687
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 6.784007549285889,
+          "edge_distance_m": 0.4992128849029541
+        }
+      }
+    },
+    "direct_protected_no_lens": {
+      "observed_cells": 29618,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 3.4368271827697754,
+          "edge_distance_m": 0.1051297426223755
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 3.6799018383026123,
+          "edge_distance_m": 0.18349785804748536
+        }
+      }
+    },
+    "direct_protected": {
+      "observed_cells": 29618,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 3.3212451934814453,
+          "edge_distance_m": 0.25332934856414796
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 3.574448585510254,
+          "edge_distance_m": 0.21347248554229736
+        }
+      }
+    },
+    "direct_best": {
+      "observed_cells": 29618,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 5.176187992095947,
+          "edge_distance_m": 0.1289624810218811
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 5.351715564727783,
+          "edge_distance_m": 0.25406684875488283
+        }
+      }
+    },
+    "direct_robust065_25": {
+      "observed_cells": 29618,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 3.774024248123169,
+          "edge_distance_m": 0.20481290817260744
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 3.9414212703704834,
+          "edge_distance_m": 0.16137685775756838
+        }
+      }
+    },
+    "direct_robust080_25": {
+      "observed_cells": 29618,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 3.9753823280334473,
+          "edge_distance_m": 0.20611910820007326
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 4.12365198135376,
+          "edge_distance_m": 0.15412222146987917
+        }
+      }
+    },
+    "direct_robust065_40": {
+      "observed_cells": 29618,
+      "reference": {
+        "native": {
+          "evaluation_cells": 6039,
+          "mean_rgb_error": 3.6915602684020996,
+          "edge_distance_m": 0.22884063720703127
+        },
+        "direct": {
+          "evaluation_cells": 5440,
+          "mean_rgb_error": 3.8481616973876953,
+          "edge_distance_m": 0.17858387231826783
+        }
+      }
+    }
+  },
+  "3000": {
+    "scatter_ema": {
+      "observed_cells": 7177,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 1.528258204460144,
+          "edge_distance_m": 0.0301791787147522
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 3.9592783451080322,
+          "edge_distance_m": 0.04681712985038758
+        }
+      }
+    },
+    "scatter_protected": {
+      "observed_cells": 7177,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 1.528258204460144,
+          "edge_distance_m": 0.0301791787147522
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 3.9592783451080322,
+          "edge_distance_m": 0.04681712985038758
+        }
+      }
+    },
+    "scatter_protected_lens": {
+      "observed_cells": 7177,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 1.528178095817566,
+          "edge_distance_m": 0.0301791787147522
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 3.959359645843506,
+          "edge_distance_m": 0.04681712985038758
+        }
+      }
+    },
+    "direct_ema": {
+      "observed_cells": 6948,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 3.969180107116699,
+          "edge_distance_m": 0.06265639066696167
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 1.5427944660186768,
+          "edge_distance_m": 0.02272927761077881
+        }
+      }
+    },
+    "direct_protected_no_lens": {
+      "observed_cells": 6948,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 3.969180107116699,
+          "edge_distance_m": 0.06265639066696167
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 1.5427944660186768,
+          "edge_distance_m": 0.02272927761077881
+        }
+      }
+    },
+    "direct_protected": {
+      "observed_cells": 6948,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 3.969180107116699,
+          "edge_distance_m": 0.06265639066696167
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 1.5427944660186768,
+          "edge_distance_m": 0.02272927761077881
+        }
+      }
+    },
+    "direct_best": {
+      "observed_cells": 6948,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 4.509286403656006,
+          "edge_distance_m": 0.061559104919433595
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 2.4820775985717773,
+          "edge_distance_m": 0.031161147356033328
+        }
+      }
+    },
+    "direct_robust065_25": {
+      "observed_cells": 6948,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 4.036182880401611,
+          "edge_distance_m": 0.06333733201026917
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 1.6116394996643066,
+          "edge_distance_m": 0.024073594808578493
+        }
+      }
+    },
+    "direct_robust080_25": {
+      "observed_cells": 6948,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 4.036182880401611,
+          "edge_distance_m": 0.06333733201026917
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 1.6116394996643066,
+          "edge_distance_m": 0.024073594808578493
+        }
+      }
+    },
+    "direct_robust065_40": {
+      "observed_cells": 6948,
+      "reference": {
+        "native": {
+          "evaluation_cells": 4164,
+          "mean_rgb_error": 3.987191677093506,
+          "edge_distance_m": 0.06306025385856628
+        },
+        "direct": {
+          "evaluation_cells": 4101,
+          "mean_rgb_error": 1.5614078044891357,
+          "edge_distance_m": 0.02318761944770813
+        }
+      }
+    }
+  },
+  "4500": {
+    "scatter_ema": {
+      "observed_cells": 45775,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 8.08447551727295,
+          "edge_distance_m": 0.06620273590087891
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 8.658138275146484,
+          "edge_distance_m": 0.06791305541992188
+        }
+      }
+    },
+    "scatter_protected": {
+      "observed_cells": 45775,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 5.643124103546143,
+          "edge_distance_m": 0.05562047362327576
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 6.440832138061523,
+          "edge_distance_m": 0.056852167844772344
+        }
+      }
+    },
+    "scatter_protected_lens": {
+      "observed_cells": 45775,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 8.097837448120117,
+          "edge_distance_m": 0.07780157327651978
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 8.688389778137207,
+          "edge_distance_m": 0.07947616577148438
+        }
+      }
+    },
+    "direct_ema": {
+      "observed_cells": 45558,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 9.070724487304688,
+          "edge_distance_m": 0.06778372526168823
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 7.911867618560791,
+          "edge_distance_m": 0.055467307567596436
+        }
+      }
+    },
+    "direct_protected_no_lens": {
+      "observed_cells": 45558,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 6.487730503082275,
+          "edge_distance_m": 0.05845721960067749
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 5.81474494934082,
+          "edge_distance_m": 0.04871553778648377
+        }
+      }
+    },
+    "direct_protected": {
+      "observed_cells": 45558,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 8.745894432067871,
+          "edge_distance_m": 0.07049386501312256
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 8.220513343811035,
+          "edge_distance_m": 0.06476327180862428
+        }
+      }
+    },
+    "direct_best": {
+      "observed_cells": 45558,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 10.025607109069824,
+          "edge_distance_m": 0.08936897516250611
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 9.852019309997559,
+          "edge_distance_m": 0.08009722232818604
+        }
+      }
+    },
+    "direct_robust065_25": {
+      "observed_cells": 45558,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 9.443756103515625,
+          "edge_distance_m": 0.07626948356628419
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 9.014190673828125,
+          "edge_distance_m": 0.0659631371498108
+        }
+      }
+    },
+    "direct_robust080_25": {
+      "observed_cells": 45558,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 9.298518180847168,
+          "edge_distance_m": 0.07695040106773376
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 8.91966724395752,
+          "edge_distance_m": 0.06524606943130494
+        }
+      }
+    },
+    "direct_robust065_40": {
+      "observed_cells": 45558,
+      "reference": {
+        "native": {
+          "evaluation_cells": 13720,
+          "mean_rgb_error": 9.199877738952637,
+          "edge_distance_m": 0.071623694896698
+        },
+        "direct": {
+          "evaluation_cells": 13718,
+          "mean_rgb_error": 8.736477851867676,
+          "edge_distance_m": 0.06156963706016541
+        }
+      }
+    }
+  },
+  "5100": {
+    "scatter_ema": {
+      "observed_cells": 65427,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 6.673176288604736,
+          "edge_distance_m": 0.30387625694274906
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 6.614971160888672,
+          "edge_distance_m": 0.2982459783554077
+        }
+      }
+    },
+    "scatter_protected": {
+      "observed_cells": 65427,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 4.983646392822266,
+          "edge_distance_m": 0.1474497675895691
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 5.313721179962158,
+          "edge_distance_m": 0.14378952980041504
+        }
+      }
+    },
+    "scatter_protected_lens": {
+      "observed_cells": 65427,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 5.858297824859619,
+          "edge_distance_m": 0.13602519035339355
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 5.944620132446289,
+          "edge_distance_m": 0.13469462394714357
+        }
+      }
+    },
+    "direct_ema": {
+      "observed_cells": 65249,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 6.716276168823242,
+          "edge_distance_m": 0.3341582775115967
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 6.647878646850586,
+          "edge_distance_m": 0.29660754203796386
+        }
+      }
+    },
+    "direct_protected_no_lens": {
+      "observed_cells": 65249,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 5.119250297546387,
+          "edge_distance_m": 0.1730522155761719
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 5.463499546051025,
+          "edge_distance_m": 0.18424558639526367
+        }
+      }
+    },
+    "direct_protected": {
+      "observed_cells": 65249,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 5.988556861877441,
+          "edge_distance_m": 0.174043607711792
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 6.06730318069458,
+          "edge_distance_m": 0.16278438568115236
+        }
+      }
+    },
+    "direct_best": {
+      "observed_cells": 65249,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 7.657073497772217,
+          "edge_distance_m": 0.1986889719963074
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 7.755136966705322,
+          "edge_distance_m": 0.18913116455078127
+        }
+      }
+    },
+    "direct_robust065_25": {
+      "observed_cells": 65249,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 6.526951789855957,
+          "edge_distance_m": 0.22201635837554934
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 6.6522722244262695,
+          "edge_distance_m": 0.22736234664916993
+        }
+      }
+    },
+    "direct_robust080_25": {
+      "observed_cells": 65249,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 6.588757514953613,
+          "edge_distance_m": 0.21086556911468507
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 6.696141719818115,
+          "edge_distance_m": 0.21556429862976076
+        }
+      }
+    },
+    "direct_robust065_40": {
+      "observed_cells": 65249,
+      "reference": {
+        "native": {
+          "evaluation_cells": 14594,
+          "mean_rgb_error": 6.333950042724609,
+          "edge_distance_m": 0.21744108200073242
+        },
+        "direct": {
+          "evaluation_cells": 14566,
+          "mean_rgb_error": 6.459266185760498,
+          "edge_distance_m": 0.21907339096069336
+        }
+      }
+    }
+  }
+}

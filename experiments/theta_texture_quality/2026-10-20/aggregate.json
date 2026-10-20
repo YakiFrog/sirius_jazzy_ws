@@ -1,0 +1,122 @@
+{
+  "scatter_ema": {
+    "native": {
+      "mean_rgb_error": 9.008471619381286,
+      "mean_segment_edge_distance_m": 0.14049760103225709,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 9.4794206321229,
+      "mean_segment_edge_distance_m": 0.17600635985533397,
+      "evaluation_cells": 56982
+    }
+  },
+  "scatter_protected": {
+    "native": {
+      "mean_rgb_error": 6.198330899453893,
+      "mean_segment_edge_distance_m": 0.07984263400236767,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 6.8815823690398625,
+      "mean_segment_edge_distance_m": 0.08380709191163381,
+      "evaluation_cells": 56982
+    }
+  },
+  "scatter_protected_lens": {
+    "native": {
+      "mean_rgb_error": 7.361582760352882,
+      "mean_segment_edge_distance_m": 0.11145971814791361,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 7.939834836810416,
+      "mean_segment_edge_distance_m": 0.11154140730698904,
+      "evaluation_cells": 56982
+    }
+  },
+  "direct_ema": {
+    "native": {
+      "mean_rgb_error": 9.45449815756559,
+      "mean_segment_edge_distance_m": 0.1514683465162913,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 9.100265693444467,
+      "mean_segment_edge_distance_m": 0.16965283354123437,
+      "evaluation_cells": 56982
+    }
+  },
+  "direct_protected_no_lens": {
+    "native": {
+      "mean_rgb_error": 6.744337980205097,
+      "mean_segment_edge_distance_m": 0.08684081435203554,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 6.599300384743242,
+      "mean_segment_edge_distance_m": 0.09241363306840261,
+      "evaluation_cells": 56982
+    }
+  },
+  "direct_protected": {
+    "native": {
+      "mean_rgb_error": 7.818548903870367,
+      "mean_segment_edge_distance_m": 0.11532855431238813,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 7.6658831065671205,
+      "mean_segment_edge_distance_m": 0.09781443476676942,
+      "evaluation_cells": 56982
+    }
+  },
+  "direct_best": {
+    "native": {
+      "mean_rgb_error": 10.448614900304847,
+      "mean_segment_edge_distance_m": 0.10459102094173432,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 10.412510188472497,
+      "mean_segment_edge_distance_m": 0.11544027030467986,
+      "evaluation_cells": 56982
+    }
+  },
+  "direct_robust065_25": {
+    "native": {
+      "mean_rgb_error": 9.155686976578023,
+      "mean_segment_edge_distance_m": 0.11885422666867575,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 9.014162513029914,
+      "mean_segment_edge_distance_m": 0.1028029759724935,
+      "evaluation_cells": 56982
+    }
+  },
+  "direct_robust080_25": {
+    "native": {
+      "mean_rgb_error": 9.298523699368214,
+      "mean_segment_edge_distance_m": 0.11804739534854891,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 9.151456723956795,
+      "mean_segment_edge_distance_m": 0.09976977904637656,
+      "evaluation_cells": 56982
+    }
+  },
+  "direct_robust065_40": {
+    "native": {
+      "mean_rgb_error": 8.860710232229682,
+      "mean_segment_edge_distance_m": 0.12366344829400382,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 8.720923786792453,
+      "mean_segment_edge_distance_m": 0.10488905807336173,
+      "evaluation_cells": 56982
+    }
+  }
+}

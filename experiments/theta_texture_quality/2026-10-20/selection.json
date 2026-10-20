@@ -1,0 +1,49 @@
+{
+  "selected": "scatter_protected",
+  "baseline": "scatter_ema",
+  "selection": "Lower errors across six varied windows under both reference models; direct resampling and lens/angular weighting were not selected.",
+  "windows": [
+    "900",
+    "1500",
+    "2700",
+    "3000",
+    "4500",
+    "5100"
+  ],
+  "camera_observations": 294,
+  "training_observations": 234,
+  "heldout_observations": 60,
+  "baseline_aggregate": {
+    "native": {
+      "mean_rgb_error": 9.008471619381286,
+      "mean_segment_edge_distance_m": 0.14049760103225709,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 9.4794206321229,
+      "mean_segment_edge_distance_m": 0.17600635985533397,
+      "evaluation_cells": 56982
+    }
+  },
+  "selected_aggregate": {
+    "native": {
+      "mean_rgb_error": 6.198330899453893,
+      "mean_segment_edge_distance_m": 0.07984263400236767,
+      "evaluation_cells": 58078
+    },
+    "direct": {
+      "mean_rgb_error": 6.8815823690398625,
+      "mean_segment_edge_distance_m": 0.08380709191163381,
+      "evaluation_cells": 56982
+    }
+  },
+  "surveyed_ground_truth": false,
+  "rgb_improvement_percent": {
+    "native": 31.194422746268224,
+    "direct": 27.405032057336363
+  },
+  "edge_proxy_improvement_percent": {
+    "native": 43.171532171544726,
+    "direct": 52.38405476909021
+  }
+}

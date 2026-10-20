@@ -49,12 +49,14 @@ def main():
             subtitle=('全区間地図' if name=='overview' else f'全区間地図の拡大 {name[3:]}')+' ｜ 歩道・車道の境界と連続性を補正 ｜ 同じ範囲・縮尺'
         if meta.get('tactile_context'):
             subtitle=('全区間地図' if name=='overview' else f'全区間地図の拡大 {name[3:]}')+' ｜ 点字周辺の歩道らしさを追加 ｜ 同じ範囲・縮尺'
+        if meta.get('texture_quality'):
+            subtitle=('全区間地図' if name=='overview' else f'全区間地図の拡大 {name[3:]}')+' ｜ 全区間共通の観測品質でRGBを再合成 ｜ 座標・分類を保持'
         for kind,source in [('semantic',fullsem),('overlay',over),('texture',rgb)]:
             image=source[y0:y1,x0:x1];rendered=frame(image,titles[kind],subtitle,res,1200 if name!='overview' else 1600,show_legend=kind!='texture');rendered.save(target/(kind+'.jpg'),quality=95,subsampling=0);images.append(rendered)
         contact=Image.new('RGB',(images[0].width,sum(x.height for x in images)),'white');yy=0
         for image in images:contact.paste(image,(0,yy));yy+=image.height
         contact.save(target/'three_views.jpg',quality=94,subsampling=0);detail[name]={'pixel_bbox':[x0,y0,x1,y1],'world_bbox_m':[float(origin[0]+x0*res),float(origin[1]+(h-y1)*res),float(origin[0]+x1*res),float(origin[1]+(h-y0)*res)]}
-    (root/'rendering.json').write_text(json.dumps({'display_palette_rgb':COLORS,'class_ids_unchanged':True,'views':detail,'existing_observed_rgb_unchanged':True,'texture_holes_filled_cells':meta['texture_holes_filled_cells'],'semantic_frames':meta['frame_count'],'semantic_coverage':('full bag; valid TF and scan-visible ground only' if full_bag else 'ten evaluated intervals only')},indent=2))
+    (root/'rendering.json').write_text(json.dumps({'display_palette_rgb':COLORS,'class_ids_unchanged':True,'views':detail,'existing_observed_rgb_unchanged':not bool(meta.get('texture_quality')),'texture_holes_filled_cells':meta['texture_holes_filled_cells'],'semantic_frames':meta['frame_count'],'semantic_coverage':('full bag; valid TF and scan-visible ground only' if full_bag else 'ten evaluated intervals only')},indent=2))
     html='''<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>路面セマンティック地図・3種類</title><style>body{font:16px system-ui;margin:12px;background:#101820;color:#eef4f8;line-height:1.6}h1{font-size:24px}img{display:block;width:100%;max-width:1200px;margin:8px 0 24px}a{color:#8ed8ff}nav{margin:12px 0}figure{margin:0}.note{padding:12px;background:#253643}</style><h1>路面地図：3種類の画像</h1><div class="note">点字の補完を検証した区間3300の拡大図です。3枚とも同じ範囲・縮尺です。背景には既存の全区間RGB地図を使用し、未観測の穴は今回の観測で補っています。新しいセマンティックは検証済み10区間・170フレームから作成しました。未分類は白。認識誤りや欠けは残っています。</div><nav><a href="seg3300/three_views.jpg">拡大図3枚を1画像で開く</a> · <a href="#overview">全体図へ</a> · <a href="manifest.json">生成記録</a></nav>'''
     if full_bag:
         html=html[:html.index('<div class="note">')]+f'<div class="note">ROSBAG全区間・{meta["input_camera_frames"]:,}フレームの前後画像を推論しました。記録された姿勢・レーザの可視性を確認できた{meta["frame_count"]:,}フレームを地図に反映しています。黄色い点字の認識＋前後方向の画像追跡を適用。3種類とも同じ範囲・縮尺です。未分類は白。背景の既存RGBは保持しています。</div><nav><a href="overview/three_views.jpg">全体図3枚を1画像で開く</a> · <a href="#seg3300">拡大図へ</a> · <a href="manifest.json">生成記録</a></nav>'
@@ -63,13 +65,26 @@ def main():
         html=html.replace('既存の分類と路面テクスチャは保持しています。','暗所の点字を保持したうえで、下記の歩道・車道補正を追加しました。')
         html+='<p class="note">路面の連続性を使い、歩道・車道の細かな混在を抑えた版です。画像の境界を越えにくくし、複数観測の分類を参照します。点字・芝生・未分類・元のRGB・座標と縮尺は保持しています。縁石の高さを測った補正ではなく、誤判定は残る可能性があります。</p>'
     if meta.get('tactile_context'):html+='<p class="note">点字の文脈を追加した比較用地図です。連続した点字の途中を歩道の手掛かりにします。短い断片・広い警告部・端点や分岐付近は手掛かりから除外し、周囲を歩道と判断しやすくしています。車道を含む全区間での正しさを保証する処理ではなく、広い誤認識も残っています。</p>'
+    if meta.get('texture_quality'):
+        begin=html.index('<div class="note">');end=html.index('</div>',begin)+6
+        html=html[:begin]+f'<div class="note">全{meta["texture_quality"]["camera_frames"]:,}フレームのRGBを再合成した比較版です。全区間共通で良質な観測を優先し、遠く・斜めからの弱い観測による上書きを抑えます。座標・縮尺・セマンティック分類を保持。白線だけを変形する処理はありません。カメラモデル・撮影姿勢は既存のものを使うため、投影や軌跡に由来する歪みは残る可能性があります。</div>'+html[end:]
+        html=html.replace('点字・芝生・未分類・元のRGB・座標と縮尺は保持しています。','点字・芝生・未分類・座標と縮尺は保持し、RGBの合成を見直しています。')
+        # Historical semantic-stage notes are in the manifest; show the current
+        # texture comparison clearly on a phone without stacking old notices.
+        while '<p class="note">' in html:
+            start=html.index('<p class="note">');end=html.index('</p>',start)+4
+            html=html[:start]+html[end:]
     focus='seg2700' if meta.get('shadow_rescue') else 'seg3300'
     if meta.get('shadow_rescue'):html=html.replace('#seg3300','#seg2700')
     if meta.get('road_region_consistency'):
         focus='seg3900';html=html.replace('#seg2700','#seg3900').replace('#seg3300','#seg3900')
+    if meta.get('texture_quality'):
+        focus='seg4500';html=html.replace('#seg3900','#seg4500')
     for name in (['overview',focus] if full_bag else [focus,'overview']):
         html+=f'<h2 id="{name}">{"拡大区間"+name[3:] if name!="overview" else "全体図（ROSBAG全区間）" if full_bag else "全体図（セマンティックは検証した部分のみ）"}</h2>'
-        for kind,title in titles.items():html+=f'<figure><figcaption>{title}</figcaption><a href="{name}/{kind}.jpg"><img src="{name}/{kind}.jpg" alt="{title}" loading="lazy"></a></figure>'
+        kinds=['texture','overlay','semantic'] if meta.get('texture_quality') else list(titles)
+        for kind in kinds:
+            title=titles[kind];html+=f'<figure><figcaption>{title}</figcaption><a href="{name}/{kind}.jpg"><img src="{name}/{kind}.jpg" alt="{title}" loading="lazy"></a></figure>'
     html+='<h2>ほかの検証区間</h2><nav>'+ ' · '.join(f'<a href="seg{c}/three_views.jpg">{c}</a>' for c in sorted({f['segment'] for f in meta['frames']}))+'</nav></html>'
     if meta.get('semantic_dir')=='yellow':html=html.replace('点字の補完を検証した区間3300','黄色い点字の認識・追跡を検証した区間3300')
     (root/'images.html').write_text(html);print('RENDER COMPLETE',len(groups),'viewports',flush=True)

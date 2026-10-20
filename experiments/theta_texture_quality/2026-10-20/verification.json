@@ -1,0 +1,29 @@
+{
+  "frames": 5956,
+  "native_point_count_checks": 5956,
+  "pose_checks": 5956,
+  "skips": 0,
+  "semantic_labels_byte_identical": true,
+  "original_rgb_support_preserved": true,
+  "comparison_fusion_support_identical": true,
+  "grid": {
+    "origin": [
+      -110.30067416341491,
+      -167.9387912057118
+    ],
+    "resolution": 0.05,
+    "width": 2698,
+    "height": 4026
+  },
+  "new_observed_rgb_cells": 0,
+  "unit_tests_passed": 7,
+  "rgb_alpha_byte_identical": true,
+  "semantic_vote_evidence_byte_identical": true,
+  "rendered_semantic_matches_labels": true,
+  "rendered_overlay_matches_texture_and_labels": true,
+  "point_count_and_pose_verified_frames": 5956,
+  "same_world_viewports": true,
+  "whole_bag_native_baseline_preserved": true,
+  "marking_specific_processing": false,
+  "projection_model_or_slam_trajectory_corrected": false
+}

@@ -1,0 +1,20 @@
+{
+  "base_git_commit": "8470101c4343d264d7d8e8b0a68f3afd88b2e5d9",
+  "navigation_commit": "ef8049cbbb03cef703fc129a094ce6aeb43b52fe",
+  "working_source_sha256": {
+    "bash/startup_bash/theta_texture_quality.py": "dcc1421771a18218506032bd8d72c942d5ad3c45cdfcb495c8483e2f32b596cb",
+    "bash/startup_bash/collect_theta_texture_observations.py": "8be0fd63f7c4aac8929b968efbb7313d77e1ef97490f542eb0413b8ac598d5a3",
+    "bash/startup_bash/compare_theta_texture_quality.py": "d9b7bb5e2e40adc99744f5eca62a485f82a92ef53b49ff3ab95b45fc91f4acb6",
+    "bash/startup_bash/rebuild_theta_texture.py": "c52f283bf824c4e246e248314b2abaf20e20c5af19688a6b8ed2fb15f217d7c3",
+    "bash/startup_bash/test_theta_texture_quality.py": "f9083bb1c17ffe18ddd611a0793e39050e8a3599db5e33b09b848871b8af1935",
+    "bash/startup_bash/render_theta_semantic_map.py": "1c62f5d0e439495b0ce81e57618f9bf5398fdeb703b51ddc217944b5279814e9",
+    "src/sirius/sirius_navigation/sirius_navigation/theta_bev_node.py": "1f2de8b5ece2cfe46192a1f51a17b1c1cdbbba80f22b784dc29813c82466040a",
+    "src/sirius/sirius_navigation/sirius_navigation/theta_bev_projection.py": "e76e81295b25465a95f92fa3327854411b0bd61b731de51566878ddb0ead04b0",
+    "src/sirius/sirius_navigation/sirius_navigation/theta_ground_cloud_node.py": "861e520fb44c626358fe955ebe8ffbe9181bc90fa0009a6fcfb8a6565b95ee9c",
+    "src/sirius/sirius_navigation/sirius_navigation/theta_road_visibility.py": "7ac03162dc15ae0f57ab33055c2eafdf273684c1b727bcb3b9bae1fc80c287af"
+  },
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "opencv": "4.6.0",
+  "numpy": "1.26.4",
+  "ros": "jazzy"
+}
