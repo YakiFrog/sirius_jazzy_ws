@@ -23,7 +23,7 @@
 # PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,twist_mux,nav2_3d
 
 # PRESET: 3D地図で自己位置推定（実機・録画は別）
-# PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,loc3d,foxglove
+# PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d_loc,loc3d,foxglove
 
 # PRESET: 3D地図生成セット(Webシミュ)
 # PRESET_ITEMS: rosbridge,tf_sim,lio3d_sim
@@ -393,6 +393,9 @@ alias tf_sim='src && ros2 launch sirius_description display.launch.py use_sim_ti
 
 # 3D LiDAR-IMUオドメトリ (FAST-LIO2) 起動
 alias lio3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh'
+
+# 自己位置推定用FAST-LIO2（蓄積地図・軌跡の全量配信を無効化）
+alias lio3d_loc='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh real localization'
 
 # 3D LiDAR-IMUオドメトリ (FAST-LIO2) 起動 (Webシミュ用。use_sim_time=true)
 alias lio3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh sim'

@@ -49,8 +49,13 @@ esac
 echo "Foxglove: 表示フレーム map / 地図 /localization/map（PLY地図）"
 echo "初期位置・向きが異なる場合は Foxglove/RViz から /initialpose を与えてください。"
 echo "検証用の録画は record_loc3d で別途開始します。"
+INITIAL_POSE_ARGS=()
+if [ -n "${SIRIUS_LOCALIZATION_INITIAL_POSE_FILE:-}" ]; then
+    INITIAL_POSE_ARGS+=("initial_pose_file:=$SIRIUS_LOCALIZATION_INITIAL_POSE_FILE")
+fi
 exec ros2 launch sirius_navigation theta_3d_localization.launch.py \
     map_path:="$map3d" \
     use_sim_time:="$USE_SIM_TIME" \
     use_3dof:="${SIRIUS_LOCALIZATION_3DOF:-$USE_3DOF}" \
-    publish_map:="$PUBLISH_MAP"
+    publish_map:="$PUBLISH_MAP" \
+    "${INITIAL_POSE_ARGS[@]}"

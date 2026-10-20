@@ -12,7 +12,7 @@ spec.loader.exec_module(parser)
 def test_localization_preset_uses_known_commands_in_dependency_order():
     groups, presets = parser.parse_bash_aliases(ROOT/'bash/bash_alias2.sh')
     name, items = next(p for p in presets if p[0].startswith('3D地図で自己位置推定'))
-    assert items == ['roboteq', 'velodyne', 'imu', 'tf_real', 'lio3d', 'loc3d', 'foxglove']
+    assert items == ['roboteq', 'velodyne', 'imu', 'tf_real', 'lio3d_loc', 'loc3d', 'foxglove']
     aliases = {item[0] for values in groups.values() for item in values}
     assert set(items) <= aliases
     assert not {'sf_real', 'amcl', 'nav2_3d', 'record_loc3d'} & set(items)

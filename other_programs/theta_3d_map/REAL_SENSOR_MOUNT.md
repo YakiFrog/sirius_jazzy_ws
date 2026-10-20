@@ -13,6 +13,9 @@
   LiDAR–THETA間の相対位置・姿勢を保つ。THETA単体での角度校正ではない。
 - `lio3d`: 同じ設定から `mapping.extrinsic_R = R_imu_base * R_base_lidar` を生成。
   `/velodyne_points`（生点群）を入力する。補正後点群をここに入れると二重補正になる。
+- 自己位置推定プリセットでは `lio3d_loc` を使用し、蓄積 `/Laser_map` と全軌跡の
+  配信を無効にする。既存地図を使う推定中に蓄積点群の全量変換でLIOを止めないため。
+  地図照合は時刻の一致した `/cloud_registered_body` を使用し、TF定期配信とは別に実行する。
 - `velodyne`: 生点群に加えて `/velodyne_points_leveled` を生成。
   `sirius3/lidar_level` はLiDARと同じ原点で、軸は `base_link` と平行。
   XYZだけをTFで変換し、ring・intensity・点時刻・ヘッダ時刻を保持する。

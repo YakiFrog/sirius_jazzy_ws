@@ -1,14 +1,21 @@
 #!/bin/bash
 # FAST-LIO2（LiDAR-IMUオドメトリ）を起動する。odom->base_footprint を配信する。
-# 使い方: start_3d_lio.sh [sim|real]   (既定: real)
+# 使い方: start_3d_lio.sh [sim|real] [mapping|localization]
 set -u
 WS="$HOME/sirius_jazzy_ws"
 MODE="${1:-real}"
+PROFILE="${2:-mapping}"
 
 if [ "$MODE" != "sim" ] && [ "$MODE" != "real" ]; then
     echo "使い方: $0 [sim|real]"
     exit 1
 fi
+if [ "$PROFILE" != "mapping" ] && [ "$PROFILE" != "localization" ]; then
+    echo "使い方: $0 [sim|real] [mapping|localization]"
+    exit 1
+fi
+LOCALIZATION_MODE=false
+if [ "$PROFILE" = "localization" ]; then LOCALIZATION_MODE=true; fi
 
 cd "$WS" || exit 1
 set +u
@@ -55,7 +62,7 @@ if [ "$MODE" = "sim" ] && [ -z "${SIRIUS_FASTLIO_CONFIG_FILE:-}" ]; then
     CONFIG_FILE="profile.yaml"
 fi
 
-echo "FAST-LIO2 起動 [$MODE]: config=$CONFIG_DIR/$CONFIG_FILE (imu_height=$IMU_HEIGHT)"
+echo "FAST-LIO2 起動 [$MODE/$PROFILE]: config=$CONFIG_DIR/$CONFIG_FILE (imu_height=$IMU_HEIGHT)"
 if [ "$MODE" = "sim" ]; then
     echo "注意: Webシミュレータでrosbridgeに接続し、/clock と /velodyne_points をON、/tf はOFFにしてください。"
 else
@@ -67,4 +74,5 @@ ros2 launch sirius_navigation theta_3d_lio.launch.py \
     config_file:="$CONFIG_FILE" \
     imu_height:="$IMU_HEIGHT" \
     mount_config:="${MOUNT_CONFIG:-none}" \
+    localization_mode:="$LOCALIZATION_MODE" \
     use_sim_time:="$USE_SIM_TIME"
