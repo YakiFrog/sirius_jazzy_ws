@@ -1,0 +1,70 @@
+[
+  {
+    "parameters": {
+      "enabled": true,
+      "gain": 1,
+      "pivot": 180
+    },
+    "observed_cells": 1795307,
+    "changed_cells": 0,
+    "original_dark_cells": 448177,
+    "dark_mean_value_before": 42.68749177222392,
+    "dark_mean_value_after": 42.68749177222392,
+    "alpha_unchanged": true,
+    "unobserved_rgb_unchanged": true,
+    "highlights_unchanged": true,
+    "new_clipped_cells": 0,
+    "method": "monotone bounded value curve; identical scale per RGB channel; no spatial filtering"
+  },
+  {
+    "parameters": {
+      "enabled": true,
+      "gain": 2,
+      "pivot": 180
+    },
+    "observed_cells": 1795307,
+    "changed_cells": 1677142,
+    "original_dark_cells": 448177,
+    "dark_mean_value_before": 42.68749177222392,
+    "dark_mean_value_after": 66.27440944091285,
+    "alpha_unchanged": true,
+    "unobserved_rgb_unchanged": true,
+    "highlights_unchanged": true,
+    "new_clipped_cells": 0,
+    "method": "monotone bounded value curve; identical scale per RGB channel; no spatial filtering"
+  },
+  {
+    "parameters": {
+      "enabled": true,
+      "gain": 3,
+      "pivot": 180
+    },
+    "observed_cells": 1795307,
+    "changed_cells": 1681694,
+    "original_dark_cells": 448177,
+    "dark_mean_value_before": 42.68749177222392,
+    "dark_mean_value_after": 81.90038310756688,
+    "alpha_unchanged": true,
+    "unobserved_rgb_unchanged": true,
+    "highlights_unchanged": true,
+    "new_clipped_cells": 0,
+    "method": "monotone bounded value curve; identical scale per RGB channel; no spatial filtering"
+  },
+  {
+    "parameters": {
+      "enabled": true,
+      "gain": 4,
+      "pivot": 180
+    },
+    "observed_cells": 1795307,
+    "changed_cells": 1681694,
+    "original_dark_cells": 448177,
+    "dark_mean_value_before": 42.68749177222392,
+    "dark_mean_value_after": 93.22613163995474,
+    "alpha_unchanged": true,
+    "unobserved_rgb_unchanged": true,
+    "highlights_unchanged": true,
+    "new_clipped_cells": 0,
+    "method": "monotone bounded value curve; identical scale per RGB channel; no spatial filtering"
+  }
+]

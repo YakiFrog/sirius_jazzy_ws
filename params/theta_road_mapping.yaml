@@ -24,6 +24,11 @@ texture:
   relative_quality: 0.5
   decay: 0.7
   quality_power: 2.0
+  # Readability after semantic refinement; retain the raw fused RGB separately.
+  tone:
+    enabled: true
+    gain: 3.0
+    pivot: 180.0
 semantic:
   enabled: true
   prompt: grass, yellow tactile paving, roadway, sidewalk

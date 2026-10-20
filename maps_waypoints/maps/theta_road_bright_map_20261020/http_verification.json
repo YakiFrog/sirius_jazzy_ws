@@ -1,0 +1,31 @@
+{
+  "road_temporal.colored.pgm_byte_identical": true,
+  "road_temporal.colored.json_byte_identical": true,
+  "map_evidence.npz_byte_identical": true,
+  "raw_rgb_byte_identical": true,
+  "http://100.97.20.32:54369/bright_map/images.html": {
+    "status": 200,
+    "bytes": 743,
+    "sha256": "3a03196bc9a10d50229de34dc9955183af7b982504bd6d38cff1debf0e419479"
+  },
+  "http://100.97.20.32:54369/bright_map/texture.jpg": {
+    "status": 200,
+    "bytes": 250798,
+    "sha256": "016c800600220bd46eaab835dea5fe751b368e597f4bdd84e2a684358fdc6881"
+  },
+  "http://100.97.20.32:54369/bright_map/overlay.jpg": {
+    "status": 200,
+    "bytes": 249861,
+    "sha256": "c7fa347b8ec08341907e7985ca4e183fd68b44e46aeabd23d861d4d908ef1b7f"
+  },
+  "http://100.97.20.32:54369/bright_map/semantic.jpg": {
+    "status": 200,
+    "bytes": 200167,
+    "sha256": "d92876e02bc9ce3271e477e4ffa5500841509d1b30a364004f01523b0bf8f2a3"
+  },
+  "http://100.97.20.32:54369/bright_map/comparison/frame2700.jpg": {
+    "status": 200,
+    "bytes": 716921,
+    "sha256": "6cd6b9c57ee6b450b6e77752866b22dcdedfd74db91644c843176b01dec6d0f0"
+  }
+}

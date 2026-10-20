@@ -10,6 +10,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import yaml
+from theta_texture_tone import validate_tone
 
 
 DEFAULT_CONFIG = Path(__file__).resolve().parents[2] / 'params/theta_road_mapping.yaml'
@@ -33,6 +34,7 @@ def load_config(path=DEFAULT_CONFIG):
 
 
 def validate_config(c):
+    validate_tone(c['texture']['tone'])
     positive = [c['resolution'], c['max_grid_cells'], c['projection']['bev_size'],
                 c['projection']['stride'], c['projection']['max_radius'],
                 c['semantic']['min_weight'], c['semantic']['max_gap_sec'],

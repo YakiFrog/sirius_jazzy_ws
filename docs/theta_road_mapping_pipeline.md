@@ -80,6 +80,7 @@ python3 bash/startup_bash/generate_theta_road_map.py BAG_PATH NEW_OUTPUT_DIRECTO
 - Map Select: 出力フォルダ名 + `/road_temporal`。
 - `road_temporal.colored.pgm/.json`: クラスID地図と格子・パレット・コスト情報。
 - `road_temporal.texture.png`: 同じ格子のBGRAテクスチャ。
+- `road_temporal.raw.texture.png`: 明るさ補正前の合成RGB（補正有効時）。
 - `images.html` と `texture.jpg/overlay.jpg/semantic.jpg`: スマホ向けの3種類の画像。
 - `baseline.class_ids.png`: 領域補正前の分類。
 - `map_evidence.npz`: 元の観測票とscan可視サンプル数（配列はworldの下原点）。
@@ -101,5 +102,24 @@ python3 bash/startup_bash/generate_theta_road_map.py BAG_PATH NEW_OUTPUT_DIRECTO
 暗所の追加推論・双方向追跡・投影・合成・領域補正は新しく実行し、再利用元と
 マスク／スコアのSHAもフレームごとのJSONに残す。過去の地図をコピーする処理ではない。
 
-現行の最新全区間地図は保存済みのまま。新パイプラインへの統合確認と、
-他のBAGでの全区間の認識品質評価は別である。
+## 地図テクスチャの暗部補正
+
+`texture.tone` は通常生成にも適用される表示用補正。既定は enabled=true、gain=3、
+pivot=180（8bit RGBの最大成分）。v<pivot のとき
+`f(v)=gain*v/(1+(gain-1)*v/pivot)`、それ以上は元の値のまま。
+RGB全成分を同じ倍率で変え、黒と明るい画素、未観測領域、α、座標を保存する。
+局所フィルタを使わず、画素の並びや輪郭を変更しない。8bit丸めによる色差は生じる。
+影の推定や除去ではないので、暗い材質も明るくなり、記録されていない細部は復元できない。
+
+セマンティック推論・領域補正がすべて完了してから適用するため、ラベル、投票、
+色境界による補正には影響しない。無効化は `texture.tone.enabled: false`。
+元のRGBを保存し、manifestに画素統計とパラメータを記録する。
+
+既存の地図にもSAM3や投影の再実行なしで適用できる（別フォルダを必須とする）。
+既に補正した地図を入力してもraw画像から作り直し、補正を累積しない。
+
+```bash
+python3 bash/startup_bash/brighten_theta_road_map.py SOURCE_MAP NEW_MAP
+```
+
+5956フレームの全区間生成と暗部補正を実行済み。別BAGの認識品質評価は別途必要。

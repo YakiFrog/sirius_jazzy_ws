@@ -1,0 +1,21 @@
+{
+  "operation": "texture tone export only",
+  "parent_map": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_road_general_full_20261020",
+  "source_sha256": {
+    "road_temporal.texture.png": "97ac6f0ff6e2b4272291e3336d0a867f74623123b5a6d12875305667d2e4f6d5",
+    "manifest.json": "e350febb4f47ecd3f70b6c688c743214d5b96d2f86b577c1de1662210add63a9",
+    "road_temporal.colored.pgm": "6d430cecf14f08379046e882eed58755cc05cf89d95998fa138a692400f2cde7",
+    "road_temporal.colored.json": "093c18b042d1eada9003beb996c9e85bf2bcf58c9faacd943cfaefd1e6bf3949",
+    "map_evidence.npz": "c677b203f850d0d2e7762f9f48923367328ee7f014aa0080375c56a0795d6753"
+  },
+  "code_sha256": {
+    "brighten_theta_road_map.py": "21bbf87d2066a5fa635404fedc6d4cc9a457972240fdb78d0dc55f5d439bd39e",
+    "theta_texture_tone.py": "e5ceb4eca6903d18b68b48cd4517f132cb092e27990647a117044743761051c0",
+    "generate_theta_road_map.py": "c487026cbcee040b1a0f49a51a7296fb07a4d4a3470f7de7bf38241acba1a910"
+  },
+  "tone": {
+    "enabled": true,
+    "gain": 3.0,
+    "pivot": 180.0
+  }
+}

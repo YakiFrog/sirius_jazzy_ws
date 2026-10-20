@@ -1,0 +1,29 @@
+{
+  "road_temporal.colored.pgm_identical": true,
+  "road_temporal.colored.json_identical": true,
+  "map_evidence.npz_identical": true,
+  "raw_rgb_equals_previous_texture": true,
+  "frames": 6,
+  "tone": {
+    "parameters": {
+      "enabled": true,
+      "gain": 3.0,
+      "pivot": 180.0
+    },
+    "observed_cells": 16928,
+    "changed_cells": 15781,
+    "original_dark_cells": 1502,
+    "dark_mean_value_before": 50.76897470039947,
+    "dark_mean_value_after": 93.92010652463382,
+    "alpha_unchanged": true,
+    "unobserved_rgb_unchanged": true,
+    "highlights_unchanged": true,
+    "new_clipped_cells": 0,
+    "method": "monotone bounded value curve; identical scale per RGB channel; no spatial filtering"
+  },
+  "server_restored": {
+    "settings_restored": true,
+    "registry_unchanged": true,
+    "errors": []
+  }
+}

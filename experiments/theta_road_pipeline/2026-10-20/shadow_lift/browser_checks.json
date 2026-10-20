@@ -1,0 +1,59 @@
+{
+  "http://100.97.20.32:54369/bright_map/images.html": {
+    "width": 390,
+    "scrollWidth": 390,
+    "images": [
+      {
+        "src": "http://100.97.20.32:54369/bright_map/texture.jpg",
+        "width": 1200,
+        "height": 1951
+      },
+      {
+        "src": "http://100.97.20.32:54369/bright_map/overlay.jpg",
+        "width": 1200,
+        "height": 1951
+      },
+      {
+        "src": "http://100.97.20.32:54369/bright_map/semantic.jpg",
+        "width": 1200,
+        "height": 1951
+      }
+    ]
+  },
+  "http://100.97.20.32:54369/bright_map/comparison/images.html": {
+    "width": 390,
+    "scrollWidth": 390,
+    "images": [
+      {
+        "src": "http://100.97.20.32:54369/bright_map/comparison/frame900.jpg",
+        "width": 1000,
+        "height": 4624
+      },
+      {
+        "src": "http://100.97.20.32:54369/bright_map/comparison/frame1500.jpg",
+        "width": 1000,
+        "height": 4624
+      },
+      {
+        "src": "http://100.97.20.32:54369/bright_map/comparison/frame2700.jpg",
+        "width": 1000,
+        "height": 4624
+      },
+      {
+        "src": "http://100.97.20.32:54369/bright_map/comparison/frame3000.jpg",
+        "width": 1000,
+        "height": 4624
+      },
+      {
+        "src": "http://100.97.20.32:54369/bright_map/comparison/frame4500.jpg",
+        "width": 1000,
+        "height": 4624
+      },
+      {
+        "src": "http://100.97.20.32:54369/bright_map/comparison/frame5100.jpg",
+        "width": 1000,
+        "height": 4624
+      }
+    ]
+  }
+}

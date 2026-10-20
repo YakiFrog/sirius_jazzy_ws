@@ -20,6 +20,7 @@ import yaml
 from theta_road_pipeline import (DEFAULT_CONFIG, load_config, fingerprint,
     enhanced_shadow, dark_mask, add_shadow, refine_semantics)
 from theta_texture_quality import TextureFusion, aggregate_frame
+from theta_texture_tone import lift_texture, tone_report
 
 
 def write_json(path, value):
@@ -254,6 +255,7 @@ def run(args):
     nav_dir = Path(__file__).resolve().parents[2]/'src/sirius/sirius_navigation/sirius_navigation'
     source_files = [Path(__file__), Path(__file__).with_name('theta_road_pipeline.py'),
         Path(__file__).with_name('theta_texture_quality.py'),
+        Path(__file__).with_name('theta_texture_tone.py'),
         Path(__file__).with_name('theta_road_cache.py'),
         Path(__file__).with_name('refine_theta_road_regions.py'),
         Path(__file__).with_name('experiment_theta_tactile_context.py'),
@@ -461,6 +463,12 @@ def run(args):
         labels, refinements, layers = refine_semantics(labels, texture, votes[::-1], coverage[::-1], res, cfg)
         if ((labels > 0) & (texture[..., 3] == 0)).any():
             raise AssertionError('Semantic labels outside observed texture')
+        # Refine semantics with original colors; tone affects exported RGB only.
+        if cfg['texture']['tone']['enabled']:
+            save_image(output/'road_temporal.raw.texture.png', texture)
+        toned = lift_texture(texture, cfg['texture']['tone'])
+        texture_tone = tone_report(texture, toned, cfg['texture']['tone'])
+        texture = toned
         save_image(output/'road_temporal.texture.png', texture)
         save_image(output/'road_temporal.colored.pgm', labels)
         save_image(output/'baseline.class_ids.png', baseline)
@@ -482,6 +490,7 @@ def run(args):
             reused_baseline_frames=reused_baseline_frames,
             grid={k: metadata[k] for k in ('origin', 'resolution', 'width', 'height')},
             refinements=refinements, camera_sha256_verified=True, recorded_tf_only=True,
+            texture_tone=texture_tone,
             no_coordinate_warp=True, unobserved_space_not_filled=True,
             semantic_cells={str(k): int((labels == k).sum()) for k in range(3, 7)},
             elapsed_sec=time.time()-started, status='complete')
