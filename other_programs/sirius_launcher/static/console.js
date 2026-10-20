@@ -1,4 +1,15 @@
 'use strict';
+// Keep program controls in the static bundle so UI updates preserve live PTYs.
+async function restartIt(n,el){if(OPS[n]||!confirm('「'+n+'」を一度停止して再起動しますか？'))return;OPS[n]='再起動中…';if(el)el.classList.add('busy');refresh();
+ try{await api('/api/restart',{name:n,domain:dom()});}finally{await finishOp(n,'再起動: '+n);}}
+async function toggle(n,b){if(OPS[n])return;const cur=!!(b&&b.dataset.running==='1');
+ if(cur)return stopIt(n,b);
+ OPS[n]='起動中…';if(b)b.classList.add('busy');refresh();
+ try{const res=await api('/api/start',{name:n,domain:dom()});if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}await finishOp(n,'起動: '+n);await showLog(n);}
+ catch(e){delete OPS[n];toast('操作に失敗: '+n,true);refresh();}}
+async function stopIt(n,el){if(OPS[n]||!confirm('「'+n+'」を停止しますか？'))return;OPS[n]='停止中…';if(el)el.classList.add('busy');refresh();
+ try{await api('/api/stop',{name:n});}finally{await finishOp(n,'停止: '+n);}}
+
 let PAGE='home', RESOURCE_DATA=null, RESOURCE_BUSY=false, REFRESH_BUSY=false;
 let PROCESS_SCOPE='related', PROCESS_SORT='cpu_percent', PROCESS_ASC=false, PROCESS_LIMIT=40;
 let LAST_GOOD_STATUS=null, LAST_RESOURCE_POLL=0;
@@ -158,8 +169,39 @@ renderTermTabs=function(){
   TERM.sessions.forEach((name,i)=>{const tab=document.createElement('button');tab.className='ttab'+(name===TERM.active?' active':'');tab.innerHTML=ICONS.terminal;
     const label=document.createElement('span');label.textContent=name.startsWith('shell_')?'Terminal '+String(i+1).padStart(2,'0'):name;tab.append(label);tab.onclick=()=>selectTerm(name);
     const close=document.createElement('span');close.className='x';close.textContent='×';close.title='セッションを終了';close.onclick=e=>{e.stopPropagation();closeTerm(name);};tab.append(close);bar.append(tab);});
+  const interrupt=document.getElementById('term-interrupt');if(interrupt)interrupt.disabled=!TERM.active;
   if(!TERM.sessions.length){const label=document.createElement('span');label.className='muted';label.style.padding='5px';label.textContent='新しいターミナルを開くと、ここに表示されます';bar.append(label);}
 };
+
+async function sendTermControl(){
+  if(!TERM.active)return;
+  const name=TERM.active,input=document.getElementById('termin'),value=input.value;
+  try{
+    const result=await api('/api/term/write',{name,data:String.fromCharCode(3)});
+    if(!result.ok){toast(result.error||'割り込みを送信できません',true);return;}
+    if(TERM.active===name&&input.value===value)input.value='';
+    setTimeout(pollTerm,100);
+  }catch(error){toast('割り込みを送信できませんでした',true);}
+}
+function termInput(e){
+  if(e.isComposing||e.keyCode===229||e.key!=='Enter'||!TERM.active)return;
+  e.preventDefault();const input=document.getElementById('termin'),value=input.value;
+  input.value='';api('/api/term/write',{name:TERM.active,data:value+'\n'});setTimeout(pollTerm,150);
+}
+function initTerminalControls(){
+  const output=document.getElementById('termout');output.tabIndex=0;output.setAttribute('aria-label','ターミナル出力');
+  const button=document.createElement('button');button.id='term-interrupt';button.className='hbtn';button.textContent='Ctrl+C';
+  button.title='実行中のコマンドに割り込みを送る';button.disabled=!TERM.active;button.onclick=sendTermControl;
+  document.querySelector('#term .tin').append(button);
+  document.querySelector('.terminal-workspace').addEventListener('keydown',e=>{
+    if(e.defaultPrevented||e.isComposing||!e.ctrlKey||e.altKey||e.metaKey||e.key.toLowerCase()!=='c')return;
+    const selectedInput=e.target.selectionStart!==undefined&&e.target.selectionStart!==e.target.selectionEnd;
+    if(selectedInput||window.getSelection().toString())return;
+    if(!TERM.active)return;e.preventDefault();sendTermControl();
+  });
+}
+initTerminalControls();
+
 async function initConsole(){
   setTheme(localStorage.getItem('sirius-theme')||'dark');
   try{await load();document.getElementById('autostart-status').textContent=DATA.console&&DATA.console.autostart?'自動起動 有効':'自動起動 未登録';const terms=await api('/api/term/list');for(const term of terms.terms||[])if(term.alive&&!TERM.sessions.includes(term.name))TERM.sessions.push(term.name);if(TERM.sessions.length)TERM.active=TERM.sessions[0];setPage(location.hash.slice(1)||'home');}

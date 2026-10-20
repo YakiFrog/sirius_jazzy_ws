@@ -147,15 +147,6 @@ function toast(msg,bad){const t=document.getElementById('toast');t.textContent=m
  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.display='none',4000);}
 async function finishOp(n,msg){delete OPS[n];let bad=false;try{const st=await api('/api/status');const s=st[n];bad=!!(s&&s.error);}catch(e){}
  toast(msg+(bad?' ⚠ エラーが出ています（ログ参照）':''),bad);refresh();}
-async function restartIt(n,el){if(OPS[n])return;OPS[n]='再起動中…';if(el)el.classList.add('busy');refresh();
- try{await api('/api/restart',{name:n,domain:dom()});}finally{await finishOp(n,'再起動: '+n);}}
-async function toggle(n,b){if(OPS[n])return;const cur=!!(b&&b.dataset.running==='1');
- OPS[n]=cur?'停止中…':'起動中…';if(b)b.classList.add('busy');refresh();
- try{if(cur){await api('/api/stop',{name:n});await finishOp(n,'停止: '+n);}
- else{const res=await api('/api/start',{name:n,domain:dom()});if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}await finishOp(n,'起動: '+n);await showLog(n);}}
- catch(e){delete OPS[n];toast('操作に失敗: '+n,true);refresh();}}
-async function stopIt(n,el){if(OPS[n])return;OPS[n]='停止中…';if(el)el.classList.add('busy');refresh();
- try{await api('/api/stop',{name:n});}finally{await finishOp(n,'停止: '+n);}}
 async function stopAll(){if(!confirm('全て停止しますか？'))return;await api('/api/stop_all',{});refresh();}
 async function restartServer(){if(!confirm('Webサーバー（SiriusLauncher Web）を再起動しますか？\n起動中のプロセスは維持されます。'))return;
  try{await api('/api/restart_server',{});}catch(e){}
@@ -213,7 +204,7 @@ async function closeTerm(n){await api('/api/term/close',{name:n});TERM.sessions=
 async function pollTerm(){if(!TERM.active)return;if(!document.getElementById('term').classList.contains('open'))return;
  const r=await api('/api/term/read?name='+encodeURIComponent(TERM.active)+'&offset='+(TERM.offsets[TERM.active]||0));
  if(r.error)return;TERM.offsets[TERM.active]=r.offset;if(r.data){const o=document.getElementById('termout');const atBottom=(o.scrollHeight-o.clientHeight-o.scrollTop)<40;o.textContent+=r.data;if(atBottom)o.scrollTop=o.scrollHeight;}}
-function termInput(e){if(e.key!=='Enter')return;if(!TERM.active)return;const inp=document.getElementById('termin');const v=inp.value;inp.value='';api('/api/term/write',{name:TERM.active,data:v+'\n'});setTimeout(pollTerm,150);}
+
 async function openProcs(){const j=await api('/api/ps');const rows=(j.processes||[]);const dups=(j.duplicates||[]);const box=document.getElementById('procrows');
  let html='';
  if(dups.length){html+='<div class="desc" style="color:#ffb86b">⚠ 重複（同じプログラムが複数動いています。通常は不要なので停止推奨）</div>';
