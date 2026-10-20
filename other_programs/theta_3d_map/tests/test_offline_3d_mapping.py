@@ -502,3 +502,58 @@ def test_timed_bag_runs_deskew_in_the_map_pipeline(synthetic_bag):
     assert report['deskew']['dropped_points'] > 0, 'last scan has no future odom: drop unsupported points'
     plain = read_ply(bag/'offline_3d/map_3d.ply')
     assert np.quantile(np.abs(plain['z'][np.abs(plain['y']-3) > .1]), .95) < .02
+
+
+def test_known_floor_cli_applies_correction_before_fusion_and_updates_seed_frame(synthetic_bag, monkeypatch):
+    import mapping_floor
+    calls=[]
+    level=m.transform(translation=[0.,0.,.2])
+    def corrected(cache,poses,times,mount,links):
+        calls.append(len(poses))
+        return [level@p for p in poses], dict(success=True,cost=0.,evaluations=1,
+            model='explicit known-floor test correction',frame_transform_old_map_to_new_map=level.tolist(),
+            floor_quality_candidate={'revisit_pairs':0})
+    monkeypatch.setattr(mapping_floor,'refine_known_floor',corrected)
+    common=[str(synthetic_bag),'--mode','wheel','--frontend','recorded','--no-dynamic-filter']
+    # Default must leave the measured trajectory alone.
+    assert m.main(common)==0
+    assert not calls
+    old=synthetic_bag/'offline_3d';new=synthetic_bag/'with_floor'
+    assert m.main(common+['--known-single-floor','-o',str(new)])==0
+    assert len(calls)==1
+    for name in ('trajectory.csv','trajectory_initial.csv','trajectory_wheel.csv'):
+        before=np.loadtxt(old/name,delimiter=',',skiprows=1)
+        after=np.loadtxt(new/name,delimiter=',',skiprows=1)
+        np.testing.assert_allclose(after[:,:3],before[:,:3])
+        np.testing.assert_allclose(after[:,3],before[:,3]+.2)
+    before=read_ply(old/'map_3d_colored.ply');after=read_ply(new/'map_3d_colored.ply')
+    assert abs(np.median(after['z'])-np.median(before['z'])-.2)<.01
+    assert np.all(after['red']==0x36)
+    r=json.loads((new/'report.json').read_text())
+    assert r['options']['known_single_floor'] is True
+    assert r['floor_refinement']['success']
+    assert 'optimization_before_floor_refinement' in r
+    assert 'surface_refinement_before_floor' in r
+
+
+def test_known_floor_cli_reports_insufficient_observations_without_final_map(synthetic_bag):
+    # The short one-way fixture does not provide enough observed floor scans.
+    output=synthetic_bag/'floor_rejected'
+    assert m.main([str(synthetic_bag),'--mode','wheel','--frontend','recorded',
+        '--no-dynamic-filter','--known-single-floor','-o',str(output)])==1
+    assert not (output/'map_3d_colored.ply').exists()
+
+
+def test_dynamic_polish_cli_persists_exact_mask_and_rejects_disabled_backend(synthetic_bag):
+    output=synthetic_bag/'polish_cli'
+    options=[str(synthetic_bag),'--mode','wheel','--frontend','recorded','--dynamic-polish',
+             '--no-dynamic-fragments','-o',str(output)]
+    assert m.main(options)==0
+    report=json.loads((output/'report.json').read_text())
+    assert report['dynamic_filter']['polish_filter']['enabled']
+    mask=np.load(output/'dynamic_mask.npz')['keep']
+    raw=read_ply(output/'map_3d_colored_unfiltered.ply');kept=read_ply(output/'map_3d_colored.ply')
+    np.testing.assert_array_equal(kept,raw[mask])
+    with pytest.raises(SystemExit) as exc:
+        m.main(options+['--no-dynamic-filter'])
+    assert exc.value.code==2

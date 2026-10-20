@@ -8,6 +8,7 @@ parameters:
   raw_cloud_topic: /velodyne_points
   wheel_model: planar
   voxel: 0.05
+  color_source: auto
   icp_voxel: 0.2
   keyframe_distance: 0.5
   keyframe_angle: 8.0
@@ -24,9 +25,30 @@ parameters:
   lio_position_sigma: 0.10
   lio_rotation_sigma: 0.03
   dynamic_range: 30.0
+  # Official DUFOMap offline protocol; same parameters across bags/sensors.
+  dynamic_method: dufomap
+  dynamic_resolution: 0.1
+  dynamic_surface_margin: 0.2
+  dynamic_pose_margin: 2
+  dynamic_threads: 4
+  # Local refinement of tiny disconnected outlines near confirmed dynamic voxels.
+  # Repeatedly observed groups are protected; no fixed floor/height/ROI mask.
+  no_dynamic_fragments: false
+  dynamic_fragment_radius: 0.12
+  dynamic_fragment_max_points: 120
+  dynamic_fragment_max_extent: 0.8
+  dynamic_fragment_seed_radius: 0.25
+  dynamic_fragment_revisit_gap: 8.0
+  dynamic_fragment_match_radius: 0.08
+  # Optional ray-consensus finishing. Explicit --dynamic-polish / clean_3dmap --polish.
+  dynamic_polish: false
+  # Preserve deskewed local scans for cleaning again without changing the poses.
+  keep_cache: true
   dynamic_margin: 0.20
   dynamic_window: 8.0
-  dynamic_min_votes: 3
+  dynamic_min_votes: 2
+  dynamic_free_hit_ratio: 2.0
+  dynamic_hit_cluster_max: 2
   max_iterations: 2000
   max_trajectory_speed: 2.0
   loop_max_attempts: 6

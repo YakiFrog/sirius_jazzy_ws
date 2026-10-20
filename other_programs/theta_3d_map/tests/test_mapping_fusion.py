@@ -245,6 +245,38 @@ def test_visibility_does_not_remove_sparse_points_without_contradicting_returns(
     assert keep.all()
 
 
+def test_visibility_removes_ghost_using_free_space_seen_long_after_observation():
+    ghost, wall = np.array([2., 0, 0]), np.array([5., 0, 0])
+    points = np.array([ghost, wall])
+    frames = [np.array([ghost])] + [np.array([wall]) for _ in range(4)]
+    times = np.array([0., 12., 24., 36., 48.])
+    args = SimpleNamespace(dynamic_range=30., dynamic_margin=.2, dynamic_min_votes=3)
+    keep, report = visibility_filter(points, frames.__getitem__, [rigid() for _ in frames], args, times=times)
+    np.testing.assert_array_equal(keep, [False, True])
+    assert report['removed_points'] == 1
+
+
+def test_visibility_removes_obstacle_that_left_after_being_observed_many_times():
+    obstacle, wall = np.array([2., 0, 0]), np.array([5., 0, 0])
+    points = np.array([obstacle, wall])
+    frames = [np.array([obstacle]) for _ in range(5)] + [np.array([wall]) for _ in range(5)]
+    times = np.array([0., 1., 2., 3., 4., 20., 21., 22., 23., 24.])
+    args = SimpleNamespace(dynamic_range=30., dynamic_margin=.2, dynamic_min_votes=3)
+    keep, report = visibility_filter(points, frames.__getitem__, [rigid() for _ in frames], args, times=times)
+    np.testing.assert_array_equal(keep, [False, True])
+    assert report['removed_points'] == 1
+
+
+def test_visibility_keeps_structure_observed_again_later_despite_aliased_free_votes():
+    pole, wall = np.array([2., 0, 0]), np.array([5., 0, 0])
+    points = np.array([pole, wall])
+    frames = [np.array(f) for f in ([pole], [wall], [pole], [wall], [pole], [wall])]
+    times = np.array([0., 2., 20., 22., 40., 42.])
+    args = SimpleNamespace(dynamic_range=30., dynamic_margin=.2, dynamic_min_votes=3)
+    keep, _ = visibility_filter(points, frames.__getitem__, [rigid() for _ in frames], args, times=times)
+    assert keep.all()
+
+
 def test_trajectory_jump_check_flags_spike_but_keeps_slope_and_steady_motion():
     from mapping_quality import trajectory_jump_quality
     times = np.arange(20)*.5

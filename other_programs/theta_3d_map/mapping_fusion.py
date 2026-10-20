@@ -171,16 +171,24 @@ def motion_consistency(wt, wp, lt, lp, interpolate, max_gap):
 
 
 def visibility_filter(xyz, frame_points, poses, args, progress=None, times=None):
-    """Remove only repeatedly contradicted surfaces, preserving unknown/occluded space.
+    """Remove contradicted surfaces, preserving unknown/occluded space and kept objects.
 
-    Inspired by range-image map cleaning and Dynablox's conservative free-space
-    principle. This does not reproduce Dynablox's TSDF/tracking or ERASOR's R-POD.
+    Inspired by range-image map cleaning and the conservative free-space
+    principles of Dynablox/DUFOMap: a space observed empty at any time cannot be
+    occupied by a static point. A point whose direct observations form a single
+    episode followed by later free-space evidence is treated as an object that
+    left the scene; objects still observed as a surface late in the session are
+    kept even when aliased free votes exist. This does not reproduce those
+    systems' full implementations.
     """
     if not len(xyz):
         return np.ones(0, bool), {'removed_points': 0}
     tree = cKDTree(xyz)
     hits = np.zeros(len(xyz), dtype=np.uint16)
     free = np.zeros(len(xyz), dtype=np.uint16)
+    hit_clusters = np.zeros(len(xyz), dtype=np.uint16)
+    last_hit = np.full(len(xyz), -np.inf)
+    previous_hit = np.full(len(xyz), -np.inf)
     # VLP16: use narrow angular bins; missing rays and foreground occlusions are unknown.
     az_step, el_step = np.deg2rad(.10), np.deg2rad(.10)
     n_az, n_el = int(np.ceil(2*np.pi/az_step)), int(np.ceil(np.pi/el_step))
@@ -190,45 +198,65 @@ def visibility_filter(xyz, frame_points, poses, args, progress=None, times=None)
         el = np.clip(np.floor((np.arcsin(np.clip(p[:, 2]/np.maximum(distance, 1e-9), -1, 1))
                               +np.pi/2)/el_step).astype(int), 0, n_el-1)
         return az*n_el+el, distance
+    def scan_table(i):
+        ids, distances = bins(frame_points(i))
+        table = np.full(n_az*n_el, np.inf, dtype=np.float32)
+        np.minimum.at(table, ids, distances)
+        return table
     # Time-spaced keyframes prevent long stationary bursts from dominating votes.
     selected = []
     times = np.arange(len(poses), dtype=float) if times is None else np.asarray(times)
-    first_seen = np.full(len(xyz), np.inf)
-    last_seen = np.full(len(xyz), -np.inf)
-    for i, pose in enumerate(poses):
-        local = frame_points(i)
-        world = local @ pose[:3, :3].T + pose[:3, 3]
-        distance, indexes = tree.query(world, distance_upper_bound=max(.12, getattr(args, 'voxel', .05)*2))
-        valid = np.isfinite(distance)
-        np.minimum.at(first_seen, indexes[valid], times[i])
-        np.maximum.at(last_seen, indexes[valid], times[i])
     for i, pose in enumerate(poses):
         if not selected or (np.linalg.norm(pose[:3, 3]-poses[selected[-1]][:3, 3]) >= .15
                             or Rotation.from_matrix(poses[selected[-1]][:3, :3].T @ pose[:3, :3]).magnitude() >= .08
                             or times[i]-times[selected[-1]] >= 1.):
             selected.append(i)
+    cluster_gap = getattr(args, 'dynamic_window', 8.)
+    free_hit_ratio = getattr(args, 'dynamic_free_hit_ratio', 2)
+    cluster_max = getattr(args, 'dynamic_hit_cluster_max', 2)
     for number, i in enumerate(selected):
         pose = poses[i]
-        points = frame_points(i)
-        ids, distances = bins(points)
-        table = np.full(n_az*n_el, np.inf, dtype=np.float32)
-        np.minimum.at(table, ids, distances)
+        table = scan_table(i)
         candidates = np.asarray(tree.query_ball_point(pose[:3, 3], args.dynamic_range), dtype=int)
         local = (xyz[candidates]-pose[:3, 3]) @ pose[:3, :3]
         keys, ranges = bins(local)
         observed = table[keys]
         margin = np.maximum(args.dynamic_margin, ranges*.005)
-        hits[candidates[np.abs(observed-ranges) <= margin]] += 1
-        # Observed return must lie BEHIND the candidate; closer returns are occlusion.
-        near_observation = ((times[i] >= first_seen[candidates]-getattr(args, 'dynamic_window', 8.))
-                            & (times[i] <= last_seen[candidates]+getattr(args, 'dynamic_window', 8.)))
-        free[candidates[np.isfinite(observed) & (observed-ranges > margin) & near_observation]] += 1
+        hit_ids = candidates[np.abs(observed-ranges) <= margin]
+        hits[hit_ids] += 1
+        hit_clusters[hit_ids[times[i]-previous_hit[hit_ids] > cluster_gap]] += 1
+        previous_hit[hit_ids] = times[i]
+        last_hit[hit_ids] = times[i]
+        # Any-time free-space vote: a return observed beyond the candidate proves
+        # the space was empty then. Votes are not restricted to the candidate's own
+        # observation window, so later or loop-closure views clear ghosts left by
+        # moving objects (the "observed empty at any time" principle).
+        free[candidates[np.isfinite(observed) & (observed-ranges > margin)]] += 1
         if progress is not None:
             progress.update(number+1, f'静的地図の可視性確認 {number+1}/{len(selected)}')
-    remove = (free >= args.dynamic_min_votes) & (free > 3*hits)
-    return ~remove, {'method': 'conservative range visibility (inspired, not full Dynablox)',
+    # Objects that left: free-space votes that arrived strictly after the point's
+    # final direct observation, while the direct observations formed one episode.
+    free_after = np.zeros(len(xyz), dtype=np.uint16)
+    after_all_hits = np.isfinite(last_hit)
+    for i in selected:
+        pose = poses[i]
+        candidates = np.asarray(tree.query_ball_point(pose[:3, 3], args.dynamic_range), dtype=int)
+        if not len(candidates):
+            continue
+        table = scan_table(i)
+        local = (xyz[candidates]-pose[:3, 3]) @ pose[:3, :3]
+        keys, ranges = bins(local)
+        observed = table[keys]
+        margin = np.maximum(args.dynamic_margin, ranges*.005)
+        later = candidates[after_all_hits[candidates] & (times[i] > last_hit[candidates])
+                           & np.isfinite(observed) & (observed-ranges > margin)]
+        free_after[later] += 1
+    abandoned = (free_after >= args.dynamic_min_votes) & (hit_clusters <= cluster_max)
+    remove = (free >= args.dynamic_min_votes) & ((free > free_hit_ratio*hits) | abandoned)
+    return ~remove, {'method': 'all-time conservative range visibility with change-point abandonment (inspired, not full Dynablox/DUFOMap)',
                      'tested_keyframes': len(selected), 'removed_points': int(remove.sum()),
                      'retained_points': int((~remove).sum()), 'unknown_space': 'preserved',
-                     'min_free_votes': args.dynamic_min_votes, 'free_hit_ratio': 3,
-                     'observation_window_s': getattr(args, 'dynamic_window', 8.),
-                     'limitation': 'objects never observed to move, missing rays and occlusions cannot be reliably removed'}
+                     'min_free_votes': args.dynamic_min_votes, 'free_hit_ratio': free_hit_ratio,
+                     'abandoned_rule': 'free-space votes after last direct hit, single direct-observation episode',
+                     'hit_cluster_gap_s': cluster_gap, 'hit_cluster_max': cluster_max,
+                     'limitation': 'objects still observed as a surface late in the session, missing rays and occlusions cannot be reliably removed'}

@@ -248,6 +248,9 @@ def main(argv=None):
     theta_config = ws/'src/sirius/sirius_navigation/config'/('theta_calibration_real.yaml' if args.mode == 'real' else 'theta_calibration.yaml')
     if theta_config.exists():
         shutil.copyfile(theta_config, capture/'theta_calibration.yaml')
+    color_policy = ws/'src/sirius/sirius_navigation/config/theta_colorization.yaml'
+    if color_policy.exists():
+        shutil.copyfile(color_policy, capture/'theta_colorization.yaml')
     if profile is not None and not args.config:
         from web_sensor_profile import apply_profile
         (capture/'calibration.yaml').write_text(yaml.safe_dump(apply_profile(yaml.safe_load(config.read_text()), profile), sort_keys=False))

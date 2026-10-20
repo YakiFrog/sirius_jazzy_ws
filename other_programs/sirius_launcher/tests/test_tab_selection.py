@@ -61,15 +61,11 @@ class TestTabSelection(unittest.TestCase):
         self.assertIn('slamtoolbox', descriptions)
         self.assertIn('bag内の補正済みTF', descriptions)
 
-        offline_preset = next(
-            items
-            for name, items in window.presets
-            if name.startswith('オフラインマッピング録画セット')
-        )
-        self.assertLess(
-            offline_preset.index('slamtoolbox'),
-            offline_preset.index('record_offline_sim'),
-        )
+        mapping_3d_index = tab_names.index('3次元地図生成・自律移動')
+        for button_name in ('record_3dmap', 'record_3dmap_sim', 'check_3dmap_ready',
+                            'offline_3dmap', 'view_3dmap'):
+            self.assertEqual(window.button_map[button_name].tab_index, mapping_3d_index)
+            self.assertEqual(sum(b.name == button_name for b in window.buttons), 1)
 
         real_preset = next(
             items

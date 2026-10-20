@@ -634,6 +634,8 @@ def _run(args, progress):
     topic = args.cloud_topic or ('/velodyne_points_colored' if counts.get('/velodyne_points_colored', 0) else '/velodyne_points')
     if not counts.get(topic, 0):
         raise ValueError(f'No point cloud messages on {topic}')
+    if getattr(args, 'color_source', 'auto') == 'images' and not counts.get('/theta/dual_fisheye/image_raw/compressed', 0):
+        raise ValueError('Image recoloring requested but the bag has no THETA source images')
     static_lidar, static_imu, static_transforms, sensor_frames = read_static_calibration(
         args.bag, reader, frames[1], topic, args.imu_topic)
     calibration_source = 'capture/config YAML'
@@ -924,6 +926,21 @@ def _run(args, progress):
             poses, floor_quality = candidate, candidate_quality
         surface_refinement['graph_residuals'] = residual_breakdown(poses, edges, args, base_from_lidar)
         progress.finish_stage()
+    floor_refinement = None
+    optimization_before_floor = None
+    if getattr(args, 'known_single_floor', False):
+        from mapping_floor import refine_known_floor
+        print('既知の単一平坦床として高さ・傾きを補正・検証します。', flush=True)
+        save_trajectory(output/'trajectory_before_floor.csv', times, poses, base_from_lidar)
+        poses, floor_refinement = refine_known_floor(cache, poses, times, base_from_lidar,
+            [(e['from'], e['to']) for e in diagnostics if e.get('accepted')])
+        level = np.asarray(floor_refinement['frame_transform_old_map_to_new_map'])
+        initial = [level @ p for p in initial]
+        origin = level @ origin
+        floor_quality = floor_refinement['floor_quality_candidate']
+        optimization_before_floor = optimization
+        optimization = dict(success=floor_refinement['success'] and optimization_before_floor['success'], cost=floor_refinement['cost'],
+            evaluations=floor_refinement['evaluations'], method=floor_refinement['model'])
     # ループ拘束が最適化後にどれだけ満たされたか（閉じ残差）を記録する。
     loop_residuals = []
     for i, j, _, lidar, _ in loop_edges:
@@ -952,9 +969,17 @@ def _run(args, progress):
         def frame_points(i):
             with np.load(cache/f'{i:06d}.npz') as frame:
                 return frame['xyz'].copy()
-        keep, dynamic_diag = visibility_filter(xyz, frame_points, poses, args, progress, times=times)
+        if getattr(args, 'dynamic_method', 'visibility') == 'dufomap':
+            from mapping_dynamic import dufomap_filter
+            keep, dynamic_diag = dufomap_filter(xyz, frame_points, poses, args, progress, times=times)
+        else:
+            keep, dynamic_diag = visibility_filter(xyz, frame_points, poses, args, progress, times=times)
         dynamic_report.update(dynamic_diag)
+        from mapping_dynamic import finishing_indices
+        fragment_ids = finishing_indices(dynamic_diag)
+        write_map(output/'dynamic_fragments.ply', xyz[fragment_ids], rgb[fragment_ids])
         write_map(output/'dynamic_candidates.ply', xyz[~keep], rgb[~keep])
+        np.savez_compressed(output/'dynamic_mask.npz', keep=keep)
         xyz, rgb = xyz[keep], rgb[keep]
     progress.update(0, f'間引き完了（{len(xyz):,}点）、ファイル保存中')
     write_map(output/'map_3d.ply', xyz)
@@ -976,7 +1001,7 @@ def _run(args, progress):
                          'revisit_consistency_checked' if floor_quality.get('revisit_pairs', 0) else 'no_floor_revisit_evidence')
     import hashlib
     implementation = {name: hashlib.sha256((Path(__file__).parent/name).read_bytes()).hexdigest()
-                      for name in ('offline_3d_mapping.py', 'mapping_fusion.py', 'mapping_bundle.py', 'mapping_quality.py', 'mapping_geometry.py', 'mapping_progress.py', 'sensor_consistency.py')}
+                      for name in ('offline_3d_mapping.py', 'mapping_fusion.py', 'mapping_dynamic.py', 'mapping_bundle.py', 'mapping_quality.py', 'mapping_geometry.py', 'mapping_progress.py', 'sensor_consistency.py')}
     report = {'ground_truth_evaluation': evaluation, 'bag': str(args.bag), 'config': str(config.resolve()), 'mode': args.mode,
               'implementation_sha256': implementation,
               'calibration_source': calibration_source, 'resolved_base_from_lidar': base_from_lidar.tolist(),
@@ -1009,6 +1034,16 @@ def _run(args, progress):
                   'IMU orientation constraints are used only when marked valid in the bag',
                   'Ground truth is recorded for evaluation only and is never an optimization input',
                   'Encoders do not measure world height; a soft body-normal motion prior uses wheel/IMU kinematics and allows slope transitions']}
+    if floor_refinement is not None:
+        report.update(floor_refinement=floor_refinement,
+            optimization_before_floor_refinement=optimization_before_floor,
+            source_pose_graph_evidence='source graph supplied correction smoothness links; measured factors were not reoptimized')
+        report['surface_refinement_before_floor'] = report.pop('surface_refinement')
+        report['optimization_first_pass_before_floor_refinement'] = report.pop('optimization_first_pass')
+        for name in ('mapping_floor.py',):
+            report['implementation_sha256'][name] = hashlib.sha256((Path(__file__).parent/name).read_bytes()).hexdigest()
+    if getattr(args, 'dynamic_polish', False):
+        report['implementation_sha256']['mapping_cleanup.py'] = hashlib.sha256((Path(__file__).parent/'mapping_cleanup.py').read_bytes()).hexdigest()
     (output/'report.json').write_text(json.dumps(report, indent=2)+'\n')
     import shutil
     shutil.copyfile(config, output/'calibration.yaml')
@@ -1023,10 +1058,22 @@ def _run(args, progress):
             imu_to_base_translation=inverse(static_imu)[:3, 3].tolist(),
             imu_from_base_rotation=inverse(static_imu)[:3, :3].reshape(-1).tolist())
         (output/'resolved_calibration.yaml').write_text(yaml.safe_dump(resolved, sort_keys=False))
+    color_mode = getattr(args, 'color_source', 'auto')
+    recolored = False
+    if color_mode == 'images' or (color_mode == 'auto' and counts.get('/theta/dual_fisheye/image_raw/compressed', 0)
+                                  and counts.get(args.raw_cloud_topic, 0)):
+        from recolor_3d_map import recolor_new_output
+        print('元画像から固定校正・遮蔽判定付きで再着色します。軌跡と地図形状は保持します。', flush=True)
+        recolor_new_output(output, args.bag, getattr(args, 'colorization_config', None),
+                           getattr(args, 'theta_calibration', None))
+        recolored = True
+    else:
+        report['colorization'] = {'source': 'recorded RGB', 'reason': 'explicit recorded policy or no source image/raw scan pair'}
+        (output/'report.json').write_text(json.dumps(report, indent=2)+'\n')
     if not args.keep_cache:
         shutil.rmtree(cache)
     print(f'Saved: {output}/map_3d.ply and map_3d_colored.ply ({len(xyz)} identical XYZ points)', flush=True)
-    if not colored:
+    if not colored and not recolored:
         print('WARNING: no RGB in input; colored map is neutral gray', file=sys.stderr)
     if len(initial) > 1 and not using_lio and not any(e[4] is not None for e in edges):
         print('WARNING: no valid IMU orientation constraints; using wheel and LiDAR only', file=sys.stderr)
@@ -1060,7 +1107,13 @@ def main(argv=None):
     parser.add_argument('--mapping-config', default=str(Path(__file__).resolve().parents[2]/'params/offline_3d_mapping.yaml'),
                         help='Shared backend YAML policy; explicit CLI options override it')
     parser.add_argument('--mode', choices=['optimize', 'wheel'], default='optimize')
+    parser.add_argument('--known-single-floor', action='store_true',
+                        help='実際に同一平面の屋内床と確認できる場合のみ、高さ・傾きを補正して検証する')
     parser.add_argument('--cloud-topic')
+    parser.add_argument('--color-source', choices=['auto', 'recorded', 'images'], default='auto',
+                        help='auto: recolor from THETA source images after geometry processing when available')
+    parser.add_argument('--colorization-config', help='Shared robot LiDAR/THETA extrinsic and visibility policy YAML')
+    parser.add_argument('--theta-calibration', help='Override THETA intrinsic calibration for image recoloring')
     parser.add_argument('--raw-cloud-topic', default='/velodyne_points', help='Recover missing colored-cloud point times from identical raw XYZ')
     parser.add_argument('--trajectory', choices=['auto', 'lio', 'wheel'], default='auto',
                         help='auto: recorded FastLIO trajectory + adaptive wheels when available; otherwise wheel/IMU')
@@ -1095,10 +1148,27 @@ def main(argv=None):
     parser.add_argument('--keep-cache', action='store_true')
     parser.add_argument('--no-deskew', action='store_true', help='Disable per-point encoder/IMU motion compensation')
     parser.add_argument('--no-dynamic-filter', action='store_true', help='Keep accumulated points without visibility cleaning')
+    parser.add_argument('--dynamic-method', choices=['visibility', 'dufomap'], default='visibility')
+    parser.add_argument('--dynamic-resolution', type=float, default=.1, help='DUFOMap free-space voxel [m], independent of map detail')
+    parser.add_argument('--dynamic-surface-margin', type=float, default=.2, help='DUFOMap d_s: hit inflation [m]')
+    parser.add_argument('--dynamic-pose-margin', type=int, default=2, help='DUFOMap d_p: unknown-neighborhood inflation [voxels]')
+    parser.add_argument('--dynamic-threads', type=int, default=4)
+    parser.add_argument('--no-dynamic-fragments', action='store_true', help='Disable local isolated fragment cleanup; use official DUFOMap alone')
+    parser.add_argument('--dynamic-polish', action='store_true', help='DUFOMap後に、時刻を離したレーザー通過証拠で浮遊点・残像を追加仕上げ')
+    parser.add_argument('--dynamic-fragment-radius', type=float, default=.12)
+    parser.add_argument('--dynamic-fragment-max-points', type=int, default=120)
+    parser.add_argument('--dynamic-fragment-max-extent', type=float, default=.8)
+    parser.add_argument('--dynamic-fragment-seed-radius', type=float, default=.25)
+    parser.add_argument('--dynamic-fragment-revisit-gap', type=float, default=8.)
+    parser.add_argument('--dynamic-fragment-match-radius', type=float, default=.08)
     parser.add_argument('--dynamic-range', type=float, default=30.)
     parser.add_argument('--dynamic-margin', type=float, default=.20, help='Conservative surface/pose uncertainty margin [m]')
-    parser.add_argument('--dynamic-window', type=float, default=8., help='Time neighborhood for contradiction votes [s]')
+    parser.add_argument('--dynamic-window', type=float, default=8., help='Gap separating direct-observation episodes for the abandonment rule [s]')
     parser.add_argument('--dynamic-min-votes', type=int, default=3)
+    parser.add_argument('--dynamic-free-hit-ratio', type=float, default=2.,
+                        help='Free-space votes must exceed this multiple of direct hits unless abandonment evidence exists')
+    parser.add_argument('--dynamic-hit-cluster-max', type=int, default=2,
+                        help='Max direct-observation episodes for the abandonment rule')
     parser.add_argument('--no-loop', action='store_true', help='Disable loop closure')
     parser.add_argument('--no-covisibility', action='store_true', help='Disable overlapping scans at multiple baselines (diagnosis only)')
     parser.add_argument('--no-planar-normals', action='store_true', help='Use only local PCA normals (diagnosis only)')
@@ -1121,12 +1191,14 @@ def main(argv=None):
         defaults = yaml.safe_load(f).get('parameters', {})
     actions = {action.dest: action for action in parser._actions}
     for key, value in defaults.items():
-        if key not in actions or key in {'bag', 'config', 'output', 'directory', 'mapping_config', 'help'}:
+        if key not in actions or key in {'bag', 'config', 'output', 'directory', 'mapping_config', 'help', 'known_single_floor'}:
             parser.error(f'Unsupported mapping policy key: {key}')
         if actions[key].choices and value not in actions[key].choices:
             parser.error(f'Invalid mapping policy value: {key}={value}')
     parser.set_defaults(**defaults)
     args = parser.parse_args(argv)
+    if args.dynamic_polish and (args.no_dynamic_filter or args.dynamic_method != 'dufomap'):
+        parser.error('--dynamic-polish requires enabled DUFOMap filtering')
     positive = [args.voxel, args.icp_voxel, args.keyframe_distance, args.keyframe_angle,
                 args.keyframe_interval, args.max_sync_gap, args.max_correspondence,
                 args.lidar_sigma, args.wheel_position_sigma, args.wheel_rotation_sigma,
@@ -1137,11 +1209,26 @@ def main(argv=None):
         parser.error('Invalid range, noise, optimizer, loop, or sampling option')
     if args.dynamic_min_votes < 2:
         parser.error('--dynamic-min-votes must be at least 2')
+    if args.dynamic_free_hit_ratio < 1:
+        parser.error('--dynamic-free-hit-ratio must be at least 1')
+    if args.dynamic_hit_cluster_max < 1:
+        parser.error('--dynamic-hit-cluster-max must be positive')
+    if (not np.isfinite(args.dynamic_resolution) or args.dynamic_resolution <= 0
+            or not np.isfinite(args.dynamic_surface_margin) or args.dynamic_surface_margin < 0
+            or args.dynamic_pose_margin < 1 or args.dynamic_threads < 1):
+        parser.error('Invalid DUFOMap resolution, margins or threads')
+    if (args.dynamic_fragment_max_points < 1 or not all(np.isfinite(v) and v > 0 for v in (
+            args.dynamic_fragment_radius, args.dynamic_fragment_max_extent, args.dynamic_fragment_seed_radius,
+            args.dynamic_fragment_revisit_gap, args.dynamic_fragment_match_radius))):
+        parser.error('Invalid fragment cleanup size, distance or time')
     if args.loop_max_attempts < 1:
         parser.error('--loop-max-attempts must be positive')
     if not 1 <= args.surface_rounds <= 10:
         parser.error('--surface-rounds must be between 1 and 10')
     try:
+        if not args.no_dynamic_filter and args.dynamic_method == 'dufomap':
+            from mapping_dynamic import require_dufomap
+            require_dufomap()  # Fail before expensive frontend/trajectory work.
         if args.bag is None:
             from map_selection import bag_candidates, choose_numbered, next_output_directory
             args.bag = choose_numbered(lambda: bag_candidates(args.directory), '後処理するBAG', args.directory)

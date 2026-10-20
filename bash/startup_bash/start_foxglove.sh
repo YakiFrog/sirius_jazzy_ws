@@ -27,6 +27,7 @@ echo "-------------------------------------------------"
 echo " Foxglove Studio: Open connection -> Foxglove WebSocket -> 上記URLを入力"
 echo " Web版でも可: https://studio.foxglove.dev"
 echo " 3D地図表示: 3Dパネルを追加 -> Frame: offline_map / Topic: /offline_map/colored_points"
+echo " 削除対象の比較: /offline_map/removed_points をRGBで重ねる（赤色）"
 echo "   （先に view_3dmap で地図を配信しておく）"
 echo "================================================="
 

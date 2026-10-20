@@ -20,7 +20,7 @@ def map_candidates(directory):
         for path in root.rglob('*.ply'):
             if (path.parent/'.mapping-diagnostic').exists():
                 continue
-            if path.name in {'map_3d_unfiltered.ply', 'map_3d_colored_unfiltered.ply', 'dynamic_candidates.ply'}:
+            if path.name in {'map_3d_unfiltered.ply', 'map_3d_colored_unfiltered.ply', 'map_3d_colored_recorded.ply', 'dynamic_candidates.ply', 'dynamic_fragments.ply'}:
                 continue  # Diagnostics are explicitly available by path, not duplicate final maps.
             if path.name == 'map_3d.ply' and (path.parent / 'map_3d_colored.ply').is_file():
                 continue

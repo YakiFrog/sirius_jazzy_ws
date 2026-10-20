@@ -103,6 +103,10 @@ offline_3dmap ~/rosbag2_data/hallway_001 --mode wheel \
 
 ## 3. Foxgloveで表示
 
+色が物体から床へにじむ場合の共通校正・再着色は [COLOR_CALIBRATION.md](COLOR_CALIBRATION.md) を参照。
+`recolor_3dmap` で既存の形状を保って再着色できる。通常生成も、元画像があるBAGは最後に自動で再着色する。
+固定カメラ/LiDAR校正と遮蔽判定はライブ・後処理で共通設定を使う。
+
 Launcherの「3次元地図生成・自律移動」→「3D地図の録画・後処理」に `view_3dmap` があります。
 引数なしなら生成済み地図の一覧から番号で選択できます（新しい順、Enter=1、q=中止）。
 番号を間違えた場合は入力し直せます。bag・出力ディレクトリ・PLYの直接指定も可能です。
@@ -119,14 +123,83 @@ view_3dmap ~/rosbag2_data/hallway_001
 ```
 
 FoxgloveでFoxglove WebSocket接続先を `ws://<ROS PCのIP>:8766` に設定し、3Dパネルを追加します。
+
+移動軌跡は `/offline_map/trajectory`（`nav_msgs/Path`）を有効にすると地図に重ねて表示できる。`view_3dmap` は選択したPLYと同じディレクトリの `trajectory.csv` を自動で読み込む。CSVは地図座標のロボットbase姿勢なので、追加のLiDAR外部変換や高さ補正をしない。保存済みのXYZ・姿勢・撮影時刻を使う推定軌跡であり、計画経路や実測真値ではない。Zカットは点群にだけ適用し、軌跡の高さや連続性は変えない。軌跡CSVがない古い地図では空のPathを配信して以前の表示を消す。
+
+更新前から起動していた `view_3dmap` はCtrl+Cで停止し、再起動すると軌跡も配信される。軌跡の読み込み・表示は地図やCSVを変更しない。
 Fixed frame / Display frameを `offline_map` にして、次のトピックを切り替えて表示してください。
 
-- `/offline_map/colored_points`: 色付き地図。Color modeをRGBに設定。
+- `/offline_map/colored_points`: 残像除去後の色付き地図（Colored_points）。Color modeをRGBに設定。
 - `/offline_map/points`: 同じ座標の通常の3D地図。高さによる色分け等も選択可能。
+- `/offline_map/removed_points`: 同じ生成結果の `dynamic_candidates.ply`。削除対象だけを赤色で配信。
+  Color mode=RGBで色付き地図に重ねると、どこを消したか比較できる。
+  削除対象ファイルがない旧地図では空点群を配信する。動的物体の正解ラベルではない。
+- `/offline_map/fragment_points`: 仕上げで追加除去した `dynamic_fragments.ply` だけをオレンジで配信。
+  全削除対象（赤）の部分集合。小さな浮遊輪郭の除去・誤除去を区別して確認できる。Zカットも共通適用。
 
 後処理の原点は最初の車体位置です。ライブSLAMとは独立した `offline_map` フレームで配信します。
 シミュレータやbag再生を起動する必要はありません。3秒ごとに再配信するので、後から接続しても表示できます。
 停止はCtrl+C、Launcherでは停止ボタンです。配信とブリッジは同じROS_DOMAIN_IDで起動してください。
+
+色の統合で遠方の画像の影響を下げる設定は
+`src/sirius/sirius_navigation/config/theta_colorization.yaml` の
+`color_distance_power`（既定2、増やすほど近距離を優先）と
+`fusion_weighted_median: true`。
+旋回画像の影響は `color_rotation_scale_deg_s`（既定5度/秒、0で無効）で下げられる。
+設定後は `recolor_3dmap` で再着色する。
+点の位置や数は変えない。詳細は `COLOR_CALIBRATION.md` の距離信頼度の説明を参照。
+
+### 天井を隠してデバッグする（Zカット）
+
+`view_3dmap` は地図を番号選択した後、Zカットを対話で選択できる。
+**Enterは「カットなし」**。上側（天井）・下側（床）・上下の範囲を選び、高さを数値入力する。
+qで起動を中止できる。`--z-min` / `--z-max` 指定時はZの対話を省略する。
+自動起動で対話を不要にする場合は `--no-z-dialog` を指定する。
+
+```bash
+view_3dmap --z-max 2.0  # 地図を番号選択し、高さ2m以下だけ配信
+view_3dmap --z-min 0.2 --z-max 1.8  # 床・天井を隠す断面表示
+# 起動中に別ターミナルから変更可能（同じROS_DOMAIN_ID）
+ros2 param set /offline_3d_map_publisher z_max 1.5
+ros2 param set /offline_3d_map_publisher z_max 1000000000.0  # 上限カット解除
+```
+
+単位はm、`offline_map` のZ座標（最初の車体位置が原点）。センサからの相対高さではない。
+坂や階違いでも同じ座標範囲を適用する。境界は含む。通常・色付き・赤い削除対象に同じ範囲を適用し、
+変更直後に再配信する。範囲を広げると点が戻り、PLYや地図生成結果は変更しない。既定は全高表示。
+更新前から起動中のViewerは一度再起動すると、このパラメータを利用できる。
+
+### 軌跡を変えずに残像除去だけやり直す
+
+壁に接続した残像など、キーフレームの観測が足りない場合は、
+`clean_3dmap /path/to/colored_map --all-scans` で全生スキャンを証拠にできる。
+元の高頻度軌跡へ最適化のSE(3)補正を補間し、符号付き点時刻でdeskewする。
+最適化軌跡の時刻範囲外は使わず、使用・除外数をレポートに保存する。
+元地図と一致検証できる `frames`、初期軌跡、元BAGが必要。
+既存の削除を維持し、残った点のXYZと選択した地図のRGBを保持する。
+色付け済み地図を渡しても古い未除去地図の色へ戻さない。保存先は別ディレクトリ。
+通常の地図生成・`--all-scans` なしの再清掃は従来のキーフレーム方式。
+
+共通設定は著者公開の **DUFOMap 1.1.1** を使用する。自由空間の解像度0.1m、
+表面余裕0.2m、姿勢余裕2 voxelを全BAGで共通にする。保存地図の解像度0.05mとは別。
+初回は `bash ~/sirius_jazzy_ws/bash/startup_bash/setup_3d_map_cleaner.sh` で専用venvに導入する。
+これからの `offline_3dmap` はdeskew済み `frames` も保存する（今回の実機例で約50MB）。
+
+```bash
+source ~/sirius_jazzy_ws/bash/bash_alias2.sh
+clean_3dmap  # 元地図を番号選択。元地図/frames が必要
+# 直接指定。別のキャッシュを使う場合は元地図を復元してXYZ/RGB一致を検査する
+clean_3dmap /path/to/generated_map --cache /path/to/same_capture/frames -o /path/to/new_map
+```
+
+元地図・軌跡は上書きしない。新しい保存先の `map_3d_colored.ply` と `dynamic_candidates.ply`
+は元点群の厳密な分割で、保持点を移動・再着色しない。`dynamic_mask.npz` に分割マスクを保存する。
+従来のv7方式は `offline_3dmap ... --dynamic-method visibility` で比較できる。
+DUFOMap後の孤立輪郭仕上げは共通設定で有効。小さい・動体近傍・再観測が乏しいという
+複合条件を使い、単純な小クラスタ一括削除はしない。独自の推定処理なので静的な孤立部品の
+誤除去はあり得る。`clean_3dmap ... --no-fragments` / `offline_3dmap ... --no-dynamic-fragments`
+で著者DUFOMapのみと比較できる。時間情報がない場合は追加仕上げを行わない。
+手法比較・論文・実測の限界は [DYNAMIC_REMOVAL.md](DYNAMIC_REMOVAL.md) を参照。
 
 ## 推定の内容と制限
 
@@ -156,3 +229,42 @@ OMP_NUM_THREADS=2 python3 -m pytest -q \
 
 従来の `theta_bag_to_ply.py`（録画TFで蓄積）と `theta_offline_slam.py`（KISS-ICP）は残しています。
 新しい `offline_3dmap` は上記の車輪拘束を使う別の処理です。
+
+## 実際に同一平面と分かっている屋内床の補正
+
+新しくBAGから生成する場合は、ターミナルで指定できる。BAGを省略すると従来どおり番号選択になる。`--known-single-floor` を省略した場合は単一床の拘束なし。
+
+```bash
+offline_3dmap --known-single-floor
+# BAGを直接指定する場合
+offline_3dmap ~/rosbag2_data/<bag名> --known-single-floor
+```
+
+通常の軌跡推定後、床補正と検証を行ってから点群の融合・動的除去・色付けを行う。床の観測不足、未使用観測の改善不足、再訪する床や壁の検証不足の場合はエラーで停止する。すべての平坦屋内BAGで成功する保証はない。
+
+既存地図を別ディレクトリに再構築する場合:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 \
+  ~/.local/share/sirius/dufomap-venv/bin/python \
+  other_programs/theta_3d_map/refine_3d_map.py /path/to/source_map \
+  --known-single-floor --output /path/to/new_map
+```
+
+元地図を復元できるスキャンキャッシュが必要。床観測から姿勢を補正して点群を再融合し、動的除去・色付けも再計算する。床点を直接平面へ押し付けない。坂・段差・複数階のある環境には単一床の仮定を適用しない。新しい地図座標は参照床をZ=0とするので、旧地図用のウェイポイントは再確認する。評価は `report.json` の `floor_refinement` を参照する。
+
+## 浮遊点・残像の追加仕上げ
+
+```bash
+# 現在の地図の位置・色・軌跡を保持して、削除だけを追加する
+clean_3dmap /path/to/generated_map --polish
+# 新しいBAGからの生成時にも同じ仕上げを選べる
+offline_3dmap --dynamic-polish
+# 実際に同一平面の屋内床である場合は床補正とも併用できる
+offline_3dmap --known-single-floor --dynamic-polish
+```
+
+小さな孤立群について、直接観測の後、複数時刻のレーザーがその点の奥へ通った証拠を確認する。大きな構造につながった点は保持する。小群は1点でも継続して再観測されていれば群全体を保護し、細長い孤立部材・平面状の小部品・遮蔽や観測不足の点も保護する。BAG名、地図座標、絶対高さによる除去条件は使わない。独自の保守的な後処理で、全ノイズの除去や静的細部の無欠損を保証するものではない。
+
+`--polish` は選択した地図を元に削除を追加するモードで、`--all-scans` / `--no-fragments` とは併用しない。元地図を復元できる `frames` と `dynamic_mask.npz` が必要。新規生成でもマスクを保存する。通常生成の `--dynamic-polish` は既定で無効、DUFOMapとの併用時のみ有効。詳細は [DYNAMIC_REMOVAL.md](DYNAMIC_REMOVAL.md) を参照。

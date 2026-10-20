@@ -28,6 +28,9 @@
 # PRESET: 3D自律移動セット(Webシミュ)
 # PRESET_ITEMS: rosbridge,tf_sim,lio3d_sim,twist_mux,nav2_3d_sim
 
+# PRESET: PCデバッグ
+# PRESET_ITEMS: foxglove
+
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
 # GROUP_DESC: 実機のモーター、LiDAR、IMUなどを個別に起動します。デバイス接続とudev設定を確認してから使用してください。
@@ -341,28 +344,6 @@ alias run_offline_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_
 # 記録済みRosbagからTHETA BEV->地面点群->RTAB-Mapで路面地図を生成・保存（SAM3なし）
 alias run_offline_theta_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_theta_mapping.sh'
 
-# 3D色付き地図/オフラインSLAM用bag録画（色付き点群+生点群+IMU+THETA+TF+odom。実機）
-alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
-# 3D色付き地図/オフラインSLAM用bag録画（シミュレーション）
-alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'
-
-# 録画前に必須トピック・TF・レートが揃っているか検査（緑=OK）
-alias check_3dmap_ready='bash ~/sirius_jazzy_ws/bash/startup_bash/check_theta_3dmap_ready.sh'
-
-# 録画bagから色付き3D地図(PLY)を生成（bagを対話選択。引数でbagパス指定も可）
-alias theta_bag_to_ply='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta_bag_to_ply.sh'
-
-# 生成済み色付き3D地図(PLY)を /colored_map として配信（RViz2で表示。最新のcolored_map.plyを自動選択）
-alias pub_3dmap='src && ros2 run sirius_navigation theta_ply_publisher'
-
-# 色付き点群bagをKISS-ICP+ポーズグラフでオフラインSLAM（ファイル直読み・DDS不使用）
-# 使い方: run_theta_offline_slam <bag_dir> --start 80 --end 305 [--voxel 0.05]
-alias run_theta_offline_slam='python3 ~/sirius_jazzy_ws/other_programs/theta_3d_map/theta_offline_slam.py'
-
-# 色付き点群bagをループ閉じ込めSLAM(rtabmap)で処理し、壁2重を解消した色付き3D地図を作成
-#（bagを対話選択。引数でbagパス指定も可）
-alias run_theta_slam_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta_slam_mapping.sh'
-
 # SAM3 + SGM GPU推論Dockerサーバーを起動 (port 8080)
 alias sam3_docker_gpu='cd ~/sam3_zed_server && docker compose up sam3-zed-merged'
 
@@ -391,6 +372,7 @@ alias sam3_colored_map_select='bash ~/sirius_jazzy_ws/bash/startup_bash/sam3_col
 
 # TAB: 3次元地図生成・自律移動
 # GROUP: 3次元地図生成・自律移動
+# GROUP_DESC: BAGからの地図生成は「3D地図の録画・後処理」の offline_3dmap を使用。3D専用の録画・準備確認・後処理・表示をこのタブに集約しています。THETA路面マッピングの取得・校正は「オフライン・マッピング」タブにあります。以前のTF蓄積・KISS-ICP・RTAB-Map方式は「従来方式の3D地図生成」にまとめています。
 # GROUP_DESC: FAST-LIO2で3Dオドメトリを取り、small_gicpで3D地図へ局所自己位置推定し、Nav2で自律移動します。3D地図は2Dへ投影してNav2に渡します。EKF(sf_real)とは排他（odom->baseの二重配信を避ける）です。Webシミュレータで検証する場合は *_sim を使います（/clock・/velodyne_pointsをON、/tfはOFF）。
 
 # SUBGROUP: セットアップ
@@ -426,19 +408,42 @@ alias colored3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_m
 
 # SUBGROUP: 3D地図の録画・後処理
 
+# 録画前に必須トピック・TF・レートが揃っているか検査（緑=OK）
+alias check_3dmap_ready='bash ~/sirius_jazzy_ws/bash/startup_bash/check_theta_3dmap_ready.sh'
+
 # 3D後処理用bag録画（生点群+RGB+IMU+車輪。実機、THETA画像は任意）
 alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
 # 3D後処理用bag録画（Webシミュ。RGB点群・IMU・/odom・/clockを必須確認）
 alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'
 
 # 車輪相対移動+IMU姿勢+縮退方向を抑制したICPで、3D地図と同一形状の色付き3D地図を生成
-# 使い方: offline_3dmap ~/rosbag2_data/<bag名> [--mode wheel] [-o 出力先]
+# BAGから3D地図を生成（床補正・残像除去・色付けに対応。引数なしでBAG選択）
 alias offline_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/run_offline_3d_mapping.sh'
 # FastLIOをBAGから独立再計算。引数なしならBAGを番号選択。
 alias recompute_3d_lio='bash ~/sirius_jazzy_ws/bash/startup_bash/recompute_3d_lio.sh'
 
-# 生成済み3D地図をFoxgloveへ配信（引数なしで地図選択。通常・色付きの2トピック）
+# 軌跡を変えず残像除去だけ再実行。元地図とframesを照合して誤った組合せを拒否。
+alias clean_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/clean_3d_map.sh'
+# 固定のカメラ/LiDAR校正と元画像から再着色。軌跡・形状・残像除去結果を保持。
+alias recolor_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/recolor_3d_map.sh'
+# 生成済み3D地図と移動軌跡をFoxgloveへ配信（通常・色付き・削除候補・追加仕上げ）
 alias view_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/view_3d_map.sh'
+
+# SUBGROUP: 従来方式の3D地図生成
+
+# 従来方式：記録済みTFで点群を積み、色付き3D地図(PLY)を生成（bagを対話選択。引数でbagパス指定も可）
+alias theta_bag_to_ply='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta_bag_to_ply.sh'
+
+# 従来方式のcolored_map.plyを /colored_map として配信（RViz2で表示。最新のcolored_map.plyを自動選択）
+alias pub_3dmap='src && ros2 run sirius_navigation theta_ply_publisher'
+
+# 従来方式：色付き点群bagをKISS-ICP+ポーズグラフでオフラインSLAM（ファイル直読み・DDS不使用）
+# 使い方: run_theta_offline_slam <bag_dir> --start 80 --end 305 [--voxel 0.05]
+alias run_theta_offline_slam='python3 ~/sirius_jazzy_ws/other_programs/theta_3d_map/theta_offline_slam.py'
+
+# 従来方式：色付き点群bagをループ閉じ込めSLAM(rtabmap)で処理し、壁2重を解消した色付き3D地図を作成
+#（bagを対話選択。引数でbagパス指定も可）
+alias run_theta_slam_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta_slam_mapping.sh'
 
 # SUBGROUP: 3D自己位置推定
 
