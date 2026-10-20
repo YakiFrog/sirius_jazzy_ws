@@ -131,22 +131,28 @@ class SemanticProcessor:
                 tuple(s['view_size']), s['hfov_deg']) for yaw in s['view_yaws']]}
         return [cv2.remap(raw, *maps, cv2.INTER_LINEAR) for maps in self.remaps[key]]
 
-    def infer(self, views):
+    def infer(self, views, baseline=None):
         from sirius_navigation.theta_semantic_temporal import yellow_tactile_seeds
         s, shadow = self.cfg['semantic'], self.cfg['semantic']['shadow']
         base, scores, extra, escores = [], [], [], []
         self.last_inference_metadata = []
         # Reconfigure once per group, rather than once per view.
-        self.session.configure(s['prompt'], {p.strip(): s['score_min'] for p in s['prompt'].split(',')},
-                               threshold=1., resolution=s['resolution'])
+        if baseline is None:
+            self.session.configure(s['prompt'], {p.strip(): s['score_min'] for p in s['prompt'].split(',')},
+                                   threshold=1., resolution=s['resolution'])
         for i, image in enumerate(views):
-            ids, score, meta = self.session.infer(image)
-            self.last_inference_metadata.append(dict(kind='base', yaw=s['view_yaws'][i], **meta))
-            if ('yellow tactile paving' in [p.strip() for p in s['prompt'].split(',')]
+            if baseline is not None:
+                ids, score = baseline['classes'][i].copy(), baseline['scores'][i].copy()
+                self.last_inference_metadata.append(baseline['metadata'][i])
+            else:
+                ids, score, meta = self.session.infer(image)
+                self.calls += 1
+                self.last_inference_metadata.append(dict(kind='base', yaw=s['view_yaws'][i], **meta))
+            if (baseline is None and 'yellow tactile paving' in [p.strip() for p in s['prompt'].split(',')]
                     and 'yellow tactile paving' not in self.session.registry_before['ids']):
                 ids = ids.copy()
                 ids[(ids == 0) & (score > 0)] = 4
-            base.append(ids); scores.append(score); self.calls += 1
+            base.append(ids); scores.append(score)
             extra.append(np.zeros(ids.shape, np.uint8)); escores.append(np.zeros(ids.shape, np.uint8))
         candidates = [i for i, image in enumerate(views) if
             (image.max(axis=2) <= shadow['max_original_value']).sum() >= shadow['min_component_area']]
@@ -248,6 +254,7 @@ def run(args):
     nav_dir = Path(__file__).resolve().parents[2]/'src/sirius/sirius_navigation/sirius_navigation'
     source_files = [Path(__file__), Path(__file__).with_name('theta_road_pipeline.py'),
         Path(__file__).with_name('theta_texture_quality.py'),
+        Path(__file__).with_name('theta_road_cache.py'),
         Path(__file__).with_name('refine_theta_road_regions.py'),
         Path(__file__).with_name('experiment_theta_tactile_context.py'),
         Path(__file__).with_name('experiment_theta_grass_extent.py'),
@@ -264,6 +271,12 @@ def run(args):
                     libraries=dict(numpy=np.__version__, opencv=cv2.__version__),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                         for p in source_files})
+    baseline_cache = None
+    if args.reuse_study:
+        from theta_road_cache import SemanticBaselineCache
+        baseline_cache = SemanticBaselineCache(args.reuse_study)
+        identity['baseline_cache'] = dict(path=str(args.reuse_study.resolve()),
+            manifest_sha256=hashlib.sha256((args.reuse_study/'manifest.json').read_bytes()).hexdigest())
     identity_hash = fingerprint(identity)
     if (output/'run_identity.json').exists():
         if json.loads((output/'run_identity.json').read_text())['sha256'] != identity_hash:
@@ -324,6 +337,7 @@ def run(args):
         semantic = cfg['semantic']['enabled']
         session = Sam3ExperimentClient(args.server) if semantic else None
         mapped, inference_rows = [], []
+        reused_baseline_frames = 0
         # A completed forward cache needs no SAM3 connection during resume.
         need_server = semantic and any(not (cache/f'{r["frame"]}.npz').exists() for r in valid)
         with session if need_server else nullcontext():
@@ -357,7 +371,9 @@ def run(args):
                                 raise ValueError('Cached inference camera hash mismatch')
                             packet = {k: stored[k] for k in ('raw', 'scores', 'extra', 'extra_scores')}
                     else:
-                        packet = processor.infer(views)
+                        cached_base = baseline_cache.load(record, views, cfg['semantic']) if baseline_cache else None
+                        packet = processor.infer(views, baseline=cached_base)
+                        reused_baseline_frames += int(cached_base is not None)
                         write_json(path.with_suffix('.json'), processor.last_inference_metadata)
                     forward = processor.track(views, packet, record['stamp_ns']/1e9)
                     # Atomic cache: interrupted inference cannot appear complete.
@@ -463,6 +479,7 @@ def run(args):
         manifest = dict(bag=str(bag), run_identity_sha256=identity_hash, input_stream_sha256=input_digest, config=cfg,
             full_bag=not args.max_frames, input_camera_frames=total_frames, selected_camera_frames=len(records),
             inferred_frames=len(inference_rows), frame_count=len(mapped), frames=mapped, skipped=skipped,
+            reused_baseline_frames=reused_baseline_frames,
             grid={k: metadata[k] for k in ('origin', 'resolution', 'width', 'height')},
             refinements=refinements, camera_sha256_verified=True, recorded_tf_only=True,
             no_coordinate_warp=True, unobserved_space_not_filled=True,
@@ -483,7 +500,8 @@ def run(args):
         for node in (bev, ground):
             if node is not None:
                 node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 def main():
@@ -492,6 +510,7 @@ def main():
     p.add_argument('--calibration', required=True, type=Path)
     p.add_argument('--config', type=Path, default=DEFAULT_CONFIG)
     p.add_argument('--server', default='http://localhost:8080')
+    p.add_argument('--reuse-study', type=Path, help='Verified legacy full-image SAM3 cache; exact JPEG/settings checks required')
     p.add_argument('--domain', type=int, default=74)
     p.add_argument('--resume', action='store_true'); p.add_argument('--no-semantic', action='store_true')
     p.add_argument('--max-frames', type=int, default=0, help='Smoke test only; 0 processes all frames')

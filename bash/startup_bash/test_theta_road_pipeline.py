@@ -3,6 +3,10 @@ import copy
 import sys
 import os
 import subprocess
+import json
+import hashlib
+
+import cv2
 from pathlib import Path
 
 import numpy as np
@@ -12,6 +16,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]/'src/sirius/sirius_navigation'))
 from theta_road_pipeline import load_config, enhanced_shadow, add_shadow, refine_semantics
 from generate_theta_road_map import read_camera, SemanticProcessor
+from theta_road_cache import SemanticBaselineCache
 
 
 def test_partial_config_overrides_and_unknown_keys_fail(tmp_path):
@@ -152,3 +157,44 @@ def test_normal_terminal_default_reaches_sequential_pipeline(tmp_path):
     assert '--no-semantic' in calls
     assert str(workspace/'params/theta_road_mapping.yaml') in calls
     assert 'Map Select:' in result.stdout
+
+
+def test_baseline_reuse_requires_exact_camera_jpeg_and_settings(tmp_path):
+    cfg = load_config()['semantic']; cfg['view_yaws'] = [0]
+    record = dict(frame=17, sha256='original-camera-hash', stamp_ns=100)
+    (tmp_path/'manifest.json').write_text(json.dumps(dict(centers=[20], frames={'17': record})))
+    folder = tmp_path/'yellow/seg20/frame17'; folder.mkdir(parents=True)
+    image = np.full((32, 48, 3), 60, np.uint8)
+    _, jpeg = cv2.imencode('.jpg', image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+    meta = dict(settings=dict(prompt=cfg['prompt'], resolution=cfg['resolution'], confidence_threshold=1.,
+        class_thresholds={p.strip(): cfg['score_min'] for p in cfg['prompt'].split(',')}),
+        uploaded_jpeg_sha256=hashlib.sha256(jpeg.tobytes()).hexdigest())
+    (folder/'yaw0.json').write_text(json.dumps(meta))
+    cv2.imwrite(str(folder/'yaw0.classes.png'), np.full((32, 48), 5, np.uint8))
+    cv2.imwrite(str(folder/'yaw0.scores.png'), np.full((32, 48), 200, np.uint8))
+    cache = SemanticBaselineCache(tmp_path)
+    result = cache.load(record, [image], cfg)
+    assert (result['classes'][0] == 5).all()
+    with pytest.raises(ValueError, match='camera mismatch'):
+        cache.load(dict(record, sha256='different-camera'), [image], cfg)
+    with pytest.raises(ValueError, match='projection/JPEG mismatch'):
+        cache.load(record, [np.full_like(image, 250)], cfg)
+    with pytest.raises(ValueError, match='settings mismatch'):
+        cache.load(record, [image], dict(cfg, score_min=.6))
+
+
+def test_baseline_reuse_never_uploads_normal_view_again():
+    c = load_config(); c['semantic']['view_yaws'] = [0]
+    class Session:
+        registry_before = {'ids': {}}
+        count = 0
+        def configure(self, prompt, *args, **kwargs):
+            assert prompt == c['semantic']['shadow']['prompt']
+        def infer(self, image):
+            self.count += 1
+            return np.zeros(image.shape[:2], np.uint8), np.zeros(image.shape[:2], np.uint8), {}
+    session = Session(); processor = SemanticProcessor(c, {}, session)
+    view = np.full((32, 48, 3), 50, np.uint8)
+    base = dict(classes=[np.full((32, 48), 5, np.uint8)], scores=[np.full((32, 48), 200, np.uint8)], metadata=[{'kind':'base_cached'}])
+    packet = processor.infer([view], baseline=base)
+    assert session.count == 1 and (packet['raw'] == 5).all()
