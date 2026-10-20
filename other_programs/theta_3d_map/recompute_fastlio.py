@@ -40,6 +40,7 @@ def run(args):
     from rclpy.serialization import deserialize_message, serialize_message
     from sensor_msgs.msg import PointCloud2, Imu
     from nav_msgs.msg import Odometry
+    from std_msgs.msg import String
     from rclpy.qos import qos_profile_sensor_data
     import rosbag2_py
     import rclpy
@@ -67,6 +68,7 @@ def run(args):
                          'map_en': False, 'dense_publish_en': False}
     params['pcd_save'] = {'pcd_save_en': False, 'interval': -1}
     params['runtime_pos_log_enable'] = False
+    params['performance_diagnostics_enabled'] = True
     params['preprocess']['normalize_point_time'] = args.point_time == 'normalized'
     params['use_sim_time'] = False
     writer = rosbag2_py.SequentialWriter()
@@ -74,6 +76,7 @@ def run(args):
     writer.create_topic(rosbag2_py.TopicMetadata(id=0, name='/Odometry', type='nav_msgs/msg/Odometry', serialization_format='cdr'))
     if args.capture_cloud_period > 0:
         writer.create_topic(rosbag2_py.TopicMetadata(id=1, name='/cloud_registered_body', type='sensor_msgs/msg/PointCloud2', serialization_format='cdr'))
+    writer.create_topic(rosbag2_py.TopicMetadata(id=2, name='/fastlio/diagnostics', type='std_msgs/msg/String', serialization_format='cdr'))
     capture = output/'capture'
     capture.mkdir()
     (output/'.mapping-diagnostic').write_text('FastLIO pose sidecar; pass with --lio-bag, not as the raw sensor bag.\n')
@@ -97,6 +100,12 @@ def run(args):
         writer.write('/Odometry', serialize_message(msg), ns)
         written += 1
     subscription = node.create_subscription(Odometry, '/Odometry', save, 1000)
+    def save_diagnostics(msg):
+        record = json.loads(msg.data)
+        with (output/'pipeline_diagnostics.jsonl').open('a') as diagnostics_file:
+            diagnostics_file.write(msg.data+'\n')
+        writer.write('/fastlio/diagnostics', serialize_message(msg), round(record['scan_end']*1e9))
+    diagnostics_subscription = node.create_subscription(String, '/fastlio/diagnostics', save_diagnostics, 10)
     last_cloud_ns = -10**18
     def save_cloud(msg):
         nonlocal last_cloud_ns

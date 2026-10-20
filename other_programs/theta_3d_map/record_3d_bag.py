@@ -35,7 +35,8 @@ def required_topics(mode, profile='mapping'):
         topics.append('/velodyne_points_colored')
     if profile == 'localization':
         topics += ['/Odometry', '/tf', '/tf_static', '/map_localizer/pose',
-                   '/map_localizer/status', '/localization/map']
+                   '/map_localizer/status', '/localization/map', '/localization_ready',
+                   '/fastlio/diagnostics', '/map_localizer/tf_status', '/map_localizer/correction']
     return topics
 
 
@@ -49,7 +50,8 @@ def recording_topics(mode, profile='mapping'):
         topics += ['/velodyne_points_leveled', '/scan3', '/map_localizer/pose', '/map_localizer/status', '/initialpose',
                    '/localization/map', '/cloud_registered_body', '/robot_description',
                    '/joint_states', '/roboteq/status', '/cmd_vel', '/cmd_vel_teleop',
-                   '/diagnostics', '/rosout', '/parameter_events']
+                   '/diagnostics', '/rosout', '/parameter_events', '/fastlio/diagnostics',
+                   '/map_localizer/correction', '/map_localizer/tf_status', '/localization_ready']
     return topics
 
 
@@ -66,6 +68,12 @@ def snapshot_localization(capture, ws):
     dumped = dump_runtime_parameters('/map_localizer')
     params = yaml.safe_load(dumped)['/map_localizer']['ros__parameters']
     (capture/'map_localizer.yaml').write_text(dumped)
+    (capture/'localization_tf.yaml').write_text(dump_runtime_parameters('/localization_tf'))
+    try:
+        (capture/'witmotion.yaml').write_text(dump_runtime_parameters('/witmotion'))
+    except RuntimeError as error:
+        # Simulated IMU publishers do not run the hardware driver.
+        (capture/'witmotion_unavailable.txt').write_text(str(error)+'\n')
     source = Path(params['map_path']).expanduser().resolve(strict=True)
     reference = capture/('reference_map'+source.suffix)
     shutil.copyfile(source, reference)
@@ -88,8 +96,8 @@ def preflight(mode, timeout, domain, profile='mapping'):
     from sensor_msgs.msg import PointCloud2, Imu
     from nav_msgs.msg import Odometry
     from rosgraph_msgs.msg import Clock
-    from std_msgs.msg import String
-    from geometry_msgs.msg import PoseStamped
+    from std_msgs.msg import Bool, String
+    from geometry_msgs.msg import PoseStamped, TransformStamped
     from tf2_msgs.msg import TFMessage
 
     print('=================================================', flush=True)
@@ -101,7 +109,9 @@ def preflight(mode, timeout, domain, profile='mapping'):
              '/clock': Clock, '/velodyne_points_colored': PointCloud2,
              '/Odometry': Odometry, '/tf': TFMessage, '/tf_static': TFMessage,
              '/map_localizer/pose': PoseStamped, '/map_localizer/status': String,
-             '/localization/map': PointCloud2}
+             '/localization/map': PointCloud2, '/localization_ready': Bool,
+             '/fastlio/diagnostics': String, '/map_localizer/tf_status': String,
+             '/map_localizer/correction': TransformStamped}
     required = {topic: types[topic] for topic in required_topics(mode, profile)}
     rgb_topic = '/velodyne_points' if mode == 'sim' else '/velodyne_points_colored'
     # 任意トピックはメッセージ受信ではなくPublisher有無で判定する（/tf_staticはlatchedのため）
@@ -120,7 +130,7 @@ def preflight(mode, timeout, domain, profile='mapping'):
     subs = [node.create_subscription(typ, topic,
                                      lambda msg, t=topic: received.__setitem__(t, msg),
                                      QoSProfile(depth=100, durability=DurabilityPolicy.TRANSIENT_LOCAL)
-                                     if topic in ('/tf_static', '/localization/map') else qos_profile_sensor_data)
+                                     if topic in ('/tf_static', '/localization/map', '/map_localizer/correction', '/localization_ready') else qos_profile_sensor_data)
             for topic, typ in required.items()]
     end = time.monotonic() + timeout
     while set(received) != set(required) and time.monotonic() < end:
@@ -137,6 +147,10 @@ def preflight(mode, timeout, domain, profile='mapping'):
             _line('✓', f'{topic} を受信')
         else:
             _line('✗', f'{topic} を受信できません（未起動/型違い/時間切れ）')
+            ng += 1
+    if profile == 'localization' and '/localization_ready' in received:
+        if not received['/localization_ready'].data:
+            _line('✗', '自己位置推定が準備未完了です。/map_localizer/tf_status を確認してください')
             ng += 1
     for topic, note in optional.items():
         try:
@@ -325,7 +339,7 @@ def main(argv=None):
            '/velodyne_points_colored': {'reliability': 'best_effort', 'durability': 'volatile', 'history': 'keep_last', 'depth': 20},
            '/imu': {'reliability': 'best_effort', 'durability': 'volatile', 'history': 'keep_last', 'depth': 200}}
     if args.profile == 'localization':
-        for topic in ('/localization/map', '/robot_description'):
+        for topic in ('/localization/map', '/robot_description', '/map_localizer/correction', '/localization_ready'):
             qos[topic] = {'reliability': 'reliable', 'durability': 'transient_local', 'history': 'keep_last', 'depth': 1}
     qos_path = capture/'qos.yaml'
     qos_path.write_text(yaml.safe_dump(qos))

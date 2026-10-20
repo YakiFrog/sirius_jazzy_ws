@@ -1,4 +1,7 @@
 #include "witmotion_ros.h"
+#include <array>
+#include <chrono>
+#include <QTimer>
 
 bool ROSWitmotionSensorController::suspended = false;
 rclcpp::Service<std_srvs::srv::Empty>::SharedPtr restart_service;
@@ -382,6 +385,7 @@ ROSWitmotionSensorController::ROSWitmotionSensorController()
       node->get_parameter("port").get_parameter_value().get<std::string>();
 
   int int_rate;
+  node->declare_parameter("output_rate_hz", 0);  // 0 preserves the device output setting
   node->declare_parameter("baud_rate", 9600);
   int_rate = node->get_parameter("baud_rate").get_parameter_value().get<int>();
 
@@ -730,7 +734,31 @@ ROSWitmotionSensorController &ROSWitmotionSensorController::Instance() {
 rclcpp::Node::SharedPtr ROSWitmotionSensorController::Start() {
   RCLCPP_INFO(rclcpp::get_logger("ROSWitmotionSensorController"),
               "Controller started");
+  const int output_rate = node->get_parameter("output_rate_hz").as_int();
+  if (output_rate != 0 && output_rate != 20 && output_rate != 50 &&
+      output_rate != 100 && output_rate != 200)
+    throw std::invalid_argument("output_rate_hz must be 0, 20, 50, 100 or 200");
   emit RunReader();
+  if (output_rate != 0) {
+    // Reapply a reversible runtime setting each launch; never write sensor ROM.
+    QTimer::singleShot(1000, this, [this, output_rate]() {
+      witmotion_config_packet packet{};
+      packet.header_byte = WITMOTION_CONFIG_HEADER;
+      packet.key_byte = WITMOTION_CONFIG_KEY;
+      packet.address_byte = ridUnlockConfiguration;
+      packet.setting.raw[0] = 0x88; packet.setting.raw[1] = 0xB5;
+      emit ConfigureSensor(packet);
+      QTimer::singleShot(100, this, [this, output_rate]() {
+        witmotion_config_packet rate_packet{};
+        rate_packet.header_byte = WITMOTION_CONFIG_HEADER;
+        rate_packet.key_byte = WITMOTION_CONFIG_KEY;
+        rate_packet.address_byte = ridOutputFrequency;
+        rate_packet.setting.raw[0] = witmotion_output_frequency(output_rate);
+        emit ConfigureSensor(rate_packet);
+        RCLCPP_INFO(node->get_logger(), "Requested device output %d Hz; verify IMU serial rates and /imu", output_rate);
+      });
+    });
+  }
   //unsigned int microsecond = 1000000;
   //usleep(3 * microsecond);//sleeps for 3 second
   
@@ -792,6 +820,20 @@ rclcpp::Node::SharedPtr ROSWitmotionSensorController::Start() {
 }
 
 void ROSWitmotionSensorController::Packet(const witmotion_datapacket &packet) {
+  // Serial packet rates distinguish device output from the composite /imu rate.
+  static std::array<unsigned long, 256> packet_counts{};
+  static auto interval_start = std::chrono::steady_clock::now();
+  ++packet_counts[packet.id_byte];
+  const auto now = std::chrono::steady_clock::now();
+  const double elapsed = std::chrono::duration<double>(now-interval_start).count();
+  if (elapsed >= 5.0) {
+    RCLCPP_INFO(node->get_logger(),
+      "IMU serial rates Hz: acceleration=%.1f gyro=%.1f angles=%.1f quaternion=%.1f (ROS publication waits for enabled components)",
+      packet_counts[pidAcceleration]/elapsed, packet_counts[pidAngularVelocity]/elapsed,
+      packet_counts[pidAngles]/elapsed, packet_counts[pidOrientation]/elapsed);
+    packet_counts.fill(0);
+    interval_start = now;
+  }
   // RCLCPP_INFO(rclcpp::get_logger("ROSWitmotionSensorController"), "Packet ID
   // 0x%X acquired", packet.id_byte);
   switch (static_cast<witmotion_packet_id>(packet.id_byte)) {
