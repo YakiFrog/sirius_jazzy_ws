@@ -14,7 +14,7 @@ async function stopIt(n,el){if(OPS[n]||!confirm('「'+n+'」を停止します�
 let PAGE='home', RESOURCE_DATA=null, RESOURCE_BUSY=false, REFRESH_BUSY=false;
 let PROCESS_SCOPE='related', PROCESS_SORT='cpu_percent', PROCESS_ASC=false, PROCESS_LIMIT=40;
 let LAST_GOOD_STATUS=null, LAST_RESOURCE_POLL=0;
-const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',settings:'設定'};
+const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',tf:'TF Tree',settings:'設定'};
 const originalApi=api;
 api=async function(path,body){
   const result=await originalApi(path,body);
@@ -31,6 +31,7 @@ function setPage(page){
   if(page!=='home')toggleTeleop(false);
   if(page==='terminal'){renderTermTabs();if(TERM.active)pollTerm();}
   if(page==='resources')pollResources(true);
+  if(page==='tf')pollTF();
   history.replaceState(null,'','#'+page);
   document.querySelector('.workspace').scrollTop=0;
 }
@@ -210,7 +211,7 @@ async function initConsole(){
   pollResources(true);
 }
 setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});if(LAST_GOOD_STATUS&&Date.now()-LAST_GOOD_STATUS>7000)connection(false);},1000);
-setInterval(refresh,2000);setInterval(pollTerm,700);setInterval(pollLog,700);setInterval(teleopPoll,2000);setInterval(()=>pollResources(),2000);
+setInterval(()=>{if(PAGE==='tf')pollTF();},1000);setInterval(refresh,2000);setInterval(pollTerm,700);setInterval(pollLog,700);setInterval(teleopPoll,2000);setInterval(()=>pollResources(),2000);
 window.addEventListener('hashchange',()=>setPage(location.hash.slice(1)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open'));closeLog();}});
 initConsole();

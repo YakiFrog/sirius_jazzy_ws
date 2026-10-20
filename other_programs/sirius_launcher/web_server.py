@@ -31,8 +31,10 @@ from alias_parser import parse_bash_aliases
 from process_manager import ProcessManager
 from command_session import session_request
 from resource_monitor import ResourceMonitor
+from tf_monitor import TFMonitor
 
 RESOURCES = ResourceMonitor()
+TF_MONITOR = TFMonitor()
 
 app = Flask(__name__)
 LOCK = threading.Lock()
@@ -838,6 +840,15 @@ def api_teleop_status():
     if not auth_ok():
         return jsonify({"error": "auth"}), 401
     return jsonify(TELEOP.status())
+
+
+@app.route("/api/tf")
+def api_tf():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    response = jsonify(TF_MONITOR.snapshot(DEFAULT_DOMAIN))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.route("/api/resources")

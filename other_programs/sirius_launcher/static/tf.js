@@ -1,0 +1,112 @@
+'use strict';
+const TF_VIEW={data:null,busy:false,selected:null,positions:new Map(),shape:'',view:null,drag:null};
+const TF_NS='http://www.w3.org/2000/svg';
+function tfElement(tag,attributes={},text){const el=document.createElementNS(TF_NS,tag);for(const [k,v] of Object.entries(attributes))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;}
+function layoutTF(data){
+  const nodes=data.frames,children=new Map(nodes.map(f=>[f,[]])),seen=new Set(),forest=[];
+  for(const edge of data.edges)if(!children.get(edge.parent).includes(edge.child))children.get(edge.parent).push(edge.child);
+  const tree=new Map(nodes.map(f=>[f,[]])),depth=new Map();
+  for(const root of [...data.roots,...nodes]){
+    if(seen.has(root))continue;forest.push(root);seen.add(root);depth.set(root,0);
+    const queue=[root];for(let i=0;i<queue.length;i++)for(const child of children.get(queue[i]).sort()){
+      if(seen.has(child))continue;seen.add(child);depth.set(child,depth.get(queue[i])+1);tree.get(queue[i]).push(child);queue.push(child);
+    }
+  }
+  const positions=new Map();let y=42;
+  function place(frame){positions.set(frame,{x:32+depth.get(frame)*34,y,width:Math.max(175,Math.min(360,frame.length*8.2+45))});y+=52;tree.get(frame).forEach(place);}
+  forest.forEach(root=>{place(root);y+=20;});return positions;
+}
+function setTFView(){if(TF_VIEW.view){const v=TF_VIEW.view;document.getElementById('tf-svg').setAttribute('viewBox',[v.x,v.y,v.w,v.h].join(' '));}}
+function fitTF(){
+  if(!TF_VIEW.positions.size)return;const svg=document.getElementById('tf-svg');const box=svg.getBoundingClientRect();
+  const points=[...TF_VIEW.positions.values()];let w=Math.max(...points.map(p=>p.x+p.width))+110,h=Math.max(...points.map(p=>p.y))+70;const contentW=w,contentH=h;
+  const ratio=(box.width||800)/Math.max(100,(box.height||500)-35);if(w/h<ratio)w=h*ratio;else h=w/ratio;
+  TF_VIEW.view={x:(contentW-w)/2,y:(contentH-h)/2,w,h};setTFView();
+}
+function zoomTF(factor,point){
+  const v=TF_VIEW.view;if(!v)return;const next=v.w*factor;if(next<80||next>30000)return;
+  const cx=point?point.x:v.x+v.w/2,cy=point?point.y:v.y+v.h/2;
+  TF_VIEW.view={x:cx-(cx-v.x)*factor,y:cy-(cy-v.y)*factor,w:v.w*factor,h:v.h*factor};setTFView();
+}
+function selectTF(frame){TF_VIEW.selected=frame;document.querySelectorAll('.tf-node').forEach(n=>n.classList.toggle('selected',n.dataset.frame===frame));renderTFDetails();}
+function searchTF(query){
+  if(!TF_VIEW.data)return;query=query.trim().toLowerCase();if(!query)return;
+  const frame=TF_VIEW.data.frames.find(f=>f.toLowerCase()===query)||TF_VIEW.data.frames.find(f=>f.toLowerCase().includes(query));
+  if(!frame)return;selectTF(frame);const p=TF_VIEW.positions.get(frame),v=TF_VIEW.view;if(!p||!v)return;
+  v.x=p.x+p.width/2-v.w/2;v.y=p.y-v.h/2;setTFView();
+}
+function buildTFTree(data){
+  const svg=document.getElementById('tf-svg');svg.replaceChildren();TF_VIEW.positions=layoutTF(data);
+  for(const [i,edge] of data.edges.entries()){
+    const a=TF_VIEW.positions.get(edge.parent),b=TF_VIEW.positions.get(edge.child);
+    const group=tfElement('g',{'data-edge':i,class:'tf-edge'});
+    group.append(tfElement('path',{d:`M${a.x+15},${a.y+20} V${b.y} H${b.x}`}));
+    group.append(tfElement('text',{x:b.x+b.width+14,y:b.y+4,'text-anchor':'start'}));
+    group.append(tfElement('title',{},edge.parent+' → '+edge.child));svg.append(group);
+  }
+  for(const [frame,p] of TF_VIEW.positions){
+    const group=tfElement('g',{class:'tf-node',transform:`translate(${p.x},${p.y-20})`,tabindex:0,role:'button','aria-label':frame});group.dataset.frame=frame;
+    group.append(tfElement('rect',{width:p.width,height:40,rx:8}));group.append(tfElement('circle',{cx:15,cy:20,r:3}));
+    const max=Math.floor((p.width-35)/8.2),label=frame.length>max?frame.slice(0,max-1)+'…':frame;
+    group.append(tfElement('text',{x:27,y:24},label));group.append(tfElement('title',{},frame));
+    group.onclick=e=>{e.stopPropagation();selectTF(frame);};group.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectTF(frame);}};svg.append(group);
+  }
+  const options=document.getElementById('tf-frames');options.replaceChildren();for(const frame of data.frames){const option=document.createElement('option');option.value=frame;options.append(option);}
+  if(!TF_VIEW.view)fitTF();
+}
+function renderTF(data){
+  TF_VIEW.data=data;const shape=JSON.stringify(data.edges.map(e=>[e.parent,e.child,e.static,e.publisher_gid]));
+  if(shape!==TF_VIEW.shape){TF_VIEW.shape=shape;buildTFTree(data);}
+  const stale=data.edges.filter(e=>e.stale).length,statics=data.edges.filter(e=>e.static).length;
+  const summary=document.getElementById('tf-counts');summary.replaceChildren();
+  for(const text of [data.frames.length+' frames',data.edges.length+' transforms','静的 '+statics,'動的 '+(data.edges.length-statics),'Domain '+data.domain]){const span=document.createElement('span');span.textContent=text;summary.append(span);}
+  const warnings=[];
+  if(stale)warnings.push(stale+'件の動的TFが3秒以上未受信');
+  if(data.conflicts.length)warnings.push('配信の競合: '+data.conflicts.join(', '));
+  if(data.cycles.length)warnings.push('循環: '+data.cycles.join(', '));
+  if(data.at_capacity)warnings.push('表示可能な変換数の上限に達しました');
+  const banner=document.getElementById('tf-warning');banner.hidden=!warnings.length;banner.textContent=warnings.join(' / ');
+  const empty=document.getElementById('tf-empty');empty.hidden=data.edges.length>0;empty.textContent='TFがまだありません。Domain '+data.domain+' の /tf・/tf_static を待っています。';
+  data.edges.forEach((edge,i)=>{const group=document.querySelector('[data-edge="'+i+'"]');if(!group)return;
+    const conflict=data.conflicts.includes(edge.child)||(data.cycles.includes(edge.parent)&&data.cycles.includes(edge.child));
+    group.setAttribute('class','tf-edge'+(edge.static?' static':'')+(edge.stale?' stale':'')+(conflict?' conflict':''));
+    group.querySelector('text').textContent=edge.static?'static':edge.stale?'停止中':edge.rate_hz===null?'測定中':edge.rate_hz.toFixed(1)+' Hz';
+  });
+  document.querySelectorAll('.tf-node').forEach(group=>{group.classList.toggle('warning',data.conflicts.includes(group.dataset.frame)||data.cycles.includes(group.dataset.frame));group.classList.toggle('selected',group.dataset.frame===TF_VIEW.selected);});
+  if(TF_VIEW.selected&&!data.frames.includes(TF_VIEW.selected))TF_VIEW.selected=null;
+  renderTFDetails();
+}
+function renderTFDetails(){
+  const box=document.getElementById('tf-inspector'),data=TF_VIEW.data,frame=TF_VIEW.selected;box.replaceChildren();
+  const heading=document.createElement('h2');heading.textContent=frame||'フレームの詳細';box.append(heading);
+  if(!frame||!data){const help=document.createElement('p');help.className='tf-help';help.textContent='フレームを選択すると、変換値と配信状態を表示します。';box.append(help);return;}
+  const children=[...new Set(data.edges.filter(e=>e.parent===frame).map(e=>e.child))];
+  if(children.length){const links=document.createElement('div');links.className='tf-links';for(const child of children){const b=document.createElement('button');b.textContent=child;b.onclick=()=>selectTF(child);links.append(b);}box.append(links);}
+  const incoming=data.edges.filter(e=>e.child===frame);
+  if(!incoming.length){const text=document.createElement('p');text.className='tf-help';text.textContent='ルートフレーム · 親フレームは未受信です。';box.append(text);}
+  for(const edge of incoming){
+    const section=document.createElement('section');section.className='tf-detail';const title=document.createElement('h3');title.textContent=edge.parent+' → '+frame;section.append(title);
+    const q=edge.rotation,[x,y,z,w]=q,deg=180/Math.PI;
+    const rpy=[Math.atan2(2*(w*x+y*z),1-2*(x*x+y*y)),Math.asin(Math.max(-1,Math.min(1,2*(w*y-z*x)))),Math.atan2(2*(w*z+x*y),1-2*(y*y+z*z))].map(v=>(v*deg).toFixed(2)+'°');
+    const fields=[['種別',edge.static?'静的TF':'動的TF'],['配信元',edge.publisher],['受信頻度',edge.static?'—（静的）':edge.rate_hz===null?'測定中':edge.rate_hz.toFixed(2)+' Hz'],['最終受信',edge.age_seconds.toFixed(1)+'秒前'],['状態',edge.stale?'更新停止':edge.static?'保持中':'受信中'],['XYZ (m)',edge.translation.map(v=>v.toFixed(4)).join(' / ')],['RPY',rpy.join(' / ')],['Q xyzw',q.map(v=>v.toFixed(5)).join(' / ')],['TF時刻',edge.stamp.toFixed(6)]];
+    const dl=document.createElement('dl');for(const [key,value] of fields){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;dl.append(dt,dd);}section.append(dl);box.append(section);
+  }
+}
+async function pollTF(){
+  if(TF_VIEW.busy)return;TF_VIEW.busy=true;const status=document.getElementById('tf-status');
+  try{
+    const data=await api('/api/tf');
+    status.classList.toggle('stale',!data.available);
+    status.textContent=data.available?'LIVE · '+new Date(data.timestamp*1000).toLocaleTimeString('ja-JP',{hour12:false}):data.error?'TF受信エラー':'TF受信を開始しています…';
+    if(data.available)renderTF(data);
+    else{const empty=document.getElementById('tf-empty');if(!TF_VIEW.data){empty.hidden=false;empty.textContent=data.error||'ROSのTFを受信しています…';}status.title=data.error||'';}
+  }catch(error){status.classList.add('stale');status.textContent='接続を再試行しています';}
+  finally{TF_VIEW.busy=false;}
+}
+(function(){
+ const svg=document.getElementById('tf-svg');if(!svg)return;
+ svg.addEventListener('wheel',e=>{if(!TF_VIEW.view)return;e.preventDefault();const rect=svg.getBoundingClientRect(),v=TF_VIEW.view;zoomTF(e.deltaY>0?1.12:1/1.12,{x:v.x+(e.clientX-rect.left)/rect.width*v.w,y:v.y+(e.clientY-rect.top)/rect.height*v.h});},{passive:false});
+ svg.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('.tf-node')||!TF_VIEW.view)return;TF_VIEW.drag={...TF_VIEW.view,px:e.clientX,py:e.clientY};svg.setPointerCapture(e.pointerId);});
+ svg.addEventListener('pointermove',e=>{const d=TF_VIEW.drag;if(!d)return;const rect=svg.getBoundingClientRect();TF_VIEW.view={x:d.x-(e.clientX-d.px)*d.w/rect.width,y:d.y-(e.clientY-d.py)*d.h/rect.height,w:d.w,h:d.h};setTFView();});
+ svg.addEventListener('pointerup',()=>TF_VIEW.drag=null);svg.addEventListener('pointercancel',()=>TF_VIEW.drag=null);
+})();
