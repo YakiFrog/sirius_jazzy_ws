@@ -1,5 +1,5 @@
 'use strict';
-const TF_VIEW={data:null,busy:false,selected:null,positions:new Map(),shape:'',view:null,drag:null,autoFit:true};
+const TF_VIEW={data:null,busy:false,selected:null,positions:new Map(),shape:'',view:null,drag:null,autoFit:true,layout:localStorage.getItem('sirius-tf-layout')==='horizontal'?'horizontal':'hierarchy'};
 const TF_NS='http://www.w3.org/2000/svg';
 function tfElement(tag,attributes={},text){const el=document.createElementNS(TF_NS,tag);for(const [k,v] of Object.entries(attributes))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;}
 function layoutTF(data){
@@ -13,8 +13,20 @@ function layoutTF(data){
     }
   }
   const positions=new Map();let y=42;
+  if(TF_VIEW.layout==='horizontal'){
+    const widths=[];for(const frame of nodes){const d=depth.get(frame);widths[d]=Math.max(widths[d]||0,Math.max(175,Math.min(360,frame.length*8.2+45)));}
+    const columns=[32];for(let d=1;d<widths.length;d++)columns[d]=columns[d-1]+widths[d-1]+95;
+    function placeHorizontal(frame){const children=tree.get(frame);let cy;if(children.length){children.forEach(placeHorizontal);cy=(positions.get(children[0]).y+positions.get(children.at(-1)).y)/2;}else{cy=y;y+=78;}positions.set(frame,{x:columns[depth.get(frame)],y:cy,width:Math.max(175,Math.min(360,frame.length*8.2+45))});}
+    forest.forEach(root=>{placeHorizontal(root);y+=35;});return positions;
+  }
   function place(frame){positions.set(frame,{x:32+depth.get(frame)*34,y,width:Math.max(175,Math.min(360,frame.length*8.2+45))});y+=52;tree.get(frame).forEach(place);}
   forest.forEach(root=>{place(root);y+=20;});return positions;
+}
+function setTFLayout(layout){
+  if(!['hierarchy','horizontal'].includes(layout))return;
+  TF_VIEW.layout=layout;localStorage.setItem('sirius-tf-layout',layout);TF_VIEW.view=null;TF_VIEW.autoFit=true;TF_VIEW.shape='';
+  document.querySelectorAll('[data-tf-layout]').forEach(button=>{const active=button.dataset.tfLayout===layout;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  if(TF_VIEW.data)renderTF(TF_VIEW.data);
 }
 function setTFView(){if(TF_VIEW.view){const v=TF_VIEW.view;document.getElementById('tf-svg').setAttribute('viewBox',[v.x,v.y,v.w,v.h].join(' '));}}
 function fitTF(){
@@ -37,11 +49,22 @@ function searchTF(query){
 }
 function buildTFTree(data){
   const svg=document.getElementById('tf-svg');svg.replaceChildren();TF_VIEW.positions=layoutTF(data);
+  if(TF_VIEW.layout==='horizontal'){
+    const defs=tfElement('defs');for(const [name,color] of [['dynamic','var(--accent)'],['static','var(--mint)'],['stale','var(--faint)'],['conflict','var(--red)']]){
+      const marker=tfElement('marker',{id:'tf-arrow-'+name,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:5,markerHeight:5,orient:'auto'});marker.append(tfElement('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:color}));defs.append(marker);
+    }svg.append(defs);
+  }
   for(const [i,edge] of data.edges.entries()){
     const a=TF_VIEW.positions.get(edge.parent),b=TF_VIEW.positions.get(edge.child);
     const group=tfElement('g',{'data-edge':i,class:'tf-edge'});
-    group.append(tfElement('path',{d:`M${a.x+15},${a.y+20} V${b.y} H${b.x}`}));
-    group.append(tfElement('text',{x:b.x+b.width+14,y:b.y+4,'text-anchor':'start'}));
+    if(TF_VIEW.layout==='horizontal'){
+      const x=a.x+a.width,m=(x+b.x)/2;
+      group.append(tfElement('path',{d:`M${x},${a.y} C${m},${a.y} ${m},${b.y} ${b.x-3},${b.y}`}));
+      group.append(tfElement('text',{x:(x+b.x)/2,y:(a.y+b.y)/2-10,'text-anchor':'middle'}));
+    }else{
+      group.append(tfElement('path',{d:`M${a.x+15},${a.y+20} V${b.y} H${b.x}`}));
+      group.append(tfElement('text',{x:b.x+b.width+14,y:b.y+4,'text-anchor':'start'}));
+    }
     group.append(tfElement('title',{},edge.parent+' → '+edge.child));svg.append(group);
   }
   for(const [frame,p] of TF_VIEW.positions){
@@ -55,7 +78,7 @@ function buildTFTree(data){
   if(!TF_VIEW.view||TF_VIEW.autoFit)fitTF();
 }
 function renderTF(data){
-  TF_VIEW.data=data;const shape=JSON.stringify(data.edges.map(e=>[e.parent,e.child,e.static,e.publisher_gid]));
+  TF_VIEW.data=data;const shape=TF_VIEW.layout+JSON.stringify(data.edges.map(e=>[e.parent,e.child,e.static,e.publisher_gid]));
   if(shape!==TF_VIEW.shape){TF_VIEW.shape=shape;buildTFTree(data);}
   const stale=data.edges.filter(e=>e.stale).length,statics=data.edges.filter(e=>e.static).length;
   const summary=document.getElementById('tf-counts');summary.replaceChildren();
@@ -70,6 +93,7 @@ function renderTF(data){
   data.edges.forEach((edge,i)=>{const group=document.querySelector('[data-edge="'+i+'"]');if(!group)return;
     const conflict=data.conflicts.includes(edge.child)||(data.cycles.includes(edge.parent)&&data.cycles.includes(edge.child));
     group.setAttribute('class','tf-edge'+(edge.static?' static':'')+(edge.stale?' stale':'')+(conflict?' conflict':''));
+    if(TF_VIEW.layout==='horizontal')group.querySelector('path').setAttribute('marker-end','url(#tf-arrow-'+(conflict?'conflict':edge.stale?'stale':edge.static?'static':'dynamic')+')');
     group.querySelector('text').textContent=edge.static?'static':edge.stale?'停止中':edge.rate_hz===null?'測定中':edge.rate_hz.toFixed(1)+' Hz';
   });
   document.querySelectorAll('.tf-node').forEach(group=>{group.classList.toggle('warning',data.conflicts.includes(group.dataset.frame)||data.cycles.includes(group.dataset.frame));group.classList.toggle('selected',group.dataset.frame===TF_VIEW.selected);});
@@ -105,6 +129,9 @@ async function pollTF(){
 }
 (function(){
  const svg=document.getElementById('tf-svg');if(!svg)return;
+ const modes=document.createElement('div');modes.className='segmented tf-layout-switch';modes.setAttribute('role','group');modes.setAttribute('aria-label','TFツリー表示形式');
+ for(const [layout,label] of [['hierarchy','階層'],['horizontal','横並び（ROS風）']]){const button=document.createElement('button');button.textContent=label;button.dataset.tfLayout=layout;button.onclick=()=>setTFLayout(layout);modes.append(button);}
+ document.querySelector('.tf-tools').prepend(modes);setTFLayout(TF_VIEW.layout);
  svg.addEventListener('wheel',e=>{if(!TF_VIEW.view)return;e.preventDefault();const rect=svg.getBoundingClientRect(),v=TF_VIEW.view;zoomTF(e.deltaY>0?1.12:1/1.12,{x:v.x+(e.clientX-rect.left)/rect.width*v.w,y:v.y+(e.clientY-rect.top)/rect.height*v.h});},{passive:false});
  svg.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('.tf-node')||!TF_VIEW.view)return;TF_VIEW.drag={...TF_VIEW.view,px:e.clientX,py:e.clientY};svg.setPointerCapture(e.pointerId);});
  svg.addEventListener('pointermove',e=>{const d=TF_VIEW.drag;if(!d)return;TF_VIEW.autoFit=false;const rect=svg.getBoundingClientRect();TF_VIEW.view={x:d.x-(e.clientX-d.px)*d.w/rect.width,y:d.y-(e.clientY-d.py)*d.h/rect.height,w:d.w,h:d.h};setTFView();});
