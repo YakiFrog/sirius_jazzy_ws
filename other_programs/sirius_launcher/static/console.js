@@ -204,9 +204,18 @@ function initTerminalControls(){
 }
 initTerminalControls();
 
+function reloadConsole(){
+  sessionStorage.setItem('sirius-active-terminal',TERM.active||'');
+  location.reload();
+}
+(function(){
+  const brand=document.querySelector('.brand'),button=document.createElement('button');
+  button.className=brand.className;button.innerHTML=brand.innerHTML;button.title='画面を再読み込み';button.setAttribute('aria-label','画面を再読み込み');button.onclick=reloadConsole;
+  const badge=document.createElement('span');badge.className='brand-reload';badge.setAttribute('aria-hidden','true');badge.innerHTML=ICONS.refresh;button.append(badge);brand.replaceWith(button);
+})();
 async function initConsole(){
   setTheme(localStorage.getItem('sirius-theme')||'dark');
-  try{await load();document.getElementById('autostart-status').textContent=DATA.console&&DATA.console.autostart?'自動起動 有効':'自動起動 未登録';const terms=await api('/api/term/list');for(const term of terms.terms||[])if(term.alive&&!TERM.sessions.includes(term.name))TERM.sessions.push(term.name);if(TERM.sessions.length)TERM.active=TERM.sessions[0];setPage(location.hash.slice(1)||'home');}
+  try{await load();document.getElementById('autostart-status').textContent=DATA.console&&DATA.console.autostart?'自動起動 有効':'自動起動 未登録';const terms=await api('/api/term/list');for(const term of terms.terms||[])if(term.alive&&!TERM.sessions.includes(term.name))TERM.sessions.push(term.name);if(TERM.sessions.length){const saved=sessionStorage.getItem('sirius-active-terminal');TERM.active=TERM.sessions.includes(saved)?saved:TERM.sessions[0];}setPage(location.hash.slice(1)||'home');}
   catch(error){connection(false);toast('ホストに接続できません。再読み込みで接続を確認してください。',true);}
   pollResources(true);
 }

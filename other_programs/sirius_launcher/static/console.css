@@ -18,3 +18,4 @@
 #sections .btn:hover{transform:none}
 #sections .btn.run:after{display:none}
 @media(max-width:620px){#sections .btn{grid-template-columns:minmax(0,1fr);row-gap:8px}#sections .btn>.program-foot{grid-column:1;grid-row:3;width:100%;margin-top:2px}}
+.brand{position:relative;border:0;padding:0;cursor:pointer}.brand:hover{background:#8aa3ff}.brand-reload{position:absolute;right:-4px;bottom:-4px;display:grid;place-items:center;width:18px;height:18px;border:1px solid var(--line);border-radius:50%;background:var(--panel-2);color:var(--accent)}.brand .brand-reload svg{width:11px;height:11px}
