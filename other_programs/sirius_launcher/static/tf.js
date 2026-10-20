@@ -1,5 +1,5 @@
 'use strict';
-const TF_VIEW={data:null,busy:false,selected:null,positions:new Map(),shape:'',view:null,drag:null};
+const TF_VIEW={data:null,busy:false,selected:null,positions:new Map(),shape:'',view:null,drag:null,autoFit:true};
 const TF_NS='http://www.w3.org/2000/svg';
 function tfElement(tag,attributes={},text){const el=document.createElementNS(TF_NS,tag);for(const [k,v] of Object.entries(attributes))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;}
 function layoutTF(data){
@@ -21,11 +21,11 @@ function fitTF(){
   if(!TF_VIEW.positions.size)return;const svg=document.getElementById('tf-svg');const box=svg.getBoundingClientRect();
   const points=[...TF_VIEW.positions.values()];let w=Math.max(...points.map(p=>p.x+p.width))+110,h=Math.max(...points.map(p=>p.y))+70;const contentW=w,contentH=h;
   const ratio=(box.width||800)/Math.max(100,(box.height||500)-35);if(w/h<ratio)w=h*ratio;else h=w/ratio;
-  TF_VIEW.view={x:(contentW-w)/2,y:(contentH-h)/2,w,h};setTFView();
+  TF_VIEW.view={x:(contentW-w)/2,y:(contentH-h)/2,w,h};TF_VIEW.autoFit=true;setTFView();
 }
 function zoomTF(factor,point){
   const v=TF_VIEW.view;if(!v)return;const next=v.w*factor;if(next<80||next>30000)return;
-  const cx=point?point.x:v.x+v.w/2,cy=point?point.y:v.y+v.h/2;
+  TF_VIEW.autoFit=false;const cx=point?point.x:v.x+v.w/2,cy=point?point.y:v.y+v.h/2;
   TF_VIEW.view={x:cx-(cx-v.x)*factor,y:cy-(cy-v.y)*factor,w:v.w*factor,h:v.h*factor};setTFView();
 }
 function selectTF(frame){TF_VIEW.selected=frame;document.querySelectorAll('.tf-node').forEach(n=>n.classList.toggle('selected',n.dataset.frame===frame));renderTFDetails();}
@@ -33,7 +33,7 @@ function searchTF(query){
   if(!TF_VIEW.data)return;query=query.trim().toLowerCase();if(!query)return;
   const frame=TF_VIEW.data.frames.find(f=>f.toLowerCase()===query)||TF_VIEW.data.frames.find(f=>f.toLowerCase().includes(query));
   if(!frame)return;selectTF(frame);const p=TF_VIEW.positions.get(frame),v=TF_VIEW.view;if(!p||!v)return;
-  v.x=p.x+p.width/2-v.w/2;v.y=p.y-v.h/2;setTFView();
+  TF_VIEW.autoFit=false;v.x=p.x+p.width/2-v.w/2;v.y=p.y-v.h/2;setTFView();
 }
 function buildTFTree(data){
   const svg=document.getElementById('tf-svg');svg.replaceChildren();TF_VIEW.positions=layoutTF(data);
@@ -52,7 +52,7 @@ function buildTFTree(data){
     group.onclick=e=>{e.stopPropagation();selectTF(frame);};group.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectTF(frame);}};svg.append(group);
   }
   const options=document.getElementById('tf-frames');options.replaceChildren();for(const frame of data.frames){const option=document.createElement('option');option.value=frame;options.append(option);}
-  if(!TF_VIEW.view)fitTF();
+  if(!TF_VIEW.view||TF_VIEW.autoFit)fitTF();
 }
 function renderTF(data){
   TF_VIEW.data=data;const shape=JSON.stringify(data.edges.map(e=>[e.parent,e.child,e.static,e.publisher_gid]));
@@ -107,6 +107,6 @@ async function pollTF(){
  const svg=document.getElementById('tf-svg');if(!svg)return;
  svg.addEventListener('wheel',e=>{if(!TF_VIEW.view)return;e.preventDefault();const rect=svg.getBoundingClientRect(),v=TF_VIEW.view;zoomTF(e.deltaY>0?1.12:1/1.12,{x:v.x+(e.clientX-rect.left)/rect.width*v.w,y:v.y+(e.clientY-rect.top)/rect.height*v.h});},{passive:false});
  svg.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('.tf-node')||!TF_VIEW.view)return;TF_VIEW.drag={...TF_VIEW.view,px:e.clientX,py:e.clientY};svg.setPointerCapture(e.pointerId);});
- svg.addEventListener('pointermove',e=>{const d=TF_VIEW.drag;if(!d)return;const rect=svg.getBoundingClientRect();TF_VIEW.view={x:d.x-(e.clientX-d.px)*d.w/rect.width,y:d.y-(e.clientY-d.py)*d.h/rect.height,w:d.w,h:d.h};setTFView();});
+ svg.addEventListener('pointermove',e=>{const d=TF_VIEW.drag;if(!d)return;TF_VIEW.autoFit=false;const rect=svg.getBoundingClientRect();TF_VIEW.view={x:d.x-(e.clientX-d.px)*d.w/rect.width,y:d.y-(e.clientY-d.py)*d.h/rect.height,w:d.w,h:d.h};setTFView();});
  svg.addEventListener('pointerup',()=>TF_VIEW.drag=null);svg.addEventListener('pointercancel',()=>TF_VIEW.drag=null);
 })();
