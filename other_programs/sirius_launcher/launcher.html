@@ -200,7 +200,7 @@ function renderTermTabs(){const b=document.getElementById('termtabs');b.innerHTM
  TERM.sessions.forEach(n=>{const d=document.createElement('div');d.className='ttab'+(n===TERM.active?' active':'');const s=document.createElement('span');s.textContent=n;const x=document.createElement('span');x.className='x';x.textContent='×';x.title='閉じる';x.onclick=(e)=>{e.stopPropagation();closeTerm(n);};d.appendChild(s);d.appendChild(x);d.onclick=()=>selectTerm(n);b.appendChild(d);});
  const a=document.createElement('button');a.className='hbtn';a.textContent='＋ シェル';a.title='新しいターミナル（対話シェル）';a.onclick=()=>newTerm('');b.appendChild(a);
  const c=document.createElement('button');c.className='hbtn';c.textContent='✕ 閉じる';c.onclick=()=>toggleTerm();b.appendChild(c);}
-async function closeTerm(n){await api('/api/term/close',{name:n});TERM.sessions=TERM.sessions.filter(x=>x!==n);delete TERM.offsets[n];if(TERM.active===n){TERM.active=TERM.sessions[TERM.sessions.length-1]||null;}renderTermTabs();document.getElementById('termout').textContent='';if(TERM.active)selectTerm(TERM.active);}
+
 async function pollTerm(){if(!TERM.active)return;if(!document.getElementById('term').classList.contains('open'))return;
  const r=await api('/api/term/read?name='+encodeURIComponent(TERM.active)+'&offset='+(TERM.offsets[TERM.active]||0));
  if(r.error)return;TERM.offsets[TERM.active]=r.offset;if(r.data){const o=document.getElementById('termout');const atBottom=(o.scrollHeight-o.clientHeight-o.scrollTop)<40;o.textContent+=r.data;if(atBottom)o.scrollTop=o.scrollHeight;}}

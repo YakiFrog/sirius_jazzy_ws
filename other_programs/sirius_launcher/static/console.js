@@ -1,4 +1,5 @@
 'use strict';
+async function closeTerm(n){if(!confirm('このターミナルを終了しますか？\n実行中のコマンドも終了します。'))return;await api('/api/term/close',{name:n});TERM.sessions=TERM.sessions.filter(x=>x!==n);delete TERM.offsets[n];if(TERM.active===n){TERM.active=TERM.sessions[TERM.sessions.length-1]||null;}renderTermTabs();document.getElementById('termout').textContent='';if(TERM.active)selectTerm(TERM.active);}
 // Keep program controls in the static bundle so UI updates preserve live PTYs.
 async function restartIt(n,el){if(OPS[n]||!confirm('「'+n+'」を一度停止して再起動しますか？'))return;OPS[n]='再起動中…';if(el)el.classList.add('busy');refresh();
  try{await api('/api/restart',{name:n,domain:dom()});}finally{await finishOp(n,'再起動: '+n);}}
