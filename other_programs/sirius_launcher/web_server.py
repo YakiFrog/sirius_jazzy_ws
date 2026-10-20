@@ -3,8 +3,8 @@
 
 デスクトップ版(sirius_launcher.py)と同じエイリアス群(bash_alias2.sh)を読み、
 ブラウザから 起動 / 停止 / 状態確認 / プリセット / ログ閲覧 ができる。
-レイアウトはデスクトップ版に合わせる:
-  左カラム = 上:プリセット / 下:起動中、右 = グループのタブ。
+Home / Terminal / Monitor / 設定を切り替える専用コンソール。
+ホスト監視は共有キャッシュから読み出し、既存の起動・対話入力経路を使う。
 
 起動:
   python3 web_server.py --port 8090 [--password xxx]
@@ -30,6 +30,9 @@ from flask import Flask, jsonify, request, make_response
 from alias_parser import parse_bash_aliases
 from process_manager import ProcessManager
 from command_session import session_request
+from resource_monitor import ResourceMonitor
+
+RESOURCES = ResourceMonitor()
 
 app = Flask(__name__)
 LOCK = threading.Lock()
@@ -619,482 +622,7 @@ def auth_ok():
     return request.cookies.get("pw") == PASSWORD or request.args.get("pw") == PASSWORD
 
 
-PAGE = """<!doctype html><html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SiriusLauncher Web</title>
-<style>
-*{box-sizing:border-box}
-body{font-family:system-ui,sans-serif;margin:0;height:100vh;display:flex;flex-direction:column;background:#0f1115;color:#e6e6e6}
-header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:#1b2027}
-header h1{font-size:15px;margin:0;flex:1}
-button{cursor:pointer}
-.hbtn{background:#232a33;color:#e6e6e6;border:1px solid #333;border-radius:6px;padding:6px 10px;font-size:12px}
-.hbtn.stop{background:#5a1f1f;color:#fff;border:none}
-.body{flex:1;display:flex;min-height:0}
-.sidebar{width:340px;min-width:160px;display:flex;flex-direction:column;border-right:1px solid #24303a;min-height:0}
-.gutter{flex:0 0 6px;background:#1b2027;cursor:col-resize}
-.gutter:hover{background:#2f6fed}
-.sidebar.closed+.gutter{display:none}
-.panel{display:flex;flex-direction:column;min-height:0}
-.panel.presets{flex:0 0 55%}
-.panel.running{flex:1 1 auto}
-.hgutter{flex:0 0 6px;background:#1b2027;cursor:row-resize}
-.hgutter:hover{background:#2f6fed}
-.ptitle{padding:6px 10px;font-weight:bold;font-size:13px;background:#141920;color:#cfd6df}
-.plist{overflow:auto;padding:6px 8px;display:flex;flex-direction:column;gap:4px}
-.preset{background:#3a2f6f;color:#fff;border-radius:6px;padding:7px 10px;font-size:13px;text-align:left;border:none}
-.empty{color:#7f8a99;font-size:12px;padding:2px 12px 8px}
-.ptitle{cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
-.ptitle .arr{transition:transform .15s;font-size:10px;color:#8a93a0}
-.ptitle.closed .arr{transform:rotate(-90deg)}
-.sec{margin:6px 0 10px}
-.sec-h{display:flex;align-items:center;gap:6px;cursor:pointer;color:#9fb0c0;font-size:12px;border-bottom:1px solid #24303a;padding:4px 0;user-select:none}
-.sec-h .arr{transition:transform .15s;font-size:10px;color:#8a93a0}
-.sec-h.closed .arr{transform:rotate(-90deg)}
-.hidden{display:none!important}
-.btn.err{background:#3a1f1f;border-color:#a33}
-.badge{display:inline-block;min-width:16px;height:16px;line-height:16px;border-radius:8px;background:#dc3545;color:#fff;font-size:10px;text-align:center;padding:0 4px;margin-left:6px;vertical-align:middle}
-.badge.hide{display:none}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;align-items:flex-start;justify-content:center}
-.modal.open{display:flex}
-.modalbox{background:#141920;border:1px solid #333;border-radius:8px;margin-top:4vh;padding:14px;width:min(900px,92vw);max-height:88vh;overflow:auto}
-.prow{display:flex;gap:6px;align-items:center;margin:6px 0}
-.prow input{flex:1;background:#0f1115;color:#e6e6e6;border:1px solid #333;border-radius:6px;padding:6px 8px;font-size:12px}
-.prow input.nm{flex:0 0 220px}
-.main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
-.tabs{display:flex;gap:4px;flex-wrap:wrap;padding:8px 12px;background:#141920}
- .tab{padding:5px 10px;border-radius:6px;background:#232a33;font-size:13px}
- .tab.active{background:#2f6fed}
- .cmdbar{display:flex;gap:6px;align-items:stretch;padding:8px 12px;background:#141920;border-bottom:1px solid #24303a}
- .cmdwrap{flex:1;position:relative;display:flex;min-width:0}
- #cmdin{flex:1;background:#0f1115;color:#e6e6e6;border:1px solid #333;border-radius:6px;padding:7px 10px;font-family:monospace;font-size:13px;outline:none}
- #cmdin:focus{border-color:#2f6fed}
- .sugg{position:absolute;left:0;right:0;top:calc(100% + 3px);background:#1b2027;border:1px solid #333;border-radius:6px;max-height:320px;overflow:auto;z-index:26;box-shadow:0 8px 24px rgba(0,0,0,.5)}
- .si{padding:6px 10px;cursor:pointer;display:flex;gap:8px;align-items:baseline;font-size:12px;border-bottom:1px solid #20262e}
- .si:last-child{border-bottom:none}
- .si .nm{font-weight:600;color:#e6e6e6;font-family:monospace}
- .si .d{color:#8a93a0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
- .si .g{color:#6b7686;font-size:10px;white-space:nowrap}
- .si.active{background:#243a5e}
- .si .mv{color:#7be3a2;font-size:10px;white-space:nowrap}
- .cmdhint{color:#7f8a99;font-size:11px;align-self:center;white-space:nowrap}
- @media(max-width:1100px){.cmdhint{display:none}}
-.view{flex:1;overflow:auto;padding:12px}
-.desc{color:#9aa4b2;font-size:12px;margin:2px 0 8px}
-.sidebar.closed{display:none}
-.desc-toggle{font-size:11px;color:#6ea8fe;cursor:pointer;margin-left:8px;font-weight:normal}
-.sub{color:#7f8a99;font-size:12px;margin:12px 0 4px;border-bottom:1px solid #24303a;padding-bottom:3px}
-.grid{display:flex;flex-direction:column;gap:6px;align-items:stretch}
-.btn{padding:8px 12px;border-radius:6px;background:#232a33;border:1px solid #333;width:100%;font-size:13px;text-align:left;color:#e6e6e6}
-.btn.run{background:#17442a;border-color:#2c7a4b}
-.btn .st{display:block;font-size:11px;color:#9aa4b2}
-.btn.run .st{color:#7be3a2}
-.btn .d{display:block;font-size:11px;color:#8a93a0;margin-top:2px}
-.ritem{display:flex;align-items:center;gap:6px;background:#173040;border-radius:6px;padding:5px 8px;font-size:12px}
-.ritem .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.xbtn{background:#5a1f1f;color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px}
-.xbtn.gray{background:#2a323c}
-.log{position:fixed;inset:5%;background:#0b0e12;border:1px solid #333;border-radius:8px;display:none;flex-direction:column;overflow:hidden;z-index:20}
-.log.open{display:flex}
-.logbar{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #24303a;flex-wrap:wrap}
-#logtitle{font-weight:bold}#logstate{flex:1;font-size:12px;color:#9aa4b2}
-#logout{flex:1;min-height:0;overflow:auto;margin:0;padding:10px;font-family:monospace;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
-.log .tin input{min-width:0}.log button:disabled{opacity:.4;cursor:default}
-.term{display:none;position:fixed;left:0;right:0;bottom:0;height:44vh;background:#0b0e12;border-top:2px solid #2f6fed;z-index:15;flex-direction:column}
-.term.open{display:flex}
-.tbar{display:flex;gap:4px;padding:6px 8px;background:#141920;align-items:center;flex-wrap:wrap}
-.ttab{padding:4px 8px;border-radius:6px;background:#232a33;font-size:12px;cursor:pointer;display:flex;gap:8px;align-items:center}
-.ttab.active{background:#2f6fed}
-.ttab .x{color:#ff9a9a;font-weight:bold}
-#termout{flex:1;overflow:auto;margin:0;padding:8px 10px;font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-all}
-.tin{display:flex;border-top:1px solid #24303a}
-.tin input{flex:1;background:#0f1115;color:#e6e6e6;border:none;padding:8px 10px;font-family:monospace;font-size:12px;outline:none}
-.proc{font-family:monospace;font-size:12px;margin-top:6px}
-.proc .r{display:flex;gap:8px;align-items:center;border-bottom:1px solid #223;padding:5px 2px}
-.proc .r.dup{background:#2a1f1f;border-left:3px solid #a33;padding-left:6px}
-.proc .r.err{border-left:3px solid #dc3545;padding-left:6px}
-.proc .r .p{color:#9aa4b2;flex:0 0 70px}
-.proc .r .c{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btn.err .st{color:#ff9a9a;font-weight:bold}
-.ritem.err{background:#2a1f1f;border-left:3px solid #a33}
-#errcnt{cursor:pointer;font-size:12px;color:#ff8080;font-weight:bold;display:none}
-#errcnt.on{display:inline}
-button{transition:transform .05s,filter .05s,opacity .1s}
-button:active{transform:translateY(1px);filter:brightness(1.3)}
-button.busy{opacity:.55;pointer-events:none}
-#toast{position:fixed;top:52px;right:16px;background:#17442a;color:#e6ffe9;border:1px solid #2c7a4b;border-radius:8px;padding:10px 14px;font-size:13px;z-index:30;display:none;max-width:60vw}
-#toast.bad{background:#5a1f1f;border-color:#a33;color:#ffe9e9}
-.hbtn.on{background:#1d3a5f;border-color:#2f6fed}
-.teleop{position:fixed;right:16px;bottom:16px;z-index:25;background:#141920;border:1px solid #2a3444;border-radius:10px;padding:10px 12px;box-shadow:0 6px 24px #0008;display:none}
-.teleop.open{display:block}
-.thead{display:flex;align-items:center;gap:8px;font-size:12px;color:#9aa4b2;margin-bottom:8px}
-.tstate{color:#7f8a99}.tstate.ok{color:#7fe08a}.tstate.warn{color:#ffb86b}
-.tgrid{display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,38px);gap:4px;justify-content:center}
-.tk{background:#1a2230;border:1px solid #2a3444;color:#e6e6e6;border-radius:8px;font-size:15px;cursor:pointer;user-select:none;touch-action:none}
-.tk.on{background:#2f6fed;border-color:#2f6fed}
-.tk.up{grid-area:1/2}.tk.left{grid-area:2/1}.tk.stop{grid-area:2/2;background:#3a1d1d;border-color:#a33;font-size:12px}
-.tk.stop.on{background:#a33;border-color:#a33}
-.tk.right{grid-area:2/3}.tk.down{grid-area:3/2}
-.thint{font-size:11px;color:#7f8a99;margin-top:6px;text-align:center;max-width:170px}
-.tchk{display:flex;justify-content:center;font-size:11px;color:#9aa4b2;margin-top:7px;cursor:pointer;user-select:none}
-.tchk input{margin-right:5px}
-.loghint{font-size:11px;color:#ffb86b;padding:2px 12px 0}
-</style></head><body>
-<header>
- <h1>SiriusLauncher Web</h1>
- <span id="cnt" style="color:#9aa4b2;font-size:12px"></span>
- <span id="errcnt" onclick="openErrors()" title="エラー一覧を表示"></span>
- <label style="font-size:12px;color:#9aa4b2">ROS_DOMAIN</label>
- <input id="domain" type="number" min="0" max="232" style="width:76px;background:#0f1115;color:#e6e6e6;border:1px solid #333;border-radius:6px;padding:5px 8px">
- <button class="hbtn" id="sidebarBtn" onclick="toggleSidebar()">◀ 左パネル</button>
- <button class="hbtn" id="termBtn" onclick="toggleTerm()">⌨ ターミナル</button>
- <button class="hbtn" id="teleopBtn" onclick="toggleTeleop()">⭕ テレオペ</button>
- <button class="hbtn" onclick="openProcs()">⧉ プロセス</button>
- <button class="hbtn stop" onclick="stopAll()">全て停止</button>
- <button class="hbtn" onclick="restartServer()">⟳ サーバー再起動</button>
- <button class="hbtn" onclick="load()">再読み込み</button>
-</header>
-<div class="body">
- <div class="sidebar">
-  <div class="panel presets">
-   <div class="ptitle" id="pt_presets"><span class="arr">▼</span>プリセット<button class="xbtn gray" id="pedit" style="margin-left:auto">✏ 編集</button></div>
-   <div class="plist" id="presets"></div>
-  </div>
-  <div class="hgutter" id="hgutter"></div>
-  <div class="panel running">
-   <div class="ptitle" id="pt_running"><span class="arr">▼</span>起動中 <span id="runhint" style="color:#7f8a99;font-weight:normal"></span></div>
-   <div class="plist" id="running"><div class="empty">起動中のプログラムはありません</div></div>
-  </div>
- </div>
- <div class="gutter" id="gutter"></div>
- <div class="main">
-  <div class="cmdbar">
-   <div class="cmdwrap">
-    <input id="cmdin" placeholder="コマンド / エイリアス名を入力 → Enter（例: lio3d_sim、ros2 topic list）" autocomplete="off" spellcheck="false">
-    <div class="sugg hidden" id="sugg"></div>
-   </div>
-   <button class="hbtn" id="cmdrun" onclick="runCmd()" title="Enterでも実行できます">▶ 実行</button>
-   <span class="cmdhint">エイリアス名＝管理起動 / それ以外＝新ターミナル（パネルは開かない）</span>
-  </div>
-  <div class="tabs" id="tabs"></div>
-  <div class="view" id="view"></div>
- </div>
-</div>
-<div class="modal" id="pmodal"><div class="modalbox">
- <h3 style="margin-top:0">プリセット編集</h3>
- <div style="color:#9aa4b2;font-size:12px;margin-bottom:6px">各行: 名前 / アイテム（エイリアス名のカンマ区切り）</div>
- <div id="prows"></div>
- <button class="hbtn" onclick="addPresetRow('','')">＋プリセット追加</button>
- <div style="margin-top:12px">
-  <button class="hbtn" style="background:#2f6fed;color:#fff;border:none" onclick="savePresets()">保存</button>
-  <button class="hbtn" onclick="closePresets()">閉じる</button>
- </div>
- <div id="perr" style="color:#ff8080;margin-top:6px;font-size:12px"></div>
-</div></div>
-<datalist id="aliaslist"></datalist>
-<div class="term" id="term">
- <div class="tbar" id="termtabs"></div>
- <pre id="termout"></pre>
- <div class="tin"><input id="termin" placeholder="コマンドを入力してEnter（例: src && ros2 topic list）" onkeydown="termInput(event)"></div>
-</div>
-<div class="modal" id="pmodal2"><div class="modalbox">
- <h3 style="margin-top:0">起動中のプロセス（外部起動も含む）</h3>
- <div class="desc">ROS/sirius関連プロセスを表示します。「kill」で停止できます（子孫も停止）。</div>
- <div class="proc" id="procrows"></div>
- <div style="margin-top:12px"><button class="hbtn" onclick="openProcs()">再読み込み</button>
- <button class="hbtn" onclick="closeProcs()">閉じる</button></div>
-</div></div>
-<div class="modal" id="emodal"><div class="modalbox">
- <h3 style="margin-top:0;color:#ff8080">⚠ エラーが出ているプロセス</h3>
- <div class="desc">ログ末尾に [ERROR]/[FATAL]/Traceback を含むプロセスです。「ログ」で内容を確認し、「停止」で止められます。</div>
- <div class="proc" id="errrows"></div>
- <div style="margin-top:12px"><button class="hbtn" onclick="openErrors()">再読み込み</button>
- <button class="hbtn" onclick="closeErrors()">閉じる</button></div>
-</div></div>
-<div class="log" id="log" role="dialog" aria-label="コマンドのログと入力">
- <div class="logbar"><span id="logtitle"></span><span id="logstate"></span>
-  <button class="hbtn" id="loginterrupt" onclick="sendLogControl()" disabled>Ctrl+C</button>
-  <button class="hbtn" id="logclose" onclick="closeLog()">閉じる</button></div>
- <pre id="logout"></pre>
- <div class="loghint" id="loghint"></div>
- <form class="tin" onsubmit="sendLogInput(event)">
-  <input id="login" aria-label="コマンドへの入力" placeholder="番号やパスを入力してEnter" onkeydown="logKey(event)" disabled autocomplete="off">
-  <button class="hbtn" id="logsend" type="submit" disabled>送信 / Enter</button>
- </form>
-</div>
-<div id="toast"></div>
-<div class="teleop" id="teleop">
- <div class="thead"><span>⭕ テレオペ（/controller）</span><span class="tstate" id="tstate">待機</span><button class="xbtn gray" onclick="toggleTeleop(false)">✕</button></div>
- <div class="tgrid">
-  <button class="tk up" data-k="65" title="前進 +0.1 m/s">▲</button>
-  <button class="tk left" data-k="68" title="左旋回 +0.157 rad/s">◀</button>
-  <button class="tk stop" data-k="stop" title="停止（並進・旋回をリセット）">■ 停止</button>
-  <button class="tk right" data-k="67" title="右旋回 -0.157 rad/s">▶</button>
-  <button class="tk down" data-k="66" title="後退 -0.1 m/s">▼</button>
- </div>
- <div class="tchk"><label><input type="checkbox" id="tkdm" checked> 離したら停止</label></div>
- <div class="thint">押している間で加減速 / 矢印・Spaceキーでも可（scn起動中のみ有効）</div>
-</div>
-<script>
-let DATA=null,TAB=0,COLLAPSED={};
-async function api(p,body){const o={method:body?'POST':'GET',headers:{'Content-Type':'application/json'}};if(body)o.body=JSON.stringify(body);const r=await fetch(p,o);return r.json();}
-async function load(){DATA=await api('/api/state');renderTabs();render();refresh();
- const dEl=document.getElementById('domain');
- dEl.value=(localStorage.getItem('rosd')!==null?localStorage.getItem('rosd'):(DATA.default_domain||''));
- dEl.addEventListener('change',()=>localStorage.setItem('rosd',dEl.value));
- [['pt_presets','presets'],['pt_running','running']].forEach(([tid,cid])=>{const t=document.getElementById(tid);const c=document.getElementById(cid);
-  t.onclick=()=>{c.classList.toggle('hidden');t.classList.toggle('closed');};});
- const dl=document.getElementById('aliaslist');dl.innerHTML='';DATA.groups.forEach(g=>g.items.forEach(it=>{const o=document.createElement('option');o.value=it.name;dl.appendChild(o);}));
- buildCmdIndex();
- const pe=document.getElementById('pedit');if(pe)pe.onclick=(e)=>{e.stopPropagation();openPresets();};}
-function openPresets(){const rows=document.getElementById('prows');rows.innerHTML='';
- DATA.presets.forEach(p=>addPresetRow(p.name,p.items.join(',')));
- document.getElementById('perr').textContent='';
- document.getElementById('pmodal').classList.add('open');}
-function closePresets(){document.getElementById('pmodal').classList.remove('open');}
-function addPresetRow(name,items){const rows=document.getElementById('prows');const d=document.createElement('div');d.className='prow';
- d.innerHTML='<input class="nm" placeholder="プリセット名" list="aliaslist" value="'+(name||'')+'">'+
-  '<input placeholder="アイテム（エイリアス名をカンマ区切り）" list="aliaslist" value="'+(items||'')+'">'+
-  '<button class="xbtn" onclick="this.parentNode.remove()">削除</button>';
- rows.appendChild(d);}
-async function savePresets(){const rows=Array.prototype.slice.call(document.querySelectorAll('#prows .prow'));
- const presets=rows.map(r=>{const ins=r.querySelectorAll('input');return {name:ins[0].value.trim(),items:ins[1].value.split(',').map(s=>s.trim()).filter(Boolean)};}).filter(p=>p.name&&p.items.length);
- const res=await api('/api/presets/save',{presets});
- if(res.error){document.getElementById('perr').textContent='保存失敗: '+res.error;return;}
- DATA.presets=res.presets;renderTabs();document.getElementById('perr').textContent='保存しました';closePresets();}
-function dom(){const v=document.getElementById('domain').value;localStorage.setItem('rosd',v);return v;}
-function renderTabs(){const t=document.getElementById('tabs');t.innerHTML='';
- DATA.groups.forEach((g,i)=>{const d=document.createElement('div');d.className='tab'+(i==TAB?' active':'');d.textContent=g.name;const bd=document.createElement('span');bd.className='badge hide';bd.id='badge_'+i;d.appendChild(bd);d.onclick=()=>{TAB=i;renderTabs();render();};t.appendChild(d);});
- const p=document.getElementById('presets');p.innerHTML='';
- DATA.presets.forEach(pr=>{const b=document.createElement('button');b.className='preset';b.textContent='▶ '+pr.name;b.onclick=()=>runPreset(pr.name,b);p.appendChild(b);});}
-function makeBtn(it){const b=document.createElement('button');b.className='btn';b.id='btn_'+it.name;
- b.innerHTML='<b>'+it.name+'</b><span class="st">...</span><span class="d">'+(it.desc||'')+'</span>';
- b.onclick=()=>toggle(it.name,b);return b;}
-function render(){const g=DATA.groups[TAB];const v=document.getElementById('view');
- v.innerHTML='<h3 style="font-size:14px;margin:0">'+g.name+(g.desc?'<span class="desc-toggle" id="dscbtn">[説明]</span>':'')+'</h3><div class="desc'+(COLLAPSED['desc:'+TAB]?' hidden':'')+'" id="gdesc">'+(g.desc||'')+'</div><div id="sections"></div>';
- const db=document.getElementById('dscbtn');if(db)db.onclick=()=>{const d=document.getElementById('gdesc');d.classList.toggle('hidden');COLLAPSED['desc:'+TAB]=d.classList.contains('hidden');};
- const secs=document.getElementById('sections');
- const plain=g.items.filter(it=>!it.subgroup);
- if(plain.length){const body=document.createElement('div');body.className='grid';plain.forEach(it=>body.appendChild(makeBtn(it)));secs.appendChild(body);}
- const order=[],map={};
- g.items.forEach(it=>{if(!it.subgroup)return;const k=it.subgroup;if(!map[k]){map[k]=[];order.push(k);}map[k].push(it);});
- order.forEach(k=>{const key='sec:'+g.name+':'+k;const hid=!!COLLAPSED[key];
-  const sec=document.createElement('div');sec.className='sec';
-  const h=document.createElement('div');h.className='sec-h'+(hid?' closed':'');h.innerHTML='<span class="arr">▼</span>'+k;
-  const body=document.createElement('div');body.className='grid'+(hid?' hidden':'');
-  map[k].forEach(it=>body.appendChild(makeBtn(it)));
-  h.onclick=()=>{const closed=!h.classList.contains('closed');h.classList.toggle('closed',closed);body.classList.toggle('hidden',closed);COLLAPSED[key]=closed;};
-  sec.appendChild(h);sec.appendChild(body);secs.appendChild(sec);});}
-async function refresh(){if(!DATA)return;const st=await api('/api/status');
- let errTotal=0;
- document.querySelectorAll('.btn').forEach(b=>{const n=b.id.replace('btn_','');const s=st[n];
-  const run=s&&s.running, err=s&&s.error, op=OPS[n];
-  b.dataset.running=run?'1':'0';
-  b.querySelector('.st').textContent=op?('⏳ '+op)
-    :(err?('⚠ エラー'+(run?(' / 起動中 pid '+s.pid):''))
-    :(run?('起動中'+(s.source==='external'?'(外部)':'')+' pid '+s.pid):'停止'));
-  b.classList.toggle('busy',!!op);
-  b.classList.toggle('run',!!run&&!err&&!op);b.classList.toggle('err',!!err&&!op);});
- const errs=Object.entries(st).filter(([n,s])=>s.error);errTotal=errs.length;
- const ec=document.getElementById('errcnt');
- if(ec){ec.textContent=errTotal?('⚠ エラー: '+errTotal+'件'):'';ec.classList.toggle('on',errTotal>0);}
- DATA.groups.forEach((g,i)=>{let c=0;g.items.forEach(it=>{const s=st[it.name];if(s&&s.error)c++;});
-  const bd=document.getElementById('badge_'+i);if(bd){bd.textContent=c;bd.classList.toggle('hide',c===0);}});
- const run=Object.entries(st).filter(([n,s])=>s.running);
- SCN_RUN=run.some(([n])=>n==='scn');
- document.getElementById('cnt').textContent='起動中: '+run.length+' 件';
- document.getElementById('runhint').textContent=run.length?('('+run.length+')'):'';
- const r=document.getElementById('running');
- r.innerHTML=run.length?run.map(([n,s])=>{const op=OPS[n];const mark=op?'⏳ ':(s.error?'⚠ ':'');
-  return '<div class="ritem'+((s.error||op)?' err':'')+'"><span class="n">'+mark+n+' ('+s.pid+(s.source==='external'?', 外部':'')+')</span>'+
-   (op?('<span class="st" style="color:#ffb86b">'+op+'</span>'):'<button class="xbtn gray" onclick="restartIt(\\''+n+'\\',this)">再起動</button><button class="xbtn" onclick="stopIt(\\''+n+'\\',this)">停止</button><button class="xbtn gray" onclick="showLog(\\''+n+'\\')">ログ</button>')+'</div>';}).join(''):'<div class="empty">起動中のプログラムはありません</div>';}
-async function openErrors(){const st=await api('/api/status');const errs=Object.entries(st).filter(([n,s])=>s.error);const box=document.getElementById('errrows');
- box.innerHTML=errs.length?errs.map(([n,s])=>'<div class="r dup"><span class="p">'+s.pid+'</span><span class="c">⚠ '+esc(n)+(s.source==='external'?' (外部)':'')+'</span><button class="xbtn gray" onclick="showLog(\\''+n+'\\')">ログ</button><button class="xbtn" onclick="stopIt(\\''+n+'\\',this).then(openErrors)">停止</button></div>').join(''):'<div class="empty">エラーはありません</div>';
- document.getElementById('emodal').classList.add('open');}
-function closeErrors(){document.getElementById('emodal').classList.remove('open');}
-const OPS={};let toastTimer=null;
-function toast(msg,bad){const t=document.getElementById('toast');t.textContent=msg;t.classList.toggle('bad',!!bad);t.style.display='block';
- clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.display='none',4000);}
-async function finishOp(n,msg){delete OPS[n];let bad=false;try{const st=await api('/api/status');const s=st[n];bad=!!(s&&s.error);}catch(e){}
- toast(msg+(bad?' ⚠ エラーが出ています（ログ参照）':''),bad);refresh();}
-async function restartIt(n,el){if(OPS[n])return;OPS[n]='再起動中…';if(el)el.classList.add('busy');refresh();
- try{await api('/api/restart',{name:n,domain:dom()});}finally{await finishOp(n,'再起動: '+n);}}
-async function toggle(n,b){if(OPS[n])return;const cur=!!(b&&b.dataset.running==='1');
- OPS[n]=cur?'停止中…':'起動中…';if(b)b.classList.add('busy');refresh();
- try{if(cur){await api('/api/stop',{name:n});await finishOp(n,'停止: '+n);}
- else{const res=await api('/api/start',{name:n,domain:dom()});if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}await finishOp(n,'起動: '+n);await showLog(n);}}
- catch(e){delete OPS[n];toast('操作に失敗: '+n,true);refresh();}}
-async function stopIt(n,el){if(OPS[n])return;OPS[n]='停止中…';if(el)el.classList.add('busy');refresh();
- try{await api('/api/stop',{name:n});}finally{await finishOp(n,'停止: '+n);}}
-async function stopAll(){if(!confirm('全て停止しますか？'))return;await api('/api/stop_all',{});refresh();}
-async function restartServer(){if(!confirm('Webサーバー（SiriusLauncher Web）を再起動しますか？\\n起動中のプロセスは維持されます。'))return;
- try{await api('/api/restart_server',{});}catch(e){}
- setTimeout(()=>location.reload(),3000);}
-async function runPreset(n,el){if(el&&el.classList.contains('busy'))return;if(el){el.classList.add('busy');el.textContent='▶ 実行中… '+n;}
- try{await api('/api/preset',{name:n,domain:dom()});}finally{if(el){el.classList.remove('busy');el.textContent='▶ '+n;}toast('プリセット実行: '+n);refresh();}}
-function toggleSidebar(){const s=document.querySelector('.sidebar');s.classList.toggle('closed');document.getElementById('sidebarBtn').textContent=s.classList.contains('closed')?'▶ 左パネル':'◀ 左パネル';}
-(function(){const gutter=document.getElementById('gutter'),sb=document.querySelector('.sidebar');
- const saved=localStorage.getItem('sbw');if(saved)sb.style.width=saved+'px';
- let drag=false;
- gutter.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
- window.addEventListener('mousemove',e=>{if(!drag)return;sb.style.width=Math.max(160,Math.min(760,e.clientX))+'px';});
- window.addEventListener('mouseup',()=>{if(!drag)return;drag=false;document.body.style.userSelect='';localStorage.setItem('sbw',parseInt(sb.style.width));});
-})();
-(function(){const g=document.getElementById('hgutter'),pr=document.querySelector('.panel.presets'),sb=document.querySelector('.sidebar');
- const saved=localStorage.getItem('prh');if(saved)pr.style.flex='0 0 '+saved+'px';
- let drag=false;
- g.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
- window.addEventListener('mousemove',e=>{if(!drag)return;const r=sb.getBoundingClientRect();let h=Math.max(80,Math.min(r.height-80,e.clientY-r.top));pr.style.flex='0 0 '+h+'px';});
- window.addEventListener('mouseup',()=>{if(!drag)return;drag=false;document.body.style.userSelect='';localStorage.setItem('prh',parseInt(pr.style.flex.split(' ')[2]));});
-})();
-let LOG_NAME=null,LOG_REQUEST=0,LOG_FOCUS=false,LOG_BUSY=false;
-async function showLog(n){LOG_NAME=n;LOG_FOCUS=true;document.getElementById('logtitle').textContent=n;
- document.getElementById('loghint').textContent=(n==='scn')?'KeyOp操作: A=前進 B=後退 C=右旋回 D=左旋回 / ,=並進リセット .=旋回リセット（入力してEnter）':'';
- document.getElementById('logout').textContent='';document.getElementById('login').value='';
- document.getElementById('log').classList.add('open');await pollLog();}
-function closeLog(){LOG_NAME=null;LOG_REQUEST++;document.getElementById('log').classList.remove('open');}
-async function pollLog(){if(!LOG_NAME)return;const name=LOG_NAME,requestId=++LOG_REQUEST;
- try{const j=await api('/api/log?name='+encodeURIComponent(name));if(LOG_NAME!==name||requestId!==LOG_REQUEST)return;
- const out=document.getElementById('logout'),bottom=out.scrollHeight-out.clientHeight-out.scrollTop<40;
- out.textContent=j.log||j.error||'';if(bottom)out.scrollTop=out.scrollHeight;
- ['login','logsend','loginterrupt'].forEach(id=>document.getElementById(id).disabled=!j.interactive);
- document.getElementById('logstate').textContent=j.interactive?'入力可能（Enterで送信）':'入力端末なし：終了済み、または更新前の起動。入力する場合はこのコマンドを再起動してください。';
- if(j.interactive&&LOG_FOCUS){document.getElementById('login').focus();LOG_FOCUS=false;}}
- catch(e){if(LOG_NAME===name)document.getElementById('logstate').textContent='接続を再試行しています…';}}
-async function writeLog(data){if(!LOG_NAME||LOG_BUSY)return false;const name=LOG_NAME;LOG_BUSY=true;
- try{const r=await api('/api/input',{name:name,data:data});if(!r.ok){toast(r.error||'入力を送信できません',true);return false;}return true;}
- catch(e){toast('入力を送信できませんでした',true);return false;}finally{LOG_BUSY=false;pollLog();}}
-async function sendLogInput(e){e.preventDefault();const inp=document.getElementById('login');if(inp.disabled)return;
- const name=LOG_NAME,value=inp.value;if(await writeLog(value+'\\n')){if(LOG_NAME===name&&inp.value===value)inp.value='';}}
-function sendLogControl(){writeLog(String.fromCharCode(3));}
-function logKey(e){if(e.isComposing||e.keyCode===229){if(e.key==='Enter')e.preventDefault();return;}
- if(e.ctrlKey&&e.key.toLowerCase()==='c'&&!window.getSelection().toString()&&e.target.selectionStart===e.target.selectionEnd){e.preventDefault();sendLogControl();}}
-const TERM={sessions:[],active:null,offsets:{}};
-function toggleTerm(){const t=document.getElementById('term');t.classList.toggle('open');
- document.getElementById('termBtn').textContent=t.classList.contains('open')?'⌨ ターミナル ▼':'⌨ ターミナル';
- if(t.classList.contains('open')){if(!TERM.sessions.length){newTerm('');}else if(TERM.active){selectTerm(TERM.active);}else{selectTerm(TERM.sessions[0]);}}}
-async function newTerm(cmd){const r=await api('/api/term/open',{cmd:cmd||''});if(r.error&&r.error!=='exists'){alert('起動できません: '+r.error);return;}const n=r.name;if(!TERM.sessions.includes(n))TERM.sessions.push(n);selectTerm(n);}
-function selectTerm(n){if(!n)return;if(!TERM.sessions.includes(n))TERM.sessions.push(n);TERM.active=n;TERM.offsets[n]=0;renderTermTabs();document.getElementById('termout').textContent='';pollTerm();}
-function renderTermTabs(){const b=document.getElementById('termtabs');b.innerHTML='';
- TERM.sessions.forEach(n=>{const d=document.createElement('div');d.className='ttab'+(n===TERM.active?' active':'');const s=document.createElement('span');s.textContent=n;const x=document.createElement('span');x.className='x';x.textContent='×';x.title='閉じる';x.onclick=(e)=>{e.stopPropagation();closeTerm(n);};d.appendChild(s);d.appendChild(x);d.onclick=()=>selectTerm(n);b.appendChild(d);});
- const a=document.createElement('button');a.className='hbtn';a.textContent='＋ シェル';a.title='新しいターミナル（対話シェル）';a.onclick=()=>newTerm('');b.appendChild(a);
- const c=document.createElement('button');c.className='hbtn';c.textContent='✕ 閉じる';c.onclick=()=>toggleTerm();b.appendChild(c);}
-async function closeTerm(n){await api('/api/term/close',{name:n});TERM.sessions=TERM.sessions.filter(x=>x!==n);delete TERM.offsets[n];if(TERM.active===n){TERM.active=TERM.sessions[TERM.sessions.length-1]||null;}renderTermTabs();document.getElementById('termout').textContent='';if(TERM.active)selectTerm(TERM.active);}
-async function pollTerm(){if(!TERM.active)return;if(!document.getElementById('term').classList.contains('open'))return;
- const r=await api('/api/term/read?name='+encodeURIComponent(TERM.active)+'&offset='+(TERM.offsets[TERM.active]||0));
- if(r.error)return;TERM.offsets[TERM.active]=r.offset;if(r.data){const o=document.getElementById('termout');const atBottom=(o.scrollHeight-o.clientHeight-o.scrollTop)<40;o.textContent+=r.data;if(atBottom)o.scrollTop=o.scrollHeight;}}
-function termInput(e){if(e.key!=='Enter')return;if(!TERM.active)return;const inp=document.getElementById('termin');const v=inp.value;inp.value='';api('/api/term/write',{name:TERM.active,data:v+'\\n'});setTimeout(pollTerm,150);}
-async function openProcs(){const j=await api('/api/ps');const rows=(j.processes||[]);const dups=(j.duplicates||[]);const box=document.getElementById('procrows');
- let html='';
- if(dups.length){html+='<div class="desc" style="color:#ffb86b">⚠ 重複（同じプログラムが複数動いています。通常は不要なので停止推奨）</div>';
-  dups.forEach(d=>{html+='<div class="r dup"><span class="p">'+d.count+'個</span><span class="c">'+esc(d.alias)+'  (pids: '+d.pids.join(', ')+')</span><button class="xbtn" onclick="killMany('+JSON.stringify(d.pids)+')">重複を停止</button></div>';});
-  html+='<div class="desc" style="margin-top:10px">その他のプロセス</div>';}
- html+=rows.length?rows.map(p=>'<div class="r'+(p.dup?' dup':'')+(p.error?' err':'')+'"><span class="p">'+p.pid+'</span><span class="c">'+(p.error?'⚠ ':'')+esc((p.alias?('['+p.alias+'] '):'')+p.cmd)+'</span><span class="p" style="flex:0 0 74px;text-align:right">'+p.age_txt+'</span><button class="xbtn gray" onclick="killProc('+p.pid+')">kill</button></div>').join(''):'<div class="empty">ROS/sirius関連のプロセスはありません</div>';
- box.innerHTML=html;
- document.getElementById('pmodal2').classList.add('open');}
-function closeProcs(){document.getElementById('pmodal2').classList.remove('open');}
-async function killProc(pid){if(!confirm('PID '+pid+' を停止しますか？（子孫も停止）'))return;await api('/api/ps/kill',{pid:pid});openProcs();refresh();}
-async function killMany(pids){if(!confirm('重複プロセス '+pids.length+' 個を停止しますか？（子孫も停止）'))return;await api('/api/ps/kill_many',{pids:pids});openProcs();refresh();}
-// ---- コマンドバー（エイリアス名は管理起動 / それ以外は新ターミナルで実行） ----
-let CMDS=[],SUGG=[],SEL=-1,HIST=[],HISTIX=-1;
-try{HIST=JSON.parse(localStorage.getItem('cmdhist')||'[]');if(!Array.isArray(HIST))HIST=[];}catch(e){HIST=[];}
-function buildCmdIndex(){CMDS=[];DATA.groups.forEach(g=>g.items.forEach(it=>{if(!CMDS.some(c=>c.name===it.name))CMDS.push({name:it.name,desc:it.desc||'',group:g.name});}));}
-function matchCmds(q){const s=q.trim().toLowerCase();if(!s)return CMDS.slice(0,12);
- const starts=[],has=[];CMDS.forEach(c=>{const n=c.name.toLowerCase();
-  if(n.startsWith(s))starts.push(c);else if(n.includes(s)||(c.desc||'').toLowerCase().includes(s))has.push(c);});
- return starts.concat(has).slice(0,12);}
-function hideSugg(){document.getElementById('sugg').classList.add('hidden');SEL=-1;}
-function renderSugg(){const box=document.getElementById('sugg');const inp=document.getElementById('cmdin');
- if(document.activeElement!==inp){box.classList.add('hidden');return;}
- SUGG=matchCmds(inp.value);if(!SUGG.length){box.classList.add('hidden');return;}
- if(SEL>=SUGG.length)SEL=SUGG.length-1;
- box.innerHTML=SUGG.map((c,i)=>'<div class="si'+(i===SEL?' active':'')+'" title="'+esc(c.name+' — '+(c.desc||''))+'" onmousedown="pickSugg(event,'+i+')"><span class="nm">'+esc(c.name)+'</span><span class="d">'+esc(c.desc)+'</span><span class="g">'+esc(c.group)+'</span><span class="mv" style="'+(i===SEL?'':'visibility:hidden')+'">▸ Enter</span></div>').join('');
- box.classList.remove('hidden');}
-function pickSugg(e,i){e.preventDefault();const c=SUGG[i];if(!c)return;const inp=document.getElementById('cmdin');inp.value=c.name;hideSugg();runCmd();}
-function cmdHistory(dir){const inp=document.getElementById('cmdin');if(!HIST.length)return;
- HISTIX+=dir;
- if(HISTIX<0){HISTIX=-1;inp.value='';return;}
- if(HISTIX>=HIST.length)HISTIX=HIST.length-1;
- inp.value=HIST[HISTIX]||'';}
-function cmdKey(e){if(e.isComposing||e.keyCode===229)return;
- const open=!document.getElementById('sugg').classList.contains('hidden');
- if(e.key==='ArrowDown'){e.preventDefault();if(!open){cmdHistory(1);return;}SEL=Math.min(SEL+1,SUGG.length-1);renderSugg();return;}
- if(e.key==='ArrowUp'){e.preventDefault();if(!open){cmdHistory(-1);return;}SEL=Math.max(SEL-1,0);renderSugg();return;}
- if(e.key==='Tab'){e.preventDefault();if(open){const c=SUGG[SEL>=0?SEL:0];if(c){document.getElementById('cmdin').value=c.name;hideSugg();}}return;}
- if(e.key==='Enter'){e.preventDefault();if(open&&SEL>=0&&SUGG[SEL])document.getElementById('cmdin').value=SUGG[SEL].name;runCmd();return;}
- if(e.key==='Escape'){hideSugg();return;}}
-function pushHist(v){HIST=[v].concat(HIST.filter(h=>h!==v)).slice(0,50);HISTIX=-1;try{localStorage.setItem('cmdhist',JSON.stringify(HIST));}catch(e){}}
-async function startByName(n){if(OPS[n])return;
- try{const st=await api('/api/status');const s=st[n];
-  if(s&&s.running){toast(n+' は既に起動中です'+(s.error?'（⚠ エラーあり）':''));await showLog(n);return;}}
- catch(e){}
- OPS[n]='起動中…';refresh();
- try{const res=await api('/api/start',{name:n,domain:dom()});
-  if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}
-  await finishOp(n,'起動: '+n);await showLog(n);}
- catch(e){delete OPS[n];toast('操作に失敗: '+n,true);refresh();}}
-async function runInTerminal(cmd){const name='cmd_'+Date.now();
- const r=await api('/api/term/open',{cmd:'',name:name});
- let n=name;if(r.error){if(r.error==='exists'){n=r.name||name;}else{toast('ターミナルを開けません: '+r.error,true);return;}}
- if(!TERM.sessions.includes(n))TERM.sessions.push(n);
- if(document.getElementById('term').classList.contains('open'))selectTerm(n);else renderTermTabs();
- toast('ターミナルで実行: '+cmd+'（⌨ ターミナルで確認）');
- setTimeout(()=>{api('/api/term/write',{name:n,data:cmd+'\\n'});setTimeout(pollTerm,250);},150);}
-async function runCmd(){const inp=document.getElementById('cmdin');const v=inp.value.trim();if(!v)return;
- const alias=CMDS.find(c=>c.name===v);hideSugg();inp.value='';pushHist(v);
- if(alias)await startByName(alias.name);else await runInTerminal(v);}
-(function(){const ci=document.getElementById('cmdin');
- ci.addEventListener('input',()=>{SEL=-1;renderSugg();});
- ci.addEventListener('focus',()=>{SEL=-1;renderSugg();});
- ci.addEventListener('keydown',cmdKey);
- document.addEventListener('mousedown',e=>{if(!e.target.closest('.cmdwrap'))hideSugg();});})();
-function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-// ---- テレオペ（十字キーパッド → /controller） ----
-let SCN_RUN=false,TK_TIMER=null,TK_KEY=null;
-const TK_MAP={ArrowUp:65,ArrowDown:66,ArrowLeft:68,ArrowRight:67};
-function deadmanOn(){const c=document.getElementById('tkdm');return !c||c.checked;}
-function toggleTeleop(force){const p=document.getElementById('teleop');
- const open=(force!==undefined)?force:!p.classList.contains('open');
- p.classList.toggle('open',open);
- document.getElementById('teleopBtn').classList.toggle('on',open);
- if(open)teleopPoll();
- try{localStorage.setItem('teleop',open?'1':'0');}catch(e){}}
-async function teleopSend(k){try{const r=await api('/api/teleop',{key:k,domain:dom()});
- if(!r.ok)toast(r.error||'テレオペ送信に失敗しました',true);teleopState(r);}catch(e){toast('テレオペ送信に失敗しました',true);}}
-function teleopState(r){const s=document.getElementById('tstate');if(!s)return;
- let cls='',txt='';
- if(r&&r.error){cls='warn';txt='⚠ '+r.error;}
- else if(SCN_RUN){if(r&&r.alive){cls='ok';txt='操作可能';}else{txt='scn起動中・ブリッジ待機';}}
- else if(r&&r.alive){cls='ok';txt='ブリッジ稼働'+(r.domain?(' (D'+r.domain+')'):'');}
- else{txt='待機（キー操作で起動 / scn未起動）';}
- s.className='tstate '+cls;s.textContent=txt;}
-async function teleopPoll(){if(!document.getElementById('teleop').classList.contains('open'))return;
- try{teleopState(await api('/api/teleop/status'));}catch(e){}}
-function startHold(k,el){stopHold();el.classList.add('on');teleopSend(k);TK_KEY=k;TK_TIMER=setInterval(()=>teleopSend(k),120);}
-function stopHold(){if(TK_TIMER){clearInterval(TK_TIMER);TK_TIMER=null;}
- if(TK_KEY!==null){const k=TK_KEY;TK_KEY=null;document.querySelectorAll('.tk').forEach(b=>b.classList.remove('on'));
-  if(k!=='stop'&&deadmanOn())teleopSend('stop');}}
-function teleopKeyGuard(e){if(!document.getElementById('teleop').classList.contains('open'))return false;
- if(e.isComposing||e.keyCode===229)return false;
- const t=e.target;return !(t&&t.closest&&t.closest('input,textarea,select,[contenteditable]'));}
-(function(){document.querySelectorAll('#teleop .tk').forEach(b=>{
- b.addEventListener('pointerdown',e=>{e.preventDefault();const dk=b.dataset.k;startHold(dk==='stop'?'stop':parseInt(dk,10),b);});
- b.addEventListener('pointerleave',stopHold);
- b.addEventListener('contextmenu',e=>e.preventDefault());});
- window.addEventListener('pointerup',stopHold);window.addEventListener('pointercancel',stopHold);
- document.addEventListener('keydown',e=>{
-  if(!teleopKeyGuard(e))return;
-  if(e.key===' '){e.preventDefault();if(!e.repeat)teleopSend('stop');return;}
-  const k=TK_MAP[e.key];if(k!==undefined){e.preventDefault();teleopSend(k);}});
- document.addEventListener('keyup',e=>{
-  if(!teleopKeyGuard(e))return;
-  if(TK_MAP[e.key]!==undefined&&deadmanOn())teleopSend('stop');});
- const dm=document.getElementById('tkdm');
- dm.checked=localStorage.getItem('tkdm')!=='0';
- dm.addEventListener('change',()=>{try{localStorage.setItem('tkdm',dm.checked?'1':'0');}catch(e){}});
- toggleTeleop(localStorage.getItem('teleop')==='1');})();
-load();setInterval(refresh,2000);setInterval(pollTerm,700);setInterval(pollLog,700);setInterval(teleopPoll,2000);
-</script></body></html>"""
+PAGE = (Path(__file__).with_name('launcher.html')).read_text(encoding='utf-8')
 
 LOGIN = """<!doctype html><html><head><meta charset="utf-8"><title>login</title></head>
 <body style="font-family:sans-serif"><h3>SiriusLauncher Web ログイン</h3>
@@ -1111,11 +639,17 @@ def index():
     return PAGE if auth_ok() else LOGIN
 
 
+@app.route("/api/health")
+def api_health():
+    return jsonify({"service": "sirius-launcher", "ui_version": "console-2"})
+
+
 @app.route("/api/state")
 def api_state():
     if not auth_ok():
         return jsonify({"error": "auth"}), 401
-    return jsonify({"groups": GROUPS, "presets": PRESETS, "default_domain": DEFAULT_DOMAIN})
+    return jsonify({"groups": GROUPS, "presets": PRESETS, "default_domain": DEFAULT_DOMAIN,
+                    "console": {"autostart": (Path(os.environ.get("XDG_CONFIG_HOME") or str(Path.home()/".config"))/"autostart/sirius-console.desktop").exists()}})
 
 
 @app.route("/api/status")
@@ -1306,6 +840,22 @@ def api_teleop_status():
     return jsonify(TELEOP.status())
 
 
+@app.route("/api/resources")
+def api_resources():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    data = RESOURCES.snapshot()
+    if data.get("available") and request.args.get("summary") == "1":
+        data.pop("processes", None)
+        data.pop("history", None)
+    elif data.get("available"):
+        data["processes"] = [{**row, "alias": best_alias_for(row["command"]) if row["related"] else None}
+                             for row in data["processes"]]
+    response = jsonify(data)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.route("/api/ps")
 def api_ps():
     if not auth_ok():
@@ -1372,7 +922,7 @@ def api_term_open():
     body = request.json or {}
     cmd = str(body.get("cmd", "")).strip()
     name = str(body.get("name", "")).strip() or (
-        ("cmd" if cmd else "shell") + "_" + str(int(time.time())))
+        ("cmd" if cmd else "shell") + "_" + str(time.time_ns()))
     with TERMS_LOCK:
         existing = TERMS.get(name)
         if existing and existing.alive:
@@ -1439,6 +989,7 @@ def main():
         print(f"エイリアスファイルがありません: {ALIAS_FILE}")
         return 1
     load_aliases(ALIAS_FILE)
+    RESOURCES.start()
     threading.Thread(target=TELEOP.ensure, args=(DEFAULT_DOMAIN,), daemon=True).start()
     print(f"SiriusLauncher Web: http://{args.host}:{args.port}  "
           f"({len(BUTTONS)} aliases, {len(GROUPS)} groups, {len(PRESETS)} presets)")

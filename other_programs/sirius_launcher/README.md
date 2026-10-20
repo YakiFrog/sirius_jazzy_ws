@@ -2,6 +2,39 @@
 
 ROS2ノードやlaunchファイルをGUIボタンから起動できるランチャーアプリケーション
 
+## Sirius Control Console（Web版）
+
+左のアイコンから Home / Terminal / Monitor / 設定を切り替えます。
+Homeではプリセット・個別プログラムを起動し、起動中のカードからログを確認できます。
+カード内のボタンで停止できます。Terminalではプログラムのログと対話入力、
+独立したシェルのタブを使えます。シェルの「×」はそのセッションを終了します。
+
+MonitorにはホストのCPU・メモリ・ディスク・CPU温度、コア別負荷、過去2分の推移、
+ネットワーク転送速度、プロセス一覧を表示します。Sirius / ROS関連と全プロセスを切り替え、
+検索・CPU/メモリ順の並べ替え・詳細確認ができます。
+全体CPUは全コアで100%、プロセスCPUは1コアで100%です。
+監視値はサーバー側で1秒ごとに共有取得し、Monitorは約2秒ごとに更新します。
+取得できないセンサー値は「—」、古い測定値は「更新停止」と表示します。
+
+専用画面を全画面で開く場合:
+
+```bash
+bash ~/sirius_jazzy_ws/bash/startup_bash/start_sirius_console.sh
+```
+
+デスクトップへのログイン後に自動で開く設定（ロボットのプログラムは自動起動しません）:
+
+```bash
+bash ~/sirius_jazzy_ws/bash/startup_bash/install_sirius_console_autostart.sh
+# 解除
+bash ~/sirius_jazzy_ws/bash/startup_bash/install_sirius_console_autostart.sh --remove
+```
+
+Webサーバーはブラウザ・ターミナルから独立して起動し、既存の8090番サーバーがあれば
+それを使います。`SIRIUS_WEB_KIOSK=0` でウィンドウ表示、`SIRIUS_WEB_NO_BROWSER=1` で
+サーバーだけ起動できます。ダーク/ライトの切り替えは設定画面にあります。
+この自動起動はデスクトップへのログイン後に実行され、自動ログインの設定自体は変更しません。
+
 ## 機能
 
 - **ワンクリック起動**: エイリアスで定義されたコマンドをボタンで簡単に起動
