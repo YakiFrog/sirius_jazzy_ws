@@ -41,16 +41,26 @@ if [ -f "$WS/bash/startup_bash/detect_gui_env.sh" ]; then
     source "$WS/bash/startup_bash/detect_gui_env.sh"
     sirius_detect_gui_env || true
 fi
-if command -v wmctrl >/dev/null 2>&1 && wmctrl -l | grep -q 'SiriusLauncher Web'; then
+focus_console() {
+    command -v wmctrl >/dev/null 2>&1 || return 1
+    wmctrl -l | grep -q 'SiriusLauncher Web' || return 1
     wmctrl -a 'SiriusLauncher Web' || true
-    [ "${SIRIUS_WEB_KIOSK:-1}" = "1" ] && wmctrl -r 'SiriusLauncher Web' -b add,fullscreen
+    [ "${SIRIUS_WEB_KIOSK:-1}" != "1" ] || wmctrl -r 'SiriusLauncher Web' -b add,fullscreen
+    return 0
+}
+if focus_console; then
     exit 0
 fi
 for browser in google-chrome google-chrome-stable chromium chromium-browser; do
     if command -v "$browser" >/dev/null 2>&1; then
         BROWSER_ARGS=("--app=$URL" "--user-data-dir=$HOME/.local/share/sirius/console-browser" --no-first-run --no-default-browser-check --disable-session-crashed-bubble)
-        [ "${SIRIUS_WEB_KIOSK:-1}" = "1" ] && BROWSER_ARGS+=(--kiosk)
+        [ "${SIRIUS_WEB_KIOSK:-1}" = "1" ] && BROWSER_ARGS+=(--kiosk --start-fullscreen)
         "$browser" "${BROWSER_ARGS[@]}" >/dev/null 2>&1 &
+        # App mode may initially ignore kiosk size; apply the window state once mapped.
+        for _ in $(seq 1 30); do
+            focus_console && break
+            sleep 0.3
+        done
         exit 0
     fi
 done
