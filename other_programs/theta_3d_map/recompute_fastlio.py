@@ -16,6 +16,21 @@ from mapping_fusion import read_static_calibration, invert
 from offline_3d_mapping import reader
 
 
+def select_extrinsics(params, imu_lidar, source):
+    """Honor explicit calibration candidates instead of silently replacing them."""
+    if source == 'recorded-tf':
+        params['mapping'].update(extrinsic_R=imu_lidar[:3, :3].reshape(-1).tolist(),
+                                 extrinsic_T=imu_lidar[:3, 3].tolist())
+    rotation = np.asarray(params['mapping']['extrinsic_R'], dtype=float).reshape(3, 3)
+    translation = np.asarray(params['mapping']['extrinsic_T'], dtype=float)
+    if (translation.shape != (3,) or not np.isfinite(translation).all()
+            or not np.isfinite(rotation).all()
+            or not np.allclose(rotation.T @ rotation, np.eye(3), atol=1e-6)
+            or not np.isclose(np.linalg.det(rotation), 1., atol=1e-6)):
+        raise ValueError('Extrinsics must contain a proper rotation and finite XYZ translation')
+    params['mapping']['extrinsic_est_en'] = False
+
+
 def run(args):
     # Set before rclpy.init; never publish replayed robot inputs into the live domain.
     os.environ['ROS_DOMAIN_ID'] = str(args.domain)
@@ -37,15 +52,19 @@ def run(args):
     if lidar is None or imu is None:
         raise ValueError('Recorded static LiDAR and IMU mounts are required')
     imu_lidar = invert(imu) @ lidar
-    params['mapping'].update(extrinsic_R=imu_lidar[:3, :3].reshape(-1).tolist(),
-                             extrinsic_T=imu_lidar[:3, 3].tolist(), extrinsic_est_en=False)
-    params['wheel'] = {'enabled': args.wheel == 'on', 'topic': '/odom',
+    select_extrinsics(params, imu_lidar, args.extrinsics)
+    wheel_defaults = {'enabled': args.wheel == 'on', 'topic': '/odom',
                        'child_frame': 'sirius3/base_footprint', 'max_age': .2,
                        'velocity_std': .05, 'yaw_rate_std': .05,
                        'imu_to_base_translation': invert(imu)[:3, 3].tolist(),
                        'imu_from_base_rotation': invert(imu)[:3, :3].reshape(-1).tolist()}
-    params['publish'] = {'path_en': False, 'scan_publish_en': False,
-                         'scan_bodyframe_pub_en': False, 'map_en': False, 'dense_publish_en': False}
+    if args.extrinsics == 'config':
+        wheel_defaults.update(params.get('wheel', {}))
+    wheel_defaults['enabled'] = args.wheel == 'on'
+    params['wheel'] = wheel_defaults
+    params['publish'] = {'path_en': False, 'scan_publish_en': args.capture_cloud_period > 0,
+                         'scan_bodyframe_pub_en': args.capture_cloud_period > 0,
+                         'map_en': False, 'dense_publish_en': False}
     params['pcd_save'] = {'pcd_save_en': False, 'interval': -1}
     params['runtime_pos_log_enable'] = False
     params['preprocess']['normalize_point_time'] = args.point_time == 'normalized'
@@ -53,6 +72,8 @@ def run(args):
     writer = rosbag2_py.SequentialWriter()
     writer.open(rosbag2_py.StorageOptions(uri=str(output), storage_id='mcap'), rosbag2_py.ConverterOptions('', ''))
     writer.create_topic(rosbag2_py.TopicMetadata(id=0, name='/Odometry', type='nav_msgs/msg/Odometry', serialization_format='cdr'))
+    if args.capture_cloud_period > 0:
+        writer.create_topic(rosbag2_py.TopicMetadata(id=1, name='/cloud_registered_body', type='sensor_msgs/msg/PointCloud2', serialization_format='cdr'))
     capture = output/'capture'
     capture.mkdir()
     (output/'.mapping-diagnostic').write_text('FastLIO pose sidecar; pass with --lio-bag, not as the raw sensor bag.\n')
@@ -61,7 +82,9 @@ def run(args):
     (capture/'calibration.yaml').write_text(yaml.safe_dump(config, sort_keys=False))
     (capture/'fastlio_runtime.json').write_text(json.dumps({'wheel_enabled': args.wheel == 'on',
         'source': 'isolated offline recomputation', 'source_bag': str(bag), 'domain': args.domain,
-        'point_time': args.point_time}, indent=2)+'\n')
+        'point_time': args.point_time, 'extrinsics_source': args.extrinsics,
+        'imu_accel_bias_subtracted_m_s2': args.imu_accel_bias,
+        'capture_cloud_period_s': args.capture_cloud_period}, indent=2)+'\n')
     rclpy.init()
     node = rclpy.create_node('offline_fastlio_replay')
     types = {'/velodyne_points': PointCloud2, '/imu': Imu, '/odom': Odometry}
@@ -74,6 +97,14 @@ def run(args):
         writer.write('/Odometry', serialize_message(msg), ns)
         written += 1
     subscription = node.create_subscription(Odometry, '/Odometry', save, 1000)
+    last_cloud_ns = -10**18
+    def save_cloud(msg):
+        nonlocal last_cloud_ns
+        ns = msg.header.stamp.sec*1_000_000_000+msg.header.stamp.nanosec
+        if ns-last_cloud_ns >= args.capture_cloud_period*1e9:
+            writer.write('/cloud_registered_body', serialize_message(msg), ns)
+            last_cloud_ns = ns
+    cloud_subscription = node.create_subscription(PointCloud2, '/cloud_registered_body', save_cloud, 10) if args.capture_cloud_period > 0 else None
     log = (output/'fastlio.log').open('w')
     child = subprocess.Popen(['ros2', 'run', 'fast_lio', 'fastlio_mapping', '--ros-args',
                               '--params-file', str(capture/'calibration.yaml'),
@@ -99,7 +130,11 @@ def run(args):
             due = first_wall+(ns-first_ns)*1e-9/args.rate
             while time.monotonic() < due:
                 rclpy.spin_once(node, timeout_sec=max(0., min(.01, due-time.monotonic())))
-            publishers[topic].publish(deserialize_message(data, types[topic]))
+            msg = deserialize_message(data, types[topic])
+            if topic == '/imu':
+                for axis, bias in zip(('x', 'y', 'z'), args.imu_accel_bias):
+                    setattr(msg.linear_acceleration, axis, getattr(msg.linear_acceleration, axis)-bias)
+            publishers[topic].publish(msg)
             published += 1
             rclpy.spin_once(node, timeout_sec=0.)
             if child.poll() is not None:
@@ -137,6 +172,12 @@ if __name__ == '__main__':
     parser.add_argument('--wheel', choices=['on', 'off'], default='on')
     parser.add_argument('--point-time', choices=['normalized', 'legacy'], default='normalized',
                         help='legacy disables signed-time normalization for controlled diagnosis only')
+    parser.add_argument('--extrinsics', choices=['recorded-tf', 'config'], default='recorded-tf',
+                        help='Use recorded TF mounts or preserve the extrinsics in the selected YAML')
+    parser.add_argument('--imu-accel-bias', type=float, nargs=3, default=[0., 0., 0.], metavar=('X', 'Y', 'Z'),
+                        help='Subtract this bias [m/s^2] from replayed IMU only; never edits the input bag')
+    parser.add_argument('--capture-cloud-period', type=float, default=0.,
+                        help='Save deskewed body scans at this sensor-time interval [s]; 0 disables')
     parser.add_argument('--domain', type=int, help='Private replay domain; omit to choose a free tool domain')
     parser.add_argument('--rate', type=float, default=2.)
     parser.add_argument('--duration', type=float, help='Optional sensor-time duration [s]')
@@ -153,7 +194,9 @@ if __name__ == '__main__':
         while options.output.exists():
             options.output = base/f'recomputed_lio_{number}'
             number += 1
-    if (options.domain is not None and not 1 <= options.domain <= 232) or options.rate <= 0 or (options.duration is not None and options.duration <= 0):
+    if ((options.domain is not None and not 1 <= options.domain <= 232) or options.rate <= 0
+            or (options.duration is not None and options.duration <= 0)
+            or options.capture_cloud_period < 0 or not np.isfinite(options.imu_accel_bias).all()):
         parser.error('Invalid replay domain, rate or duration')
     live_domain = int(os.environ.get('ROS_DOMAIN_ID', '0'))
     if options.domain == live_domain:

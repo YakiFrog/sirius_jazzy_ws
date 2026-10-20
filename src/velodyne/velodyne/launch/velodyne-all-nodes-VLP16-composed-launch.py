@@ -36,6 +36,8 @@ import yaml
 
 import ament_index_python.packages
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
@@ -77,9 +79,10 @@ def generate_launch_description():
                     package='velodyne_laserscan',
                     plugin='velodyne_laserscan::VelodyneLaserScan',
                     name='velodyne_laserscan_node',
+                    remappings=[('velodyne_points', LaunchConfiguration('scan_input_topic'))],
                     parameters=[laserscan_params]),
             ],
             output='both',
     )
 
-    return LaunchDescription([container])
+    return LaunchDescription([DeclareLaunchArgument('scan_input_topic', default_value='/velodyne_points'), container])

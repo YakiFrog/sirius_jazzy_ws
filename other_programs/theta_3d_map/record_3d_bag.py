@@ -46,7 +46,7 @@ def recording_topics(mode, profile='mapping'):
     if mode == 'sim':
         topics += ['/clock', '/ground_truth/odom', '/sirius_web/time_status', '/sirius_web/sensor_config']
     if profile == 'localization':
-        topics += ['/map_localizer/pose', '/map_localizer/status', '/initialpose',
+        topics += ['/velodyne_points_leveled', '/scan3', '/map_localizer/pose', '/map_localizer/status', '/initialpose',
                    '/localization/map', '/cloud_registered_body', '/robot_description',
                    '/joint_states', '/roboteq/status', '/cmd_vel', '/cmd_vel_teleop',
                    '/diagnostics', '/rosout', '/parameter_events']

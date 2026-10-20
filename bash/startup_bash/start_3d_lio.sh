@@ -28,11 +28,13 @@ if [ "$MODE" = "sim" ]; then
     IMU_HEIGHT="${SIRIUS_LIO_IMU_HEIGHT:-0.65}"
     CONFIG_DIR="${SIRIUS_FASTLIO_CONFIG_DIR:-$WS/params}"
     CONFIG_FILE="${SIRIUS_FASTLIO_CONFIG_FILE:-fast_lio_sirius_sim.yaml}"
+    MOUNT_CONFIG=""
 else
     USE_SIM_TIME=false
     IMU_HEIGHT="${SIRIUS_LIO_IMU_HEIGHT:-0.65}"
     CONFIG_DIR="${SIRIUS_FASTLIO_CONFIG_DIR:-$WS/install/sirius_navigation/share/sirius_navigation/config}"
     CONFIG_FILE="${SIRIUS_FASTLIO_CONFIG_FILE:-fast_lio_sirius.yaml}"
+    MOUNT_CONFIG="${SIRIUS_SENSOR_MOUNT_CONFIG-$(ros2 pkg prefix sirius_description)/share/sirius_description/config/sensor_mount_real.yaml}"
 fi
 
 if ! ros2 pkg prefix fast_lio >/dev/null 2>&1; then
@@ -64,4 +66,5 @@ ros2 launch sirius_navigation theta_3d_lio.launch.py \
     config_path:="$CONFIG_DIR" \
     config_file:="$CONFIG_FILE" \
     imu_height:="$IMU_HEIGHT" \
+    mount_config:="$MOUNT_CONFIG" \
     use_sim_time:="$USE_SIM_TIME"

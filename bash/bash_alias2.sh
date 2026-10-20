@@ -44,7 +44,7 @@ alias roboteq='bash ~/sirius_jazzy_ws/bash/startup_bash/start_roboteq.sh false'
 alias roboteq_no_sf='bash ~/sirius_jazzy_ws/bash/startup_bash/start_roboteq.sh true'
 
 # Velodyne起動
-alias velodyne='src && ros2 launch velodyne velodyne-all-nodes-VLP16-composed-launch.py'
+alias velodyne='src && ros2 launch sirius_navigation velodyne_real.launch.py'
 
 # Sirius Controller起動
 alias scn='src && ros2 run sirius_keyop sirius_controller_node'
