@@ -25,6 +25,6 @@
 設定を揃えず一部だけ再起動しない。既存のBAGや地図は書き換えない。
 シミュレータの取り付け設定には実機補正を適用しない。
 
-一時的な無効化は `tf_real` の `mount_config:=''` と
+一時的な無効化は `tf_real` の `mount_config:=none` と
 `SIRIUS_SENSOR_MOUNT_CONFIG='' lio3d`（または起動スクリプト）を対にして使う。
 生点群だけの従来ドライバは元の `velodyne-all-nodes-VLP16-composed-launch.py`。

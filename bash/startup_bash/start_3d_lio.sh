@@ -66,5 +66,5 @@ ros2 launch sirius_navigation theta_3d_lio.launch.py \
     config_path:="$CONFIG_DIR" \
     config_file:="$CONFIG_FILE" \
     imu_height:="$IMU_HEIGHT" \
-    mount_config:="$MOUNT_CONFIG" \
+    mount_config:="${MOUNT_CONFIG:-none}" \
     use_sim_time:="$USE_SIM_TIME"
