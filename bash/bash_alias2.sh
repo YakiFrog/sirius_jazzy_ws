@@ -447,6 +447,9 @@ alias run_theta_slam_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/run_theta
 
 # SUBGROUP: 3D自己位置推定
 
+# 自己位置推定の検証用記録（センサー・推定姿勢・成否・TF・参照地図・実行時設定）。停止はCtrl+C。
+alias record_loc3d='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh --profile localization real'
+
 # 3D地図への局所自己位置推定 (small_gicp, map->odom)。初期姿勢はRVizの2D Pose Estimateで指定
 alias loc3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_localization.sh'
 

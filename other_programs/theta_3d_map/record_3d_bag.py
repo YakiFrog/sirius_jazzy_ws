@@ -6,6 +6,7 @@
 開始可否を確認する。`--yes` を付けると確認をスキップ（自動化向け）。
 """
 import argparse
+import hashlib
 from datetime import datetime
 import json
 import os
@@ -26,25 +27,82 @@ def _line(mark, message):
     print(f'  {mark} {message}', flush=True)
 
 
-def preflight(mode, timeout, domain):
+def required_topics(mode, profile='mapping'):
+    topics = ['/velodyne_points', '/imu', '/odom']
+    if mode == 'sim':
+        topics.append('/clock')
+    elif profile == 'mapping':
+        topics.append('/velodyne_points_colored')
+    if profile == 'localization':
+        topics += ['/Odometry', '/tf', '/tf_static', '/map_localizer/pose',
+                   '/map_localizer/status', '/localization/map']
+    return topics
+
+
+def recording_topics(mode, profile='mapping'):
+    topics = ['/velodyne_points', '/velodyne_points_colored', '/imu', '/odom',
+              '/odom/filtered', '/odometry/filtered', '/magnetometer', '/Odometry',
+              '/tf', '/tf_static', '/theta/dual_fisheye/image_raw/compressed']
+    if mode == 'sim':
+        topics += ['/clock', '/ground_truth/odom', '/sirius_web/time_status', '/sirius_web/sensor_config']
+    if profile == 'localization':
+        topics += ['/map_localizer/pose', '/map_localizer/status', '/initialpose',
+                   '/localization/map', '/cloud_registered_body', '/robot_description',
+                   '/joint_states', '/roboteq/status', '/cmd_vel', '/cmd_vel_teleop',
+                   '/diagnostics', '/rosout', '/parameter_events']
+    return topics
+
+
+def dump_runtime_parameters(node):
+    result = subprocess.run(['ros2', 'param', 'dump', node, '--no-daemon',
+                             '--spin-time', '2', '--timeout', '8'],
+                            capture_output=True, text=True, timeout=20)
+    if result.returncode:
+        raise RuntimeError(f'実行時設定を取得できません ({node}): {result.stderr.strip()}')
+    return result.stdout
+
+
+def snapshot_localization(capture, ws):
+    dumped = dump_runtime_parameters('/map_localizer')
+    params = yaml.safe_load(dumped)['/map_localizer']['ros__parameters']
+    (capture/'map_localizer.yaml').write_text(dumped)
+    source = Path(params['map_path']).expanduser().resolve(strict=True)
+    reference = capture/('reference_map'+source.suffix)
+    shutil.copyfile(source, reference)
+    versions = {}
+    for name, root in [('workspace', ws), ('navigation', ws/'src/sirius/sirius_navigation'),
+                       ('fast_lio', ws/'src/FAST_LIO_ROS2')]:
+        revision = subprocess.run(['git', '-C', str(root), 'rev-parse', 'HEAD'],
+                                  capture_output=True, text=True, timeout=5)
+        versions[name] = revision.stdout.strip() if revision.returncode == 0 else None
+    (capture/'localization.json').write_text(json.dumps({
+        'source_map': str(source), 'reference_map': reference.name,
+        'map_sha256': hashlib.sha256(reference.read_bytes()).hexdigest(),
+        'versions': versions, 'absolute_ground_truth': 'not recorded on a real robot'}, indent=2)+'\n')
+
+
+def preflight(mode, timeout, domain, profile='mapping'):
     """必須トピックの受信・RGBフィールド・TFを検査し、結果を表示する。"""
     import rclpy
-    from rclpy.qos import qos_profile_sensor_data
+    from rclpy.qos import qos_profile_sensor_data, QoSProfile, DurabilityPolicy
     from sensor_msgs.msg import PointCloud2, Imu
     from nav_msgs.msg import Odometry
     from rosgraph_msgs.msg import Clock
     from std_msgs.msg import String
+    from geometry_msgs.msg import PoseStamped
+    from tf2_msgs.msg import TFMessage
 
     print('=================================================', flush=True)
-    print(f' 3D地図録画 事前チェック  (mode={mode}, ROS_DOMAIN_ID={domain})', flush=True)
+    print(f' 3D録画 事前チェック  (profile={profile}, mode={mode}, ROS_DOMAIN_ID={domain})', flush=True)
     print('=================================================', flush=True)
     print('[必須トピック]', flush=True)
 
-    required = {'/velodyne_points': PointCloud2, '/imu': Imu, '/odom': Odometry}
-    if mode == 'sim':
-        required['/clock'] = Clock
-    else:
-        required['/velodyne_points_colored'] = PointCloud2
+    types = {'/velodyne_points': PointCloud2, '/imu': Imu, '/odom': Odometry,
+             '/clock': Clock, '/velodyne_points_colored': PointCloud2,
+             '/Odometry': Odometry, '/tf': TFMessage, '/tf_static': TFMessage,
+             '/map_localizer/pose': PoseStamped, '/map_localizer/status': String,
+             '/localization/map': PointCloud2}
+    required = {topic: types[topic] for topic in required_topics(mode, profile)}
     rgb_topic = '/velodyne_points' if mode == 'sim' else '/velodyne_points_colored'
     # 任意トピックはメッセージ受信ではなくPublisher有無で判定する（/tf_staticはlatchedのため）
     optional = {
@@ -61,7 +119,8 @@ def preflight(mode, timeout, domain):
     profile_sub = node.create_subscription(String, '/sirius_web/sensor_config', lambda msg: sensor_profiles.append(msg.data), 10) if mode == 'sim' else None
     subs = [node.create_subscription(typ, topic,
                                      lambda msg, t=topic: received.__setitem__(t, msg),
-                                     qos_profile_sensor_data)
+                                     QoSProfile(depth=100, durability=DurabilityPolicy.TRANSIENT_LOCAL)
+                                     if topic in ('/tf_static', '/localization/map') else qos_profile_sensor_data)
             for topic, typ in required.items()]
     end = time.monotonic() + timeout
     while set(received) != set(required) and time.monotonic() < end:
@@ -94,7 +153,7 @@ def preflight(mode, timeout, domain):
         else:
             _line('▲', f'{topic} がありません（{note}）')
 
-    cloud = received.get(rgb_topic)
+    cloud = received.get(rgb_topic) if profile == 'mapping' else None
     if cloud is not None:
         fields = {f.name for f in cloud.fields}
         if {'rgb', 'rgba'} & fields:
@@ -157,7 +216,7 @@ def preflight(mode, timeout, domain):
     if ng:
         raise ValueError(f'必須項目が{ng}件不足しています（上記✗を解消してください）')
     print('✓ 必須センサーを受信しました', flush=True)
-    cloud = received['/velodyne_points' if mode == 'sim' else '/velodyne_points_colored']
+    cloud = received['/velodyne_points' if mode == 'sim' or profile == 'localization' else '/velodyne_points_colored']
     wheel = received['/odom']
     if mode == 'sim' and 'time' in {f.name for f in cloud.fields} and not sensor_profiles:
         raise ValueError('回転点群を受信しましたが /sirius_web/sensor_config が未受信です。WebのROS接続を確認して再実行してください')
@@ -181,6 +240,7 @@ def main(argv=None):
     parser.add_argument('name', nargs='?')
     parser.add_argument('--directory', default=str(Path.home()/'rosbag2_data'))
     parser.add_argument('--config')
+    parser.add_argument('--profile', choices=['mapping', 'localization'], default='mapping')
     parser.add_argument('--duration', type=float, help='Stop after this many wall-clock seconds')
     parser.add_argument('--preflight-timeout', type=float, default=10.)
     parser.add_argument('--yes', action='store_true', help='確認プロンプトをスキップして録画開始')
@@ -194,7 +254,7 @@ def main(argv=None):
         return value
 
     name = validate_name(args.name) if args.name else datetime.now(
-        ZoneInfo('Asia/Tokyo')).strftime(f'slam3d_{args.mode}_%Y%m%d_%H%M%S')
+        ZoneInfo('Asia/Tokyo')).strftime(f'{"localization3d" if args.profile == "localization" else "slam3d"}_{args.mode}_%Y%m%d_%H%M%S')
     ws = Path(__file__).resolve().parents[2]
     config = Path(args.config).expanduser() if args.config else (
         ws/'params/fast_lio_sirius_sim.yaml' if args.mode == 'sim' else
@@ -203,13 +263,8 @@ def main(argv=None):
         parser.error(f'Calibration config not found: {config}')
 
     domain = os.environ.get('ROS_DOMAIN_ID', '0')
-    frames = preflight(args.mode, args.preflight_timeout, domain)
-
-    topics = ['/velodyne_points', '/velodyne_points_colored', '/imu', '/odom',
-              '/odom/filtered', '/odometry/filtered', '/magnetometer', '/Odometry',
-              '/tf', '/tf_static', '/theta/dual_fisheye/image_raw/compressed']
-    if args.mode == 'sim':
-        topics.extend(['/clock', '/ground_truth/odom', '/sirius_web/time_status', '/sirius_web/sensor_config'])
+    frames = preflight(args.mode, args.preflight_timeout, domain, args.profile)
+    topics = recording_topics(args.mode, args.profile)
 
     interactive = sys.stdin.isatty() and not args.yes
     memo = ''
@@ -241,10 +296,14 @@ def main(argv=None):
     # Keep sidecars outside the output URI until rosbag creates the directory.
     capture = bag.with_name(bag.name+'.capture')
     capture.mkdir(parents=True, exist_ok=False)
+    if args.profile == 'localization':
+        snapshot_localization(capture, ws)
     profile = frames.pop('_sensor_profile', None)
     fastlio_runtime = frames.pop('_fastlio_runtime', None)
     if fastlio_runtime is not None:
         (capture/'fastlio_runtime.json').write_text(json.dumps(fastlio_runtime, indent=2)+'\n')
+        if args.profile == 'localization':
+            (capture/'fastlio.yaml').write_text(dump_runtime_parameters(fastlio_runtime['node']))
     theta_config = ws/'src/sirius/sirius_navigation/config'/('theta_calibration_real.yaml' if args.mode == 'real' else 'theta_calibration.yaml')
     if theta_config.exists():
         shutil.copyfile(theta_config, capture/'theta_calibration.yaml')
@@ -265,9 +324,12 @@ def main(argv=None):
            '/velodyne_points': {'reliability': 'best_effort', 'durability': 'volatile', 'history': 'keep_last', 'depth': 20},
            '/velodyne_points_colored': {'reliability': 'best_effort', 'durability': 'volatile', 'history': 'keep_last', 'depth': 20},
            '/imu': {'reliability': 'best_effort', 'durability': 'volatile', 'history': 'keep_last', 'depth': 200}}
+    if args.profile == 'localization':
+        for topic in ('/localization/map', '/robot_description'):
+            qos[topic] = {'reliability': 'reliable', 'durability': 'transient_local', 'history': 'keep_last', 'depth': 1}
     qos_path = capture/'qos.yaml'
     qos_path.write_text(yaml.safe_dump(qos))
-    (capture/'recording.json').write_text(json.dumps({'mode': args.mode, 'topics': topics,
+    (capture/'recording.json').write_text(json.dumps({'mode': args.mode, 'profile': args.profile, 'topics': topics,
         'ros_domain_id': domain, 'frames': frames, 'memo': memo,
         'created': datetime.now(ZoneInfo('Asia/Tokyo')).isoformat()}, indent=2)+'\n')
     command = ['ros2', 'bag', 'record', '-s', 'mcap', '--storage-preset-profile', 'zstd_fast',
@@ -300,12 +362,15 @@ def main(argv=None):
         raise RuntimeError(f'No finalized bag metadata: {bag}; recorder exit={code}')
     info = yaml.safe_load(metadata.read_text())['rosbag2_bagfile_information']
     counts = {t['topic_metadata']['name']: t['message_count'] for t in info['topics_with_message_count']}
-    required = ['/velodyne_points', '/imu', '/odom'] + (['/clock'] if args.mode == 'sim' else ['/velodyne_points_colored'])
+    required = required_topics(args.mode, args.profile)
     missing = [t for t in required if not counts.get(t, 0)]
     if missing:
         raise RuntimeError('Bag missing required recorded messages: '+', '.join(missing))
     print('Saved counts:', {t: counts[t] for t in required}, flush=True)
-    print(f'Generate maps:\n  offline_3dmap "{bag}"', flush=True)
+    if args.profile == 'localization':
+        print('自己位置推定検証用BAGを保存しました。地図・設定は capture/、表示はFoxgloveでMCAPを開いてください。', flush=True)
+    else:
+        print(f'Generate maps:\n  offline_3dmap "{bag}"', flush=True)
     return 0 if code in (0, 130, -signal.SIGINT) else code
 
 

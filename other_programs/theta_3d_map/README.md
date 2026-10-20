@@ -35,6 +35,26 @@ bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim hallway_001
 - 実機の記録: `record_3dmap name`。実機ではRGB付き `/velodyne_points_colored` も必須です。
   実機回転LiDARの後処理の制限は下記を参照してください。
 
+### 自己位置推定の検証を記録する
+
+NUCのLauncherの「3D自己位置推定」にある `record_loc3d` を使います。
+ターミナルでは `record_loc3d push_test_001`。停止はCtrl+Cを1回です。
+エイリアスを使わない場合:
+
+```bash
+ROS_DOMAIN_ID=53 bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real push_test_001 --profile localization
+```
+
+LiDAR・IMU・車輪・FAST-LIO出力に加え、`/map_localizer/pose`、
+`/map_localizer/status`（収束・対応点率・補正量・棄却）、`/initialpose`、
+`/tf`、`/tf_static`、`/localization/map`、IMU座標系の補正済み点群
+`/cloud_registered_body`、ロボットモデル、車輪状態、指令、診断ログを記録します。
+RGB点群は必須ではありません。`capture/` に使用地図そのもの・SHA256・
+実行中localizerのパラメータ・FAST-LIOの車輪融合設定・Gitコミットも保存します。
+終了時は必須トピックの記録件数を確認し、欠落があればエラーになります。
+地図と軌跡の重なり・補正量・棄却率・手押し時の車輪速度を検証できます。
+実機の独立した正解軌跡は含まれないため、絶対誤差のATE/RPEには外部基準が必要です。
+
 ## 2. 後処理
 
 Launcherで `offline_3dmap` を押すと、`~/rosbag2_data` 内のBAGが新しい順に表示されます。
