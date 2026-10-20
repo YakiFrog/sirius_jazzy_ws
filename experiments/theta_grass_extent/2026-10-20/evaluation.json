@@ -1,0 +1,195 @@
+{
+  "reference": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_semantic_tactile_context_map_20261020",
+  "selected": "radius0_25_fraction0_3",
+  "trials": {
+    "radius0_25_fraction0_2": {
+      "radius_m": 0.25,
+      "grass_vote_fraction_min": 0.2,
+      "grass_weight_min": 0.2,
+      "steps": 5,
+      "maximum_four_neighbor_distance_m": 0.25,
+      "added_cells": 7441,
+      "added_area_m2": 18.602500000000003,
+      "original_class_counts": {
+        "0": 3796,
+        "5": 158,
+        "6": 3487
+      }
+    },
+    "radius0_25_fraction0_3": {
+      "radius_m": 0.25,
+      "grass_vote_fraction_min": 0.3,
+      "grass_weight_min": 0.2,
+      "steps": 5,
+      "maximum_four_neighbor_distance_m": 0.25,
+      "added_cells": 6173,
+      "added_area_m2": 15.432500000000003,
+      "original_class_counts": {
+        "0": 3796,
+        "5": 97,
+        "6": 2280
+      }
+    },
+    "radius0_25_fraction0_4": {
+      "radius_m": 0.25,
+      "grass_vote_fraction_min": 0.4,
+      "grass_weight_min": 0.2,
+      "steps": 5,
+      "maximum_four_neighbor_distance_m": 0.25,
+      "added_cells": 4959,
+      "added_area_m2": 12.397500000000003,
+      "original_class_counts": {
+        "0": 3796,
+        "5": 44,
+        "6": 1119
+      }
+    },
+    "radius0_5_fraction0_2": {
+      "radius_m": 0.5,
+      "grass_vote_fraction_min": 0.2,
+      "grass_weight_min": 0.2,
+      "steps": 10,
+      "maximum_four_neighbor_distance_m": 0.5,
+      "added_cells": 7527,
+      "added_area_m2": 18.817500000000003,
+      "original_class_counts": {
+        "0": 3800,
+        "5": 182,
+        "6": 3545
+      }
+    },
+    "radius0_5_fraction0_3": {
+      "radius_m": 0.5,
+      "grass_vote_fraction_min": 0.3,
+      "grass_weight_min": 0.2,
+      "steps": 10,
+      "maximum_four_neighbor_distance_m": 0.5,
+      "added_cells": 6179,
+      "added_area_m2": 15.447500000000003,
+      "original_class_counts": {
+        "0": 3800,
+        "5": 97,
+        "6": 2282
+      }
+    },
+    "radius0_5_fraction0_4": {
+      "radius_m": 0.5,
+      "grass_vote_fraction_min": 0.4,
+      "grass_weight_min": 0.2,
+      "steps": 10,
+      "maximum_four_neighbor_distance_m": 0.5,
+      "added_cells": 4963,
+      "added_area_m2": 12.407500000000002,
+      "original_class_counts": {
+        "0": 3800,
+        "5": 44,
+        "6": 1119
+      }
+    }
+  },
+  "crops": [
+    {
+      "name": "crop1",
+      "pixel_bbox": [
+        2171,
+        1820,
+        2235,
+        1946
+      ],
+      "world_center_m": [
+        -0.15990493264567363,
+        -60.858791205711796
+      ]
+    },
+    {
+      "name": "crop2",
+      "pixel_bbox": [
+        2181,
+        1611,
+        2246,
+        1731
+      ],
+      "world_center_m": [
+        0.3399762430891684,
+        -50.08106762847602
+      ]
+    },
+    {
+      "name": "crop3",
+      "pixel_bbox": [
+        318,
+        3765,
+        394,
+        3845
+      ],
+      "world_center_m": [
+        -92.52944774832056,
+        -156.85294214910803
+      ]
+    },
+    {
+      "name": "crop4",
+      "pixel_bbox": [
+        2188,
+        1470,
+        2253,
+        1600
+      ],
+      "world_center_m": [
+        0.6962955335547889,
+        -43.40848817540876
+      ]
+    },
+    {
+      "name": "crop5",
+      "pixel_bbox": [
+        1936,
+        3215,
+        2014,
+        3303
+      ],
+      "world_center_m": [
+        -11.43685837394122,
+        -129.64800173202758
+      ]
+    },
+    {
+      "name": "crop6",
+      "pixel_bbox": [
+        2194,
+        1365,
+        2257,
+        1457
+      ],
+      "world_center_m": [
+        0.9530295402887958,
+        -37.222124539045126
+      ]
+    }
+  ],
+  "status": "candidate-only exploratory comparison; current map unchanged; target location not specified",
+  "input_sha256": {
+    "road_temporal.colored.pgm": "fb4f057eb417bc390b86f4d67260b045859eeca96f58b14c47025dd2a7dc6644",
+    "road_temporal.texture.png": "1e2012365c3e8fd379dcfbc295e1b6589f51128f4cf3e20f34f0b05ebb61abed",
+    "map_evidence.npz": "ec3a4de9514509654885dcf9e2713ba60195b287f040d70f9952d026aa7496f2"
+  },
+  "settings": {
+    "hsv_hue_range": [
+      25,
+      90
+    ],
+    "hsv_saturation_min": 40,
+    "hsv_value_min": 12,
+    "connectivity": 4,
+    "required_support": "observed RGB and native sample coverage; grass votes at every traversed cell",
+    "protected_classes": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "texture_unchanged": true,
+    "geometry_unchanged": true,
+    "vote_fraction_is_calibrated_probability": false
+  }
+}

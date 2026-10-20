@@ -1,0 +1,9 @@
+{
+  "base_git_commit": "d2cfd4d344820e4d3d4f2182ed76c149bbe8914b",
+  "working_source_sha256": {
+    "bash/startup_bash/experiment_theta_grass_extent.py": "8671d8fc95f576457cb4b2c3fb550ceb3ad7c1a5c94dfca3014eda0fd740aa73",
+    "bash/startup_bash/tests/test_theta_grass_extent.py": "08b2c9e50d294b30dd80a772d32282dc8adb193b5aed9493694af0c5c9be0b44"
+  },
+  "opencv": "4.6.0",
+  "numpy": "1.26.4"
+}

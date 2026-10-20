@@ -1,0 +1,18 @@
+{
+  "selected": "radius0_25_fraction0_3",
+  "conditions": 6,
+  "result": {
+    "radius_m": 0.25,
+    "grass_vote_fraction_min": 0.3,
+    "grass_weight_min": 0.2,
+    "steps": 5,
+    "maximum_four_neighbor_distance_m": 0.25,
+    "added_cells": 6173,
+    "added_area_m2": 15.432500000000003,
+    "original_class_counts": {
+      "0": 3796,
+      "5": 97,
+      "6": 2280
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "trial_conditions": 6,
+  "unit_tests_passed": 6,
+  "protected_classes_unchanged": true,
+  "all_candidates_observed_in_rgb_and_scan_support": true,
+  "input_map_and_texture_hashes_unchanged": true,
+  "new_labels_only_grass_candidates": true,
+  "candidate_status": "not promoted to current map; needs target-location/source-image confirmation",
+  "selected_cells": 6173,
+  "selected_area_m2": 15.432500000000003
+}
