@@ -20,6 +20,8 @@ def web(monkeypatch):
     })
     monkeypatch.setattr(module, '_SIG_CACHE', {})
     monkeypatch.setattr(module, '_VAR_CACHE', {})
+    monkeypatch.setattr(module, '_SCRIPT_SIG_CACHE', None)
+    monkeypatch.setattr(module, 'managed_sessions', lambda: {})
     return module
 
 

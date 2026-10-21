@@ -48,6 +48,27 @@ def test_deep_tree_and_invalid_or_excess_transforms_are_bounded():
     assert data['cycles']==[] and data['roots']==['0']
 
 
+def test_stopped_dynamic_source_is_history_not_current_conflict():
+    store=TransformStore()
+    add(store,'odom','base',now=0,publisher='ekf')
+    add(store,'body','base',now=0,publisher='lio')
+    assert store.snapshot(1)['conflicts']==['base']
+    add(store,'body','base',now=4,publisher='lio')
+    data=store.snapshot(4)
+    assert data['conflicts']==[]
+    assert len(data['edges'])==2  # The stopped edge remains inspectable.
+
+
+def test_cycle_resolves_when_dynamic_edge_stops_but_static_conflict_remains():
+    store=TransformStore()
+    add(store,'a','b',static=True,publisher='static')
+    add(store,'b','a',now=0,publisher='dynamic')
+    assert store.snapshot(1)['cycles']==['a','b']
+    assert store.snapshot(4)['cycles']==[]
+    add(store,'x','b',now=4,publisher='dynamic')
+    assert store.snapshot(4)['conflicts']==['b']
+
+
 def test_tf_api_auth_domain_and_cache_policy(monkeypatch):
     web=importlib.import_module('web_server')
     class FakeMonitor:

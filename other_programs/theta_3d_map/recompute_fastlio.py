@@ -16,6 +16,34 @@ from mapping_fusion import read_static_calibration, invert
 from offline_3d_mapping import reader
 
 
+def load_replay_config(bag, config_path=None):
+    """A recorded launch YAML may precede the real mounting overrides.
+
+    Preserve an explicit experiment config; otherwise restore the parameters
+    actually captured from the running node over the recorded base YAML.
+    """
+    bag = Path(bag)
+    config = yaml.safe_load((Path(config_path).expanduser() if config_path else
+                             bag/'capture/calibration.yaml').read_text())
+    runtime_path = bag/'capture/fastlio_runtime.json'
+    if config_path is None and runtime_path.exists():
+        runtime = json.loads(runtime_path.read_text()).get('parameters', {})
+        if not isinstance(runtime, dict):
+            raise ValueError('Recorded FAST-LIO parameters must be a dictionary')
+        params = config['/**']['ros__parameters']
+        for key, value in runtime.items():
+            parts = key.split('.')
+            if not all(parts):
+                raise ValueError('Invalid recorded parameter name')
+            target = params
+            for part in parts[:-1]:
+                target = target.setdefault(part, {})
+                if not isinstance(target, dict):
+                    raise ValueError('Recorded parameter hierarchy conflicts with YAML')
+            target[parts[-1]] = value
+    return config
+
+
 def select_extrinsics(params, imu_lidar, source):
     """Honor explicit calibration candidates instead of silently replacing them."""
     if source == 'recorded-tf':
@@ -47,7 +75,7 @@ def run(args):
     bag, output = Path(args.bag).expanduser().resolve(), Path(args.output).expanduser().resolve()
     if output.exists():
         raise ValueError(f'Output already exists: {output}')
-    config = yaml.safe_load((Path(args.config).expanduser() if args.config else bag/'capture/calibration.yaml').read_text())
+    config = load_replay_config(bag, args.config)
     params = config['/**']['ros__parameters']
     lidar, imu, _, _ = read_static_calibration(bag, reader, 'sirius3/base_footprint', '/velodyne_points', '/imu')
     if lidar is None or imu is None:

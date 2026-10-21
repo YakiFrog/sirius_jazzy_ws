@@ -1,6 +1,32 @@
 'use strict';
 const TF_VIEW={data:null,busy:false,selected:null,positions:new Map(),shape:'',view:null,drag:null,autoFit:true,layout:localStorage.getItem('sirius-tf-layout')==='horizontal'?'horizontal':'hierarchy'};
 const TF_NS='http://www.w3.org/2000/svg';
+function updateTFHealth(data){
+  const nav=document.querySelector('.nav-item[data-page="tf"]'),badge=document.getElementById('tf-error-badge');
+  if(!badge)return;
+  const panel=document.getElementById('tf-errors');
+  if(!data.available){
+    badge.hidden=false;badge.textContent='?';badge.dataset.state='unknown';
+    nav.title='TF Tree · 監視データ未取得（現在の競合状態は未確認）';nav.setAttribute('aria-label',nav.title);
+    panel.hidden=true;return;
+  }
+  const conflicts=data.conflicts||[],cycles=data.cycles||[],frames=new Set([...conflicts,...cycles]);
+  badge.hidden=!frames.size;badge.textContent=frames.size>99?'99+':String(frames.size);badge.dataset.state='error';
+  nav.title=frames.size?'TF Tree · 構成エラー '+frames.size+'フレーム（競合・循環）':'TF Tree';nav.setAttribute('aria-label',nav.title);
+  panel.hidden=!frames.size;
+  const incoming=data.edges.filter(e=>conflicts.includes(e.child)&&!e.stale);
+  const shape=JSON.stringify([conflicts,cycles,incoming.map(e=>[e.parent,e.child,e.publisher,e.static])]);
+  if(shape===TF_VIEW.errorShape)return;TF_VIEW.errorShape=shape;panel.replaceChildren();
+  if(!frames.size)return;
+  const title=document.createElement('strong');title.textContent='TF構成エラー · '+frames.size+'フレーム';panel.append(title);
+  const hint=document.createElement('p');hint.textContent='同じ子フレームへの重複配信や循環は、自己位置推定を不安定にします。配信元を確認してください。';panel.append(hint);
+  for(const frame of frames){
+    const row=document.createElement('div'),button=document.createElement('button'),details=document.createElement('span');row.className='tf-error-row';
+    button.textContent=frame;button.onclick=()=>selectTF(frame);
+    details.textContent=(conflicts.includes(frame)?'競合: '+incoming.filter(e=>e.child===frame).map(e=>e.parent+' → '+frame+' / '+e.publisher).join(' ・ '):'TF経路が循環しています');
+    row.append(button,details);panel.append(row);
+  }
+}
 function tfElement(tag,attributes={},text){const el=document.createElementNS(TF_NS,tag);for(const [k,v] of Object.entries(attributes))el.setAttribute(k,v);if(text!==undefined)el.textContent=text;return el;}
 function layoutTF(data){
   const nodes=data.frames,children=new Map(nodes.map(f=>[f,[]])),seen=new Set(),forest=[];
@@ -91,7 +117,7 @@ function renderTF(data){
   const banner=document.getElementById('tf-warning');banner.hidden=!warnings.length;banner.textContent=warnings.join(' / ');
   const empty=document.getElementById('tf-empty');empty.hidden=data.edges.length>0;empty.textContent='TFがまだありません。Domain '+data.domain+' の /tf・/tf_static を待っています。';
   data.edges.forEach((edge,i)=>{const group=document.querySelector('[data-edge="'+i+'"]');if(!group)return;
-    const conflict=data.conflicts.includes(edge.child)||(data.cycles.includes(edge.parent)&&data.cycles.includes(edge.child));
+    const conflict=!edge.stale&&(data.conflicts.includes(edge.child)||(data.cycles.includes(edge.parent)&&data.cycles.includes(edge.child)));
     group.setAttribute('class','tf-edge'+(edge.static?' static':'')+(edge.stale?' stale':'')+(conflict?' conflict':''));
     if(TF_VIEW.layout==='horizontal')group.querySelector('path').setAttribute('marker-end','url(#tf-arrow-'+(conflict?'conflict':edge.stale?'stale':edge.static?'static':'dynamic')+')');
     group.querySelector('text').textContent=edge.static?'static':edge.stale?'停止中':edge.rate_hz===null?'測定中':edge.rate_hz.toFixed(1)+' Hz';
@@ -112,7 +138,8 @@ function renderTFDetails(){
     const section=document.createElement('section');section.className='tf-detail';const title=document.createElement('h3');title.textContent=edge.parent+' → '+frame;section.append(title);
     const q=edge.rotation,[x,y,z,w]=q,deg=180/Math.PI;
     const rpy=[Math.atan2(2*(w*x+y*z),1-2*(x*x+y*y)),Math.asin(Math.max(-1,Math.min(1,2*(w*y-z*x)))),Math.atan2(2*(w*z+x*y),1-2*(y*y+z*z))].map(v=>(v*deg).toFixed(2)+'°');
-    const fields=[['種別',edge.static?'静的TF':'動的TF'],['配信元',edge.publisher],['受信頻度',edge.static?'—（静的）':edge.rate_hz===null?'測定中':edge.rate_hz.toFixed(2)+' Hz'],['最終受信',edge.age_seconds.toFixed(1)+'秒前'],['状態',edge.stale?'更新停止':edge.static?'保持中':'受信中'],['XYZ (m)',edge.translation.map(v=>v.toFixed(4)).join(' / ')],['RPY',rpy.join(' / ')],['Q xyzw',q.map(v=>v.toFixed(5)).join(' / ')],['TF時刻',edge.stamp.toFixed(6)]];
+    const state=edge.stale?'更新停止':data.conflicts.includes(frame)?'⚠ TF競合':data.cycles.includes(frame)?'⚠ 循環':edge.static?'保持中':'受信中';
+    const fields=[['種別',edge.static?'静的TF':'動的TF'],['配信元',edge.publisher],['受信頻度',edge.static?'—（静的）':edge.rate_hz===null?'測定中':edge.rate_hz.toFixed(2)+' Hz'],['最終受信',edge.age_seconds.toFixed(1)+'秒前'],['状態',state],['XYZ (m)',edge.translation.map(v=>v.toFixed(4)).join(' / ')],['RPY',rpy.join(' / ')],['Q xyzw',q.map(v=>v.toFixed(5)).join(' / ')],['TF時刻',edge.stamp.toFixed(6)]];
     const dl=document.createElement('dl');for(const [key,value] of fields){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;dl.append(dt,dd);}section.append(dl);box.append(section);
   }
 }
@@ -120,15 +147,18 @@ async function pollTF(){
   if(TF_VIEW.busy)return;TF_VIEW.busy=true;const status=document.getElementById('tf-status');
   try{
     const data=await api('/api/tf');
+    updateTFHealth(data);
     status.classList.toggle('stale',!data.available);
     status.textContent=data.available?'LIVE · '+new Date(data.timestamp*1000).toLocaleTimeString('ja-JP',{hour12:false}):data.error?'TF受信エラー':'TF受信を開始しています…';
-    if(data.available)renderTF(data);
+    if(data.available){if(document.body.dataset.page==='tf')renderTF(data);}
     else{const empty=document.getElementById('tf-empty');if(!TF_VIEW.data){empty.hidden=false;empty.textContent=data.error||'ROSのTFを受信しています…';}status.title=data.error||'';}
-  }catch(error){status.classList.add('stale');status.textContent='接続を再試行しています';}
+  }catch(error){updateTFHealth({available:false});status.classList.add('stale');status.textContent='接続を再試行しています';}
   finally{TF_VIEW.busy=false;}
 }
 (function(){
  const svg=document.getElementById('tf-svg');if(!svg)return;
+ const badge=document.createElement('span');badge.id='tf-error-badge';badge.hidden=true;badge.setAttribute('aria-hidden','true');document.querySelector('.nav-item[data-page="tf"]').append(badge);
+ const errors=document.createElement('section');errors.id='tf-errors';errors.className='tf-errors';errors.hidden=true;errors.setAttribute('role','alert');document.getElementById('tf-warning').before(errors);
  const modes=document.createElement('div');modes.className='segmented tf-layout-switch';modes.setAttribute('role','group');modes.setAttribute('aria-label','TFツリー表示形式');
  for(const [layout,label] of [['hierarchy','階層'],['horizontal','横並び（ROS風）']]){const button=document.createElement('button');button.textContent=label;button.dataset.tfLayout=layout;button.onclick=()=>setTFLayout(layout);modes.append(button);}
  document.querySelector('.tf-tools').prepend(modes);setTFLayout(TF_VIEW.layout);

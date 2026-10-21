@@ -419,7 +419,7 @@ alias colored3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_m
 # 録画前に必須トピック・TF・レートが揃っているか検査（緑=OK）
 alias check_3dmap_ready='bash ~/sirius_jazzy_ws/bash/startup_bash/check_theta_3dmap_ready.sh'
 
-# 3D後処理用bag録画（生点群+RGB+IMU+車輪。実機、THETA画像は任意）
+# 3D後処理用bag録画（実機。生点群・IMU・車輪＋THETA画像を記録、派生点群は省略。容量目安：約3.6 GB/10分［従来比約67%減、実測30秒から換算・配信条件で変動］）
 alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
 # 3D後処理用bag録画（Webシミュ。RGB点群・IMU・/odom・/clockを必須確認）
 alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'

@@ -1,0 +1,9 @@
+services:
+  lichtblick:
+    image: ghcr.io/lichtblick-suite/lichtblick@sha256:230ed53813f11ab5d23c47380f94c6d358438ecf15c3a7e7de9625b07c437611
+    container_name: sirius-lichtblick
+    restart: unless-stopped
+    ports:
+      - "8091:8080"
+    volumes:
+      - ./sirius-start.html:/src/sirius-start.html:ro

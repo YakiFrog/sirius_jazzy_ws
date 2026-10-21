@@ -27,9 +27,33 @@ def test_localization_records_inputs_results_and_latched_map(mode):
     assert ('/clock' in required) == (mode == 'sim')
 
 
-def test_existing_real_mapping_still_requires_rgb():
-    assert '/velodyne_points_colored' in recorder.required_topics('real')
+def test_real_mapping_keeps_raw_inputs_without_requiring_live_colorization():
+    assert {'/velodyne_points', '/imu', '/odom'} <= set(recorder.required_topics('real'))
+    assert '/velodyne_points_colored' not in recorder.required_topics('real')
     assert '/map_localizer/pose' not in recorder.required_topics('real')
+
+
+@pytest.mark.parametrize('mode', ['real', 'sim'])
+@pytest.mark.parametrize('profile', ['mapping', 'localization'])
+def test_compact_recording_preserves_sources_and_localization_evidence(mode, profile):
+    topics = set(recorder.recording_topics(mode, profile))
+    assert set(recorder.required_topics(mode, profile)) <= topics
+    assert {'/velodyne_points', '/imu', '/odom', '/tf', '/tf_static',
+            '/theta/dual_fisheye/image_raw/compressed'} <= topics
+    assert not {'/velodyne_points_colored', '/velodyne_points_leveled'} & topics
+    assert ('/cloud_registered_body' in topics) == (profile == 'localization')
+    full = recorder.recording_topics(mode, profile, include_derived_clouds=True)
+    assert topics <= set(full)
+    assert '/velodyne_points_colored' in full
+    assert ('/velodyne_points_leveled' in full) == (profile == 'localization')
+    assert len(full) == len(set(full))
+
+
+@pytest.mark.parametrize('mode', ['real', 'sim'])
+def test_mapping_retains_estimator_and_sensor_failure_evidence(mode):
+    topics = recorder.recording_topics(mode)
+    assert {'/fastlio/diagnostics', '/diagnostics', '/rosout', '/roboteq/status'} <= set(topics)
+    assert len(topics) == len(set(topics))
 
 
 def test_launcher_alias_accepts_a_bag_name(monkeypatch):

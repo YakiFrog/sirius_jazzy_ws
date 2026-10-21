@@ -4,6 +4,10 @@ import json
 import time
 
 
+PHYSICAL_STOP_LOW_VOLTAGE = 8.0
+PHYSICAL_STOP_RECOVERED_VOLTAGE = 11.0
+
+
 def number(value, low=None, high=None):
     try: result = float(value)
     except (ValueError, TypeError): return None
@@ -19,7 +23,8 @@ def normalize(message, kind):
     if voltage == 0 and kind == 'BatteryState': voltage = None
     common = {'voltage': voltage, 'percentage': None, 'current': None,
               'temperature': None, 'internal_voltage': None, 'fault_flags': None,
-              'emergency_stop': None, 'charging': None, 'present': True,
+              'emergency_stop': None, 'physical_emergency_stop': None,
+              'charging': None, 'present': True,
               'source_type': kind}
     if kind == 'BatteryState':
         fraction = number(getattr(message, 'percentage', None), 0, 1)
@@ -37,6 +42,8 @@ def normalize(message, kind):
                     ('battery_current_ch1','battery_current_ch2')]
         common.update(internal_voltage=number(getattr(message, 'voltage_internal', None), 0),
                       fault_flags=flags, emergency_stop=None if flags is None else bool(flags & 16),
+                      physical_emergency_stop=(True if voltage is not None and voltage<=PHYSICAL_STOP_LOW_VOLTAGE
+                                               else False if voltage is not None and voltage>=PHYSICAL_STOP_RECOVERED_VOLTAGE else None),
                       temperature=number(getattr(message, 'temperature', None)),
                       current=sum(currents) if all(v is not None for v in currents) else None)
     else: raise ValueError('Unsupported robot battery message')
@@ -83,12 +90,23 @@ class BatteryStore:
     def ingest(self, topic, kind, message, now):
         if topic not in self.records and len(self.records)>=32:
             del self.records[min(self.records,key=lambda key:self.records[key]['received'])]
-        self.records[topic] = {**normalize(message,kind),'topic':topic,'received':now}
+        data = normalize(message,kind)
+        previous = self.records.get(topic)
+        voltage = data.get('voltage')
+        # A decaying bus voltage cannot reveal the physical button instantly.
+        # Hold an inferred stop through the uncertain band; reset on stale data.
+        if (kind == 'RoboteqStatus' and voltage is not None
+                and PHYSICAL_STOP_LOW_VOLTAGE < voltage < PHYSICAL_STOP_RECOVERED_VOLTAGE
+                and previous and now-previous['received'] <= self.stale_after
+                and previous.get('physical_emergency_stop') is True):
+            data['physical_emergency_stop'] = True
+        self.records[topic] = {**data,'topic':topic,'received':now}
 
     def snapshot(self, now):
         empty={'state':'waiting','voltage':None,'percentage':None,'current':None,
                'temperature':None,'internal_voltage':None,'fault_flags':None,
-               'emergency_stop':None,'charging':None,'topic':None,'source_type':None,
+               'emergency_stop':None,'physical_emergency_stop':None,
+               'charging':None,'topic':None,'source_type':None,
                'age_seconds':None,'stale_after_seconds':self.stale_after,
                'sources':self.sources,'errors':self.errors}
         def valid(record):
@@ -106,6 +124,7 @@ class BatteryStore:
             age=max(0,now-record['received'])
             state=('stale' if age>self.stale_after else 'absent' if not record['present'] else
                    'live' if valid(record) else 'invalid')
+            if state != 'live':data['physical_emergency_stop'] = None
             return {**empty,**data,'state':state,'age_seconds':age}
         records=list(self.records.values())
         return {**select([r for r in records if r['source_type']!='SolixStatus']),

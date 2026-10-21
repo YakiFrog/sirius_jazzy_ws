@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Record the raw inputs needed for reproducible offline 3D mapping.
 
-録画前に必須トピック・RGBフィールド・TFの受信を検査して表示し、
+録画前に必須トピック・TF（シミュではRGBフィールド）の受信を検査して表示し、
 録画可否を判定する（NGがあれば開始しない）。対話端末では bag名・メモ・
 開始可否を確認する。`--yes` を付けると確認をスキップ（自動化向け）。
 """
@@ -31,8 +31,6 @@ def required_topics(mode, profile='mapping'):
     topics = ['/velodyne_points', '/imu', '/odom']
     if mode == 'sim':
         topics.append('/clock')
-    elif profile == 'mapping':
-        topics.append('/velodyne_points_colored')
     if profile == 'localization':
         topics += ['/Odometry', '/tf', '/tf_static', '/map_localizer/pose',
                    '/map_localizer/status', '/localization/map', '/localization_ready',
@@ -40,18 +38,22 @@ def required_topics(mode, profile='mapping'):
     return topics
 
 
-def recording_topics(mode, profile='mapping'):
-    topics = ['/velodyne_points', '/velodyne_points_colored', '/imu', '/odom',
+def recording_topics(mode, profile='mapping', include_derived_clouds=False):
+    topics = ['/velodyne_points', '/imu', '/odom',
               '/odom/filtered', '/odometry/filtered', '/magnetometer', '/Odometry',
-              '/tf', '/tf_static', '/theta/dual_fisheye/image_raw/compressed']
+              '/tf', '/tf_static', '/theta/dual_fisheye/image_raw/compressed',
+              '/fastlio/diagnostics', '/diagnostics', '/rosout', '/roboteq/status']
     if mode == 'sim':
         topics += ['/clock', '/ground_truth/odom', '/sirius_web/time_status', '/sirius_web/sensor_config']
     if profile == 'localization':
-        topics += ['/velodyne_points_leveled', '/scan3', '/map_localizer/pose', '/map_localizer/status', '/initialpose',
+        topics += ['/scan3', '/map_localizer/pose', '/map_localizer/status', '/initialpose',
                    '/localization/map', '/cloud_registered_body', '/robot_description',
-                   '/joint_states', '/roboteq/status', '/cmd_vel', '/cmd_vel_teleop',
-                   '/diagnostics', '/rosout', '/parameter_events', '/fastlio/diagnostics',
+                   '/joint_states', '/cmd_vel', '/cmd_vel_teleop', '/parameter_events',
                    '/map_localizer/correction', '/map_localizer/tf_status', '/localization_ready']
+    if include_derived_clouds:
+        topics.append('/velodyne_points_colored')
+        if profile == 'localization':
+            topics.append('/velodyne_points_leveled')
     return topics
 
 
@@ -113,7 +115,7 @@ def preflight(mode, timeout, domain, profile='mapping'):
              '/fastlio/diagnostics': String, '/map_localizer/tf_status': String,
              '/map_localizer/correction': TransformStamped}
     required = {topic: types[topic] for topic in required_topics(mode, profile)}
-    rgb_topic = '/velodyne_points' if mode == 'sim' else '/velodyne_points_colored'
+    rgb_topic = '/velodyne_points' if mode == 'sim' else None
     # 任意トピックはメッセージ受信ではなくPublisher有無で判定する（/tf_staticはlatchedのため）
     optional = {
         '/tf': '任意。RTAB-Map再生や他ツール向け（offline_3dmapでは未使用）',
@@ -215,14 +217,19 @@ def preflight(mode, timeout, domain, profile='mapping'):
                  'common.lid_topic', 'common.imu_topic', 'common.time_offset_lidar_to_imu',
                  'preprocess.timestamp_unit', 'preprocess.scan_rate', 'preprocess.normalize_point_time',
                  'mapping.extrinsic_R', 'mapping.extrinsic_T', 'mapping.extrinsic_est_en',
-                 'mapping.acc_cov', 'mapping.gyr_cov']
+                 'mapping.acc_cov', 'mapping.gyr_cov',
+                 'lidar_quality.enabled', 'lidar_quality.min_points', 'lidar_quality.min_ratio',
+                 'lidar_quality.max_residual', 'lidar_quality.weak_geometry_ratio',
+                 'lidar_quality.degraded_weight', 'lidar_quality.recovery_scans',
+                 'lidar_quality.max_position_correction', 'lidar_quality.max_rotation_correction']
         future = client.get_parameters(names)
         rclpy.spin_until_future_complete(node, future, timeout_sec=1.)
         if future.done() and future.exception() is None and future.result() is not None:
             values = future.result().values
             fastlio_runtime = {'node': remote, 'wheel_enabled': parameter_value_to_python(values[0]),
                                'wheel_topic': parameter_value_to_python(values[1]), 'source': 'running node parameters',
-                               'parameters': {key: parameter_value_to_python(value) for key, value in zip(names, values)}}
+                               'parameters': {key: parameter_value_to_python(value) for key, value in zip(names, values)
+                                              if value.type != 0}}
             break
     node.destroy_node()
     rclpy.shutdown()
@@ -230,7 +237,7 @@ def preflight(mode, timeout, domain, profile='mapping'):
     if ng:
         raise ValueError(f'必須項目が{ng}件不足しています（上記✗を解消してください）')
     print('✓ 必須センサーを受信しました', flush=True)
-    cloud = received['/velodyne_points' if mode == 'sim' or profile == 'localization' else '/velodyne_points_colored']
+    cloud = received['/velodyne_points']
     wheel = received['/odom']
     if mode == 'sim' and 'time' in {f.name for f in cloud.fields} and not sensor_profiles:
         raise ValueError('回転点群を受信しましたが /sirius_web/sensor_config が未受信です。WebのROS接続を確認して再実行してください')
@@ -255,6 +262,8 @@ def main(argv=None):
     parser.add_argument('--directory', default=str(Path.home()/'rosbag2_data'))
     parser.add_argument('--config')
     parser.add_argument('--profile', choices=['mapping', 'localization'], default='mapping')
+    parser.add_argument('--include-derived-clouds', action='store_true',
+                        help='色付き・傾き補正済み点群も記録（通常は生点群と画像から再生成）')
     parser.add_argument('--duration', type=float, help='Stop after this many wall-clock seconds')
     parser.add_argument('--preflight-timeout', type=float, default=10.)
     parser.add_argument('--yes', action='store_true', help='確認プロンプトをスキップして録画開始')
@@ -278,7 +287,8 @@ def main(argv=None):
 
     domain = os.environ.get('ROS_DOMAIN_ID', '0')
     frames = preflight(args.mode, args.preflight_timeout, domain, args.profile)
-    topics = recording_topics(args.mode, args.profile)
+    topics = recording_topics(args.mode, args.profile, args.include_derived_clouds)
+    omitted = sorted(set(recording_topics(args.mode, args.profile, True)) - set(topics))
 
     interactive = sys.stdin.isatty() and not args.yes
     memo = ''
@@ -287,6 +297,8 @@ def main(argv=None):
     print(f' 録画モード : {args.mode}', flush=True)
     print(f' 設定ファイル: {config}', flush=True)
     print(f' トピック   : {", ".join(topics)}', flush=True)
+    if omitted:
+        print(f' 容量削減   : {", ".join(omitted)} は記録しません（再生成可能）', flush=True)
     if interactive:
         name = validate_name(ask(f' bag名 [{name}]: ', name))
         bag = Path(args.directory).expanduser().resolve()/name
@@ -344,6 +356,7 @@ def main(argv=None):
     qos_path = capture/'qos.yaml'
     qos_path.write_text(yaml.safe_dump(qos))
     (capture/'recording.json').write_text(json.dumps({'mode': args.mode, 'profile': args.profile, 'topics': topics,
+        'include_derived_clouds': args.include_derived_clouds, 'omitted_derived_clouds': omitted,
         'ros_domain_id': domain, 'frames': frames, 'memo': memo,
         'created': datetime.now(ZoneInfo('Asia/Tokyo')).isoformat()}, indent=2)+'\n')
     command = ['ros2', 'bag', 'record', '-s', 'mcap', '--storage-preset-profile', 'zstd_fast',
