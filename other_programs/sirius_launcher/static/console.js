@@ -232,3 +232,6 @@ setInterval(()=>{if(PAGE==='tf')pollTF();},1000);setInterval(refresh,2000);setIn
 window.addEventListener('hashchange',()=>setPage(location.hash.slice(1)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open'));closeLog();}});
 initConsole();
+
+// Battery telemetry remains visible on every console page.
+(function(){const script=document.createElement('script');script.src='/static/battery.js';document.body.append(script);})();

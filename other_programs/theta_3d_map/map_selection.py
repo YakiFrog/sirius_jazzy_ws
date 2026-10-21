@@ -1,11 +1,29 @@
 """Numbered selection of recorded bags and generated offline maps."""
 from datetime import datetime
 from pathlib import Path
+import fnmatch
+import os
+
+
+def linked_files(root, pattern):
+    """Include archived directories reached by links, without following cycles twice."""
+    seen=set()
+    for folder, directories, filenames in os.walk(root, followlinks=True):
+        try:
+            stat=os.stat(folder)
+        except OSError:
+            directories[:]=[];continue
+        key=(stat.st_dev,stat.st_ino)
+        if key in seen:
+            directories[:]=[];continue
+        seen.add(key);directories.sort()
+        for name in sorted(fnmatch.filter(filenames,pattern)):
+            yield Path(folder)/name
 
 
 def bag_candidates(directory):
     root = Path(directory).expanduser().resolve()
-    metadata = [p for p in root.rglob('metadata.yaml') if not (p.parent/'.mapping-diagnostic').exists()]
+    metadata = [p for p in linked_files(root, 'metadata.yaml') if not (p.parent/'.mapping-diagnostic').exists()]
     return [p.parent for p in sorted(metadata, key=lambda p: p.stat().st_mtime, reverse=True)]
 
 
@@ -15,17 +33,17 @@ def search_roots(directory):
 
 
 def map_candidates(directory):
-    files = set()
+    files = {}
     for root in search_roots(directory):
-        for path in root.rglob('*.ply'):
+        for path in linked_files(root, '*.ply'):
             if (path.parent/'.mapping-diagnostic').exists():
                 continue
             if path.name in {'map_3d_unfiltered.ply', 'map_3d_colored_unfiltered.ply', 'map_3d_colored_recorded.ply', 'dynamic_candidates.ply', 'dynamic_fragments.ply'}:
                 continue  # Diagnostics are explicitly available by path, not duplicate final maps.
             if path.name == 'map_3d.ply' and (path.parent / 'map_3d_colored.ply').is_file():
                 continue
-            files.add(path)
-    return sorted(files, key=lambda p: p.stat().st_mtime, reverse=True)
+            files.setdefault(path.resolve(), path)
+    return sorted(files.values(), key=lambda p: p.stat().st_mtime, reverse=True)
 
 
 def choose_numbered(candidates, title, directory):

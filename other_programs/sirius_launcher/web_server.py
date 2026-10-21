@@ -851,6 +851,20 @@ def api_tf():
     return response
 
 
+@app.route("/api/battery")
+def api_battery():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    telemetry = TF_MONITOR.snapshot(DEFAULT_DOMAIN)
+    data = dict(telemetry.get("battery") or {"state": "waiting"})
+    if not telemetry.get("available"):
+        data["state"] = "receiver_error" if telemetry.get("error") else "connecting"
+        data["receiver_error"] = telemetry.get("error", "")
+    response = jsonify({**data, "domain": telemetry.get("domain", DEFAULT_DOMAIN)})
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.route("/api/resources")
 def api_resources():
     if not auth_ok():
