@@ -6,7 +6,7 @@ async function restartIt(n,el){if(OPS[n]||!confirm('「'+n+'」を一度停止�
 async function toggle(n,b){if(OPS[n])return;const cur=!!(b&&b.dataset.running==='1');
  if(cur)return stopIt(n,b);
  OPS[n]='起動中…';if(b)b.classList.add('busy');refresh();
- try{const res=await api('/api/start',{name:n,domain:dom()});if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}await finishOp(n,'起動: '+n);await showLog(n);}
+ try{const res=await api('/api/start',{name:n,domain:dom()});if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}await finishOp(n,'起動: '+n);}
  catch(e){delete OPS[n];toast('操作に失敗: '+n,true);refresh();}}
 async function stopIt(n,el){if(OPS[n]||!confirm('「'+n+'」を停止しますか？'))return;OPS[n]='停止中…';if(el)el.classList.add('busy');refresh();
  try{await api('/api/stop',{name:n});}finally{await finishOp(n,'停止: '+n);}}
@@ -33,6 +33,7 @@ function setPage(page){
   if(page==='resources')pollResources(true);
   if(page==='tf')pollTF();
   history.replaceState(null,'','#'+page);
+  if(window.parent!==window){try{parent.postMessage({type:'sirius:page',page},location.origin);}catch(error){}}
   document.querySelector('.workspace').scrollTop=0;
 }
 function toggleTerm(){setPage(PAGE==='terminal'?'home':'terminal');}
@@ -42,9 +43,14 @@ function setTheme(theme){
   localStorage.setItem('sirius-theme',theme);document.getElementById('theme-select').value=theme;
 }
 async function toggleFullscreen(){
+  if(window.parent!==window&&typeof parent.siriusToggleFullscreen==='function'){await parent.siriusToggleFullscreen();return;}
   try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}
   catch(error){toast('ブラウザの F11 でもフルスクリーンにできます');}
 }
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||!event.data)return;
+  if(event.data.type==='sirius:toast'&&event.data.message)toast(event.data.message,true);
+});
 function connection(ok){const el=document.getElementById('connection');el.classList.toggle('offline',!ok);el.querySelector('span').textContent=ok?'接続済み':'再接続中';}
 function paintSummary(status){
   LAST_GOOD_STATUS=Date.now();connection(true);
@@ -56,7 +62,7 @@ function paintSummary(status){
     const text=document.createElement('span');text.textContent=name;button.append(text);
     button.title=name+' のログと入力';button.onclick=()=>showLog(name);target.append(button);
   }
-  if(!running.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='起動中のプログラムはありません';target.append(empty);}
+  if(!running.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='稼働中のプログラムはありません';target.append(empty);}
 }
 async function refresh(){
   if(REFRESH_BUSY||!DATA)return;REFRESH_BUSY=true;
@@ -173,6 +179,7 @@ renderTermTabs=function(){
     const close=document.createElement('span');close.className='x';close.textContent='×';close.title='セッションを終了';close.onclick=e=>{e.stopPropagation();closeTerm(name);};tab.append(close);bar.append(tab);});
   const interrupt=document.getElementById('term-interrupt');if(interrupt)interrupt.disabled=!TERM.active;
   if(!TERM.sessions.length){const label=document.createElement('span');label.className='muted';label.style.padding='5px';label.textContent='新しいターミナルを開くと、ここに表示されます';bar.append(label);}
+  const add=document.createElement('button');add.className='ttab new-term';add.title='新しいターミナル';add.setAttribute('aria-label','新しいターミナル');add.innerHTML=ICONS.plus+'<span>新規</span>';add.onclick=()=>newTerm('');bar.append(add);
 };
 
 async function sendTermControl(){
@@ -206,6 +213,7 @@ initTerminalControls();
 
 function reloadConsole(){
   sessionStorage.setItem('sirius-active-terminal',TERM.active||'');
+  if(window.parent!==window&&typeof parent.siriusReloadApp==='function'){parent.siriusReloadApp();return;}
   location.reload();
 }
 (function(){
@@ -213,6 +221,53 @@ function reloadConsole(){
   button.className=brand.className;button.innerHTML=brand.innerHTML;button.title='画面を再読み込み';button.setAttribute('aria-label','画面を再読み込み');button.onclick=reloadConsole;
   const badge=document.createElement('span');badge.className='brand-reload';badge.setAttribute('aria-hidden','true');badge.innerHTML=ICONS.refresh;button.append(badge);brand.replaceWith(button);
 })();
+function initPanelCollapse(panel,button,key,openTitle,closeTitle){
+  if(!panel||!button)return;
+  function apply(collapsed){
+    panel.classList.toggle('collapsed',collapsed);
+    button.setAttribute('aria-expanded',String(!collapsed));
+    button.title=collapsed?openTitle:closeTitle;
+  }
+  apply(localStorage.getItem(key)==='1');
+  button.addEventListener('click',()=>{
+    const collapsed=!panel.classList.contains('collapsed');
+    apply(collapsed);
+    localStorage.setItem(key,collapsed?'1':'0');
+  });
+}
+initPanelCollapse(document.querySelector('.panel.presets'),document.getElementById('preset-toggle'),'sirius-presets-collapsed','クイックスタートを展開','クイックスタートを折りたたむ');
+initPanelCollapse(document.querySelector('.sidebar'),document.getElementById('running-toggle'),'sirius-running-collapsed','稼働中を展開','稼働中を折りたたむ');
+function initHomeSplit(){
+  const layout=document.querySelector('.home-layout'),splitter=document.getElementById('gutter');
+  if(!layout||!splitter)return;
+  const MIN_MAIN=360,MIN_SIDE=220;
+  function clampShare(value){
+    const width=layout.clientWidth;
+    if(!width)return value;
+    const min=MIN_SIDE/width,max=Math.max(min,1-MIN_MAIN/width);
+    return Math.min(max,Math.max(min,value));
+  }
+  let share=parseFloat(localStorage.getItem('sirius-home-side-share'));
+  if(!Number.isFinite(share))share=.26;
+  function apply(){if(layout.clientWidth)layout.style.setProperty('--home-side-share',(clampShare(share)*100).toFixed(2)+'%');}
+  apply();
+  let drag=false;
+  splitter.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag=true;splitter.setPointerCapture(e.pointerId);e.preventDefault();document.body.classList.add('split-dragging');});
+  splitter.addEventListener('pointermove',e=>{if(!drag)return;const rect=layout.getBoundingClientRect();if(!rect.width)return;share=clampShare((rect.right-e.clientX)/rect.width);apply();});
+  function end(){if(!drag)return;drag=false;document.body.classList.remove('split-dragging');localStorage.setItem('sirius-home-side-share',String(share));}
+  splitter.addEventListener('pointerup',end);splitter.addEventListener('pointercancel',end);
+  splitter.addEventListener('keydown',e=>{const step=e.key==='ArrowLeft'?-.02:e.key==='ArrowRight'?.02:0;if(!step)return;e.preventDefault();share=clampShare(share+step);apply();localStorage.setItem('sirius-home-side-share',String(share));});
+  window.addEventListener('resize',apply);
+}
+initHomeSplit();
+function initHomeLayout(){
+  const main=document.querySelector('.home-main'),presets=main.querySelector('.presets'),sidebar=document.querySelector('.sidebar');
+  const side=document.createElement('div');side.className='home-side';sidebar.before(side);side.append(sidebar);
+  const desktop=matchMedia('(min-width:821px)');
+  function arrange(){if(desktop.matches)side.prepend(presets);else main.prepend(presets);}
+  desktop.addEventListener('change',arrange);arrange();
+}
+initHomeLayout();
 async function initConsole(){
   setTheme(localStorage.getItem('sirius-theme')||'dark');
   try{await load();document.getElementById('autostart-status').textContent=DATA.console&&DATA.console.autostart?'自動起動 有効':'自動起動 未登録';const terms=await api('/api/term/list');for(const term of terms.terms||[])if(term.alive&&!TERM.sessions.includes(term.name))TERM.sessions.push(term.name);if(TERM.sessions.length){const saved=sessionStorage.getItem('sirius-active-terminal');TERM.active=TERM.sessions.includes(saved)?saved:TERM.sessions[0];}setPage(location.hash.slice(1)||'home');}
