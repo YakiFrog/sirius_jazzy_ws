@@ -860,7 +860,7 @@ def api_battery():
     if not telemetry.get("available"):
         data["state"] = "receiver_error" if telemetry.get("error") else "connecting"
         data["receiver_error"] = telemetry.get("error", "")
-        for source in ("battery", "driver"):
+        for source in ("battery", "driver", "details"):
             if isinstance(data.get(source), dict):
                 data[source] = {**data[source], "state": data["state"]}
     response = jsonify({**data, "domain": telemetry.get("domain", DEFAULT_DOMAIN)})

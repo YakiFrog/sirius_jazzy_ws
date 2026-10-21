@@ -1,11 +1,12 @@
 import importlib
+import json
 import math
 import sys
 from pathlib import Path
 from types import SimpleNamespace as Message
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from battery_monitor import BatteryStore,normalize
+from battery_monitor import BatteryStore,BatteryReceiver,normalize
 
 
 def standard(**values):
@@ -97,10 +98,57 @@ def test_both_sources_remain_visible_before_first_message():
     assert data['battery']['state']==data['driver']['state']=='waiting'
 
 
+def solix(**values):
+    return Message(data=json.dumps({'status':'connected','battery_level':75,'total_input':0,
+                                   'total_output':64,'time_remaining':2.25,'stamp':1000,**values}))
+
+
+def test_solix_duration_ports_and_charge_estimate():
+    data=normalize(solix(ports={'ac_output':64,'dc_output':0,'usb_c1':-1}),'SolixStatus')
+    assert data['runtime_hours']==2.25 and data['charge_remaining_hours'] is None
+    assert data['ports']['dc_output']==0 and data['ports']['usb_c1'] is None
+    data=normalize(solix(total_input=100,total_output=10,time_remaining=1.5),'SolixStatus')
+    assert data['charge_remaining_hours']==1.5 and data['runtime_hours'] is None
+    assert data['charge_complete_at']==6400
+    for remaining in [6553.5,-1,math.nan,math.inf,0]:
+        data=normalize(solix(time_remaining=remaining),'SolixStatus')
+        assert data['runtime_hours'] is None and data['charge_remaining_hours'] is None
+
+
+def test_solix_is_independent_and_never_replaces_battery_or_driver():
+    store=BatteryStore()
+    store.ingest('/battery_state','BatteryState',standard(percentage=.75),0)
+    store.ingest('/roboteq/status','RoboteqStatus',motor(),0)
+    store.ingest('/sirius/battery_status','SolixStatus',solix(battery_level=100),1)
+    data=store.snapshot(2)
+    assert data['source_type']=='BatteryState' and data['battery']['percentage']==75
+    assert data['details']['percentage']==100 and data['driver']['emergency_stop'] is True
+    store.ingest('/battery_state','BatteryState',standard(percentage=.74),7)
+    data=store.snapshot(7)
+    assert data['battery']['state']=='live' and data['details']['state']=='stale'
+
+
+def test_bad_json_and_non_finite_fields_do_not_break_shared_receiver():
+    store=BatteryStore()
+    for raw in ['{','[]','null']:
+        store.ingest('/sirius/battery_status','SolixStatus',Message(data=raw),0)
+        assert store.snapshot(0)['details']['state']!='live'
+    store.ingest('/sirius/battery_status','SolixStatus',solix(total_output=math.inf,temperature=math.nan),0)
+    json.dumps(store.snapshot(0),allow_nan=False)
+    assert store.snapshot(0)['details']['output_power'] is None
+
+
+def test_string_discovery_only_subscribes_to_battery_status():
+    assert BatteryReceiver.message_type('/sirius/battery_status',['std_msgs/msg/String'])=='std_msgs/msg/String'
+    assert BatteryReceiver.message_type('/robot/sirius/battery_status',['std_msgs/msg/String'])=='std_msgs/msg/String'
+    assert BatteryReceiver.message_type('/llm_instruction',['std_msgs/msg/String']) is None
+    assert BatteryReceiver.message_type('/sirius/battery_status/other',['std_msgs/msg/String']) is None
+
+
 def test_battery_api_auth_and_dead_receiver_is_never_live(monkeypatch):
     web=importlib.import_module('web_server')
     class Monitor:
-        cached={'state':'live','voltage':24.2,'battery':{'state':'live'},'driver':{'state':'live'}}
+        cached={'state':'live','voltage':24.2,'battery':{'state':'live'},'driver':{'state':'live'},'details':{'state':'live'}}
         def snapshot(self,domain):
             return {'available':False,'domain':domain,'error':'receiver stopped',
                     'battery':self.cached}
@@ -113,3 +161,4 @@ def test_battery_api_auth_and_dead_receiver_is_never_live(monkeypatch):
     assert result.json['domain']=='53' and result.headers['Cache-Control']=='no-store'
     assert result.json['battery']['state']==result.json['driver']['state']=='receiver_error'
     assert Monitor.cached['battery']['state']==Monitor.cached['driver']['state']=='live'
+    assert result.json['details']['state']=='receiver_error' and Monitor.cached['details']['state']=='live'
