@@ -7,18 +7,13 @@
 .rail .brand:hover {background:var(--panel-2)}
 .sirius-icon {display:block;object-fit:contain;flex-shrink:0}
 .brand>.sirius-icon {width:64px;height:64px}
-.app-name {display:flex;align-items:center;gap:8px;white-space:nowrap}
-.app-name>.sirius-icon {width:42px;height:42px}
-.sirius-wordmark {font-size:19px;letter-spacing:-.6px}
-.sirius-wordmark>span {font-weight:450;color:var(--muted)}
+.app-name {display:flex;align-items:center;white-space:nowrap}
+.sirius-title-logo {display:block;width:160px;height:auto;max-height:64px;object-fit:contain}
 @media(min-width:621px) and (max-width:1100px) {
   .rail .brand,:root[data-theme="light"] .rail .brand {width:52px;height:52px;margin-top:17px;margin-bottom:25px}
   .brand>.sirius-icon {width:52px;height:52px}
-  .sirius-wordmark {font-size:16px}
-  .app-name>.sirius-icon {width:36px;height:36px}
+  .sirius-title-logo {width:128px;max-height:52px}
 }
 @media(max-width:620px) {
-  .app-name {gap:0}
-  .app-name>.sirius-icon {width:44px;height:44px}
-  .sirius-wordmark {display:none}
+  .sirius-title-logo {width:clamp(88px,28vw,128px);max-height:52px}
 }
