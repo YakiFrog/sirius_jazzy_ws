@@ -12,14 +12,16 @@
     <div class="battery-values">
       <section id="battery-soc-card"><small>本体の残量</small><strong id="battery-percentage">— %</strong><div class="battery-meter"><i id="battery-percentage-bar"></i></div></section>
       <section id="battery-voltage-card"><small>Roboteq 駆動電圧</small><strong id="battery-voltage">— V</strong></section>
+      <section id="battery-input-card"><small>Anker 入力合計</small><strong id="battery-power-input">— W</strong></section>
+      <section id="battery-output-card"><small>Anker 出力合計</small><strong id="battery-power-output">— W</strong></section>
     </div>
+    <div class="battery-details-grid">
     <section class="battery-source-group" id="battery-body-group">
       <div class="battery-source-heading"><h3>バッテリー本体</h3><span id="battery-body-state">未取得</span></div>
       <dl class="battery-facts"><dt>本体温度</dt><dd id="battery-temperature">— °C</dd><dt>充放電状態</dt><dd id="battery-charging">未取得</dd><dt>最終受信</dt><dd id="battery-age">未取得</dd><dt>取得元</dt><dd id="battery-source">未取得</dd></dl>
     </section>
     <section class="battery-source-group" id="battery-power-group">
       <div class="battery-source-heading"><h3>Anker 入出力・残り時間</h3><span id="battery-power-state">未取得</span></div>
-      <div class="battery-power-totals"><section><small>入力合計</small><strong id="battery-power-input">— W</strong></section><section><small>出力合計</small><strong id="battery-power-output">— W</strong></section></div>
       <dl class="battery-facts"><dt>推定稼働時間</dt><dd id="battery-runtime">未取得</dd><dt>充電完了まで</dt><dd id="battery-charge-time">—</dd><dt>充電完了予定</dt><dd id="battery-charge-at">—</dd></dl>
       <p class="battery-port-caption">ポート別電力（瞬時値）</p><dl class="battery-ports">
         <div><dt>AC入力</dt><dd id="battery-port-ac_input">— W</dd></div><div><dt>ソーラー入力</dt><dd id="battery-port-solar_input">— W</dd></div>
@@ -33,6 +35,7 @@
       <div class="battery-source-heading"><h3>Roboteq モータードライバー</h3><span id="battery-driver-state">未取得</span></div>
       <dl class="battery-facts"><dt>MD電源電流</dt><dd id="battery-current">— A</dd><dt>MD温度</dt><dd id="battery-driver-temperature">— °C</dd><dt>MD内部電圧</dt><dd id="battery-internal">— V</dd><dt>非常停止</dt><dd id="battery-estop">未取得</dd><dt>ドライバー通知</dt><dd id="battery-faults">未取得</dd><dt>最終受信</dt><dd id="battery-driver-age">未取得</dd><dt>取得元</dt><dd id="battery-driver-source">未取得</dd></dl>
     </section>
+    </div>
     <p class="battery-help" id="battery-help"></p>`;
   document.body.append(dialog);toggle.onclick=()=>{dialog.showModal();document.getElementById('battery-close').focus();};
   document.getElementById('battery-close').onclick=()=>dialog.close();dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
@@ -77,6 +80,7 @@
     text('battery-driver-temperature',fmt(driver.temperature,'°C'));text('battery-internal',fmt(driver.internal_voltage,'V'));
     document.getElementById('battery-percentage-bar').style.width=Number.isFinite(battery.percentage)?Math.min(100,Math.max(0,battery.percentage))+'%':'0';
     text('battery-power-input',watt(details.input_power));text('battery-power-output',watt(details.output_power));
+    for(const id of ['battery-input-card','battery-output-card'])document.getElementById(id).classList.toggle('is-stale',details.state!=='live');
     const unknownFlow=!['charging','discharging','idle'].includes(details.time_remaining_kind);
     text('battery-runtime',details.time_remaining_kind==='discharging'?duration(details.runtime_hours):unknownFlow?'未取得':'—');
     text('battery-charge-time',details.time_remaining_kind==='charging'?duration(details.charge_remaining_hours):unknownFlow?'未取得':'—');

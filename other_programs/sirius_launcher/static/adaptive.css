@@ -1,0 +1,111 @@
+/* Light surfaces use dark ink, including secondary labels and state colors. */
+:root[data-theme="light"] {
+  --bg:#f3f6fb;
+  --panel:#ffffff;
+  --panel-2:#edf2f8;
+  --rail:#ffffff;
+  --line:#cbd5e1;
+  --text:#18263b;
+  --muted:#4d5e75;
+  --faint:#5d6d82;
+  --accent:#354fc1;
+  --accent-bg:#e8edff;
+  --mint:#0b7256;
+  --red:#ac2d43;
+  --amber:#855100;
+  --run:#0c7951;
+  --run-ink:#ffffff;
+  --run-soft:#e5f5ed;
+  --shadow:0 18px 64px #24365024;
+  color-scheme:light;
+}
+:root[data-theme="light"] .rail {border-color:var(--line)}
+:root[data-theme="light"] .brand {background:#3d5fcb;box-shadow:none}
+:root[data-theme="light"] .nav-item {color:var(--muted)}
+:root[data-theme="light"] .nav-item:hover {color:var(--text);background:var(--panel-2)}
+:root[data-theme="light"] .nav-item.active {color:var(--accent);background:var(--accent-bg)}
+:root[data-theme="light"] .nav-item.active:before {background:var(--accent)}
+:root[data-theme="light"] .rail-version {color:var(--faint)}
+:root[data-theme="light"] .badge {background:#fbe7eb;color:#94263b}
+:root[data-theme="light"] .tab-run {background:#b82c43;color:#fff}
+:root[data-theme="light"] .btn.run {background:#f0faf5;border-color:#73aa91}
+:root[data-theme="light"] .btn.run .program-action {background:#ffedf0;color:#97243a;border-color:#dca0ad}
+:root[data-theme="light"] .btn.run .program-action:hover {background:#fbdfe5;color:#7a1c30;filter:none}
+:root[data-theme="light"] .btn.err {background:#fff2f4;border-color:#ce8a99}
+:root[data-theme="light"] .btn.err .st {background:#fce0e7;color:#8e1e35}
+:root[data-theme="light"] .danger,
+:root[data-theme="light"] .xbtn {background:#ffedf0;color:#97243a;border-color:#dca0ad}
+:root[data-theme="light"] .xbtn.gray {background:var(--panel-2);color:var(--muted)}
+:root[data-theme="light"] .hbtn.on {background:var(--accent-bg);color:var(--accent);border-color:#9caee5}
+/* Legacy ID rules and autocomplete labels need explicit theme colors. */
+:root[data-theme="light"] #cmdin,
+:root[data-theme="light"] .prow input {background:var(--panel);color:var(--text);border-color:var(--line)}
+:root[data-theme="light"] #cmdin:focus {border-color:var(--accent)}
+:root[data-theme="light"] .si .nm {color:var(--text)}
+:root[data-theme="light"] .si {border-color:var(--line)}
+:root[data-theme="light"] #toast.bad {background:#ffedf0;color:#97243a;border-color:#dca0ad}
+:root[data-theme="light"] #errcnt {color:var(--red)}
+:root[data-theme="light"] .proc .r .p,
+:root[data-theme="light"] .teleop .thint,
+:root[data-theme="light"] .teleop .tchk {color:var(--muted)}
+:root[data-theme="light"] .teleop .tk.on {background:var(--accent);color:#fff}
+:root[data-theme="light"] .teleop .tk.stop {background:#ffedf0;color:#97243a;border-color:#dca0ad}
+:root[data-theme="light"] .teleop .tk.stop.on {background:#ac2d43;color:#fff}
+/* Terminal and log palettes follow the selected theme as well. */
+:root[data-theme="light"] .terminal-workspace,
+:root[data-theme="light"] .term #termout,
+:root[data-theme="light"] .log #logout {background:#f8faff;color:var(--text)}
+:root[data-theme="light"] .term .tbar,
+:root[data-theme="light"] .term .tin {background:var(--panel-2);border-color:var(--line)}
+:root[data-theme="light"] .ttab {color:var(--muted)}
+:root[data-theme="light"] .ttab.active {background:var(--accent-bg);color:var(--accent)}
+:root[data-theme="light"] .ttab .x {color:var(--red)}
+:root[data-theme="light"] .tbar .hbtn {background:var(--panel);color:var(--text);border-color:var(--line)}
+:root[data-theme="light"] .term .tin input {background:var(--panel);color:var(--text);border-color:var(--line)}
+:root[data-theme="light"] .tstate {color:var(--muted)}
+:root[data-theme="light"] .tstate.ok {color:var(--mint)}
+:root[data-theme="light"] .tstate.warn {color:var(--amber)}
+:root[data-theme="light"] .lv-error {color:#9b223b;background:#fbe3e9}
+:root[data-theme="light"] .lv-warn {color:#795000;background:#fff0cc}
+:root[data-theme="light"] .lv-info {color:#19528d;background:#e2eeff}
+:root[data-theme="light"] .lv-debug {color:#52647b}
+/* Status text stays readable when its last received value is stale. */
+:root[data-theme="light"] .battery-source-group.is-stale dl,
+:root[data-theme="light"] .battery-values section.is-stale,
+:root[data-theme="light"] .battery-source-group.is-stale .battery-power-totals,
+:root[data-theme="light"] .battery-source-group.is-stale .battery-ports {opacity:1}
+:root[data-theme="light"] .battery-values section.is-stale {border-style:dashed}
+/* A bottom navigation bar leaves the full phone width available for content. */
+@media(max-width:620px) {
+  :root {--mobile-nav-height:calc(64px + env(safe-area-inset-bottom,0px))}
+  .rail {
+    inset:auto 0 0;
+    width:auto;
+    height:var(--mobile-nav-height);
+    padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px));
+    flex-direction:row;
+    border-right:0;
+    border-top:1px solid var(--line);
+  }
+  .rail>.brand,.rail-version {display:none}
+  .rail-nav {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;flex:1;min-width:0;height:56px}
+  .rail .nav-item {width:100%;height:52px;min-width:0;gap:4px;border-radius:9px;font-size:9px}
+  .rail .nav-item svg {width:20px;height:20px}
+  .rail .nav-item.active:before {top:-3px;left:calc(50% - 10px);width:20px;height:3px;border-radius:0 0 3px 3px}
+  .rail-bottom {margin:0;padding:0;gap:0;flex:0 0 44px}
+  .rail-bottom .nav-item {width:44px}
+  .app-shell {margin-left:0;height:calc(100dvh - var(--mobile-nav-height))}
+  .appbar {height:60px;min-height:60px;padding:0 14px;gap:10px}
+  .top-status {gap:8px;min-width:0}
+  .page-identity {gap:8px;min-width:0}
+  .app-divider,#page-label {display:none}
+  .connection {gap:0;flex-shrink:0}
+  .connection>span {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .domain-pill {padding:6px;font-size:8px}
+  .battery-chip {min-height:40px}
+  .appbar-icon {min-width:32px;min-height:40px}
+  .page {padding:18px 14px 24px}
+  .home-main {padding-right:0}
+  .log {inset:66px 10px calc(var(--mobile-nav-height) + 10px) 10px}
+  #toast {bottom:calc(var(--mobile-nav-height) + 12px)}
+}
