@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "SiriusLauncher",
+  "short_name": "SiriusLauncher",
+  "description": "Siriusのプログラム起動・状態確認・3D表示コンソール",
+  "lang": "ja",
+  "start_url": "/#home",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101216",
+  "theme_color": "#101216",
+  "prefer_related_applications": false,
+  "icons": [
+    {"src": "/static/branding/sirius-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any"}
+  ]
+}
