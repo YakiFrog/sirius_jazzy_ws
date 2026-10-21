@@ -3,13 +3,24 @@ set -euo pipefail
 
 choice="${1:-}"
 battery_mac=""
+enable_remote=true
+enable_ear=true
+enable_face=true
+enable_speech=true
+if [[ "${2:-}" == "--battery-only" ]]; then
+  enable_remote=false
+  enable_ear=false
+  enable_face=false
+  enable_speech=false
+fi
 
 if [[ -z "${choice}" ]]; then
   echo "バッテリーの接続先を選んでください:"
   echo "  1) 1台目 (7E:97:24)"
   echo "  2) 2台目 (57:90:E8)"
+  echo "  3) 3台目・実機用 (76:E9:58)"
   echo "  0) バッテリーなし (RemoteController + Ear LED)"
-  read -r -p "選択 [0-2] > " choice
+  read -r -p "選択 [0-3] > " choice
 fi
 
 case "${choice}" in
@@ -18,6 +29,9 @@ case "${choice}" in
     ;;
   2|"2台目"|"battery2")
     battery_mac="F4:9D:8A:57:90:E8"
+    ;;
+  3|"3台目"|"battery3")
+    battery_mac="7C:E9:13:76:E9:58"
     ;;
   0|"")
     battery_mac=""
@@ -38,14 +52,20 @@ source install/setup.bash
 set -u
 
 if [[ -n "${battery_mac}" ]]; then
-  echo "BLE管理ノード起動: RemoteController + Battery(${battery_mac}) + Ear LED"
+  battery_plaintext=false
+  case "${battery_mac^^}" in
+    F4:9D:8A:7E:97:24|F4:9D:8A:57:90:E8) battery_plaintext=true ;;
+  esac
+  echo "BLE管理ノード起動: Battery(${battery_mac}), RemoteController=${enable_remote}, Ear LED=${enable_ear}"
   ros2 launch sirius_navigation sirius_ble_gateway.launch.py \
-    enable_remote_server:=true \
+    enable_remote_server:="${enable_remote}" \
     enable_battery_client:=true \
-    enable_ear_led_client:=true \
+    enable_ear_led_client:="${enable_ear}" \
     battery_mac:="${battery_mac}" \
-    battery_scan_before_connect:=false \
-    publish_face_battery_params:=true
+    battery_plaintext:="${battery_plaintext}" \
+    battery_scan_before_connect:=true \
+    publish_face_battery_params:="${enable_face}" \
+    enable_battery_speech:="${enable_speech}"
 else
   echo "BLE管理ノード起動: RemoteController + Ear LED"
   ros2 launch sirius_navigation sirius_ble_gateway.launch.py \

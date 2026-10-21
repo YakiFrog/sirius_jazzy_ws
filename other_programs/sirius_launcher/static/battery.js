@@ -15,6 +15,8 @@
   const fmt=(v,unit,decimals=1)=>Number.isFinite(v)?v.toFixed(decimals)+' '+unit:'— '+unit;
   function render(data){
     last=data;const live=data.state==='live';let status=labels[data.state]||'受信中';
+    document.querySelector('.battery-chip-label').textContent=data.source_type==='RoboteqStatus'?'MD電源':'バッテリー';
+    document.getElementById('battery-title').textContent=data.source_type==='RoboteqStatus'?'MDの駆動電源':'バッテリー';
     if(live&&data.emergency_stop===true)status='非常停止中';else if(live&&data.fault_flags>0)status='ドライバー通知';else if(live&&data.charging)status=data.charging;
     const value=Number.isFinite(data.percentage)?fmt(data.percentage,'%',0):Number.isFinite(data.voltage)?fmt(data.voltage,'V'):'—';
     document.getElementById('battery-chip-value').textContent=value;document.getElementById('battery-chip-status').textContent=status;

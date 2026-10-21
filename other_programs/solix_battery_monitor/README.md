@@ -38,6 +38,14 @@ Found 1 Solix device(s):
 #### 研究室で所有している C300 デバイスの MAC アドレス一覧
 - **1台目のバッテリー**: `F4:9D:8A:7E:97:24`
 - **2台目のバッテリー**: `F4:9D:8A:57:90:E8`
+- **3台目・実機用のバッテリー**: `7C:E9:13:76:E9:58`（2026-10-21、AC/DC出力ONを実機で確認）
+
+ROS配信には `sirius_ble_gateway` の接続先「3台目」を使用します。
+シェルからは `sirius_ble_gateway 3`、GUIでは「3台目・実機用」を選択します。
+`/battery_state` と `/sirius/battery_status` に配信されます。
+LauncherWebの `sirius_ble_battery` は、この実機用バッテリーの監視のみを起動します。
+3台目は `battery_plaintext:=false` で暗号化通信を使用し、従来の1・2台目は
+`battery_plaintext:=true` で既存の平文互換処理を使用します。
 
 ### 3. 一度だけステータスを表示して終了する (Single-Shot)
 ```bash

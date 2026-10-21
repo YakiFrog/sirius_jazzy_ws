@@ -175,6 +175,8 @@ alias status_monitor_win='src && xterm -hold -T "Sirius Status Monitor" -geometr
 
 # BLE管理ノード起動（リモコン移動には LLM Dynamic Goal の起動が必要）
 alias sirius_ble_gateway='bash ~/sirius_jazzy_ws/bash/startup_bash/sirius_ble_gateway.sh'
+# 実機Anker C300の残量監視（BLE Gatewayのバッテリー機能のみ）
+alias sirius_ble_battery='bash ~/sirius_jazzy_ws/bash/startup_bash/sirius_ble_gateway.sh 3 --battery-only'
 # リモコン接続画面（移動操作には先に LLM Dynamic Goal / llm_goal の起動が必要）
 alias sirius_ble_gateway_ui='bash ~/sirius_jazzy_ws/bash/startup_bash/sirius_ble_gateway_ui.sh'
 
