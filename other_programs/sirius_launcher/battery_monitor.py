@@ -13,7 +13,7 @@ def number(value, low=None, high=None):
 
 def normalize(message, kind):
     voltage = number(getattr(message, 'voltage', None), low=0)
-    if voltage == 0: voltage = None
+    if voltage == 0 and kind == 'BatteryState': voltage = None
     common = {'voltage': voltage, 'percentage': None, 'current': None,
               'temperature': None, 'internal_voltage': None, 'fault_flags': None,
               'emergency_stop': None, 'charging': None, 'present': True,
@@ -36,9 +36,6 @@ def normalize(message, kind):
                       fault_flags=flags, emergency_stop=None if flags is None else bool(flags & 16),
                       temperature=number(getattr(message, 'temperature', None)),
                       current=sum(currents) if all(v is not None for v in currents) else None)
-        if voltage is None:
-            for key in ('current','temperature','internal_voltage','fault_flags','emergency_stop'):
-                common[key] = None
     else: raise ValueError('Unsupported robot battery message')
     return common
 
@@ -61,17 +58,26 @@ class BatteryStore:
                'emergency_stop':None,'charging':None,'topic':None,'source_type':None,
                'age_seconds':None,'stale_after_seconds':self.stale_after,
                'sources':self.sources,'errors':self.errors}
-        if not self.records:return empty
+        def valid(record):
+            fields=('voltage','percentage') if record['source_type']=='BatteryState' else (
+                'voltage','current','internal_voltage','fault_flags')
+            return record['present'] and any(record.get(key) is not None for key in fields)
         def rank(record):
-            valid=record['present'] and (record['voltage'] is not None or record['percentage'] is not None)
+            usable=valid(record)
             fresh=now-record['received']<=self.stale_after
-            return (fresh and valid, fresh, valid, record['source_type']=='BatteryState', record['received'])
-        record=max(self.records.values(),key=rank)
-        data={k:v for k,v in record.items() if k!='received'}
-        age=max(0,now-record['received'])
-        state=('stale' if age>self.stale_after else 'absent' if not record['present'] else
-               'live' if record['voltage'] is not None or record['percentage'] is not None else 'invalid')
-        return {**empty,**data,'state':state,'age_seconds':age}
+            return (fresh and usable, fresh, usable, record['source_type']=='BatteryState', record['received'])
+        def select(records):
+            if not records:return dict(empty)
+            record=max(records,key=rank)
+            data={k:v for k,v in record.items() if k!='received'}
+            age=max(0,now-record['received'])
+            state=('stale' if age>self.stale_after else 'absent' if not record['present'] else
+                   'live' if valid(record) else 'invalid')
+            return {**empty,**data,'state':state,'age_seconds':age}
+        records=list(self.records.values())
+        return {**select(records),
+                'battery':select([r for r in records if r['source_type']=='BatteryState']),
+                'driver':select([r for r in records if r['source_type']=='RoboteqStatus'])}
 
 
 class BatteryReceiver:

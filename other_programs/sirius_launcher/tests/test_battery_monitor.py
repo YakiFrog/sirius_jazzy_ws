@@ -15,8 +15,8 @@ def standard(**values):
 
 
 def motor(**values):
-    return Message(voltage=values.get('voltage',5.8),voltage_internal=13.8,
-                   battery_current_ch1=-.1,battery_current_ch2=-.1,temperature=32,
+    return Message(voltage=values.get('voltage',5.8),voltage_internal=values.get('internal',13.8),
+                   battery_current_ch1=values.get('current',-.1),battery_current_ch2=values.get('current',-.1),temperature=32,
                    fault_flags=values.get('flags',16))
 
 
@@ -40,7 +40,7 @@ def test_standard_percentage_nan_invalid_and_zero_percent():
 def test_missing_invalid_stale_and_reconnect_states():
     store=BatteryStore()
     assert store.snapshot(0)['state']=='waiting'
-    store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=0),0)
+    store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=math.nan,internal=math.nan,current=math.nan,flags=None),0)
     data=store.snapshot(1)
     assert data['state']=='invalid' and data['voltage'] is None and data['current'] is None
     store.ingest('/roboteq/status','RoboteqStatus',motor(),2)
@@ -64,12 +64,46 @@ def test_source_priority_falls_back_to_fresh_driver():
     assert single.snapshot(0)['state']=='absent'
 
 
+def test_battery_and_driver_keep_separate_measurements_and_freshness():
+    store=BatteryStore()
+    store.ingest('/battery_state','BatteryState',standard(percentage=1,voltage=math.nan,current=math.nan),0)
+    store.ingest('/roboteq/status','RoboteqStatus',motor(),1)
+    data=store.snapshot(2)
+    assert data['battery']['percentage']==100 and data['battery']['voltage'] is None
+    assert data['driver']['voltage']==5.8 and data['driver']['internal_voltage']==13.8
+    assert data['driver']['emergency_stop'] is True
+    store.ingest('/roboteq/status','RoboteqStatus',motor(flags=0),6)
+    data=store.snapshot(6)
+    assert data['battery']['state']=='stale' and data['driver']['state']=='live'
+    assert data['battery']['percentage']==100 and data['driver']['emergency_stop'] is False
+    store.ingest('/battery_state','BatteryState',standard(percentage=.98),12)
+    data=store.snapshot(12)
+    assert data['battery']['state']=='live' and data['driver']['state']=='stale'
+
+
+def test_zero_or_missing_drive_voltage_does_not_hide_estop():
+    store=BatteryStore()
+    for voltage in (0,math.nan):
+        store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=voltage),0)
+        driver=store.snapshot(0)['driver']
+        assert driver['state']=='live' and driver['emergency_stop'] is True
+        assert driver['internal_voltage']==13.8
+    store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=0),1)
+    assert store.snapshot(1)['driver']['voltage']==0
+
+
+def test_both_sources_remain_visible_before_first_message():
+    data=BatteryStore().snapshot(0)
+    assert data['battery']['state']==data['driver']['state']=='waiting'
+
+
 def test_battery_api_auth_and_dead_receiver_is_never_live(monkeypatch):
     web=importlib.import_module('web_server')
     class Monitor:
+        cached={'state':'live','voltage':24.2,'battery':{'state':'live'},'driver':{'state':'live'}}
         def snapshot(self,domain):
             return {'available':False,'domain':domain,'error':'receiver stopped',
-                    'battery':{'state':'live','voltage':24.2}}
+                    'battery':self.cached}
     monkeypatch.setattr(web,'TF_MONITOR',Monitor());monkeypatch.setattr(web,'PASSWORD','test')
     monkeypatch.setattr(web,'DEFAULT_DOMAIN','53')
     client=web.app.test_client()
@@ -77,3 +111,5 @@ def test_battery_api_auth_and_dead_receiver_is_never_live(monkeypatch):
     client.set_cookie('pw','test');result=client.get('/api/battery')
     assert result.json['state']=='receiver_error' and result.json['voltage']==24.2
     assert result.json['domain']=='53' and result.headers['Cache-Control']=='no-store'
+    assert result.json['battery']['state']==result.json['driver']['state']=='receiver_error'
+    assert Monitor.cached['battery']['state']==Monitor.cached['driver']['state']=='live'
