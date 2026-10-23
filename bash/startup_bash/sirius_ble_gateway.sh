@@ -4,10 +4,10 @@ set -euo pipefail
 choice="${1:-}"
 battery_mac=""
 enable_remote=false
-enable_ear=false
+enable_ear=true
 enable_face=true
 enable_speech=true
-# Battery monitoring is the default. Enable optional BLE peers explicitly.
+# Battery and ear LEDs are enabled by default; remote BLE requires --remote.
 for option in "${@:2}"; do
   case "${option}" in
     --remote) enable_remote=true ;;
