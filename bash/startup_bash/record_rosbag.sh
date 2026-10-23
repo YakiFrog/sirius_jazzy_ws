@@ -1,7 +1,12 @@
 #!/bin/bash
-# 軽量版ROS2 bag記録スクリプト
+# 自律移動用ROS2 bag記録（FAST-LIO結果・TF・SAM3地図とコストマップ）
 # 使い方: ./record_rosbag.sh
 #         ファイル名を入力して記録開始
+
+WS="$HOME/sirius_jazzy_ws"
+SUPPORT="$WS/bash/startup_bash/navigation_recording.py"
+mapfile -t TOPICS < <(python3 "$SUPPORT" --topics)
+if [ "${#TOPICS[@]}" -eq 0 ]; then echo "記録トピックを取得できません" >&2; exit 1; fi
 
 ROSBAG_PID=""
 CURRENT_BAG_PATH=""
@@ -21,6 +26,18 @@ show_result() {
         return
     fi
     RESULT_SHOWN=true
+    if [ -n "${METADATA_PID:-}" ]; then
+        for child in $(jobs -pr); do
+            if [ "$child" = "$METADATA_PID" ]; then kill -TERM "$child" 2>/dev/null || true; fi
+        done
+    fi
+    if [ ! -f "$CURRENT_BAG_PATH/metadata.yaml" ]; then
+        echo "記録を確定できませんでした。保存先に metadata.yaml がありません。"
+        return 1
+    fi
+    if [ -d "$CURRENT_BAG_PATH" ]; then
+        python3 "$SUPPORT" --capture "$CURRENT_BAG_PATH.capture/finish" --workspace "$WS"
+    fi
     
     echo ""
     echo "========================================="
@@ -55,30 +72,14 @@ show_result() {
 # ファイル名を入力
 input_filename() {
     echo "========================================="
-    echo "  軽量版 ROS2 bag 記録"
+    echo "  自律移動用 ROS2 bag 記録"
     echo "========================================="
     echo ""
     echo "保存先: $ROSBAG_DIR"
     echo ""
-    echo "記録対象トピック:"
-    echo "  - /scan3 (2D LiDAR)"
-    echo "  - /odom, /odom/filtered (オドメトリ)"
-    echo "  - /imu, /magnetometer (IMU)"
-    echo "  - /tf, /tf_static (座標変換)"
-    echo "  - /cmd_vel, /cmd_vel_nav (速度指令)"
-    echo "  - /amcl_pose, /initialpose (位置推定)"
-    echo "  - /map, /plan, /optimal_trajectory (地図・経路)"
-    echo "  - /blinker_led_command (ウインカー)"
-    echo "  - /npc/odom (NPC Odometry)"
-    echo "  - /target_detector/target_markers, /target_follower/status"
-    echo "  - /robot_path"
-    echo "  - /robot_path_marker"
-    echo "  - /llm_instruction, /sirius/command_queue, /sirius/landmark_status, /sirius/landmark_markers"
-    echo "  - /nav_control, /stop, /sirius/battery_status"
-    echo "  - /cmd_vel_teleop"
-    echo "  - /sam3/static_texture_map_cloud, /sam3/static_colored_map_cloud (静的カラー地図・各1回)"
-    echo "  - /global_costmap/costmap, /local_costmap/costmap, /local_costmap/published_footprint (コストマップ・フットプリント)"
-    echo ""
+    python3 "$SUPPORT" --check
+    echo "静的地図・TFは保持済みデータも受信する設定です。"
+    echo "使用中の地図ファイルと設定は .capture フォルダにも保存します。"
     echo "※ /velodyne_points (3D点群) は除外されます"
     echo ""
     echo "========================================="
@@ -130,48 +131,20 @@ start_recording() {
     echo ""
     
     # 録画開始の瞬間にのみ実験メタデータを1回パブリッシュ
-    ros2 topic pub --once /experiment_metadata std_msgs/msg/String "data: '$experiment_memo'" >/dev/null 2>&1 &
+    memo_payload=$(python3 -c 'import json,sys; print(json.dumps({"data":sys.argv[1]}))' "$experiment_memo")
+    ros2 topic pub --once /experiment_metadata std_msgs/msg/String "$memo_payload" >/dev/null 2>&1 &
 
-    ros2 bag record -o "$CURRENT_BAG_PATH" \
-        /experiment_metadata \
-        /scan3 \
-        /odom \
-        /odom/filtered \
-        /imu \
-        /magnetometer \
-        /tf \
-        /tf_static \
-        /cmd_vel \
-        /cmd_vel_nav \
-        /amcl_pose \
-        /initialpose \
-        /map \
-        /plan \
-        /optimal_trajectory \
-        /global_costmap/costmap \
-        /local_costmap/costmap \
-        /local_costmap/published_footprint \
-        /roboteq/odom \
-        /roboteq/status \
-        /blinker_led_command \
-        /npc/odom \
-        /target_detector/target_markers \
-        /robot_path \
-        /robot_path_marker \
-        /llm_instruction \
-        /sirius/command_queue \
-        /sirius/landmark_status \
-        /sirius/landmark_markers \
-        /nav_control \
-        /stop \
-        /sirius/battery_status \
-        /cmd_vel_teleop \
-        /sam3/static_texture_map_cloud \
-        /sam3/static_colored_map_cloud \
-        /joint_states &
+    METADATA_PID=$!
+
+    ros2 bag record -s mcap --storage-preset-profile zstd_fast \
+        --qos-profile-overrides-path "$WS/params/rosbag_navigation_qos.yaml" \
+        --include-hidden-topics -o "$CURRENT_BAG_PATH" --topics "${TOPICS[@]}" &
     
     ROSBAG_PID=$!
-    wait $ROSBAG_PID
+    python3 "$SUPPORT" --capture "$CURRENT_BAG_PATH.capture/start" --workspace "$WS"
+    printf '%s\n' "$experiment_memo" > "$CURRENT_BAG_PATH.capture/experiment_memo.txt"
+    wait "$ROSBAG_PID"
+    ROSBAG_PID=""
     
     show_result
 }

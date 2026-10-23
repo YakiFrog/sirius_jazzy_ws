@@ -11,8 +11,9 @@ function updateTFHealth(data){
     panel.hidden=true;return;
   }
   const conflicts=data.conflicts||[],cycles=data.cycles||[],frames=new Set([...conflicts,...cycles]);
-  badge.hidden=!frames.size;badge.textContent=frames.size>99?'99+':String(frames.size);badge.dataset.state='error';
-  nav.title=frames.size?'TF Tree · 構成エラー '+frames.size+'フレーム（競合・循環）':'TF Tree';nav.setAttribute('aria-label',nav.title);
+  const ready=data.readiness&&data.readiness.state==='ok';
+  badge.hidden=!frames.size&&!ready;badge.textContent=ready?'✓':frames.size>99?'99+':String(frames.size);badge.dataset.state=ready?'ok':'error';
+  nav.title=ready?'TF Tree · '+(data.readiness.summary||'シリウス準備OK'):frames.size?'TF Tree · 構成エラー '+frames.size+'フレーム（競合・循環）':'TF Tree';nav.setAttribute('aria-label',nav.title);
   panel.hidden=!frames.size;
   const incoming=data.edges.filter(e=>conflicts.includes(e.child)&&!e.stale);
   const shape=JSON.stringify([conflicts,cycles,incoming.map(e=>[e.parent,e.child,e.publisher,e.static])]);
@@ -150,7 +151,7 @@ async function pollTF(){
     updateTFHealth(data);
     status.classList.toggle('stale',!data.available);
     status.textContent=data.available?'LIVE · '+new Date(data.timestamp*1000).toLocaleTimeString('ja-JP',{hour12:false}):data.error?'TF受信エラー':'TF受信を開始しています…';
-    if(data.available){if(document.body.dataset.page==='tf')renderTF(data);}
+    if(data.available){if((window.isPageVisible?isPageVisible('tf'):document.body.dataset.page==='tf'))renderTF(data);}
     else{const empty=document.getElementById('tf-empty');if(!TF_VIEW.data){empty.hidden=false;empty.textContent=data.error||'ROSのTFを受信しています…';}status.title=data.error||'';}
   }catch(error){updateTFHealth({available:false});status.classList.add('stale');status.textContent='接続を再試行しています';}
   finally{TF_VIEW.busy=false;}

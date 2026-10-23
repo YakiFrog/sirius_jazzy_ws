@@ -1,0 +1,88 @@
+<div class="guide-layout">
+<nav class="guide-toc surface" aria-label="ガイドの目次"><strong>目次</strong>
+<button data-guide-target="guide-start">01 はじめに・画面の見方</button><button data-guide-target="guide-programs">02 起動・停止・再起動</button><button data-guide-target="guide-terminal">03 ターミナルとログ</button><button data-guide-target="guide-teleop">04 テレオペ</button><button data-guide-target="guide-keys">05 ショートカット</button><button data-guide-target="guide-3d">06 3D表示と通信</button><button data-guide-target="guide-monitor">07 Monitor・TF・Topics</button><button data-guide-target="guide-battery">08 電源と緊急停止</button><button data-guide-target="guide-record">09 実験とROSBAG記録</button><button data-guide-target="guide-trouble">10 困ったとき</button>
+<button data-guide-target="guide-files">11 ファイル・お気に入り</button><button data-guide-target="guide-face">12 SiriusFace / Ear</button></nav>
+<div class="guide-main">
+<p class="guide-updated">操作仕様の確認日：2026年10月23日 · ロボットの状態は各画面で確認してください。</p>
+<section class="guide-section surface" id="guide-start" data-keywords="home 設定 スマホ モバイル リロード 更新 ロゴ fullscreen">
+<h2>はじめに・画面の見方</h2>
+<p>SiriusLauncherは、ロボットのプログラム起動、状態監視、可視化、手動操作をまとめたコンソールです。表示を開くだけではロボットの駆動操作は有効になりません。</p>
+<div class="guide-table-wrap"><table><thead><tr><th>画面</th><th>できること</th></tr></thead><tbody><tr><td>Home</td><td>プリセット・個別プログラムの起動、稼働状態、ログ</td></tr><tr><td>Terminal</td><td>シェルの操作、プログラムのログと入力</td></tr><tr><td>Monitor</td><td>CPU・メモリ・ディスク・ネットワーク・プロセス</td></tr><tr><td>3D</td><td>Lichtblickで地図・点群・TFを表示</td></tr><tr><td>TF Tree / Topics</td><td>座標系の構造、トピックの配信元・購読先・周期</td></tr><tr><td>設定</td><td>ROS Domain ID、配色、通信設定、共有リンク、システム操作</td></tr></tbody></table></div>
+<h3>自分のドキュメント・メモ</h3><p>Guide上部の「自分のメモ」から、実験手順をMarkdownで作成できます。「メモを作成」または「地図撮りのひな形」を使い、タイトルと本文を書いて「保存」を押します。保存済みのメモはプレビューで開き、変更するときは「編集する」を押します。編集とプレビューを切り替えられ、<code>.md</code>ファイルでも書き出せます。</p><p>保存したメモは同じLauncherに接続する端末で共有されます。入力中の下書きはその端末に保存します。別端末の編集と競合したときは入力を保持し、「複製」で別のメモとして保存できます。プログラムの起動操作はHomeで行います。</p>
+<h3>スマホ・画面の更新</h3><p>スマホは下部メニュー、PCは左側メニューで画面を切り替えます。<strong>上部左のSiriusLauncherロゴ</strong>はページ全体の再読み込み、右上の丸矢印は状態の更新です。全画面表示はメニューの「画面」または設定から切り替えます。</p>
+<p>ページの再読み込みで、ランチャー管理のセンサーやFAST-LIOを再起動することはありません。テレオペの操作は無効になり、3D表示は通信設定に従って読み込み直します。</p>
+</section>
+<section class="guide-section surface" id="guide-programs" data-keywords="home プリセット 起動 停止 再起動 エラー 一括復元">
+<h2>起動・停止・再起動</h2>
+<p>稼働中には各プロセスの稼働時間を時・分・秒で表示します。色とラベルはプログラムの所属タブに対応します。「起動セット」は現在のプロセスを起動・共有したクイックスタートです。複数ある場合はすべて表示します。起動履歴がないプロセスには、現在のプリセット設定から「所属セット」を表示します。</p>
+<p>プリセット編集ではプログラムを検索してチェックで追加し、矢印で起動順を変えられます。メモはクイックスタートとⓘに表示されます。ジャンル・表示の切り替えも設定できます。</p>
+<ol><li>Homeのクイックスタートから目的のプリセットを選ぶか、プログラムを検索します。</li><li>起動後は「稼働中」とログを確認します。プリセットは起動済みの項目をスキップします。</li><li>センサーや推定処理の準備は、Topicsの配信や3D表示でも確認します。</li></ol>
+<p>クイックスタートの「用途」で、地図生成・自律移動・自己位置推定などに絞り込めます。ボタン右側には用途名と情報ボタン「ⓘ」を表示します。「ⓘ」で起動するプログラム名・説明・起動順を確認でき、確認だけではプログラムを起動しません。「編集」で用途を「共通」にすると、どの用途で絞り込んでも表示されます。各セットの用途を自由入力でき、「表示」を外すと一覧から隠せます。非表示のセットも編集画面に残り、再び表示できます。保存した分類・表示設定はNUC上で共有され、選択中の用途は端末ごとに記憶します。見出しの矢印でクイックスタート全体を折りたたむこともできます。</p>
+<p>Homeの「稼働中」欄上部にある「すべて停止」「すべて再起動」で、表示対象のプログラムをまとめて操作できます。実行前に対象件数を確認します。一括再起動は設定の「前回の起動入力を復元」に従います。</p>
+<p>停止・再起動には確認メッセージが出ます。「再起動」は選んだプログラムを止めて起動し直す操作です。設定の「稼働中を一括再起動」は起動構成をまとめて再起動します。</p>
+<p>「前回の起動入力を復元」をオンにすると、記録済みのDomain IDと起動コマンドを再使用します。記録がない項目には現在の入力が使われます。</p>
+<div class="guide-note"><p><strong>「ログ異常なし」は、センサーのデータや自己位置推定の精度を保証する表示ではありません。</strong>過去のエラーと現在の状態は分けて表示されます。詳細はログ、Topics、TF Treeを確認してください。</p></div>
+<button class="text-button" data-guide-page="home">Homeを開く →</button>
+</section>
+<section class="guide-section surface" id="guide-terminal" data-keywords="terminal console シェル ctrl+c 割り込み ターミナル 閉じる ログ">
+<h2>ターミナルとログ</h2>
+<p>デスクトップではヘッダーの「▥ 画面を分割」から、Terminalと3Dなど2つの画面を左右・上下に並べられます。左の画面アイコンを表示領域の端へドラッグしても分割できます。中央の境界をドラッグすると幅・高さを調整できます。分割中は両画面の表示・更新を続けます。各画面の×かヘッダーの分割解除で1画面に戻ります。スマホや狭いウィンドウでは1画面表示です。</p>
+<p>タブまたは分割枠の見出しをドラッグし、別のコンソール枠の左・右・上・下へドロップすると分割します。中央へドロップすると移動・入れ替えになります。境界をドラッグすると幅や高さを調整できます。Terminalではテレオペを右側に常設します（狭い画面では下側）。テレオペにフォーカス中はQで電子停止ON、Eで解除確認です。コンソール入力中のQ/Eは通常の文字入力です。入力先はクリックした枠です。分割に含めた端末は、端末名をまとめた1つのグループタブになります。「分割解除」で個別のタブへ戻せます。上部タブは画面全体の切り替えです。別のタブを開いても元のタブの分割配置を保持し、戻ったときに復元します。分割内で入力先を変える場合は、そのコンソール枠をクリックしてください。「分割解除」で1画面に戻せます。枠の×は表示を閉じる操作で、シェルを終了する場合はタブの×を使います。</p>
+<p>Terminalには稼働中プロセスのコンソールタブが自動で並びます。画面をクリックして、通常の端末と同じように直接入力します。矢印キー・Tab補完・履歴・貼り付けに対応します。新しいシェルは「＋新規」から開けます。プログラムの「ログ」から、そのプロセスの出力と対話入力も確認できます。既存プロセスに入力端末がない場合はログ表示専用です。</p>
+<ul><li><kbd>Ctrl+C</kbd>または「Ctrl+C」ボタン：実行中のコマンドに割り込みを送信。文字を選択している場合はコピーを優先します。</li><li>ターミナルの「×」：確認後にそのシェルを終了し、実行中の子コマンドも終了します。</li><li>別タブへの移動やブラウザを閉じる操作だけでは、サーバー側のシェルを終了しません。</li><li>ERROR/FATAL・例外は赤、WARNは黄、INFOは青など、ログの種類で表示色を分けます。</li></ul>
+<button class="text-button" data-guide-page="terminal">Terminalを開く →</button>
+</section>
+<section class="guide-section surface" id="guide-teleop" data-keywords="cmd_vel ロボット操作 手動 速度 scn 移動 arrow comma period stop">
+<h2>テレオペ</h2>
+<ol><li>ヘッダーのテレオペボタン、または<kbd>Alt+T</kbd>で操作パネルを開きます。</li><li>ロボットの状態と表示される速度指令先を確認します。</li><li>「操作を有効にする」または<kbd>Alt+Enter</kbd>を押します。操作可能な間は縁が緑に光り、「キー操作 ON」を表示します。</li></ol>
+<div class="guide-table-wrap"><table><thead><tr><th>キー</th><th>操作</th></tr></thead><tbody><tr><td><kbd>↑</kbd> / <kbd>↓</kbd></td><td>並進の目標速度を ±0.1 m/s</td></tr><tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>旋回の目標速度を ±0.157 rad/s</td></tr><tr><td><kbd>,</kbd></td><td>並進の目標速度を0にする</td></tr><tr><td><kbd>.</kbd></td><td>旋回の目標速度を0にする</td></tr><tr><td><kbd>Space</kbd> / 全停止</td><td>並進・旋回を即時0にする（操作の有効状態を維持）</td></tr><tr><td><kbd>Alt+Enter</kbd></td><td>操作の有効／無効を切り替え</td></tr><tr><td><kbd>Esc</kbd></td><td>重ねて開いたテレオペを停止して閉じる</td></tr></tbody></table></div>
+<div class="guide-note"><p><strong>キーを離しても設定速度を維持します。</strong>1回押すごとに目標を変更し、押しっぱなしのキーリピートでは増やしません。<kbd>,</kbd>と<kbd>.</kbd>は減速して0へ近づけます。速度表示の下の「並進を0」「旋回を0」も使えます。即時停止は<kbd>Space</kbd>です。速度リセット・全停止の後も操作は有効なので、矢印キーでそのまま再開できます。</p></div>
+<p>タブ移動、画面・ウィンドウのフォーカス離脱、入力欄への移動、通信途絶では操作を無効にします。Lichtblick内にフォーカスがあると、その画面がキー入力を受け取るため、再度Launcherの操作パネルから有効にしてください。</p>
+<p>緊急停止中や状態を確認できない場合、操作ボタンもショートカットも有効にはできません。画面のキーはSCNと同じ加減速・速度上限を使います。3Dタブ内では境界をドラッグしてパネル幅を変更でき、調整開始時に操作を無効化します。</p>
+</section>
+<section class="guide-section surface" id="guide-keys" data-keywords="keyboard option alt ショートカット キー一覧 mac">
+<h2>ショートカット</h2><p><strong>MacではAltをOptionに置き換えてください。</strong>Altを押している間、メニューのアイコンに番号を表示します。埋め込みのLichtblick内にフォーカスがある場合は、Launcherのメニューボタンを使用してください。</p>
+<div class="guide-table-wrap"><table><thead><tr><th>キー</th><th>画面・操作</th></tr></thead><tbody><tr><td><kbd>Alt+1</kbd> / <kbd>Alt+2</kbd></td><td>Home / Terminal</td></tr><tr><td><kbd>Alt+3</kbd> / <kbd>Alt+4</kbd></td><td>Monitor / 3D</td></tr><tr><td><kbd>Alt+5</kbd> / <kbd>Alt+6</kbd></td><td>TF Tree / Topics</td></tr><tr><td><kbd>Alt+7</kbd> / <kbd>Alt+8</kbd></td><td>設定 / 操作ガイド</td></tr><tr><td><kbd>Alt+T</kbd></td><td>テレオペを開閉</td></tr><tr><td><kbd>Alt+Enter</kbd></td><td>テレオペの操作を有効／無効</td></tr></tbody></table></div>
+</section>
+<section class="guide-section surface" id="guide-3d" data-keywords="Lichtblick Foxglove pointcloud map initialpose データ使用量 wifi モバイル 通信停止 点群">
+<h2>3D表示と通信</h2>
+<p>モバイルは標準で自動通信オフです。3D画面の「通信開始」を押すまでLichtblickを読み込みません。設定の「3D表示の通信」で、自動通信と画面離脱時の停止を変更できます。設定はブラウザに保存します。</p>
+<p>「3D画面を離れたら通信を停止」は標準オンです。別のLauncherタブやバックグラウンドへ移ると埋め込み画面を終了し、接続を切ります。モバイルで自動通信がオフなら、戻っても「通信開始」が必要です。Launcherの状態監視とテレオペは利用できます。</p>
+<p>停止後の再開はViewerの読み込み直しです。別ウィンドウで開いたLichtblickは、そのウィンドウで閉じてください。</p>
+<div class="guide-table-wrap"><table><thead><tr><th>点群1トピック</th><th>通信量／10分の目安</th></tr></thead><tbody><tr><td><code>/velodyne_points_preview</code><br>約5 Hz・点数1/2</td><td>約481 MB（約6.42 Mbps）</td></tr><tr><td>生点群・約20 Hz</td><td>約3.8 GB（約51 Mbps）</td></tr></tbody></table></div>
+<p>2026年10月22日の実測を元にしたデータ本体の換算です。映像・TF・通信の付加分や圧縮で変わります。複数の点群を同時に購読すると増えます。表示のpreview間引きは、FAST-LIOの入力間引きとは別です。</p>
+<h3>固定フレームと初期位置</h3><p>地図自己位置推定で<code>map</code>が配信されているときは固定フレームを<code>map</code>、LIOのみなら<code>sirius3/odom</code>にします。存在しないフレームでは点群を表示できません。</p>
+<p>InitialPoseは地図自己位置推定の初期位置を指定する操作です。対応する推定プロセスが起動し、地図・フレーム・接続先が一致している必要があります。FAST-LIO単体の移動量推定を地図へ合わせる操作とは異なります。</p>
+<button class="text-button" data-guide-page="visualization">3Dを開く →</button>
+</section>
+<section class="guide-section surface" id="guide-monitor" data-keywords="CPU memory monitor メモリ プロセス 負荷 TF tree topics Hz conflict エラー 周期">
+<h2>Monitor・TF Tree・Topics</h2>
+<h3>Monitor</h3><p>CPU、メモリ、ディスク、温度、ネットワーク転送量、プロセスを確認します。全体CPUは全コアで100％、プロセスCPUは1コアで100％です。複数コアを使うプロセスは100％を超えることがあります。</p>
+<h3>TF Tree</h3><p>階層表示とROS風の横並び表示で座標系を確認できます。タブ右上のバッジで構成エラー・監視状態を確認し、エラー時は配信元と親子関係を調べます。監視データ未取得は「問題なし」の意味ではありません。</p>
+<div class="guide-note"><p><strong>FAST-LIOと車輪＋IMUのEKF（sf_real）が同じTFを同時に配信すると競合します。</strong>使用する構成を確認し、TFの配信元を1系統にしてください。</p></div>
+<h3>Topics</h3><p>一覧からトピックを選ぶと型、Publisher、Subscriberを確認できます。Hzの測定は対象トピックを約3秒受信して計測します。配信元があっても、必要な頻度で新しいデータが来ているかを確認してください。</p>
+<button class="text-button" data-guide-page="tf">TF Treeを開く →</button> · <button class="text-button" data-guide-page="topics">Topicsを開く →</button>
+</section>
+<section class="guide-section surface" id="guide-battery" data-keywords="Anker BLE Roboteq MD バッテリー 電圧 物理 電子 緊急停止 estop">
+<h2>電源と緊急停止</h2>
+<p>ヘッダーのバッテリー表示を押すと、取得できている残量、温度、入力・出力、ポート別電力、推定稼働時間・充電完了時間などを表示します。Anker本体とRoboteqの駆動電源は取得元が異なります。<strong>駆動電圧が表示されても、AnkerとのBLE接続を確認できたことにはなりません。</strong></p>
+<p>「—」「未取得」はデータがない状態です。取得元・最終受信と、BLE Gatewayや駆動ドライバの起動・接続を確認してください。</p>
+<p>緊急停止表示を押すと、物理ボタンの推定状態と電子緊急停止を分けて確認できます。物理ボタンは駆動電圧から推定するため、押してから電圧が下がるまで表示が遅れる場合があります。</p>
+<p>UIのON/OFFで切り替えるのは電子緊急停止です。物理ボタンそのものは解除できません。「未検出」は物理ボタン解除や走行可能を保証する表示ではありません。</p>
+</section>
+<section class="guide-section surface" id="guide-record" data-keywords="rosbag bag record_loc3d record_3dmap 地図生成 自己位置推定 実験 記録 保存">
+<h2>実験とROSBAG記録</h2>
+<div class="guide-table-wrap"><table><thead><tr><th>目的</th><th>記録コマンド</th></tr></thead><tbody><tr><td>3D地図作成用</td><td><code>record_3dmap</code></td></tr><tr><td>3D自己位置推定の検証</td><td><code>record_loc3d</code></td></tr></tbody></table></div>
+<ol><li>目的に合った推定・センサーのプログラムを起動します。<code>lio3d_lite</code>は移動量・TF中心の構成で、累積3D地図を配信しません。</li><li>LiDAR・IMU・必要なカメラのトピックが出ているか確認します。録画開始前にカメラの準備完了も確認してください。</li><li>記録コマンドを起動し、ログで保存先と記録開始を確認してから実験を始めます。</li><li>終了時は記録コマンドへCtrl+Cを送り、終了・保存完了をログで確認します。</li></ol>
+<p>記録対象はプリセットで異なります。通信のpreview設定とBAGの保存量は別です。表示が軽くてもBAG容量が同じ比率で減るとは限りません。ディスク空き容量はMonitorで確認できます。</p>
+</section>
+<section class="guide-section surface" id="guide-trouble" data-keywords="トラブル 不具合 見えない 遅延 missing transform 初期位置 エラー つながらない">
+<h2>困ったとき</h2>
+<h3>点群・地図が見えない</h3><ol><li>3Dの「通信開始」が必要な状態でないか確認します。</li><li>ViewerとBridgeの接続先を確認します。Topicsで対象データの配信を確認します。</li><li>固定フレームとTFの経路を確認します。<code>Missing Transform From Frame</code>はTF不足や時刻の不一致を調べます。</li></ol>
+<h3>点群表示が重い・遅れる</h3><p>previewだけを表示し、生点群・補正後点群・累積地図などの同時購読を見直します。Lichtblickを再読み込みして一時的に戻る場合、履歴・描画負荷や送信待ちを分けて確認します。Tailscaleだけが原因とは限りません。</p>
+<h3>操作を有効にできない</h3><p>テレオペの状態文、物理・電子緊急停止、駆動ドライバの新しい状態データ、別画面の操作権を確認します。ショートカットでも無効条件は解除できません。</p>
+<h3>初期位置を指定しても合わない</h3><p>地図自己位置推定プロセスと<code>/initialpose</code>の受信先、地図と固定フレームを確認します。TF競合、点群と地図の不一致、時刻のずれも確認します。位置が飛んだ場面はBAGとログを残すと後から検証できます。</p>
+<h3>変更したUIが出ない</h3><p>上部左のロゴでページ全体を再読み込みします。ロゴ操作がまだ反映されていない古い画面では、ブラウザの再読み込みを使ってください。</p>
+</section>
+<section class="guide-section surface" id="guide-files" data-keywords="files ファイル フォルダ お気に入り pgm map waypoint rosbag ダウンロード"><h2>ファイルとフォルダのお気に入り</h2><p>Files（Alt+9 / MacはOption+9）では、NUCのフォルダとファイルを参照できます。「Map &amp; Waypoint」「ROSBAG」ボタンで実験データの保存先へ移動できます。パスの直接入力、階層リンク、名前検索にも対応します。</p><p>PGM地図・画像は選択するとプレビューできます。YAML・JSON・CSVなどはテキスト表示でき、「編集」で内容を変更・保存できます。512 KB以下のUTF-8テキストが対象です。JSONは形式チェック・整形に対応し、Ctrl＋S / ⌘Sで保存できます。保存前の版はバックアップされ、編集中にほかで変更されたファイルは上書きせず知らせます。それ以外はダウンロードして確認できます。項目の⋯から名前変更・移動・削除ができます。同名のファイルは上書きしません。</p><p>フォルダを開いて☆を押すとお気に入りに登録できます。登録はNUCに保存され、リロード後や別の端末でも使えます。★または登録項目の×で解除します。</p><h3>ヘッダーのAP表示</h3><p>「AP稼働」を押すと、NUCのアクセスポイントのWi-Fi名・URL・QRコードが表示されます。設定タブにも同じ案内があります。先にそのWi-Fiへ接続してからURLを開きます。</p><h3>名前変更・フォルダ作成・移動・削除</h3><p>「＋ フォルダ」で新規作成、項目の⋯で名前変更・移動・削除を選択します。移動先はフォルダ一覧やお気に入りから選べます。複数のフォルダは左のチェックボックスで選び、「選択した項目を移動」でまとめて移動します。「すべて選択」は現在の検索結果を選び、「選択解除」で解除できます。フォルダを移動・改名すると、お気に入りも追従します。</p><p>削除は確認後にゴミ箱へ移動します。「ゴミ箱」から元に戻せます。同名の項目がある場合は上書きせず中止します。ゴミ箱への移動では空き容量は増えません。</p><p>別ディスク間の移動は実行できません。地図YAMLなどに書かれた参照ファイル名は自動更新されません。</p></section>
+<section class="guide-section surface" id="guide-face" data-keywords="face ear LED 耳 点灯 点滅 左折 右折 旋回 表情 視線 顔 字幕 読み上げ 音声 ショートカット"><h2>SiriusFace / Ear</h2><p>Home上部のFaceカードで接続状況と現在の表情を確認し、「顔の操作」でパネルを開きます。通常の表情に加えて、バッテリー表示・故障・痛がる反応も選べます。視線、3秒間の字幕、短い読み上げも操作できます。故障は表示演出で、実際の異常判定とは別です。バッテリー画面はFace側の受信データに依存し、未受信時は既定値になる場合があります。</p><p>未起動なら「顔を起動」を押すと、NUCのデスクトップにある「Sirius Face UI」ショートカットを使います。起動済みなら新しく開きません。ヘッダーの顔ボタン、または「顔画面を表示」でNUCの顔ウィンドウへ切り替えます。顔画面では右上にマウスを寄せたときだけ「Launcherへ戻る」が現れます。マウスを離すと約1.5秒で隠れます。スマホからは操作パネルの「Launcher画面を表示」も使えます。NUC本体の Ctrl + Alt + F は両画面の切り替え、Ctrl + Alt + W はLauncherへの復帰です。</p><p>読み上げは現在の音声へ割り込みます。制御タグは使えません。表情や字幕は操作したときだけ変わり、実験状態との自動連動はまだありません。パネルを開くと有効なテレオペ操作は無効になります。</p><h3>耳LEDのテスト</h3><p>Homeの「耳の操作」、または顔操作パネルの「耳LED」タブから開きます。sirius_ble_gatewayで耳LEDを有効にし、左右とも接続されると操作できます。別のBLEノードを同時接続する必要はありません。</p><p>左折・右折は片側の緑点滅、旋回・ハザードは両側の黄点滅です。通常、赤の非常停止表示、選択色の点灯・点滅・左右交互・呼吸、虹色、消灯も選べます。時間は5〜30秒で、終了するとposの自動表示へ戻ります。「自動表示へ戻す」で途中終了できます。テレオペにも10秒間の表示テストボタンがあります。</p><p>「非常停止表示」はLEDだけのテストです。実際の緊急停止は電子停止ONを使ってください。実機の非常停止中はその表示が優先され、ほかの表示テストはできません。</p></section></div></div>

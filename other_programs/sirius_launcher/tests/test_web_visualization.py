@@ -52,7 +52,7 @@ def test_visualization_page_and_scripts_are_wired():
     assert 'function restartAll()' in web.PAGE
     assert 'sirius-restart-restore' in web.PAGE
     assert "PAGE_LABELS" in (ROOT/'static/console.js').read_text(encoding='utf-8')
-    assert 'initVisualization' in (ROOT/'static/console.js').read_text(encoding='utf-8')
+    assert 'visualizationPageChanged' in (ROOT/'static/console.js').read_text(encoding='utf-8')
 
 
 def test_named_layouts_can_be_listed_imported_served_and_deleted(tmp_path, monkeypatch):
@@ -86,6 +86,20 @@ def test_named_layouts_can_be_listed_imported_served_and_deleted(tmp_path, monke
     assert response.status_code == 200
     assert client.get('/api/visualization/layouts/' + entry['id']).status_code == 404
     assert client.delete('/api/visualization/layouts/default', base_url=base).status_code == 400
+
+
+def test_visualization_auto_refresh_keeps_saved_layout():
+    web = importlib.import_module('web_server')
+    script = (ROOT/'static/visualization.js').read_text(encoding='utf-8')
+    assert 'id="viz-refresh"' in web.PAGE
+    assert '<option value="0">オフ</option>' in web.PAGE
+    assert '<option value="60" selected>1時間</option>' in web.PAGE
+    assert "refresh:'sirius-viz-refresh-minutes'" in script
+    assert 'const VIZ_REFRESH_DEFAULT_MINUTES=60;' in script
+    assert 'function scheduleVizRefresh()' in script
+    assert "setVizFrameState('自動更新中','loading')" in script
+    assert 'loadVisualizationFrame(true)' in script
+    assert 'layoutUrl.searchParams.set' in script
 
 
 def test_viewer_bootstrap_and_compose_are_pinned():

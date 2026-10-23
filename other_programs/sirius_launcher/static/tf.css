@@ -6,6 +6,7 @@
 #tf-error-badge{position:absolute;top:3px;right:6px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#bd2637;color:#fff;border:2px solid var(--panel);font:700 10px/1 sans-serif;pointer-events:none}
 #tf-error-badge[hidden],.tf-errors[hidden]{display:none}
 #tf-error-badge[data-state="unknown"]{background:var(--panel-2);color:var(--muted);border-color:var(--line)}
+#tf-error-badge[data-state="ok"]{background:#1f9d63;color:#fff;border-color:var(--panel)}
 .tf-errors{padding:15px;margin-bottom:14px;border:2px solid var(--red);border-radius:9px;background:var(--panel);color:var(--text);overflow-wrap:anywhere}
 .tf-errors>strong{color:var(--red);font-size:13px}.tf-errors>p{color:var(--muted);font-size:11px;line-height:1.7;margin:7px 0 10px}
 .tf-error-row{display:flex;align-items:baseline;gap:10px;margin-top:8px;font-size:11px;line-height:1.7}.tf-error-row>span{min-width:0}

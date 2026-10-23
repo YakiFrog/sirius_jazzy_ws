@@ -34,7 +34,8 @@ def test_disabled_is_exact_identity_and_bad_settings_rejected():
         lift_texture(texture, dict(enabled=True, gain=float('nan'), pivot=180.))
 
 
-def test_reexport_uses_raw_rgb_and_preserves_semantic_evidence(tmp_path, monkeypatch):
+@pytest.mark.parametrize('prefix', ['road_temporal', 'map'])
+def test_reexport_uses_raw_rgb_and_preserves_semantic_evidence(tmp_path, monkeypatch, prefix):
     import cv2
     import json
     import yaml
@@ -42,9 +43,12 @@ def test_reexport_uses_raw_rgb_and_preserves_semantic_evidence(tmp_path, monkeyp
     source = tmp_path/'source'; source.mkdir()
     texture = np.full((2, 3, 4), [20, 30, 40, 255], np.uint8)
     labels = np.full((2, 3), 4, np.uint8)
-    cv2.imwrite(str(source/'road_temporal.texture.png'), texture)
-    cv2.imwrite(str(source/'road_temporal.colored.pgm'), labels)
-    (source/'road_temporal.colored.json').write_text('{}')
+    cv2.imwrite(str(source/f'{prefix}.texture.png'), texture)
+    cv2.imwrite(str(source/f'{prefix}.colored.pgm'), labels)
+    from sirius_navigation.indexed_road_map import road_palette
+    (source/f'{prefix}.colored.json').write_text(json.dumps(dict(
+        resolution=.05, width=3, height=2, origin=[0., 0.],
+        palette=road_palette().tolist(), labels={'4': dict(name='tactile paving', global_cost=0, local_cost=50)})))
     np.savez_compressed(source/'map_evidence.npz', votes=labels)
     (source/'manifest.json').write_text(json.dumps(dict(frame_count=1, grid=dict(resolution=.05))))
     (source/'config_used.yaml').write_text(yaml.safe_dump(dict(texture={})))
@@ -53,9 +57,9 @@ def test_reexport_uses_raw_rgb_and_preserves_semantic_evidence(tmp_path, monkeyp
     first, second = tmp_path/'first', tmp_path/'second'
     module.brighten(source, first, cfg)
     module.brighten(first, second, cfg)
-    for name in ('road_temporal.texture.png', 'road_temporal.raw.texture.png',
-                 'road_temporal.colored.pgm', 'road_temporal.colored.json', 'map_evidence.npz'):
+    for name in (f'{prefix}.texture.png', f'{prefix}.raw.texture.png',
+                 f'{prefix}.colored.pgm', f'{prefix}.colored.json', 'map_evidence.npz'):
         assert (first/name).read_bytes() == (second/name).read_bytes()
-    assert (source/'road_temporal.texture.png').read_bytes() == (first/'road_temporal.raw.texture.png').read_bytes()
+    assert (source/f'{prefix}.texture.png').read_bytes() == (first/f'{prefix}.raw.texture.png').read_bytes()
     with pytest.raises(FileExistsError):
         module.brighten(source, first, cfg)

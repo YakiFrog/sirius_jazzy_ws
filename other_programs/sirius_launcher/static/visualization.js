@@ -3,14 +3,64 @@ const VIZ_KEYS={
   viewer:'sirius-viz-viewer',
   bridge:'sirius-viz-bridge',
   auto:'sirius-viz-auto',
+  refresh:'sirius-viz-refresh-minutes',
   layout:'sirius-viz-layout-initialized-v1',
   layoutSelected:'sirius-viz-layout-selected-v1',
   sidebar:'sirius-viz-sidebar-collapsed',
   workspace:'sirius-viz-workspace-initialized-v1'
 };
-const VIZ={inited:false,initPromise:null,workspaceReady:false,workspacePromise:null,frameLoaded:false,loading:false,frameState:'idle',bridgeState:'idle',defaults:null,settings:null,ws:null,loadTimer:null,probeTimer:null,loadToken:0,pendingLayoutInit:false,pendingLayoutApply:false,lastProbe:0,configError:'',layouts:[]};
+const VIZ_REFRESH_DEFAULT_MINUTES=60;
+const VIZ_REFRESH_OPTIONS=[0,30,60,180,360];
+const VIZ_DATA_KEYS={mobileAuto:'sirius-viz-mobile-auto',pauseAway:'sirius-viz-pause-away'};
+const VIZ={inited:false,initPromise:null,workspaceReady:false,workspacePromise:null,frameLoaded:false,loading:false,frameState:'idle',bridgeState:'idle',defaults:null,settings:null,ws:null,loadTimer:null,probeTimer:null,refreshTimer:null,loadToken:0,pendingLayoutInit:false,pendingLayoutApply:false,lastProbe:0,configError:'',layouts:[]};
 function vizGet(key){try{return localStorage.getItem(key);}catch(error){return null;}}
 function vizSet(key,value){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch(error){}}
+function vizIsMobile(){return !!(navigator.userAgentData?.mobile||/Android|iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.maxTouchPoints>0&&matchMedia('(pointer:coarse)').matches));}
+function vizPauseAway(){return vizGet(VIZ_DATA_KEYS.pauseAway)!=='0';}
+function vizCanStream(){return !!(VIZ.requested&&(!vizPauseAway()||(VIZ.pageVisible&&!document.hidden)));}
+function paintVizDataPolicy(){
+  document.getElementById('viz-mobile-auto').checked=vizGet(VIZ_DATA_KEYS.mobileAuto)==='1';
+  document.getElementById('viz-pause-away').checked=vizPauseAway();
+  document.getElementById('viz-network-toggle').textContent=VIZ.requested?'通信停止':'通信開始';
+  document.getElementById('viz-network-start').hidden=vizCanStream();
+}
+function stopVisualizationCommunication(){
+  VIZ.loadToken++;VIZ.loading=false;VIZ.frameLoaded=false;
+  clearTimeout(VIZ.loadTimer);clearTimeout(VIZ.refreshTimer);clearTimeout(VIZ.probeTimer);
+  VIZ.refreshTimer=null;
+  if(VIZ.ws){const ws=VIZ.ws;VIZ.ws=null;try{ws.close();}catch(error){}}
+  if(VIZ.cancelWorkspace){VIZ.cancelWorkspace();VIZ.cancelWorkspace=null;VIZ.workspaceReady=false;}
+  const frame=document.getElementById('viz-frame');
+  if(frame?.hasAttribute('src')){
+    const blank=frame.cloneNode(false);blank.removeAttribute('src');
+    frame.onload=null;frame.replaceWith(blank);
+  }
+  document.getElementById('viz-frame-wrap').classList.remove('loaded','failed');
+  VIZ.bridgeState='idle';setVizFrameState('通信停止','idle');
+  setVizEmpty('3Dデータの通信は停止中です','「通信開始」で点群・映像の受信を開始します。テレオペは通信停止中も利用できます。',false);
+  paintVizDataPolicy();updateVizStatus();
+}
+function visualizationPageChanged(page){
+  VIZ.pageVisible=window.isPageVisible?isPageVisible('visualization'):page==='visualization';
+  if(!VIZ.pageVisible){if(vizPauseAway()){VIZ.requested=false;stopVisualizationCommunication();}return;}
+  if(!VIZ.requested&&(!vizIsMobile()||vizGet(VIZ_DATA_KEYS.mobileAuto)==='1'))VIZ.requested=true;
+  initVisualization();
+}
+function toggleVisualizationCommunication(){
+  VIZ.requested=!VIZ.requested;
+  if(!VIZ.requested)stopVisualizationCommunication();else{paintVizDataPolicy();initVisualization();}
+}
+function saveVizDataPolicy(){
+  vizSet(VIZ_DATA_KEYS.mobileAuto,document.getElementById('viz-mobile-auto').checked?'1':'0');
+  vizSet(VIZ_DATA_KEYS.pauseAway,document.getElementById('viz-pause-away').checked?'1':'0');
+  if(vizPauseAway()&&(!VIZ.pageVisible||document.hidden)){VIZ.requested=false;stopVisualizationCommunication();}
+  paintVizDataPolicy();toast('3D表示の通信設定を保存しました');
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&vizPauseAway()){VIZ.requested=false;stopVisualizationCommunication();}
+  else if(!document.hidden&&VIZ.pageVisible)visualizationPageChanged('visualization');
+});
+paintVizDataPolicy();
 function vizFallbackDefaults(){
   const host=location.hostname||'127.0.0.1';
   const secure=location.protocol==='https:';
@@ -113,6 +163,15 @@ function setVizEmpty(title,text,retry){
   if(retryEl)retryEl.hidden=!retry;
 }
 function updateVizStatus(){
+  if(!vizCanStream()){
+    setVizDot('viz-viewer-dot','idle');setVizDot('viz-bridge-dot','idle');
+    document.getElementById('viz-viewer-state').textContent='通信停止';
+    document.getElementById('viz-bridge-state').textContent='未接続';
+    document.getElementById('viz-status-badge').textContent='通信オフ';
+    document.getElementById('viz-status-badge').className='viz-badge';
+    document.getElementById('viz-status-detail').textContent='Viewerと点群・映像の接続を終了しています。Launcherの状態監視は継続します。';
+    return;
+  }
   const auto=VIZ.settings?VIZ.settings.auto:true;
   const viewer=VIZ.frameState==='ready'?'ready':VIZ.frameState==='failed'?'failed':VIZ.frameState==='loading'?'checking':'idle';
   const bridge=auto?VIZ.bridgeState:'idle';
@@ -167,24 +226,34 @@ function toggleVizSidebar(){
   if(!layout)return;
   applyVizSidebar(!layout.classList.contains('viz-sidebar-collapsed'));
 }
+function vizRefreshMinutes(value){
+  if(value===null||value===undefined||value==='')return VIZ_REFRESH_DEFAULT_MINUTES;
+  const minutes=Number(value);
+  return VIZ_REFRESH_OPTIONS.includes(minutes)?minutes:VIZ_REFRESH_DEFAULT_MINUTES;
+}
 function hydrateVizSettings(){
   if(!VIZ.settings)return;
   const viewer=document.getElementById('viz-viewer-url');
   const bridge=document.getElementById('viz-bridge-url');
   const auto=document.getElementById('viz-auto');
+  const refresh=document.getElementById('viz-refresh');
   if(viewer)viewer.value=VIZ.settings.viewer;
   if(bridge)bridge.value=VIZ.settings.bridge;
   if(auto)auto.checked=VIZ.settings.auto;
+  if(refresh)refresh.value=String(VIZ.settings.refresh_minutes);
 }
 function readVizSettings(defaults){
   const autoRaw=vizGet(VIZ_KEYS.auto);
   const viewer=vizGet(VIZ_KEYS.viewer)||defaults.viewer_url;
   const bridge=vizGet(VIZ_KEYS.bridge)||defaults.bridge_url;
   const auto=autoRaw===null?true:autoRaw==='1';
-  return {viewer,bridge,auto,layout_url:defaults.layout_url,
+  const refreshRaw=vizGet(VIZ_KEYS.refresh);
+  const refresh=refreshRaw===null?VIZ_REFRESH_DEFAULT_MINUTES:vizRefreshMinutes(refreshRaw);
+  return {viewer,bridge,auto,refresh_minutes:refresh,layout_url:defaults.layout_url,
     layout_id:vizGet(VIZ_KEYS.layoutSelected)||'default'};
 }
 function ensureVizWorkspace(){
+  if(!vizCanStream())return Promise.resolve();
   if(VIZ.workspaceReady)return Promise.resolve();
   if(VIZ.workspacePromise)return VIZ.workspacePromise;
   let origin;
@@ -196,6 +265,7 @@ function ensureVizWorkspace(){
     const finish=ok=>{
       if(done)return;
       done=true;
+      VIZ.cancelWorkspace=null;
       clearTimeout(timer);
       window.removeEventListener('message',onMessage);
       if(frame)frame.remove();
@@ -217,6 +287,7 @@ function ensureVizWorkspace(){
     frame.src=origin+'/sirius-start.html?ts='+Date.now();
     document.body.append(frame);
     const timer=setTimeout(()=>finish(false),2500);
+    VIZ.cancelWorkspace=()=>finish(false);
   });
   return VIZ.workspacePromise;
 }
@@ -238,10 +309,24 @@ function buildVizUrl(){
   }
   return viewer.href;
 }
+function scheduleVizRefresh(){
+  clearTimeout(VIZ.refreshTimer);
+  VIZ.refreshTimer=null;
+  if(!vizCanStream())return;
+  const minutes=VIZ.settings?Number(VIZ.settings.refresh_minutes):0;
+  if(!(minutes>0))return;
+  VIZ.refreshTimer=setTimeout(()=>{
+    VIZ.refreshTimer=null;
+    if(VIZ.loading||!VIZ.frameLoaded){scheduleVizRefresh();return;}
+    loadVisualizationFrame(true);
+  },minutes*60000);
+}
 function showVizFailure(message){
   VIZ.loading=false;
   VIZ.frameLoaded=false;
   clearTimeout(VIZ.loadTimer);
+  clearTimeout(VIZ.refreshTimer);
+  VIZ.refreshTimer=null;
   setVizFrameState('読み込み失敗','failed');
   const wrap=document.getElementById('viz-frame-wrap');
   if(wrap){wrap.classList.remove('loaded');wrap.classList.add('failed');}
@@ -261,9 +346,11 @@ function handleVizFrameLoad(token){
     VIZ.pendingLayoutInit=false;
   }
   VIZ.pendingLayoutApply=false;
+  scheduleVizRefresh();
   updateVizStatus();
 }
 async function probeVisualizationBridge(){
+  if(!vizCanStream())return;
   clearTimeout(VIZ.probeTimer);
   if(VIZ.ws){try{VIZ.ws.close();}catch(error){}VIZ.ws=null;}
   if(!VIZ.settings){setVizBridgeState('idle');return;}
@@ -311,7 +398,8 @@ async function probeVisualizationBridge(){
     }
   });
 }
-async function loadVisualizationFrame(){
+async function loadVisualizationFrame(silent){
+  if(!vizCanStream()){stopVisualizationCommunication();return;}
   if(!VIZ.inited){await initVisualization();return;}
   if(VIZ.loading)return;
   const frame=document.getElementById('viz-frame');
@@ -322,19 +410,25 @@ async function loadVisualizationFrame(){
   VIZ.loadToken+=1;
   const token=VIZ.loadToken;
   clearTimeout(VIZ.loadTimer);
-  if(wrap){wrap.classList.remove('loaded','failed');}
-  setVizFrameState('準備中','loading');
-  setVizEmpty('表示環境を準備しています','Lichtblickの初期表示を設定しています。',false);
+  if(!silent){
+    wrap.classList.remove('loaded','failed');
+    setVizFrameState('準備中','loading');
+    setVizEmpty('表示環境を準備しています','Lichtblickの初期表示を設定しています。',false);
+  }else{
+    setVizFrameState('自動更新中','loading');
+  }
   updateVizStatus();
   if(!VIZ.workspaceReady){
     await ensureVizWorkspace();
-    if(!VIZ.loading)return;
+    if(!VIZ.loading||token!==VIZ.loadToken||!vizCanStream())return;
   }
   let url;
   try{url=buildVizUrl();}
   catch(error){showVizFailure(error.message);return;}
-  setVizFrameState('読み込み中','loading');
-  setVizEmpty('3Dビューを起動しています','Lichtblickを読み込んでいます。初回は少し時間がかかります。',false);
+  if(!silent){
+    setVizFrameState('読み込み中','loading');
+    setVizEmpty('3Dビューを起動しています','Lichtblickを読み込んでいます。初回は少し時間がかかります。',false);
+  }
   updateVizStatus();
   const openTab=document.getElementById('viz-open-tab');
   if(openTab)openTab.href=url;
@@ -348,6 +442,7 @@ async function loadVisualizationFrame(){
 }
 async function initVisualization(){
   if(VIZ.inited){
+    if(!vizCanStream()){stopVisualizationCommunication();return;}
     if(!VIZ.frameLoaded&&!VIZ.loading)await loadVisualizationFrame();
     else if(VIZ.settings&&VIZ.settings.auto&&Date.now()-VIZ.lastProbe>30000)probeVisualizationBridge();
     return;
@@ -368,7 +463,8 @@ async function initVisualization(){
     applyVizSidebar(savedSidebar===null?matchMedia('(max-width:900px)').matches:savedSidebar==='1');
     hydrateVizSettings();
     updateVizStatus();
-    await loadVisualizationFrame();
+    paintVizDataPolicy();
+    if(vizCanStream())await loadVisualizationFrame();else stopVisualizationCommunication();
   })();
   try{await VIZ.initPromise;}finally{VIZ.initPromise=null;}
 }
@@ -380,11 +476,13 @@ function saveVisualizationSettings(event){
     const viewer=vizViewerUrl(document.getElementById('viz-viewer-url').value).href;
     const bridge=vizBridgeUrl(document.getElementById('viz-bridge-url').value);
     const auto=document.getElementById('viz-auto').checked;
-    VIZ.settings={viewer,bridge,auto,layout_url:VIZ.settings.layout_url,
+    const refresh=vizRefreshMinutes(document.getElementById('viz-refresh').value);
+    VIZ.settings={viewer,bridge,auto,refresh_minutes:refresh,layout_url:VIZ.settings.layout_url,
       layout_id:VIZ.settings.layout_id};
     vizSet(VIZ_KEYS.viewer,viewer);
     vizSet(VIZ_KEYS.bridge,bridge);
     vizSet(VIZ_KEYS.auto,auto?'1':'0');
+    vizSet(VIZ_KEYS.refresh,String(refresh));
     hydrateVizSettings();
     loadVisualizationFrame();
     toast('3D表示の接続設定を保存しました');
@@ -397,6 +495,7 @@ function resetVisualizationSettings(){
   document.getElementById('viz-viewer-url').value=VIZ.defaults.viewer_url;
   document.getElementById('viz-bridge-url').value=VIZ.defaults.bridge_url;
   document.getElementById('viz-auto').checked=true;
+  document.getElementById('viz-refresh').value=String(VIZ_REFRESH_DEFAULT_MINUTES);
   saveVisualizationSettings();
 }
 function applyVisualizationLayout(layoutId){
@@ -489,7 +588,7 @@ async function deleteVisualizationLayout(){
   else toast('レイアウトを削除しました: '+entry.name);
 }
 async function toggleVisualizationFullscreen(){
-  const stage=document.getElementById('viz-stage');
+  const stage=document.getElementById('viz-layout');
   try{
     if(document.fullscreenElement){await document.exitFullscreen();return;}
     if(stage&&stage.requestFullscreen){await stage.requestFullscreen();return;}

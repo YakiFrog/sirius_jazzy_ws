@@ -3,7 +3,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from process_health import LogHealth, battery_health
+from process_health import (LogHealth, battery_health, readiness_health,
+                            readiness_pattern)
 
 NOW = 1792575000.0
 
@@ -72,6 +73,37 @@ def test_child_crash_stays_error_until_restart_is_observed(tmp_path):
     assert not state['failed_children']
 
 
+def test_hokuyo_without_hardware_id_times_out(tmp_path):
+    path = tmp_path/'hokuyo'
+    write(path, '[INFO] [launch]: process started with pid [123]\n'
+                '[urg_node2_node-1] [INFO] [1792599735.319976799] [urg_node2]: opening device\n')
+    health = LogHealth().snapshot(path, NOW, required=readiness_pattern('hokuyo'))
+    assert health['ready'] is False
+    waiting = readiness_health(health, 'hokuyo', uptime=5, now=NOW)
+    assert waiting['state'] == 'unknown'
+    assert '接続待ち' in waiting['summary']
+    timed_out = readiness_health(health, 'hokuyo', uptime=11, now=NOW)
+    assert timed_out['state'] == 'error'
+    assert 'Hardware ID未検出' in timed_out['summary']
+    assert timed_out['readiness']['elapsed_seconds'] == 11
+
+
+def test_hokuyo_hardware_id_clears_readiness_error(tmp_path):
+    path = tmp_path/'hokuyo'
+    write(path, '[urg_node2_node-1] [INFO] [1792599735.319976799] [urg_node2]: '
+                'Connected to a serial device with single scan. Hardware ID: H1101541\n')
+    health = LogHealth().snapshot(path, NOW, required=readiness_pattern('hokuyo'))
+    assert health['ready'] is True
+    assert readiness_health(health, 'hokuyo', uptime=30, now=NOW)['state'] == 'ok'
+
+
+def test_readiness_does_not_hide_real_errors(tmp_path):
+    path = tmp_path/'hokuyo'
+    write(path, f'[ERROR] [{NOW}] [urg_node2_node-1]: process has died [pid 123, exit code 1]\n')
+    health = LogHealth().snapshot(path, NOW, required=readiness_pattern('hokuyo'))
+    assert readiness_health(health, 'hokuyo', uptime=30, now=NOW)['state'] == 'error'
+
+
 def test_fresh_battery_does_not_clear_child_crash():
     state = battery_health({**log_error(), 'failed_children': {'gateway': 'died'}}, live(), NOW)
     assert state['state'] == 'error'
@@ -128,7 +160,7 @@ def test_status_exposes_current_health_and_preserves_history(monkeypatch):
     monkeypatch.setattr(web, 'process_uptime', lambda pid: 120)
     monkeypatch.setattr(web, 'managed_sessions', lambda: {})
     monkeypatch.setattr(web, 'external_matches', lambda *args: {})
-    monkeypatch.setattr(web, 'program_health', lambda name: {
+    monkeypatch.setattr(web, 'program_health', lambda name, uptime=None: {
         'state': 'ok', 'summary': 'バッテリー受信正常（過去エラーから復帰）',
         'last_error': {'message': 'InvalidStateError', 'timestamp': NOW-100}})
     data = web.app.test_client().get('/api/status').get_json()['sirius_ble_battery']

@@ -1,0 +1,11 @@
+<div class="notes-top"><p>保存したMarkdownメモは、同じLauncherに接続するスマホ・PCで共有できます。</p><div><button class="hbtn" type="button" onclick="newGuideNote(true)">地図撮りのひな形</button><button class="hbtn" id="notes-refresh" type="button" onclick="loadGuideNotes()">一覧を更新</button></div></div>
+<div class="notes-layout"><aside class="notes-sidebar surface"><div id="notes-list" role="list" aria-label="保存したメモ"></div></aside>
+<form class="notes-editor surface" id="note-form">
+<div class="note-heading"><div><h2 id="note-reading-title">メモを選択</h2><strong id="note-heading" hidden>新しいメモ</strong></div><span id="note-status" role="status" aria-live="polite">未保存</span></div>
+<label id="note-title-field" hidden>タイトル<input id="note-title" required maxlength="200" placeholder="例：地図撮りの起動手順" autocomplete="off"></label>
+<div class="note-format-bar"><div class="segmented" role="group" aria-label="Markdownの表示"><button id="note-preview-tab" type="button" class="active" aria-pressed="true" onclick="setNotePreview(true)">プレビュー</button><button id="note-edit-tab" type="button" aria-pressed="false" onclick="setNotePreview(false)">編集する</button></div><span>Markdown · .md</span></div>
+<label id="note-body-label" hidden>本文<textarea id="note-body" maxlength="100000" placeholder="# 起動するもの&#10;- [ ] velodyne&#10;- [ ] imu&#10;&#10;## 確認すること&#10;- カメラのトピックが出ていること"></textarea></label>
+<article id="note-preview" class="note-markdown" aria-label="Markdownプレビュー"></article>
+<div class="note-actions"><button class="hbtn" id="note-save" type="submit">保存</button><button class="hbtn" id="note-copy" type="button" onclick="duplicateGuideNote()">複製</button><button class="hbtn" id="note-export" type="button" onclick="exportGuideNote()">.mdを保存</button><button class="hbtn danger" id="note-delete" type="button" onclick="deleteGuideNote()" disabled>削除</button></div>
+<p class="note-help">見出し <code>#</code>・箇条書き <code>-</code>・チェックリスト <code>- [ ]</code>・コードブロックに対応。入力中の下書きはこの端末に残し、「保存」で共有します。</p>
+</form></div>

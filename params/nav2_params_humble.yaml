@@ -105,7 +105,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0 # ここをゆるくしておかないと、頑張れば通れそうなところで立ち往生しちゃう。
-        inflation_radius: 0.75 # こうしないと、青色に車体が入って動かなくなる
+        inflation_radius: 0.775 # ロボット外接半径約0.774726 m以上
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: True
@@ -223,7 +223,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0 # コストの減少率(小さいほど急激に減少。ロボットが近づけない距離が広がる) ゆるくしておかないと，頑張れば通れそうなところで立ち往生しちゃう。
-        inflation_radius: 0.75 # ロボットが近づけない距離
+        inflation_radius: 0.775 # ロボット外接半径約0.774726 m以上
       keepout_filter:
         plugin: "nav2_costmap_2d::KeepoutFilter"
         enabled: True

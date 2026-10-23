@@ -56,6 +56,14 @@ def test_mapping_retains_estimator_and_sensor_failure_evidence(mode):
     assert len(topics) == len(set(topics))
 
 
+@pytest.mark.parametrize('mode', ['real', 'sim'])
+def test_mapping_can_also_replay_2d_slam_and_optional_stereo_camera(mode):
+    topics = set(recorder.recording_topics(mode))
+    assert {'/scan3', '/scan', '/velodyne_points', '/imu', '/odom', '/Odometry',
+            '/tf', '/tf_static', '/camera/stereo_sbs/compressed', '/camera/stereo_params',
+            '/robot_description', '/joint_states', '/cmd_vel', '/parameter_events'} <= topics
+
+
 def test_launcher_alias_accepts_a_bag_name(monkeypatch):
     import shlex
     aliases = SCRIPT.parents[2] / 'bash/bash_alias2.sh'
@@ -93,3 +101,67 @@ def test_snapshot_copies_the_running_map_and_keeps_parameters(tmp_path, monkeypa
     assert metadata['map_sha256'] == hashlib.sha256(source.read_bytes()).hexdigest()
     assert (capture / 'map_localizer.yaml').read_text() == params
     assert metadata['versions'] == dict(workspace='abc123', navigation='abc123', fast_lio='abc123')
+
+
+@pytest.mark.parametrize('mode', ['real', 'sim'])
+def test_all_mapping_cameras_are_recorded_but_not_required(mode):
+    required = set(recorder.required_topics(mode, 'all_mapping'))
+    topics = recorder.recording_topics(mode, 'all_mapping')
+    assert {'/theta/dual_fisheye/image_raw/compressed', '/camera/stereo_sbs/compressed',
+            '/camera/stereo_params'} <= set(topics) - required
+    assert {'/scan3', '/tf', '/tf_static', '/velodyne_points', '/imu', '/odom'} <= required <= set(topics)
+    assert '/Odometry' not in required
+    assert '/odom/filtered' not in required
+    assert '/velodyne_points_colored' not in topics
+    assert len(topics) == len(set(topics))
+
+
+def test_all_mapping_rejects_invalid_calibration_and_disconnected_camera():
+    def msg(frame):
+        return SimpleNamespace(header=SimpleNamespace(frame_id=frame), data=b'jpeg', ranges=[1.])
+    received = {topic: msg(frame) for topic, frame in [
+        ('/velodyne_points', 'lidar'), ('/imu', 'imu'), ('/scan3', 'lidar'),
+        ('/theta/dual_fisheye/image_raw/compressed', 'theta'),
+        ('/camera/stereo_sbs/compressed', 'zed')]}
+    received['/odom'] = SimpleNamespace(child_frame_id='base')
+    received['/camera/stereo_params'] = SimpleNamespace(data=json.dumps(
+        dict(fx=100, fy=100, cx=50, cy=50, baseline=.12, width=100, height=100)))
+    transforms = [SimpleNamespace(header=SimpleNamespace(frame_id='base'), child_frame_id=f)
+                  for f in ['lidar', 'imu', 'theta', 'zed']]
+    recorder.validate_all_mapping(received, transforms)
+    assert any('ZED' in w and 'TF' in w for w in recorder.validate_all_mapping(received, transforms[:-1]))
+    received['/camera/stereo_params'].data = '{}'
+    assert any('内部パラメータ' in w for w in recorder.validate_all_mapping(received, transforms))
+    del received['/camera/stereo_sbs/compressed']
+    del received['/theta/dual_fisheye/image_raw/compressed']
+    assert len(recorder.validate_all_mapping(received, transforms)) == 2
+    with pytest.raises(ValueError, match='TF'):
+        recorder.validate_all_mapping(received, [])
+
+
+def test_all_mapping_alias_accepts_optional_bag_name_after_profile(monkeypatch):
+    def checked(*args):
+        assert args[0] == 'real'
+        assert args[3] == 'all_mapping'
+        raise RuntimeError('preflight reached')
+    monkeypatch.setattr(recorder, 'preflight', checked)
+    with pytest.raises(RuntimeError, match='preflight reached'):
+        recorder.main(['real', '--profile', 'all_mapping', 'survey_test'])
+
+
+def test_all_mapping_confirms_after_topic_log_even_with_launcher_pipe(tmp_path, monkeypatch, capsys):
+    def preflight(*args):
+        print('/theta/dual_fisheye/image_raw/compressed: 未配信')
+        return {}
+    prompts = []
+    answers = iter(['', '', 'n'])
+    def input_line(prompt):
+        assert '未配信' in capsys.readouterr().out if not prompts else True
+        prompts.append(prompt)
+        return next(answers)
+    monkeypatch.setattr(recorder, 'preflight', preflight)
+    monkeypatch.setattr(recorder.sys, 'stdin', SimpleNamespace(isatty=lambda: False))
+    monkeypatch.setattr('builtins.input', input_line)
+    assert recorder.main(['real', '--profile', 'all_mapping', '--directory', str(tmp_path)]) == 0
+    assert 'Y/n' in prompts[-1]
+    assert not list(tmp_path.iterdir())

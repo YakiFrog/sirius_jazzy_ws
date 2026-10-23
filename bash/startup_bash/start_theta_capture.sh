@@ -1,6 +1,7 @@
 #!/bin/bash
 # THETA S (HDMI->USBキャプチャ) をROS2へ配信する。
 # 起動時に送信fpsと解像度を選択できる（既定 fps=5, 1280x720）。
+# 入力待ちが30秒を超えると、その項目と残りの項目を既定値で起動する。
 # 引数でも指定可能: start_theta_capture.sh <fps> <解像度番号 or WxH>
 #   例: start_theta_capture.sh 5 1      # fps5, 解像度メニュー1(1280x720)
 #   例: start_theta_capture.sh 5 2      # fps5, 解像度メニュー2(1920x1080)
@@ -33,10 +34,33 @@ RES_LABELS=(
 
 FPS="${1:-}"
 RES_ARG="${2:-}"
+AUTO_DEFAULTS=false
+
+prompt_setting() {
+    local field="$1" prompt="$2" default_value="$3" read_status
+    if [ "$AUTO_DEFAULTS" = true ]; then
+        printf -v "$field" '%s' "$default_value"
+        return
+    fi
+    if read -r -t 30 -p "$prompt (30秒無入力で既定値): " "$field"; then
+        if [ -z "${!field}" ]; then
+            printf -v "$field" '%s' "$default_value"
+        fi
+    else
+        read_status=$?
+        AUTO_DEFAULTS=true
+        printf -v "$field" '%s' "$default_value"
+        if [ "$read_status" -gt 128 ]; then
+            echo
+            echo "30秒間入力がないため、残りの設定は既定値を使用します。"
+        else
+            echo "入力が終了したため、残りの設定は既定値を使用します。"
+        fi
+    fi
+}
 
 if [ -z "$FPS" ]; then
-    read -p "THETA送信fpsを入力してください (0.1〜30.0, 既定5): " FPS
-    FPS="${FPS:-5}"
+    prompt_setting FPS "THETA送信fpsを入力してください (0.1〜30.0, 既定5)" 5
 fi
 
 # fpsの数値チェックと範囲clamp (0.1〜30.0)
@@ -70,8 +94,7 @@ else
     for i in "${!RES_OPTIONS[@]}"; do
         echo "  $((i + 1))) ${RES_LABELS[$i]}"
     done
-    read -p "番号を入力 (既定1): " RES_NUM
-    RES_NUM="${RES_NUM:-1}"
+    prompt_setting RES_NUM "番号を入力 (既定1)" 1
     if ! [[ "$RES_NUM" =~ ^[0-9]+$ ]] || [ "$RES_NUM" -lt 1 ] || [ "$RES_NUM" -gt "${#RES_OPTIONS[@]}" ]; then
         echo "解像度番号が不正です: '$RES_NUM' (1〜${#RES_OPTIONS[@]})" >&2
         exit 1

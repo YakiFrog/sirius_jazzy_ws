@@ -31,4 +31,6 @@ echo " 削除対象の比較: /offline_map/removed_points をRGBで重ねる（�
 echo "   （先に view_3dmap で地図を配信しておく）"
 echo "================================================="
 
-exec ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:="$PORT"
+# The preview relay itself keeps one newest scan. Keep normal bridge history so
+# /tf and transient-local /tf_static are not globally limited to one message.
+exec ros2 launch foxglove_bridge foxglove_bridge_launch.xml port:="$PORT" max_qos_depth:=10 send_buffer_limit:=1000000

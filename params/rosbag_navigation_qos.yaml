@@ -1,0 +1,56 @@
+# Retain static maps/URDF/TF even when recording starts after publication.
+/tf_static:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 100
+/robot_description:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/map:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/sam3/static_colored_map_cloud:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/sam3/static_texture_map_cloud:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/sam3/static_colored_map_grid:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/sam3/static_semantic_cost_grid:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/global_costmap/costmap:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/global_costmap/costmap_raw:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/local_costmap/costmap:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1
+/local_costmap/costmap_raw:
+  reliability: reliable
+  durability: transient_local
+  history: keep_last
+  depth: 1

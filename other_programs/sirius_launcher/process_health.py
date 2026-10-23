@@ -10,6 +10,35 @@ ERROR = re.compile(r"\[(?:ERROR|FATAL|CRITICAL)\]|Traceback \(most recent call l
                    r"Task exception was never retrieved|(?:^|\s)[\w.]+(?:Error|Exception):")
 CHILD = re.compile(r"\[([^\[\]]+)\]: process (has died|started with pid)")
 RECENT_SECONDS = 30
+READINESS = {
+    'hokuyo': {
+        'pattern': re.compile(r"Hardware ID:\s*\S+"),
+        'timeout': 10,
+        'waiting': 'Hokuyo接続待ち（Hardware ID未検出）',
+        'missing': 'Hokuyo未接続（Hardware ID未検出）',
+    },
+}
+
+
+def readiness_pattern(name):
+    spec = READINESS.get(name)
+    return spec['pattern'] if spec else None
+
+
+def readiness_health(health, name, uptime=None, now=None):
+    spec = READINESS.get(name)
+    if not spec or health['state'] == 'error' or health.get('failed_children'):
+        return health
+    if health.get('ready'):
+        return health
+    elapsed = uptime if uptime is not None else health.get('log_age_seconds')
+    detail = {'marker': spec['pattern'].pattern, 'timeout_seconds': spec['timeout'],
+              'elapsed_seconds': elapsed}
+    if elapsed is not None and elapsed >= spec['timeout']:
+        return {**health, 'state': 'error', 'source': 'readiness',
+                'summary': spec['missing'], 'readiness': detail}
+    return {**health, 'state': 'unknown', 'source': 'readiness',
+            'summary': spec['waiting'], 'readiness': detail}
 
 
 class LogHealth:
@@ -17,16 +46,19 @@ class LogHealth:
         self._cache = {}
         self._lock = threading.Lock()
 
-    def snapshot(self, path, now=None):
+    def snapshot(self, path, now=None, required=None):
         now = time.time() if now is None else now
+        marker = required.pattern if required else None
         try:
             with self._lock:
                 stat = os.stat(path)
                 key = (stat.st_ino, stat.st_size, stat.st_mtime_ns)
                 previous = self._cache.get(path)
-                if previous and previous['key'] == key:
+                if (previous and previous['key'] == key
+                        and previous.get('marker') == marker):
                     event = previous['event']
                     failures = previous['failures']
+                    ready = previous.get('ready')
                 else:
                     with open(path, 'rb') as stream:
                         stream.seek(max(0, stat.st_size-65536))
@@ -70,15 +102,18 @@ class LogHealth:
                             previous['key'][0] == key[0] and key[1] >= previous['key'][1]):
                         event = previous['event']
                         event_offset = previous['event_offset']
+                    ready = (any(required.search(line) for line in lines)
+                             if required else None)
                     self._cache[path] = {'key': key, 'event': event, 'event_offset': event_offset,
-                                         'failures': failures}
+                                         'failures': failures, 'marker': marker, 'ready': ready}
         except OSError:
             return {'state': 'unknown', 'summary': 'ログ未取得', 'source': 'log',
                     'last_error': None}
         age = max(0, now-event['timestamp']) if event else None
         state = 'error' if failures or event and age <= RECENT_SECONDS else 'unknown' if event else 'ok'
         return {'state': state, 'source': 'log', 'last_error': event,
-                'failed_children': failures,
+                'failed_children': failures, 'ready': ready,
+                'log_age_seconds': max(0, now-stat.st_mtime),
                 'error_age_seconds': age, 'recent_error_seconds': RECENT_SECONDS,
                 'summary': ('子プロセス異常終了: '+', '.join(failures) if failures else
                             '直近30秒にエラー' if state == 'error' else

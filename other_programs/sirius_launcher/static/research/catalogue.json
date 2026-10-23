@@ -1,0 +1,592 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "road",
+      "label": "路面・セマンティック"
+    },
+    {
+      "id": "lidar",
+      "label": "3D・2D地図"
+    },
+    {
+      "id": "motion",
+      "label": "移動量・自己位置"
+    },
+    {
+      "id": "workflow",
+      "label": "実験基盤"
+    }
+  ],
+  "bundles": {
+    "map-review-20261021": "{home}/research_archive/nuc/map-review-20261021",
+    "map-review-20261022": "{home}/research_archive/nuc/map-review-20261022",
+    "latest-road": "{workspace}/maps_waypoints/maps/road_semantic/theta_20261022_194816",
+    "yellow": "{workspace}/experiments/theta_sam3_yellow/2026-10-19",
+    "texture": "{workspace}/experiments/theta_texture_quality/2026-10-20",
+    "shadow": "{workspace}/experiments/theta_sam3_shadow/2026-10-20",
+    "regions": "{workspace}/experiments/theta_road_regions/2026-10-20",
+    "context": "{workspace}/experiments/theta_tactile_context/2026-10-20",
+    "pipeline": "{workspace}/experiments/theta_road_pipeline/2026-10-20",
+    "bright-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_road_bright_map_20261020",
+    "grass": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_grass_extent_20261020",
+    "shadow-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_semantic_shadow_map_20261020",
+    "texture-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_texture_quality_map_20261020",
+    "context-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_semantic_tactile_context_map_20261020",
+    "regions-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_semantic_regions_map_20261020",
+    "nakanoshima-indexed": "{workspace}/maps_waypoints/maps/road_semantic/theta_20260920_113447_pgm"
+  },
+  "aliases": {
+    "/shadow_map/": "shadow-map"
+  },
+  "entries": [
+    {
+      "id": "theta-road-1022",
+      "date": "2026-10-23",
+      "category": "road",
+      "title": "THETAで、10月22日の路面を地図に。",
+      "summary": "19:48の収録BAGから、撮影時の校正を使って路面RGBとSAM3の分類を生成。",
+      "status": "生成済み",
+      "bundle": "latest-road",
+      "page": "images.html",
+      "image": "overlay.jpg",
+      "findings": [
+        "Desktopで全区間を逐次処理。収録時のカメラ校正と記録済みTF・LiDARを使用。",
+        "生成時間は約31分。元BAGの全ファイルを照合し、認識サーバーの設定復元も確認。"
+      ],
+      "limits": [
+        "冒頭14フレームはTF・scan不足で除外。",
+        "壁際に放射状の投影にじみが残る。今回のSAM3分類は主に点字候補で、認識精度の正解評価は未実施。"
+      ],
+      "metrics": [
+        {
+          "label": "反映フレーム",
+          "value": "2,183"
+        },
+        {
+          "label": "入力画像",
+          "value": "2,197"
+        },
+        {
+          "label": "収録日時",
+          "value": "10/22 19:48"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "生成・検証記録",
+          "bundle": "latest-road",
+          "path": "manifest.json"
+        },
+        {
+          "label": "生成条件",
+          "bundle": "latest-road",
+          "path": "config_used.yaml"
+        }
+      ],
+      "featured": true,
+      "recording": "mapping_all_real_20261022_194816_recovered",
+      "thumbnail": "/static/research/thumbnails/theta-road-1022.webp"
+    },
+    {
+      "id": "floor-map",
+      "date": "2026-10-22",
+      "category": "lidar",
+      "title": "平坦な床を仮定した、3D地図の再構成。",
+      "summary": "同じ走行BAGから、床の制約を使った3D地図と補正前の表示を保存。",
+      "status": "比較記録",
+      "bundle": "map-review-20261022",
+      "page": "3d/index.html",
+      "image": "3d/overview_rgb.png",
+      "findings": [
+        "FAST-LIOの再計算にDUFOMapと既知床の制約を組み合わせた結果。",
+        "補正前の地図も比較ページから確認できる。"
+      ],
+      "limits": [
+        "同一の平坦な床を仮定した補正。段差・坂道への一般化は未確認。",
+        "ビューアーは走行経路周辺と高さ範囲を絞ったプレビュー。"
+      ],
+      "metrics": [
+        {
+          "label": "元の点数",
+          "value": "約31.8万"
+        },
+        {
+          "label": "プレビュー",
+          "value": "24万点"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "地図の生成条件",
+          "bundle": "map-review-20261022",
+          "path": "3d/map.json"
+        },
+        {
+          "label": "補正前の3D表示",
+          "bundle": "map-review-20261022",
+          "path": "3d_before/index.html"
+        }
+      ],
+      "recording": "mapping_all_real_20261022_194816",
+      "thumbnail": "/static/research/thumbnails/floor-map.webp"
+    },
+    {
+      "id": "slam-2d3d",
+      "date": "2026-10-22",
+      "category": "lidar",
+      "title": "2Dと3D、同じ走行を見比べる。",
+      "summary": "slam_toolboxの平面地図と3D再構成を、軌跡・壁の重なりで比較。",
+      "status": "比較記録",
+      "bundle": "map-review-20261022",
+      "page": "index.html",
+      "image": "xy/xy_comparison.png",
+      "findings": [
+        "2D/3Dの軌跡差、開始・終了位置、壁との距離を保存。",
+        "2D地図の画像、生成YAML、軌跡CSVと3Dビューアーを同じページに整理。"
+      ],
+      "limits": [
+        "数値は推定方式間の整合性であり、独立した正解位置に対する精度ではない。"
+      ],
+      "metrics": [
+        {
+          "label": "軌跡差 RMSE",
+          "value": "5.5 cm"
+        },
+        {
+          "label": "3Dループ拘束",
+          "value": "133"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "比較の数値",
+          "bundle": "map-review-20261022",
+          "path": "xy/metrics.json"
+        }
+      ],
+      "recording": "mapping_all_real_20261022_194816",
+      "thumbnail": "/static/research/thumbnails/slam-2d3d.webp"
+    },
+    {
+      "id": "sampling",
+      "date": "2026-10-22",
+      "category": "motion",
+      "title": "FAST-LIOの間引き量と、処理負荷。",
+      "summary": "全点・1/2・1/4などを同じ屋内BAGで再生し、負荷と点群整合性を比較。",
+      "status": "比較記録",
+      "bundle": "map-review-20261021",
+      "page": "sampling-benchmark/index.html",
+      "image": "sampling-benchmark/sampling_comparison.png",
+      "findings": [
+        "16リングを保持する処理で、間引き量ごとのCPU、処理時間、床・壁の整合性を測定。",
+        "全点と1/2の平均処理時間は4.08 msと2.70 ms。"
+      ],
+      "limits": [
+        "屋内BAG内の比較。屋外の開けた環境では未評価。",
+        "正解軌跡はなく、地図・スキャンの整合性から比較している。"
+      ],
+      "metrics": [
+        {
+          "label": "全点 → 1/2",
+          "value": "4.08 → 2.70 ms"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "測定結果",
+          "bundle": "map-review-20261021",
+          "path": "sampling-benchmark/report.json"
+        }
+      ],
+      "recording": "slam3d_real_20261021_205132",
+      "thumbnail": "/static/research/thumbnails/sampling.webp"
+    },
+    {
+      "id": "odometry",
+      "date": "2026-10-22",
+      "category": "motion",
+      "title": "LIO・車輪＋IMU・車輪単独を比較。",
+      "summary": "始点を合わせ、軌跡と壁点群の重なりを3方式で確認。",
+      "status": "比較記録",
+      "bundle": "map-review-20261021",
+      "page": "odometry-comparison/index.html",
+      "image": "odometry-comparison/trajectory_comparison.png",
+      "findings": [
+        "FAST-LIOの修正再生と、BAGに記録されたEKF・車輪Odomを比較。",
+        "軌跡の差と同じスキャン対の壁の重なりを保存。"
+      ],
+      "limits": [
+        "独立した正解軌跡はない。推定同士の差を絶対精度とは扱わない。",
+        "この比較のFAST-LIOは車輪融合が有効。"
+      ],
+      "metrics": [
+        {
+          "label": "比較した方式",
+          "value": "3方式"
+        },
+        {
+          "label": "区間長",
+          "value": "約367秒"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "比較条件と数値",
+          "bundle": "map-review-20261021",
+          "path": "odometry-comparison/report.json"
+        }
+      ],
+      "recording": "slam3d_real_20261021_205132",
+      "thumbnail": "/static/research/thumbnails/odometry.webp"
+    },
+    {
+      "id": "quality-guard",
+      "date": "2026-10-22",
+      "category": "motion",
+      "title": "LiDARが不良なとき、推定を守る。",
+      "summary": "人工的な外れ値と点数減少を入れ、補正・地図追加の保護動作を確認。",
+      "status": "人工故障試験",
+      "bundle": "map-review-20261021",
+      "page": "lidar-quality/index.html",
+      "image": "lidar-quality/fault_comparison.png",
+      "findings": [
+        "点群を40 mずらす条件、16点へ減らす条件で保護の有無を比較。",
+        "正常区間・故障区間・復帰過程の記録を保存。"
+      ],
+      "limits": [
+        "人工故障を使った試験。実際の群衆や屋外走行の検証とは区別する。"
+      ],
+      "metrics": [
+        {
+          "label": "故障条件",
+          "value": "位置外れ・点不足"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "故障試験の条件",
+          "bundle": "map-review-20261021",
+          "path": "lidar-quality/report.json"
+        }
+      ],
+      "recording": "slam3d_real_20261021_205132",
+      "thumbnail": "/static/research/thumbnails/quality-guard.webp"
+    },
+    {
+      "id": "colored-map",
+      "date": "2026-10-21",
+      "category": "lidar",
+      "title": "FAST-LIOの形を保ったまま、色を付ける。",
+      "summary": "修正版の移動量と点群を使い、カメラRGBによる3D地図を再構成。",
+      "status": "生成済み",
+      "bundle": "map-review-20261021",
+      "page": "index.html",
+      "image": "overview_rgb.png",
+      "findings": [
+        "元の点の座標と並びを変えない色付けを検査。",
+        "RGB表示と高さ色表示を切り替え、未観測の色は灰色として残す。"
+      ],
+      "limits": [
+        "記録済みの校正・時刻補正を使用。未観測・遮蔽された部分は色が付かない。"
+      ],
+      "metrics": [
+        {
+          "label": "元の点数",
+          "value": "約205.7万"
+        },
+        {
+          "label": "着色した点",
+          "value": "約195.8万"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "地図と色付けの記録",
+          "bundle": "map-review-20261021",
+          "path": "map.json"
+        }
+      ],
+      "recording": "slam3d_real_20261021_205132",
+      "thumbnail": "/static/research/thumbnails/colored-map.webp"
+    },
+    {
+      "id": "nakanoshima-semantic-full",
+      "date": "2026-10-23",
+      "category": "road",
+      "title": "中之島の全体地図をPGM＋JSONで復元。",
+      "summary": "火曜日の全区間地図を従来形式で再書き出し。分類色と未分類路面の減色RGBをPGMだけに格納。",
+      "status": "PGM形式を修正",
+      "bundle": "nakanoshima-indexed",
+      "page": "images.html",
+      "image": "indexed.png",
+      "recording": "real_both_mapping_20260920_113447_recovered",
+      "metrics": [
+        {
+          "label": "反映フレーム",
+          "value": "5,956"
+        },
+        {
+          "label": "解像度",
+          "value": "5 cm / セル"
+        }
+      ],
+      "findings": [
+        "認識領域は分類色、それ以外の観測済み路面はRGBを各5段階に減色してPGMのインデックスへ保存しています。",
+        "表示色はJSONのパレットから復元し、PNGテクスチャは読み込みません。",
+        "10/20の全区間版を10/23に再書き出し。分類ID・意味コスト・地図座標は保持し、原本は変更していません。"
+      ],
+      "limits": [
+        "分類領域は従来どおり単色です。減色RGBも元の実写画像とは色の精度が異なります。",
+        "地図の各セルを復元した確認画像です。RVizの視点・点の大きさは含みません。",
+        "投影・移動軌跡に由来する歪みや、認識の誤りは残っています。"
+      ],
+      "evidence": [
+        {
+          "label": "PGM復元画像",
+          "bundle": "nakanoshima-indexed",
+          "path": "indexed.png"
+        },
+        {
+          "label": "PGM本体",
+          "bundle": "nakanoshima-indexed",
+          "path": "road_temporal.colored.pgm"
+        },
+        {
+          "label": "JSONパレット・分類",
+          "bundle": "nakanoshima-indexed",
+          "path": "road_temporal.colored.json"
+        },
+        {
+          "label": "検証記録",
+          "bundle": "nakanoshima-indexed",
+          "path": "verification.json"
+        }
+      ]
+    },
+    {
+      "id": "texture-quality",
+      "date": "2026-10-20",
+      "category": "road",
+      "title": "路面テクスチャを、より見やすく。",
+      "summary": "複数区間と合成条件を比較し、観測の品質を保つ合成方法を検討。",
+      "status": "比較記録",
+      "bundle": "texture",
+      "page": "review/images.html",
+      "image": "review/before_after_seg4500.jpg",
+      "findings": [
+        "6区間・10条件でテクスチャ合成を比較し、全区間の再生成へ反映。",
+        "同じ投影・TF・スキャンの観測条件で評価。"
+      ],
+      "limits": [
+        "見た目の改善と、測量的な地図精度の検証は別。"
+      ],
+      "metrics": [
+        {
+          "label": "比較条件",
+          "value": "6区間 × 10条件"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "実験ノート",
+          "bundle": "texture",
+          "path": "README.md"
+        }
+      ],
+      "thumbnail": "/static/research/thumbnails/texture-quality.webp"
+    },
+    {
+      "id": "shadow-tactile",
+      "date": "2026-10-20",
+      "category": "road",
+      "title": "日陰で欠ける、黄色い点字を検証。",
+      "summary": "暗さ・色かぶりを補正した画像で追加認識し、元画像と比較。",
+      "status": "比較記録",
+      "bundle": "shadow",
+      "page": "review/images.html",
+      "image": "review/map_before_after.jpg",
+      "findings": [
+        "日陰の黄色い点字を対象に追加認識し、元画像と既存分類を保持。",
+        "地図全体とフレーム単位の比較画像を保存。"
+      ],
+      "limits": [
+        "視点によって未検出が残る。暗い場所の認識すべてが解決したという結果ではない。"
+      ],
+      "metrics": [],
+      "evidence": [
+        {
+          "label": "検証記録",
+          "bundle": "shadow",
+          "path": "verification.json"
+        }
+      ],
+      "thumbnail": "/static/research/thumbnails/shadow-tactile.webp"
+    },
+    {
+      "id": "region-consistency",
+      "date": "2026-10-20",
+      "category": "road",
+      "title": "歩道の中の、細かな車道判定を抑える。",
+      "summary": "画像の境界と領域の連続性を使い、路面分類の細かな混入を比較。",
+      "status": "比較記録",
+      "bundle": "regions",
+      "page": "review/images.html",
+      "image": "review/before_after_3900.jpg",
+      "findings": [
+        "車道から歩道への補正候補のみを採用する保守的な処理。",
+        "点字・芝生・RGBを保持し、同じ範囲で補正前後を比較。"
+      ],
+      "limits": [
+        "大きな領域全体の誤認識は残る。色の境界は縁石の高さや意味の正解ではない。"
+      ],
+      "metrics": [],
+      "evidence": [
+        {
+          "label": "実験ノート",
+          "bundle": "regions",
+          "path": "README.md"
+        },
+        {
+          "label": "検証記録",
+          "bundle": "regions",
+          "path": "verification.json"
+        }
+      ],
+      "thumbnail": "/static/research/thumbnails/region-consistency.webp"
+    },
+    {
+      "id": "tactile-context",
+      "date": "2026-10-20",
+      "category": "road",
+      "title": "点字と歩道の位置関係を使う。",
+      "summary": "連続した点字の周囲を、歩道判定の手掛かりとして比較。",
+      "status": "比較記録",
+      "bundle": "context",
+      "page": "review/images.html",
+      "image": "review/context_floor.jpg",
+      "findings": [
+        "連続した点字の途中のみを手掛かりにし、端点・分岐・広い警告部は除外。",
+        "点字・芝生・元のRGBを保持。"
+      ],
+      "limits": [
+        "点字の両側を無条件に歩道へ変更する処理ではない。"
+      ],
+      "metrics": [],
+      "evidence": [
+        {
+          "label": "実験ノート",
+          "bundle": "context",
+          "path": "README.md"
+        }
+      ],
+      "thumbnail": "/static/research/thumbnails/tactile-context.webp"
+    },
+    {
+      "id": "grass-candidates",
+      "date": "2026-10-20",
+      "category": "road",
+      "title": "芝生の広がりは、候補として見比べる。",
+      "summary": "観測票とRGBに支えられた範囲で、芝生領域を広げる条件を比較。",
+      "status": "候補実験",
+      "bundle": "grass",
+      "page": "images.html",
+      "image": "overview.jpg",
+      "findings": [
+        "元の観測・緑色の根拠・連結性を満たすセルだけを候補にする。",
+        "既存地図と実行時設定は変更せず、複数条件を保存。"
+      ],
+      "limits": [
+        "未採用の候補実験。正しい芝生範囲として確定した結果ではない。"
+      ],
+      "metrics": [],
+      "evidence": [
+        {
+          "label": "評価記録",
+          "bundle": "grass",
+          "path": "evaluation.json"
+        },
+        {
+          "label": "検証記録",
+          "bundle": "grass",
+          "path": "verification.json"
+        }
+      ],
+      "thumbnail": "/static/research/thumbnails/grass-candidates.webp"
+    },
+    {
+      "id": "offline-pipeline",
+      "date": "2026-10-20",
+      "category": "workflow",
+      "title": "改善を、通常の地図生成コマンドへ。",
+      "summary": "推論・追跡・投影・合成・保存を一つの逐次処理にまとめて統合確認。",
+      "status": "統合確認",
+      "bundle": "pipeline",
+      "page": "bag1/images.html",
+      "image": "bag1/overlay.jpg",
+      "findings": [
+        "異なる2つのBAGの先頭6/4フレームで処理一式と設定復元を確認。",
+        "同じ出力への再開で、新規SAM3アップロードなし・分類とRGBの一致を確認。"
+      ],
+      "limits": [
+        "短区間の統合確認。別BAG全区間の認識精度評価ではない。"
+      ],
+      "metrics": [
+        {
+          "label": "統合確認",
+          "value": "2つのBAG"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "統合確認の記録",
+          "bundle": "pipeline",
+          "path": "README.md"
+        }
+      ],
+      "thumbnail": "/static/research/thumbnails/offline-pipeline.webp"
+    },
+    {
+      "id": "yellow-tracking",
+      "date": "2026-10-19",
+      "category": "road",
+      "title": "黄色い点字の誤検出と、短い欠落。",
+      "summary": "曖昧な点字指定を見直し、黄色の外観と時系列追跡で比較。",
+      "status": "比較記録",
+      "bundle": "yellow",
+      "page": "yellow/images.html",
+      "image": "yellow/example_3297_0.jpg",
+      "findings": [
+        "同じ170撮影フレーム・340視点を使い、入力JPEGの一致を確認して比較。",
+        "灰色路面への誤った着色と、見えている点字の検出欠落を検討。"
+      ],
+      "limits": [
+        "このBAGの黄色い点字が対象。白色・淡色の点字への一般化は未確認。",
+        "時系列の安定性は、意味認識の正解率とは異なる。"
+      ],
+      "metrics": [
+        {
+          "label": "撮影フレーム",
+          "value": "170"
+        },
+        {
+          "label": "前後の視点",
+          "value": "340"
+        }
+      ],
+      "evidence": [
+        {
+          "label": "実験ノート",
+          "bundle": "yellow",
+          "path": "README.md"
+        },
+        {
+          "label": "検証記録",
+          "bundle": "yellow",
+          "path": "verification.json"
+        }
+      ],
+      "thumbnail": "/static/research/thumbnails/yellow-tracking.webp"
+    }
+  ]
+}

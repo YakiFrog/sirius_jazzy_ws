@@ -31,6 +31,8 @@ def required_topics(mode, profile='mapping'):
     topics = ['/velodyne_points', '/imu', '/odom']
     if mode == 'sim':
         topics.append('/clock')
+    if profile == 'all_mapping':
+        topics += ['/tf', '/tf_static', '/scan3']
     if profile == 'localization':
         topics += ['/Odometry', '/tf', '/tf_static', '/map_localizer/pose',
                    '/map_localizer/status', '/localization/map', '/localization_ready',
@@ -39,22 +41,88 @@ def required_topics(mode, profile='mapping'):
 
 
 def recording_topics(mode, profile='mapping', include_derived_clouds=False):
-    topics = ['/velodyne_points', '/imu', '/odom',
+    topics = ['/velodyne_points', '/imu', '/odom', '/scan3', '/scan',
               '/odom/filtered', '/odometry/filtered', '/magnetometer', '/Odometry',
               '/tf', '/tf_static', '/theta/dual_fisheye/image_raw/compressed',
-              '/fastlio/diagnostics', '/diagnostics', '/rosout', '/roboteq/status']
+              '/fastlio/diagnostics', '/diagnostics', '/rosout', '/roboteq/status',
+              '/camera/stereo_sbs/compressed', '/camera/stereo_params',
+              '/robot_description', '/joint_states', '/cmd_vel', '/cmd_vel_nav',
+              '/cmd_vel_teleop', '/parameter_events', '/roboteq/odom', '/experiment_metadata']
     if mode == 'sim':
         topics += ['/clock', '/ground_truth/odom', '/sirius_web/time_status', '/sirius_web/sensor_config']
     if profile == 'localization':
-        topics += ['/scan3', '/map_localizer/pose', '/map_localizer/status', '/initialpose',
-                   '/localization/map', '/cloud_registered_body', '/robot_description',
-                   '/joint_states', '/cmd_vel', '/cmd_vel_teleop', '/parameter_events',
+        topics += ['/map_localizer/pose', '/map_localizer/status', '/initialpose',
+                   '/localization/map', '/cloud_registered_body',
                    '/map_localizer/correction', '/map_localizer/tf_status', '/localization_ready']
     if include_derived_clouds:
         topics.append('/velodyne_points_colored')
         if profile == 'localization':
             topics.append('/velodyne_points_leveled')
     return topics
+
+
+def validate_all_mapping(received, transforms):
+    """Require core sensor TF; report optional camera limitations without blocking."""
+    import math
+    if not received['/scan3'].ranges:
+        raise ValueError('/scan3: スキャンが空です')
+    graph = {}
+    for transform in transforms:
+        a, b = transform.header.frame_id.lstrip('/'), transform.child_frame_id.lstrip('/')
+        graph.setdefault(a, set()).add(b)
+        graph.setdefault(b, set()).add(a)
+    base = received['/odom'].child_frame_id.lstrip('/')
+    if not base:
+        raise ValueError('/odom: child_frame_id が空です')
+    reachable, pending = set(), [base]
+    while pending:
+        frame = pending.pop()
+        if frame not in reachable:
+            reachable.add(frame)
+            pending.extend(graph.get(frame, ()))
+    for topic in ('/velodyne_points', '/imu', '/scan3'):
+        frame = received[topic].header.frame_id.lstrip('/')
+        if not frame or frame not in reachable:
+            raise ValueError(f'{topic}: {base} から {frame!r} へのTFがありません')
+
+    warnings = []
+    for label, topic in [('THETA', '/theta/dual_fisheye/image_raw/compressed'),
+                         ('ZED', '/camera/stereo_sbs/compressed')]:
+        image = received.get(topic)
+        reason = None
+        if image is None or not image.data:
+            reason = '画像未受信'
+        elif image.header.frame_id.lstrip('/') not in reachable:
+            reason = 'カメラTF未接続'
+        if label == 'ZED' and reason is None:
+            try:
+                params = json.loads(received['/camera/stereo_params'].data)
+                for key in ('fx', 'fy', 'baseline', 'width', 'height', 'cx', 'cy'):
+                    value = float(params[key])
+                    if not math.isfinite(value) or (key not in ('cx', 'cy') and value <= 0):
+                        raise ValueError(key)
+            except (ValueError, TypeError, KeyError):
+                reason = '内部パラメータ未受信/不正'
+        if reason:
+            warnings.append(f'{label}: {reason}。{label}路面マッピング' +
+                            ('・THETA色付け' if label == 'THETA' else '') + 'はこの状態ではできません')
+    return warnings
+
+
+def snapshot_mapping(capture, ws):
+    """Keep configuration sources beside raw inputs; TF messages remain authoritative."""
+    paths = ['src/sirius/sirius_navigation/config', 'params',
+             'bash/startup_bash/start_3d_lio.sh', 'bash/startup_bash/start_theta_capture.sh']
+    for relative in paths:
+        source = ws/relative
+        if source.is_file():
+            shutil.copyfile(source, capture/source.name)
+        elif source.is_dir():
+            target = capture/('navigation_config' if relative.endswith('/config') else 'params')
+            shutil.copytree(source, target, ignore=shutil.ignore_patterns('__pycache__'))
+    revision = subprocess.run(['git', '-C', str(ws), 'rev-parse', 'HEAD'],
+                              capture_output=True, text=True, timeout=5)
+    (capture/'workspace_revision.txt').write_text(revision.stdout)
 
 
 def dump_runtime_parameters(node):
@@ -95,7 +163,7 @@ def preflight(mode, timeout, domain, profile='mapping'):
     """必須トピックの受信・RGBフィールド・TFを検査し、結果を表示する。"""
     import rclpy
     from rclpy.qos import qos_profile_sensor_data, QoSProfile, DurabilityPolicy
-    from sensor_msgs.msg import PointCloud2, Imu
+    from sensor_msgs.msg import PointCloud2, Imu, CompressedImage, LaserScan
     from nav_msgs.msg import Odometry
     from rosgraph_msgs.msg import Clock
     from std_msgs.msg import Bool, String
@@ -113,7 +181,9 @@ def preflight(mode, timeout, domain, profile='mapping'):
              '/map_localizer/pose': PoseStamped, '/map_localizer/status': String,
              '/localization/map': PointCloud2, '/localization_ready': Bool,
              '/fastlio/diagnostics': String, '/map_localizer/tf_status': String,
-             '/map_localizer/correction': TransformStamped}
+             '/map_localizer/correction': TransformStamped, '/scan3': LaserScan,
+             '/theta/dual_fisheye/image_raw/compressed': CompressedImage,
+             '/camera/stereo_sbs/compressed': CompressedImage, '/camera/stereo_params': String}
     required = {topic: types[topic] for topic in required_topics(mode, profile)}
     rgb_topic = '/velodyne_points' if mode == 'sim' else None
     # 任意トピックはメッセージ受信ではなくPublisher有無で判定する（/tf_staticはlatchedのため）
@@ -122,20 +192,42 @@ def preflight(mode, timeout, domain, profile='mapping'):
         '/tf_static': '任意。同上（latched配信）',
         '/Odometry': '任意。FAST-LIOのLiDARオドメトリ（大文字O。/odomとは別物。offline_3dmapでは未使用・比較用）',
         '/theta/dual_fisheye/image_raw/compressed': '任意。THETA色付け/BEV系ツール用',
+        '/scan3': '任意。slam_toolbox用の2Dスキャン（配信があれば記録）',
+        '/scan': '任意。別系統の2Dスキャン（配信があれば記録）',
+        '/camera/stereo_sbs/compressed': '任意。ZED画像を後処理する場合に必要',
+        '/camera/stereo_params': '任意。ZED画像の内部パラメータ',
     }
 
     rclpy.init(args=[])
     node = rclpy.create_node('record_3d_preflight')
     received = {}
+    transforms = []
+
+    def receive(topic, message):
+        received[topic] = message
+        if topic in ('/tf', '/tf_static'):
+            transforms.extend(message.transforms)
+
     sensor_profiles = []
     profile_sub = node.create_subscription(String, '/sirius_web/sensor_config', lambda msg: sensor_profiles.append(msg.data), 10) if mode == 'sim' else None
+    subscription_types = dict(required)
+    if profile == 'all_mapping':
+        from rosidl_runtime_py.utilities import get_message
+        discovery_end = time.monotonic() + 1.0
+        while time.monotonic() < discovery_end:
+            rclpy.spin_once(node, timeout_sec=.1)
+        wanted = set(recording_topics(mode, profile))
+        subscription_types.update({topic: typ for topic, typ in types.items() if topic in wanted})
+        for topic, names in node.get_topic_names_and_types():
+            if topic in wanted and topic not in subscription_types and len(names) == 1:
+                subscription_types[topic] = get_message(names[0])
     subs = [node.create_subscription(typ, topic,
-                                     lambda msg, t=topic: received.__setitem__(t, msg),
+                                     lambda msg, t=topic: receive(t, msg),
                                      QoSProfile(depth=100, durability=DurabilityPolicy.TRANSIENT_LOCAL)
-                                     if topic in ('/tf_static', '/localization/map', '/map_localizer/correction', '/localization_ready') else qos_profile_sensor_data)
-            for topic, typ in required.items()]
+                                     if topic in ('/tf_static', '/camera/stereo_params', '/robot_description', '/localization/map', '/map_localizer/correction', '/localization_ready') else qos_profile_sensor_data)
+            for topic, typ in subscription_types.items()]
     end = time.monotonic() + timeout
-    while set(received) != set(required) and time.monotonic() < end:
+    while (profile == 'all_mapping' or not set(required) <= set(received)) and time.monotonic() < end:
         rclpy.spin_once(node, timeout_sec=.1)
 
     # 任意トピックのPublisher検出はディスカバリ完了を少し待つ
@@ -154,7 +246,14 @@ def preflight(mode, timeout, domain, profile='mapping'):
         if not received['/localization_ready'].data:
             _line('✗', '自己位置推定が準備未完了です。/map_localizer/tf_status を確認してください')
             ng += 1
-    for topic, note in optional.items():
+    if profile == 'all_mapping':
+        print('[記録対象トピックの受信状況：未配信も録画対象に残し、途中起動時に収録]', flush=True)
+        for topic in recording_topics(mode, profile):
+            status = '受信済み' if topic in received else '配信元あり・未受信' if node.count_publishers(topic) else '未配信'
+            _line('✓' if topic in received else '▲', f'{topic}: {status}')
+    for topic, note in ({} if profile == 'all_mapping' else optional).items():
+        if topic in required:
+            continue
         try:
             pubs = node.get_publishers_info_by_topic(topic)
         except Exception:  # noqa: BLE001
@@ -231,6 +330,15 @@ def preflight(mode, timeout, domain, profile='mapping'):
                                'parameters': {key: parameter_value_to_python(value) for key, value in zip(names, values)
                                               if value.type != 0}}
             break
+    if profile == 'all_mapping' and set(required) <= set(received):
+        try:
+            warnings = validate_all_mapping(received, transforms)
+            for warning in warnings:
+                _line('▲', warning)
+            _line('✓', '3D・2D地図用の基本入力とセンサーTFを確認（カメラは任意）')
+        except ValueError as error:
+            _line('✗', str(error))
+            ng += 1
     node.destroy_node()
     rclpy.shutdown()
 
@@ -261,13 +369,13 @@ def main(argv=None):
     parser.add_argument('name', nargs='?')
     parser.add_argument('--directory', default=str(Path.home()/'rosbag2_data'))
     parser.add_argument('--config')
-    parser.add_argument('--profile', choices=['mapping', 'localization'], default='mapping')
+    parser.add_argument('--profile', choices=['mapping', 'localization', 'all_mapping'], default='mapping')
     parser.add_argument('--include-derived-clouds', action='store_true',
                         help='色付き・傾き補正済み点群も記録（通常は生点群と画像から再生成）')
     parser.add_argument('--duration', type=float, help='Stop after this many wall-clock seconds')
     parser.add_argument('--preflight-timeout', type=float, default=10.)
     parser.add_argument('--yes', action='store_true', help='確認プロンプトをスキップして録画開始')
-    args = parser.parse_args(argv)
+    args = parser.parse_intermixed_args(argv)
     if args.duration is not None and args.duration <= 0:
         parser.error('--duration must be positive')
 
@@ -277,7 +385,7 @@ def main(argv=None):
         return value
 
     name = validate_name(args.name) if args.name else datetime.now(
-        ZoneInfo('Asia/Tokyo')).strftime(f'{"localization3d" if args.profile == "localization" else "slam3d"}_{args.mode}_%Y%m%d_%H%M%S')
+        ZoneInfo('Asia/Tokyo')).strftime(f'{"localization3d" if args.profile == "localization" else "mapping_all" if args.profile == "all_mapping" else "slam3d"}_{args.mode}_%Y%m%d_%H%M%S')
     ws = Path(__file__).resolve().parents[2]
     config = Path(args.config).expanduser() if args.config else (
         ws/'params/fast_lio_sirius_sim.yaml' if args.mode == 'sim' else
@@ -290,7 +398,7 @@ def main(argv=None):
     topics = recording_topics(args.mode, args.profile, args.include_derived_clouds)
     omitted = sorted(set(recording_topics(args.mode, args.profile, True)) - set(topics))
 
-    interactive = sys.stdin.isatty() and not args.yes
+    interactive = (sys.stdin.isatty() or args.profile == 'all_mapping') and not args.yes
     memo = ''
     print('', flush=True)
     print('-------------------------------------------------', flush=True)
@@ -300,7 +408,11 @@ def main(argv=None):
     if omitted:
         print(f' 容量削減   : {", ".join(omitted)} は記録しません（再生成可能）', flush=True)
     if interactive:
-        name = validate_name(ask(f' bag名 [{name}]: ', name))
+        entered_name = ask(f' bag名 [{name}]: ', name)
+        if entered_name is None:
+            print('入力が閉じているため中止しました。自動実行は --yes を指定してください。', flush=True)
+            return 0
+        name = validate_name(entered_name)
         bag = Path(args.directory).expanduser().resolve()/name
         if bag.exists():
             parser.error(f'Bag already exists: {bag}')
@@ -324,6 +436,8 @@ def main(argv=None):
     capture.mkdir(parents=True, exist_ok=False)
     if args.profile == 'localization':
         snapshot_localization(capture, ws)
+    if args.profile == 'all_mapping':
+        snapshot_mapping(capture, ws)
     profile = frames.pop('_sensor_profile', None)
     fastlio_runtime = frames.pop('_fastlio_runtime', None)
     if fastlio_runtime is not None:
@@ -354,6 +468,8 @@ def main(argv=None):
         for topic in ('/localization/map', '/robot_description', '/map_localizer/correction', '/localization_ready'):
             qos[topic] = {'reliability': 'reliable', 'durability': 'transient_local', 'history': 'keep_last', 'depth': 1}
     qos_path = capture/'qos.yaml'
+    for topic in ('/robot_description', '/camera/stereo_params'):
+        qos[topic] = {'reliability': 'reliable', 'durability': 'transient_local', 'history': 'keep_last', 'depth': 1}
     qos_path.write_text(yaml.safe_dump(qos))
     (capture/'recording.json').write_text(json.dumps({'mode': args.mode, 'profile': args.profile, 'topics': topics,
         'include_derived_clouds': args.include_derived_clouds, 'omitted_derived_clouds': omitted,
@@ -396,6 +512,8 @@ def main(argv=None):
     print('Saved counts:', {t: counts[t] for t in required}, flush=True)
     if args.profile == 'localization':
         print('自己位置推定検証用BAGを保存しました。地図・設定は capture/、表示はFoxgloveでMCAPを開いてください。', flush=True)
+    elif args.profile == 'all_mapping':
+        print('THETA/ZED路面・3D・2D地図用BAGを保存しました。手順: docs/record_mapping.md', flush=True)
     else:
         print(f'Generate maps:\n  offline_3dmap "{bag}"', flush=True)
     return 0 if code in (0, 130, -signal.SIGINT) else code

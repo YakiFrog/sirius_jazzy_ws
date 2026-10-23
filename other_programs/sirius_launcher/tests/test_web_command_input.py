@@ -69,6 +69,8 @@ def command(tmp_path, monkeypatch):
 def test_terminal_input_reconnect_and_ctrl_c(command):
     name, manager, log = command
     assert 'DOMAIN=224' in log()
+    wait_for(lambda: session_request(name).get('input_wait', {}).get('confirmed'))
+    assert session_request(name)['input_wait']['interactive']
     assert session_request(name, '地図 2\n')['ok']
     wait_for(lambda: '選択=地図 2' in log())
     # A new process manager has no in-memory session; use the persisted endpoint.

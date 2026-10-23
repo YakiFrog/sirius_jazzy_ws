@@ -7,6 +7,33 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from resource_monitor import ResourceMonitor
+from web_server import classify_process_rows
+
+
+def test_process_classification_marks_hidden_and_unrelated():
+    rows = [
+        {'pid': 1, 'related': True, 'command': 'managed-session'},
+        {'pid': 2, 'related': False, 'command': 'tracked-alias'},
+        {'pid': 3, 'related': False, 'command': 'duplicate-alias'},
+        {'pid': 4, 'related': False, 'command': 'external-alias'},
+        {'pid': 5, 'related': False, 'command': 'unrelated-tool'},
+        {'pid': 6, 'related': False, 'command': ''},
+    ]
+    result = classify_process_rows(
+        rows,
+        aliases={2: 'alias_a', 3: 'alias_a', 4: 'alias_b'},
+        managed_pids={1, 2},
+        tracked_aliases={'alias_a': 2, 'alias_b': None},
+        owners={1: 'session_a'},
+    )
+    by_pid = {row['pid']: row for row in result}
+    assert by_pid[1]['managed'] and by_pid[1]['session'] == 'session_a'
+    assert not by_pid[1]['hidden'] and not by_pid[1]['unrelated']
+    assert by_pid[2]['alias'] == 'alias_a' and not by_pid[2]['hidden']
+    assert by_pid[3]['hidden'] and by_pid[3]['hidden_kind'] == 'duplicate'
+    assert by_pid[4]['hidden'] and by_pid[4]['hidden_kind'] == 'external'
+    assert by_pid[5]['unrelated'] and not by_pid[5]['hidden']
+    assert not by_pid[6]['unrelated'] and not by_pid[6]['hidden']  # kernel thread
 
 
 def test_requests_do_not_wait_for_an_in_progress_sample(monkeypatch):

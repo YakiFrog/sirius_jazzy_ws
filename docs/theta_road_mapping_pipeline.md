@@ -78,10 +78,11 @@ python3 bash/startup_bash/generate_theta_road_map.py BAG_PATH NEW_OUTPUT_DIRECTO
 ## 出力、再開、再現
 
 - Map Select: 出力フォルダ名 + `/road_temporal`。
-- `road_temporal.colored.pgm/.json`: クラスID地図と格子・パレット・コスト情報。
-- `road_temporal.texture.png`: 同じ格子のBGRAテクスチャ。
+- `road_temporal.colored.pgm/.json`: 分類IDと減色RGBのパレットインデックス、格子・パレット・コスト情報。研究の配信・評価用の正本。
+- `road_temporal.texture.png`: 再書き出し・解析のための同じ格子のBGRA生成中間結果。Loaderの入力には使わない。
 - `road_temporal.raw.texture.png`: 明るさ補正前の合成RGB（補正有効時）。
-- `images.html` と `texture.jpg/overlay.jpg/semantic.jpg`: スマホ向けの3種類の画像。
+- `images.html` と `indexed.png`: PGM＋JSONだけから復元したスマホ向け確認画像。PNG画像をLoaderに与えるものではない。
+- `texture.jpg/overlay.jpg/semantic.jpg`: RGB合成や分類を調べる参考画像。Loaderの画質評価には使わない。
 - `baseline.class_ids.png`: 領域補正前の分類。
 - `map_evidence.npz`: 元の観測票とscan可視サンプル数（配列はworldの下原点）。
 - `observations/`: フレーム単位のモデル結果・スコア・前向き追跡、推論設定／アップロードSHA。
@@ -102,6 +103,25 @@ python3 bash/startup_bash/generate_theta_road_map.py BAG_PATH NEW_OUTPUT_DIRECTO
 暗所の追加推論・双方向追跡・投影・合成・領域補正は新しく実行し、再利用元と
 マスク／スコアのSHAもフレームごとのJSONに残す。過去の地図をコピーする処理ではない。
 
+## PGMのパレット割り当てと表示
+
+認識した芝生・点字・車道・歩道は予約ID 3〜6 の分類色を使う。
+それ以外の観測済み路面はRGBを各5段階（0,64,128,192,255）へ量子化し、
+125色をID 7〜131へ割り当てる。RGBが分類色と同じでも別インデックスを使い、
+色が似ているだけの場所に分類やコストを付けない。未観測のID 0や分類・構造IDは変更しない。
+
+SAM3MapLoaderの既定 `visualization_mode=indexed` はPGMとJSONだけを読み、
+全インデックスをJSONの色で復元する。`semantic` は分類だけを抽出する。
+PNG直接表示の `texture` / `both` モードは廃止した。
+
+2026-10-23以前の逐次生成版には、PGMが分類IDだけになり、路面のRGBがPNGにだけ
+保存されていたものがある。原本を残し、以下で従来形式の別出力を作れる。
+生成時にRGBの中間結果から減色するが、出力地図の読み込みにはPNGを必要としない。
+
+```bash
+python3 bash/startup_bash/indexed_road_export.py SOURCE_MAP NEW_OUTPUT
+```
+
 ## 地図テクスチャの暗部補正
 
 `texture.tone` は通常生成にも適用される表示用補正。既定は enabled=true、gain=3、
@@ -111,7 +131,7 @@ RGB全成分を同じ倍率で変え、黒と明るい画素、未観測領域�
 局所フィルタを使わず、画素の並びや輪郭を変更しない。8bit丸めによる色差は生じる。
 影の推定や除去ではないので、暗い材質も明るくなり、記録されていない細部は復元できない。
 
-セマンティック推論・領域補正がすべて完了してから適用するため、ラベル、投票、
+セマンティック推論・領域補正がすべて完了してから適用するため、分類ID、投票、
 色境界による補正には影響しない。無効化は `texture.tone.enabled: false`。
 元のRGBを保存し、manifestに画素統計とパラメータを記録する。
 

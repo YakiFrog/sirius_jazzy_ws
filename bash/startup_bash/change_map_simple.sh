@@ -28,6 +28,10 @@ fi
 
 map_name="$1"
 map_path="$MAPS_DIR/$map_name.yaml"
+# 整理後の maps/<地図名>/<地図名>.yaml も従来の地図名指定で読み込める。
+if [ ! -f "$map_path" ] && [[ "$map_name" != */* ]]; then
+    map_path="$MAPS_DIR/$map_name/$map_name.yaml"
+fi
 
 # 地図ファイルの存在確認
 if [ ! -f "$map_path" ]; then

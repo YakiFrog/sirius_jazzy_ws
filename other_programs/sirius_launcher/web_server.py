@@ -13,6 +13,9 @@ Home / Terminal / Monitor / 設定を切り替える専用コンソール。
 """
 import argparse
 import codecs
+import fcntl
+import struct
+import termios
 from functools import lru_cache
 import json
 import os
@@ -37,11 +40,24 @@ from process_manager import ProcessManager
 from command_session import session_request
 from resource_monitor import ResourceMonitor
 from tf_monitor import TFMonitor
-from process_health import LogHealth, battery_health
+from tf_readiness import tf_readiness
+from topic_monitor import TopicMonitor
+from process_health import LogHealth, battery_health, readiness_health, readiness_pattern
+from input_wait import InputWaitMonitor
 from emergency_stop_command import send_emergency_stop
+from teleop_process import TeleopBridge
+from teleop_control import VelocityControl
+from documentation_notes import register_documentation_notes
+from file_browser import register_file_browser
+from face_bridge import register_face
+from ear_control import register_ear
+from hotspot_status import register_hotspot
+from research_archive import register_research_archive
+from preset_metadata import read_preset_metadata, preset_presentation
 
 RESOURCES = ResourceMonitor()
 TF_MONITOR = TFMonitor()
+TOPIC_MONITOR = TopicMonitor()
 EMERGENCY_STOP_LOCK = threading.Lock()
 
 app = Flask(__name__)
@@ -78,17 +94,22 @@ def pid_path(name):
 
 
 LOG_HEALTH = LogHealth()
+INPUT_WAIT = InputWaitMonitor()
 
 
-def program_health(name):
-    health = LOG_HEALTH.snapshot(log_path(name))
+def program_health(name, uptime=None):
+    required = readiness_pattern(name)
+    health = (LOG_HEALTH.snapshot(log_path(name), required=required) if required
+              else LOG_HEALTH.snapshot(log_path(name)))
     if name == 'sirius_ble_battery':
         health = battery_health(health, TF_MONITOR.snapshot(DEFAULT_DOMAIN))
+    else:
+        health = readiness_health(health, name, uptime)
     return health
 
 
-def has_error(name):
-    return program_health(name)['state'] == 'error'
+def has_error(name, uptime=None):
+    return program_health(name, uptime)['state'] == 'error'
 
 
 def process_uptime(pid):
@@ -116,88 +137,6 @@ def clean_term_text(s):
     return s
 
 
-class TeleopBridge:
-    """十字キーパッド → /controller (ControllerInput) のブリッジ。
-
-    rclpyヘルパー(teleop_bridge.py)を遅延起動し、stdinパイプにキーコードを流す。
-    sirius_controller_node（scnエイリアス）が起動中ならリモート操作できる。
-    """
-
-    KEYS = {65, 66, 67, 68, 44, 46}  # 矢印4種 + 並進停止(,) + 旋回停止(.)
-
-    def __init__(self, script, log_path):
-        self.script = script
-        self.log_path = log_path
-        self.lock = threading.Lock()
-        self.proc = None
-        self.domain = None
-        self.error = ""
-
-    def _tail(self):
-        try:
-            with open(self.log_path, "r", errors="ignore") as f:
-                f.seek(0, os.SEEK_END)
-                size = f.tell()
-                f.seek(max(0, size - 2000))
-                return f.read().strip().replace("\n", " | ")[-300:]
-        except OSError:
-            return "(ログなし)"
-
-    def _spawn(self, domain):
-        ws = Path(self.script).resolve().parents[2]
-        cmd = (
-            "source /opt/ros/jazzy/setup.bash 2>/dev/null; "
-            f"source '{ws}/install/setup.bash' 2>/dev/null; "
-            f"exec python3 '{self.script}'"
-        )
-        env = os.environ.copy()
-        env["ROS_DOMAIN_ID"] = str(domain)
-        env.setdefault("LANG", "C.UTF-8")
-        logf = open(self.log_path, "ab", buffering=0)
-        self.proc = subprocess.Popen(
-            ["bash", "-c", cmd], stdin=subprocess.PIPE,
-            stdout=logf, stderr=subprocess.STDOUT, env=env)
-        self.domain = str(domain)
-        self.error = ""
-        time.sleep(0.3)
-        if self.proc.poll() is not None:
-            self.error = "ブリッジ起動失敗: " + self._tail()
-            raise RuntimeError(self.error)
-
-    def ensure(self, domain):
-        with self.lock:
-            if (self.proc is None or self.proc.poll() is not None
-                    or self.domain != str(domain)):
-                try:
-                    self._spawn(str(domain))
-                except Exception as e:  # noqa: BLE001
-                    self.error = str(e)
-                    return False
-            return True
-
-    def send(self, key, domain):
-        with self.lock:
-            if (self.proc is None or self.proc.poll() is not None
-                    or self.domain != str(domain)):
-                try:
-                    self._spawn(str(domain))
-                except Exception as e:  # noqa: BLE001
-                    self.error = str(e)
-                    return False
-            try:
-                self.proc.stdin.write(f"{key}\n".encode())
-                self.proc.stdin.flush()
-                self.error = ""
-                return True
-            except (BrokenPipeError, OSError):
-                self.error = "ブリッジに書き込めません（ログ参照）"
-                return False
-
-    def status(self):
-        with self.lock:
-            alive = self.proc is not None and self.proc.poll() is None
-            return {"alive": alive, "pid": (self.proc.pid if alive else 0),
-                    "domain": self.domain or "", "error": self.error}
 
 
 TELEOP = TeleopBridge(
@@ -256,13 +195,14 @@ class TermSession:
                     self.text = self.text[-TERM_MAX_CHARS:]
         self.alive = False
 
-    def read_since(self, offset):
+    def read_since(self, offset, raw=False):
+        raw_output = raw
         with self.lock:
             base = self.total - len(self.text)
             if offset < base or offset > self.total:
                 offset = max(base, self.total - 20000)
             raw = self.text[offset - base:]
-            return clean_term_text(raw), self.total
+            return (raw if raw_output else clean_term_text(raw)), self.total
 
     def write(self, data):
         try:
@@ -511,7 +451,7 @@ def annotate_rows(rows):
     """各行にエイリアス名・年齢表示・重複/エラーフラグを付ける。"""
     for r in rows:
         r["alias"] = best_alias_for(r["cmd"])
-        r["error"] = has_error(r["alias"]) if r["alias"] else False
+        r["error"] = has_error(r["alias"], r["age"]) if r["alias"] else False
         a = r["age"]
         r["age_txt"] = f"{a // 3600}h{(a % 3600) // 60}m" if a >= 3600 else f"{a // 60}m{a % 60}s"
     groups = {}
@@ -543,6 +483,62 @@ def session_owner_map(sessions=None):
     return owners
 
 
+def classify_process_rows(rows, aliases, managed_pids, tracked_aliases, owners):
+    """Monitor用に、管理下・隠れ・無関係を判定した行を返す。
+
+    aliases: PID -> 起動可能コマンドのエイリアス名
+    managed_pids: LauncherのPIDファイルまたはセッション管理下のPID集合
+    tracked_aliases: エイリアス名 -> Launcherが把握しているPID（未起動ならNone）
+    """
+    out = []
+    for row in rows:
+        pid = row.get("pid")
+        alias = aliases.get(pid) or None
+        managed = pid in managed_pids
+        hidden = bool(alias and not managed)
+        related = bool(row.get("related") or alias or managed)
+        hidden_kind = ""
+        if hidden:
+            hidden_kind = ("duplicate" if tracked_aliases.get(alias) is not None
+                           else "external")
+        unrelated = bool((row.get("command") or "").strip()) and not related
+        out.append({**row, "alias": alias, "session": owners.get(pid, ""),
+                    "managed": managed, "hidden": hidden, "hidden_kind": hidden_kind,
+                    "related": related, "unrelated": unrelated})
+    return out
+
+
+def enrich_resource_processes(rows):
+    """現在の全プロセスを、起動可能コマンドとの照合結果で分類する。"""
+    sessions = managed_sessions()
+    owners = session_owner_map(sessions)
+    aliases = {row.get("pid"): best_alias_for(row.get("command") or "")
+               for row in rows}
+    tracked = {}
+    managed = set(owners)
+    try:
+        managed.add(os.getpid())
+        managed.update(child.pid for child in
+                       psutil.Process(os.getpid()).children(recursive=True))
+    except psutil.Error:
+        pass
+    for alias in {name for name in aliases.values() if name}:
+        try:
+            pid = running_pid(alias)
+        except (psutil.Error, OSError):
+            pid = None
+        tracked[alias] = pid
+        if pid is None:
+            continue
+        managed.add(pid)
+        try:
+            managed.update(child.pid for child in
+                           psutil.Process(pid).children(recursive=True))
+        except psutil.Error:
+            pass
+    return classify_process_rows(rows, aliases, managed, tracked, owners)
+
+
 def external_matches(sessions=None, owners=None):
     """外部起動プロセスをエイリアスへ対応付ける（エイリアス名 -> [pid]）。
 
@@ -566,7 +562,7 @@ def ps_snapshot():
     return annotate_rows(rows)
 
 
-def save_presets_to_file(path, presets, backup=True):
+def save_presets_to_file(path, presets, backup=True, metadata=None):
     """bash_alias2.sh の先頭プリセット領域のみ書き換える（以降は保持）。"""
     with open(path, encoding="utf-8") as f:
         lines = f.read().split("\n")
@@ -577,10 +573,13 @@ def save_presets_to_file(path, presets, backup=True):
             head_index = i
             break
     tail = lines[head_index:]
+    metadata = read_preset_metadata(path) if metadata is None else metadata
     block = []
     for name, items in presets:
         block.append(f"# PRESET: {name}")
         block.append(f"# PRESET_ITEMS: {','.join(items)}")
+        settings = preset_presentation(name, items, metadata)
+        block.append('# PRESET_UI: ' + json.dumps(settings, ensure_ascii=False))
         block.append("")
     if backup:
         import shutil
@@ -605,7 +604,8 @@ def load_aliases(path):
             its.append({"name": name, "desc": desc, "subgroup": sub})
             BUTTONS[name] = cmd
         GROUPS.append({"name": gname, "desc": descs.get(gname, ""), "items": its})
-    PRESETS = [{"name": n, "items": i} for n, i in presets]
+    metadata = read_preset_metadata(path)
+    PRESETS = [{"name": n, "items": i, **preset_presentation(n, i, metadata)} for n, i in presets]
 
 
 def get_manager(name):
@@ -732,6 +732,48 @@ def launch_specs_snapshot():
     with LAUNCH_SPECS_LOCK:
         _load_launch_specs_locked()
         return {name: dict(value) for name, value in LAUNCH_SPECS.items()}
+
+
+def program_identity(name):
+    pid = running_pid(name)
+    if pid is None:
+        sessions = managed_sessions()
+        if sessions.get(name):
+            pid = sessions[name][0]['pid']
+        else:
+            pids = external_matches(sessions, session_owner_map(sessions)).get(name, [])
+            pid = pids[0] if pids else None
+    return process_identity(pid)
+
+
+def process_identity(pid):
+    if pid is None:
+        return None
+    try:
+        return [int(pid), psutil.Process(int(pid)).create_time()]
+    except (ValueError, psutil.NoSuchProcess, psutil.AccessDenied):
+        return None
+
+
+def record_preset_origin(name, preset):
+    identity = program_identity(name)
+    if identity is None:
+        return
+    with LAUNCH_SPECS_LOCK:
+        _load_launch_specs_locked()
+        spec = LAUNCH_SPECS.setdefault(name, {})
+        origins = spec.get('presets', []) if spec.get('identity') == identity else []
+        spec.update(identity=identity, presets=list(dict.fromkeys([*origins, preset])))
+        _save_launch_specs_locked()
+
+
+def attach_preset_origins(status):
+    specs = launch_specs_snapshot()
+    for name, state in status.items():
+        spec = specs.get(name, {})
+        identity = process_identity(state.get('pid'))
+        state['started_by_presets'] = (spec.get('presets', [])
+                                      if identity is not None and spec.get('identity') == identity else [])
 
 
 def running_program_names():
@@ -896,6 +938,14 @@ def auth_ok():
     if not PASSWORD:
         return True
     return request.cookies.get("pw") == PASSWORD or request.args.get("pw") == PASSWORD
+
+
+register_documentation_notes(app, auth_ok)
+register_file_browser(app, auth_ok)
+register_face(app, auth_ok)
+register_ear(app, auth_ok, domain=lambda: DEFAULT_DOMAIN)
+register_hotspot(app, auth_ok)
+register_research_archive(app, auth_ok)
 
 
 def render_page():
@@ -1141,29 +1191,41 @@ def api_status():
             pid = running_pid(name)
             if pid is None:
                 continue
+            uptime = process_uptime(pid)
+            health = program_health(name, uptime)
             out[name] = {"running": True, "pid": pid, "returncode": None,
-                         "error": has_error(name), "domain": "", "source": "launcher",
-                         "uptime": process_uptime(pid)}
+                         "error": health['state'] == 'error', "health": health,
+                         "domain": "", "source": "launcher", "uptime": uptime}
         # PIDファイルが無いWebセッションも稼働中として返す（外部起動より優先）
         for name, infos in sessions.items():
             if name in BUTTONS and name not in out:
+                uptime = process_uptime(infos[0]["pid"])
+                health = program_health(name, uptime)
                 out[name] = {"running": True, "pid": infos[0]["pid"], "returncode": None,
-                             "error": has_error(name), "domain": "",
-                             "source": "session",
+                             "error": health['state'] == 'error', "health": health,
+                             "domain": "", "source": "session",
                              "pids": [info["pid"] for info in infos],
-                             "uptime": process_uptime(infos[0]["pid"])}
+                             "uptime": uptime}
         # 外部（別ターミナル等）で起動済みのものを署名一致で拾う。
         # セッションの子孫は二重表示しない。
         for name, pids in external_matches(
                 sessions, session_owner_map(sessions)).items():
             if name not in out:
+                uptime = process_uptime(pids[0])
+                health = program_health(name, uptime)
                 out[name] = {"running": True, "pid": pids[0], "returncode": None,
-                             "error": has_error(name), "domain": "",
-                             "source": "external", "pids": pids,
-                             "uptime": process_uptime(pids[0])}
-    for name, record in out.items():
-        record['health'] = program_health(name)
-        record['error'] = record['health']['state'] == 'error'
+                             "error": health['state'] == 'error', "health": health,
+                             "domain": "", "source": "external", "pids": pids,
+                             "uptime": uptime}
+    for name, state in out.items():
+        # The PTY owner stays an ancestor of its child across Web server restarts.
+        # Older sessions keep working through the read-only /proc fallback.
+        wait = session_request(name).get('input_wait') if name in sessions else None
+        if not isinstance(wait, dict) or 'state' not in wait:
+            wait = INPUT_WAIT.snapshot(state['pid'], log_path(name), interactive=name in sessions)
+        state['input_wait'] = wait
+        state['input_waiting'] = wait['state'] in {'waiting', 'possible'}
+    attach_preset_origins(out)
     return jsonify(out)
 
 
@@ -1256,6 +1318,8 @@ def api_preset():
                 continue
             seen.add(n)
             ok, msg = start_one(n, domain)
+            if ok:
+                record_preset_origin(n, name)
             if ok and msg.startswith("already running"):
                 skipped.append(n)
             elif ok:
@@ -1285,15 +1349,36 @@ def api_presets_save():
         return jsonify({"error": "auth"}), 401
     body = request.json or {}
     raw = body.get("presets", [])
+    if not isinstance(raw, list) or any(not isinstance(p, dict) for p in raw):
+        return jsonify({"error": "プリセットの形式が不正です"}), 400
     clean = []
+    metadata = read_preset_metadata(ALIAS_FILE)
+    names = set()
     for p in raw:
         name = str(p.get("name", "")).strip()
-        items = [a for a in p.get("items", []) if a in BUTTONS]
+        category = p.get('category', metadata.get(name, {}).get('category', ''))
+        note = p.get('note', metadata.get(name, {}).get('note', ''))
+        if not isinstance(note, str) or len(note) > 2000:
+            return jsonify({'error': 'メモは2000文字までで入力してください'}), 400
+        if (len(name) > 200 or '\n' in name or '\r' in name or name in names
+                or not isinstance(category, str) or len(category) > 60
+                or '\n' in category or '\r' in category
+                or ('visible' in p and type(p['visible']) is not bool)
+                or not isinstance(p.get('items', []), list)):
+            return jsonify({"error": "名前は重複なしで200文字、用途は60文字までの1行で入力してください"}), 400
+        if not name or not p.get('items'):
+            return jsonify({'error': 'プリセット名と起動するプログラムを1つ以上設定してください'}), 400
+        unknown = [a for a in p['items'] if not isinstance(a, str) or a not in BUTTONS]
+        if unknown:
+            return jsonify({'error': '登録されていないプログラムが含まれています。一覧から選び直してください'}), 400
+        items = list(dict.fromkeys(p['items']))
         if name and items:
             clean.append((name, items))
+            names.add(name)
+            metadata[name] = {'category': category, 'visible': p.get('visible', metadata.get(name, {}).get('visible', True)), 'note': note}
     try:
         with LOCK:
-            save_presets_to_file(ALIAS_FILE, clean)
+            save_presets_to_file(ALIAS_FILE, clean, metadata=metadata)
             load_aliases(ALIAS_FILE)
     except Exception as error:  # noqa: BLE001
         return jsonify({"error": str(error)}), 500
@@ -1366,36 +1451,64 @@ def api_emergency_stop():
 def api_teleop():
     if not auth_ok():
         return jsonify({"error": "auth"}), 401
-    body = request.json or {}
-    key = body.get("key")
-    domain = str(body.get("domain") or DEFAULT_DOMAIN)
-    if key == "stop":
-        ok = TELEOP.send(44, domain)
-        time.sleep(0.15)
-        ok = TELEOP.send(46, domain) and ok
-    elif isinstance(key, int) and not isinstance(key, bool) and key in TeleopBridge.KEYS:
-        ok = TELEOP.send(key, domain)
-    else:
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({"error": "invalid request"}), 400
+    action = body.get('action')
+    session, sequence = body.get('session'), body.get('seq')
+    if (action not in ('arm', 'heartbeat', 'key', 'disable', 'stop')
+            or not isinstance(session, str) or not re.fullmatch(r'[a-zA-Z0-9_-]{16,80}', session)
+            or type(sequence) is not int or sequence < 1):
+        return jsonify({"error": "invalid action, session or sequence"}), 400
+    if action == 'key' and (type(body.get('key')) is not int or body['key'] not in VelocityControl.KEYS):
         return jsonify({"error": "invalid key"}), 400
-    st = TELEOP.status()
-    st["ok"] = ok
-    return jsonify(st), 200 if ok else 502
+    if 'route_mode' in body and (action != 'arm' or body['route_mode'] not in ('auto', 'mux')):
+        return jsonify({'error': 'invalid route mode'}), 400
+    domain = str(body.get('domain') or DEFAULT_DOMAIN or '53')
+    if not domain.isdigit() or not 0 <= int(domain) <= 232:
+        return jsonify({"error": "invalid ROS domain"}), 400
+    result = TELEOP.command({k: body[k] for k in ('action', 'session', 'seq', 'key', 'route_mode') if k in body}, domain)
+    result = {**TELEOP.status(session), **result}
+    return jsonify(result), 200 if result.get('ok') else 409
 
 
 @app.route("/api/teleop/status")
 def api_teleop_status():
     if not auth_ok():
         return jsonify({"error": "auth"}), 401
-    return jsonify(TELEOP.status())
+    response = jsonify(TELEOP.status(request.args.get('session')))
+    response.headers['Cache-Control'] = 'no-store'
+    return response
 
 
 @app.route("/api/tf")
 def api_tf():
     if not auth_ok():
         return jsonify({"error": "auth"}), 401
-    response = jsonify(TF_MONITOR.snapshot(DEFAULT_DOMAIN))
+    snapshot = TF_MONITOR.snapshot(DEFAULT_DOMAIN)
+    snapshot['readiness'] = tf_readiness(snapshot)
+    response = jsonify(snapshot)
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+@app.route("/api/topics")
+def api_topics():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    response = jsonify(TOPIC_MONITOR.snapshot(DEFAULT_DOMAIN))
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.route("/api/topics/measure", methods=["POST"])
+def api_topics_measure():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    body = request.json or {}
+    result = TOPIC_MONITOR.measure(DEFAULT_DOMAIN, body.get("topic"), body.get("duration"))
+    status = result.pop("status", 200)
+    return jsonify(result), status
 
 
 @app.route("/api/battery")
@@ -1424,13 +1537,7 @@ def api_resources():
         data.pop("processes", None)
         data.pop("history", None)
     elif data.get("available"):
-        sessions = managed_sessions()
-        owners = session_owner_map(sessions)
-        data["processes"] = [{
-            **row,
-            "alias": best_alias_for(row["command"]) if row["related"] else None,
-            "session": owners.get(row["pid"], ""),
-        } for row in data["processes"]]
+        data["processes"] = enrich_resource_processes(data["processes"])
     response = jsonify(data)
     response.headers["Cache-Control"] = "no-store"
     return response
@@ -1521,8 +1628,56 @@ def api_term_read():
         s = TERMS.get(name)
     if s is None:
         return jsonify({"error": "no such term"}), 404
-    data, new_offset = s.read_since(offset)
+    data, new_offset = s.read_since(offset, raw=request.args.get('raw') == '1')
     return jsonify({"data": data, "offset": new_offset, "alive": s.alive})
+
+
+@app.route('/api/program_terminal/read')
+def api_program_terminal_read():
+    if not auth_ok():
+        return jsonify({'error': 'auth'}), 401
+    name = request.args.get('name', '')
+    if name not in BUTTONS:
+        return jsonify({'error': 'unknown alias'}), 404
+    try:
+        offset = max(0, int(request.args.get('offset', 0)))
+    except ValueError:
+        return jsonify({'error': 'invalid offset'}), 400
+    interactive = session_request(name).get('ok', False)
+    try:
+        with open(log_path(name), 'rb') as stream:
+            stream.seek(0, os.SEEK_END)
+            size = stream.tell()
+            reset = offset > size or size - offset > 524288
+            start = max(0, size - 131072) if reset or offset == 0 else offset
+            stream.seek(start)
+            payload = stream.read(131072)
+            decoder = codecs.getincrementaldecoder('utf-8')('replace')
+            text = decoder.decode(payload, final=False)
+            pending, _ = decoder.getstate()
+            return jsonify(data=text, offset=start+len(payload)-len(pending),
+                           reset=reset, interactive=interactive)
+    except FileNotFoundError:
+        return jsonify(data='', offset=0, reset=offset != 0, interactive=interactive)
+
+
+@app.route('/api/term/resize', methods=['POST'])
+def api_term_resize():
+    if not auth_ok():
+        return jsonify({'error': 'auth'}), 401
+    body = request.json or {}
+    cols, rows = body.get('cols'), body.get('rows')
+    if type(cols) is not int or type(rows) is not int or not (2 <= cols <= 500 and 2 <= rows <= 300):
+        return jsonify({'error': 'invalid terminal size'}), 400
+    with TERMS_LOCK:
+        session = TERMS.get(str(body.get('name', '')))
+        if session is None:
+            return jsonify({'error': 'no such term'}), 404
+        try:
+            fcntl.ioctl(session.fd, termios.TIOCSWINSZ, struct.pack('HHHH', rows, cols, 0, 0))
+        except OSError:
+            return jsonify({'error': 'terminal closed'}), 409
+    return jsonify(ok=True)
 
 
 @app.route("/api/term/write", methods=["POST"])
@@ -1577,6 +1732,7 @@ def main():
           f"({len(BUTTONS)} aliases, {len(GROUPS)} groups, {len(PRESETS)} presets)")
     if PASSWORD:
         print("パスワード保護: 有効")
+    app.config['SIRIUS_LISTEN_PORT'] = args.port
     app.run(host=args.host, port=args.port, threaded=True)
     return 0
 

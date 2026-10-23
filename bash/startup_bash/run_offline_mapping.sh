@@ -6,6 +6,7 @@
 
 WS_DIR="${HOME}/sirius_jazzy_ws"
 ROSBAG_DIR="${HOME}/rosbag2_data"
+ROAD_SEMANTIC_DIR="${ROAD_SEMANTIC_DIR:-$WS_DIR/maps_waypoints/maps/road_semantic}"
 SAM3_SERVER_DIR="${HOME}/sam3_zed_server"
 
 # Set domain isolation to prevent collisions with running Unity simulation
@@ -81,7 +82,8 @@ raise SystemExit(1 if state.get("has_network_frame", False) else 0)
 fi
 
 # 1. 録画データ (Rosbag) の選択
-BAG_LIST=($(find "$ROSBAG_DIR" -maxdepth 1 -mindepth 1 -type d | sort -r))
+# HDDに移したBAGへのリンクも一覧に含める。
+mapfile -t BAG_LIST < <(find -L "$ROSBAG_DIR" -maxdepth 1 -mindepth 1 -type d | sort -r)
 
 if [ ${#BAG_LIST[@]} -eq 0 ]; then
     echo ""
@@ -473,7 +475,7 @@ if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
 
     if [ "$STRUCTURAL_MAP_CHOICE" = "2" ]; then
         mapfile -d '' SLAM_MAP_YAMLS < <(
-            find "$WS_DIR/maps_waypoints/maps" -maxdepth 1 -type f -name '*.yaml' -print0 | sort -z
+            find "$WS_DIR/maps_waypoints/maps" -maxdepth 2 -type d \( -name road_semantic -o -name backup -o -name rtabmaps -o -name 'rtabmap_*' -o -name 'theta_*' \) -prune -o -type f -name '*.yaml' -print0 | sort -z
         )
         if [ "${#SLAM_MAP_YAMLS[@]}" -eq 0 ]; then
             echo "警告: $WS_DIR/maps_waypoints/maps にSLAM Toolbox地図YAMLがありません。"
@@ -498,15 +500,17 @@ if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
 
     MAP_SAVE_SCRIPT="$WS_DIR/bash/startup_bash/rtabmap_save.sh"
     if [ -f "$MAP_SAVE_SCRIPT" ]; then
-        AUTO_MAP_NAME="semantic_${BAG_NAME}"
+        MAP_OUTPUT_DIR=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
+            "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" zed rtabmap) || exit 1
+        AUTO_MAP_NAME="$(basename "$MAP_OUTPUT_DIR")"
         echo "地図保存スクリプトを実行中..."
         echo "  自動地図名: $AUTO_MAP_NAME"
-        bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
+        MAP_OUTPUT_DIR="$MAP_OUTPUT_DIR" MAP_FILE_STEM=map MAP_SAVE_ROOT="$ROAD_SEMANTIC_DIR" bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
     else
-        echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
-        mkdir -p "$WS_DIR/maps_waypoints"
-        ros2 run nav2_map_server map_saver_cli -f "$WS_DIR/maps_waypoints/offline_semantic_${BAG_NAME}" --ros-args -p map_topic:=/sam3/colored_map_grid
-        echo "✓ 地図を保存しました: $WS_DIR/maps_waypoints/offline_semantic_${BAG_NAME}"
+        MAP_OUTPUT_DIR=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
+            "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" zed fallback) || exit 1
+        ros2 run nav2_map_server map_saver_cli -f "$MAP_OUTPUT_DIR/map" --ros-args -p map_topic:=/sam3/colored_map_grid
+        echo "✓ 地図を保存しました: $MAP_OUTPUT_DIR/map"
     fi
 fi
 

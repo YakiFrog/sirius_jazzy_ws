@@ -58,6 +58,12 @@
   let last={},busy=false,stopBusy=false,stopPending=null;
   document.getElementById('emergency-stop-on').onclick=()=>requestStop(true);
   document.getElementById('emergency-stop-off').onclick=()=>requestStop(false);
+  window.requestElectronicStop=active=>{
+    if(typeof active!=='boolean')return false;
+    const button=document.getElementById(active?'emergency-stop-on':'emergency-stop-off');
+    if(button.disabled)return false;
+    button.click();return true;
+  };
   async function requestStop(active){
     if(stopBusy)return;
     if(!active&&!confirm('電子非常停止を解除します。走行指令が来ていると動き出す可能性があります。\n周囲を確認して解除しますか？'))return;
@@ -71,7 +77,7 @@
     }catch(error){text('emergency-stop-command-status','送信を確認できません：'+error.message);}
     finally{stopBusy=false;renderStop(source(last,'driver','RoboteqStatus'));poll();}
   }
-  const text=(id,value)=>{document.getElementById(id).textContent=value;};
+  const text=(id,value)=>{document.getElementById(id).textContent=value;if(id==='emergency-stop-command-status'){const feedback=document.getElementById('drive-estop-feedback');if(feedback)feedback.textContent=value;}};
   const fmt=(v,unit,decimals=1)=>Number.isFinite(v)?v.toFixed(decimals)+' '+unit:'— '+unit;
   const watt=v=>fmt(v,'W',Number.isInteger(v)?0:1);
   function duration(hours){
@@ -146,6 +152,11 @@
     else if(stopPending&&Date.now()-stopPending.since>15000){text('emergency-stop-command-status','状態変更を確認できません。他の停止指令やドライバーの状態を確認してください');stopPending=null;}
     document.getElementById('emergency-stop-on').disabled=stopBusy||electronic===true;
     document.getElementById('emergency-stop-off').disabled=stopBusy||electronic!==true||!!stopPending;
+    const driveOn=document.getElementById('drive-estop-on'),driveOff=document.getElementById('drive-estop-off'),driveState=document.getElementById('drive-estop-state');
+    if(driveOn)driveOn.disabled=document.getElementById('emergency-stop-on').disabled;
+    if(driveOff)driveOff.disabled=document.getElementById('emergency-stop-off').disabled;
+    if(driveState){driveState.textContent='電子緊急停止：'+(electronic===true?'ON・停止中':electronic===false?'OFF':'未確認');driveState.dataset.state=electronic===true?'active':electronic===false?'clear':'unknown';}
+
     let state='unknown',summary='未確認';
     if(physical===true||electronic===true){state='active';summary=physical===true&&electronic===true?'物理・電子 作動':electronic===true?'電子 停止中':'物理 押下推定';}
     else if(physical===false&&electronic===false){state='clear';summary='停止を未検出';}
