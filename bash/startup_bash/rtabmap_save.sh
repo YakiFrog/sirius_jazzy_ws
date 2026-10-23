@@ -4,6 +4,8 @@ cd ~/sirius_jazzy_ws
 
 REQUESTED_MAP_NAME="${1:-}"
 SLAM_BASE_YAML="${2:-}"
+# Offline road-semantic callers override this; generic RTAB-Map saves keep maps/.
+MAP_SAVE_ROOT="${MAP_SAVE_ROOT:-$HOME/sirius_jazzy_ws/maps_waypoints/maps}"
 AUTO_NAME_MODE=false
 if [ -n "$REQUESTED_MAP_NAME" ]; then
     AUTO_NAME_MODE=true
@@ -18,7 +20,7 @@ make_unique_map_name() {
     sanitized=$(printf '%s' "$requested" | sed 's/[^A-Za-z0-9._-]/_/g')
     sanitized=${sanitized:-semantic_map_$(date +%Y%m%d_%H%M%S)}
     candidate="$sanitized"
-    while [ -e "$HOME/sirius_jazzy_ws/maps_waypoints/maps/rtabmap_${candidate}" ]; do
+    while [ -e "$MAP_SAVE_ROOT/rtabmap_${candidate}" ]; do
         candidate=$(printf '%s_%02d' "$sanitized" "$suffix")
         suffix=$((suffix + 1))
     done
@@ -38,7 +40,11 @@ while : ;do
     fi
 
     if [ "$AUTO_NAME_MODE" = true ]; then
-        map_name=$(make_unique_map_name "$REQUESTED_MAP_NAME")
+        if [ -n "${MAP_OUTPUT_DIR:-}" ]; then
+            map_name="$(basename "$MAP_OUTPUT_DIR")"
+        else
+            map_name=$(make_unique_map_name "$REQUESTED_MAP_NAME")
+        fi
         echo "自動地図名: $map_name"
     else
         read -p "Press [Enter] key to start export process..."
@@ -51,19 +57,20 @@ while : ;do
         fi
     fi
 
-    MAP_DIR="$HOME/sirius_jazzy_ws/maps_waypoints/maps/rtabmap_$map_name"
+    MAP_DIR="${MAP_OUTPUT_DIR:-$MAP_SAVE_ROOT/rtabmap_$map_name}"
     mkdir -p "$MAP_DIR"
+    MAP_BASE_PATH="$MAP_DIR/${MAP_FILE_STEM:-rtabmap_$map_name}"
     
     # 定義
-    PLY_OUT="$MAP_DIR/rtabmap_${map_name}.ply"
+    PLY_OUT="$MAP_BASE_PATH.ply"
 
     # 1. 2Dグリッドマップの保存
     echo "[1/3] 2Dグリッドマップ (Nav2形式) を保存中..."
-    ros2 run nav2_map_server map_saver_cli -f "$MAP_DIR/rtabmap_$map_name" --ros-args -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
+    ros2 run nav2_map_server map_saver_cli -f "$MAP_BASE_PATH" --ros-args -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
 
     # 1b. 2DグリッドのPNGを生成（PGMと同内容。閲覧・資料用）
-    if [ -f "$MAP_DIR/rtabmap_$map_name.pgm" ]; then
-        python3 - "$MAP_DIR/rtabmap_$map_name.pgm" "$MAP_DIR/rtabmap_$map_name.png" << 'PYEOF'
+    if [ -f "$MAP_BASE_PATH.pgm" ]; then
+        python3 - "$MAP_BASE_PATH.pgm" "$MAP_BASE_PATH.png" << 'PYEOF'
 import sys
 import cv2
 image = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
@@ -190,12 +197,11 @@ PYEOF
         echo "[3/3] indexed 地図工程をスキップしました"
     else
     echo "[3/3] indexed 2D地図を保存中..."
-    ros2 topic pub --once "${INDEXED_SAVE_TOPIC:-/sam3/save_indexed_map}" std_msgs/msg/String "{data: '$MAP_DIR/rtabmap_${map_name}.colored'}" >/dev/null 2>&1
+    ros2 topic pub --once "${INDEXED_SAVE_TOPIC:-/sam3/save_indexed_map}" std_msgs/msg/String "{data: '$MAP_BASE_PATH.colored'}" >/dev/null 2>&1
     sleep 1
 
     # カラー地図のレンダリング。COLORIZER_SCRIPT で差し替え可能（THETAは自前版）。
     COLORIZER_SCRIPT="${COLORIZER_SCRIPT:-$HOME/sirius_jazzy_ws/src/sirius/sirius_navigation/sirius_navigation/sam3_map_colorizer.py}"
-    MAP_BASE_PATH="$MAP_DIR/rtabmap_$map_name"
     
     if [ -f "$COLORIZER_SCRIPT" ]; then
         python3 "$COLORIZER_SCRIPT" "$MAP_BASE_PATH"
@@ -204,9 +210,9 @@ PYEOF
     # Indexed Grid から完全なカラーPNGを自動生成
     python3 -c "
 import cv2, json, os, numpy as np
-pgm_p = '$MAP_DIR/rtabmap_${map_name}.colored.pgm'
-json_p = '$MAP_DIR/rtabmap_${map_name}.colored.json'
-out_p = '$MAP_DIR/rtabmap_${map_name}.semantic_full.png'
+pgm_p = '$MAP_BASE_PATH.colored.pgm'
+json_p = '$MAP_BASE_PATH.colored.json'
+out_p = '$MAP_BASE_PATH.semantic_full.png'
 if os.path.exists(pgm_p) and os.path.exists(json_p):
     pgm = cv2.imread(pgm_p, cv2.IMREAD_GRAYSCALE)
     with open(json_p) as f: meta = json.load(f)
@@ -225,7 +231,11 @@ if os.path.exists(pgm_p) and os.path.exists(json_p):
         echo "[追加] SLAM ToolboxのPGMを構造ベースにした地図を生成中..."
         echo "  構造地図: $SLAM_BASE_YAML"
         if [ -f "$REBASE_SCRIPT" ]; then
-            if ! python3 "$REBASE_SCRIPT" "$MAP_BASE_PATH" "$SLAM_BASE_YAML" ${REBASE_ARGS:-}; then
+            REBASE_OUTPUT_ARGS=()
+            if [ -n "${MAP_OUTPUT_DIR:-}" ]; then
+                REBASE_OUTPUT_ARGS+=(--output-dir "$MAP_DIR/slam")
+            fi
+            if ! python3 "$REBASE_SCRIPT" "$MAP_BASE_PATH" "$SLAM_BASE_YAML" "${REBASE_OUTPUT_ARGS[@]}" ${REBASE_ARGS:-}; then
                 echo "ERROR: SLAM Toolboxベース版の生成に失敗しました。"
                 echo "RTAB-Mapベースの標準版は保存済みです: $MAP_DIR"
             fi

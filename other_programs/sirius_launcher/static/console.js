@@ -6,7 +6,7 @@ async function restartIt(n,el){if(OPS[n]||!confirm('「'+n+'」を一度停止�
 async function toggle(n,b){if(OPS[n])return;const cur=!!(b&&b.dataset.running==='1');
  if(cur)return stopIt(n,b);
  OPS[n]='起動中…';if(b)b.classList.add('busy');refresh();
- try{const res=await api('/api/start',{name:n,domain:dom()});if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}await finishOp(n,'起動: '+n);await showLog(n);}
+ try{const res=await api('/api/start',{name:n,domain:dom()});if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}await finishOp(n,'起動: '+n);}
  catch(e){delete OPS[n];toast('操作に失敗: '+n,true);refresh();}}
 async function stopIt(n,el){if(OPS[n]||!confirm('「'+n+'」を停止しますか？'))return;OPS[n]='停止中…';if(el)el.classList.add('busy');refresh();
  try{await api('/api/stop',{name:n});}finally{await finishOp(n,'停止: '+n);}}
@@ -14,7 +14,8 @@ async function stopIt(n,el){if(OPS[n]||!confirm('「'+n+'」を停止します�
 let PAGE='home', RESOURCE_DATA=null, RESOURCE_BUSY=false, REFRESH_BUSY=false;
 let PROCESS_SCOPE='related', PROCESS_SORT='cpu_percent', PROCESS_ASC=false, PROCESS_LIMIT=40;
 let LAST_GOOD_STATUS=null, LAST_RESOURCE_POLL=0;
-const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',tf:'TF Tree',settings:'設定'};
+const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',visualization:'3D Visualization',tf:'TF Tree',settings:'設定',docs:'操作ガイド',files:'ファイル'};
+window.isPageVisible=page=>!!(window.APP_SPLIT?.has(page)||PAGE===page);
 const originalApi=api;
 api=async function(path,body){
   const result=await originalApi(path,body);
@@ -24,15 +25,19 @@ api=async function(path,body){
 function setPage(page){
   if(!PAGE_LABELS[page])page='home';
   PAGE=page;document.body.dataset.page=page;
-  document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id==='page-'+page));
+  document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',isPageVisible(el.id.slice(5))));
   document.querySelectorAll('.nav-item[data-page]').forEach(el=>{const selected=el.dataset.page===page;el.classList.toggle('active',selected);el.setAttribute('aria-current',selected?'page':'false');});
   document.getElementById('page-label').textContent=PAGE_LABELS[page];
-  document.getElementById('term').classList.toggle('open',page==='terminal');
-  if(page!=='home')toggleTeleop(false);
-  if(page==='terminal'){renderTermTabs();if(TERM.active)pollTerm();}
-  if(page==='resources')pollResources(true);
-  if(page==='tf')pollTF();
+  document.getElementById('term').classList.toggle('open',isPageVisible('terminal'));
+  if(window.teleopPageChanged)teleopPageChanged(page);
+  if(isPageVisible('terminal')){renderTermTabs();if(TERM.active)pollTerm();}
+  if(isPageVisible('resources'))pollResources(true);
+  if(isPageVisible('tf'))pollTF();
+  if(isPageVisible('files')&&window.fileBrowserPageChanged)fileBrowserPageChanged();
+  if(isPageVisible('docs')&&window.initDocumentation)initDocumentation();
+  if(window.visualizationPageChanged&&(typeof VIZ==='undefined'||VIZ.pageVisible!==isPageVisible('visualization')))visualizationPageChanged(page);
   history.replaceState(null,'','#'+page);
+  if(window.parent!==window){try{parent.postMessage({type:'sirius:page',page},location.origin);}catch(error){}}
   document.querySelector('.workspace').scrollTop=0;
 }
 function toggleTerm(){setPage(PAGE==='terminal'?'home':'terminal');}
@@ -42,21 +47,47 @@ function setTheme(theme){
   localStorage.setItem('sirius-theme',theme);document.getElementById('theme-select').value=theme;
 }
 async function toggleFullscreen(){
+  if(window.parent!==window&&typeof parent.siriusToggleFullscreen==='function'){await parent.siriusToggleFullscreen();return;}
   try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}
   catch(error){toast('ブラウザの F11 でもフルスクリーンにできます');}
 }
+window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||!event.data)return;
+  if(event.data.type==='sirius:toast'&&event.data.message)toast(event.data.message,true);
+});
 function connection(ok){const el=document.getElementById('connection');el.classList.toggle('offline',!ok);el.querySelector('span').textContent=ok?'接続済み':'再接続中';}
+function paintHomeHealth(status){
+  const nav=document.querySelector('.nav-item[data-page="home"]');if(!nav)return;
+  let badge=document.getElementById('home-error-badge');
+  if(!badge){badge=document.createElement('span');badge.id='home-error-badge';badge.setAttribute('aria-hidden','true');nav.append(badge);}
+  const count=Object.values(status).filter(state=>state&&state.error===true).length;
+  badge.hidden=count===0;badge.textContent=count>99?'99+':String(count);
+  nav.title=count?'Home：プロセスエラー '+count+' 件':'Home';
+  nav.setAttribute('aria-label',count?'Home、プロセスエラー '+count+' 件':'Home');
+}
+function openProgramInput(name){setPage('terminal');selectTerm('program:'+name,true);}
+function paintInputWaiting(status){
+  const count=Object.values(status).filter(state=>state?.running&&state.input_waiting).length;
+  const nav=document.querySelector('.nav-item[data-page="terminal"]');if(!nav)return;
+  let badge=document.getElementById('terminal-wait-badge');
+  if(!badge){badge=document.createElement('span');badge.id='terminal-wait-badge';badge.className='input-wait-nav-badge';badge.setAttribute('aria-hidden','true');nav.append(badge);}
+  badge.hidden=count===0;badge.textContent=count>99?'99+':String(count);
+  nav.title=count?'Terminal：入力待ち '+count+' 件':'Terminal';
+  nav.setAttribute('aria-label',count?'Terminal、入力待ち '+count+' 件':'Terminal');
+}
 function paintSummary(status){
   LAST_GOOD_STATUS=Date.now();connection(true);
+  paintHomeHealth(status);paintInputWaiting(status);
   const running=Object.entries(status).filter(([name,state])=>state.running);
   document.getElementById('footer-status').textContent=running.length+' programs running';
   const target=document.getElementById('terminal-program-list');target.replaceChildren();
   for(const [name,state] of running){
     const button=document.createElement('button');button.innerHTML=ICONS.terminal;
     const text=document.createElement('span');text.textContent=name;button.append(text);
-    button.title=name+' のログと入力';button.onclick=()=>showLog(name);target.append(button);
+    button.title=name+' のコンソール';button.onclick=()=>selectTerm('program:'+name);target.append(button);
   }
-  if(!running.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='起動中のプログラムはありません';target.append(empty);}
+  if(window.syncProgramTerminals)syncProgramTerminals(status);
+  if(!running.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='稼働中のプログラムはありません';target.append(empty);}
 }
 async function refresh(){
   if(REFRESH_BUSY||!DATA)return;REFRESH_BUSY=true;
@@ -72,6 +103,8 @@ function bytes(value, decimals=1){
 function percent(value,decimals=1){return Number.isFinite(value)?value.toFixed(decimals)+'%':'—';}
 function uptime(seconds){
   if(!Number.isFinite(seconds))return '—';
+  seconds=Math.max(0,Math.floor(seconds));
+  if(seconds<60)return seconds+'s';
   const days=Math.floor(seconds/86400),hours=Math.floor(seconds%86400/3600),minutes=Math.floor(seconds%3600/60);
   return days?days+'d '+hours+'h':hours?hours+'h '+minutes+'m':minutes+'m';
 }
@@ -81,10 +114,10 @@ function metric(key,value,detail,amount){
   const meter=document.getElementById('meter-'+key);meter.style.width=Math.min(100,Math.max(0,amount||0))+'%';
 }
 async function pollResources(force=false){
-  if(RESOURCE_BUSY||(!force&&Date.now()-LAST_RESOURCE_POLL<(PAGE==='resources'?1600:5000)))return;
+  if(RESOURCE_BUSY||(!force&&Date.now()-LAST_RESOURCE_POLL<(isPageVisible('resources')?1600:5000)))return;
   RESOURCE_BUSY=true;LAST_RESOURCE_POLL=Date.now();
   try{
-    const data=await api('/api/resources'+(PAGE==='resources'?'':'?summary=1'));
+    const data=await api('/api/resources'+(isPageVisible('resources')?'':'?summary=1'));
     if(data.hostname){document.getElementById('host-name').textContent=data.hostname;document.getElementById('settings-host').textContent=data.hostname;}
     if(!data.available){document.getElementById('sample-status').innerHTML='<i class="live-dot"></i>最初の測定を待っています';return;}
     RESOURCE_DATA=data;renderResources(data);
@@ -132,7 +165,13 @@ function showMoreProcesses(){PROCESS_LIMIT+=40;renderProcesses();}
 function renderProcesses(){
   if(!RESOURCE_DATA||!RESOURCE_DATA.processes)return;
   const query=document.getElementById('process-search').value.trim().toLowerCase();
-  const rows=RESOURCE_DATA.processes.filter(p=>(PROCESS_SCOPE==='all'||p.related)&&(!query||[p.name,p.alias,p.command,String(p.pid)].some(s=>(s||'').toLowerCase().includes(query))));
+  const hiddenCount=RESOURCE_DATA.processes.filter(p=>p.hidden).length;
+  const hiddenCountEl=document.getElementById('process-hidden-count');
+  if(hiddenCountEl)hiddenCountEl.textContent=hiddenCount?' '+hiddenCount:'';
+  const rows=RESOURCE_DATA.processes.filter(p=>(
+    PROCESS_SCOPE==='all'||(PROCESS_SCOPE==='related'&&p.related)||
+    (PROCESS_SCOPE==='hidden'&&p.hidden)||(PROCESS_SCOPE==='unrelated'&&p.unrelated)
+  )&&(!query||[p.name,p.alias,p.command,String(p.pid)].some(s=>(s||'').toLowerCase().includes(query))));
   rows.sort((a,b)=>((b[PROCESS_SORT]||0)-(a[PROCESS_SORT]||0))*(PROCESS_ASC?-1:1)||a.pid-b.pid);
   document.getElementById('sort-cpu').textContent='CPU'+(PROCESS_SORT==='cpu_percent'?(PROCESS_ASC?' ↑':' ↓'):'');
   document.getElementById('sort-memory').textContent='メモリ'+(PROCESS_SORT==='memory_bytes'?(PROCESS_ASC?' ↑':' ↓'):'');
@@ -144,27 +183,42 @@ function renderProcesses(){
     const badge=document.createElement('span');badge.textContent=(p.alias||p.name).slice(0,2).toUpperCase();
     const label=document.createElement('span');label.className='process-label';
     const b=document.createElement('b');b.textContent=p.alias||p.name;
-    const small=document.createElement('small');small.textContent=p.alias?p.name:p.command||p.status;
-    label.append(b,small);name.append(badge,label);title.append(name);title.title=p.command;
+    const small=document.createElement('small');
+    small.textContent=(p.hidden?'隠れ · ':'')+(p.alias?p.name:(p.command||p.status));
+    if(p.hidden)small.classList.add('process-hidden');
+    label.append(b,small);name.append(badge,label);title.append(name);title.title=p.command+(p.hidden?'（Launcher管理外）':'');
     tr.append(title);
     for(const [value,cls] of [[p.pid,''],[percent(p.cpu_percent),'process-cpu'],[bytes(p.memory_bytes),''],[p.threads,''],[uptime(p.age_seconds),'']]){const cell=document.createElement('td');cell.textContent=value;cell.className=cls;tr.append(cell);}
     const action=document.createElement('td');const button=document.createElement('button');button.className='process-detail-btn';button.innerHTML=ICONS.chevron;button.title='PID '+p.pid+' の詳細';button.setAttribute('aria-label',button.title);button.onclick=()=>processDetail(p);action.append(button);tr.append(action);body.append(tr);
   }
-  if(!rows.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=7;td.className='table-empty';td.textContent=query?'一致するプロセスがありません':'対象のプロセスがありません';tr.append(td);body.append(tr);}
+  if(!rows.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=7;td.className='table-empty';td.textContent=query?'一致するプロセスがありません':PROCESS_SCOPE==='hidden'?'管理外の隠れプロセスはありません':PROCESS_SCOPE==='unrelated'?'関連のないプロセスはありません':'対象のプロセスがありません';tr.append(td);body.append(tr);}
   document.getElementById('process-more').hidden=rows.length<=PROCESS_LIMIT;
 }
 function processDetail(p){
   let modal=document.getElementById('process-detail');if(modal)modal.remove();
   modal=document.createElement('div');modal.className='modal open';modal.id='process-detail';modal.setAttribute('role','dialog');modal.setAttribute('aria-label','プロセスの詳細');
   const box=document.createElement('div');box.className='modalbox';box.style.maxWidth='650px';
-  const heading=document.createElement('h3');heading.textContent=p.alias||p.name;
+  const heading=document.createElement('h3');heading.textContent=(p.alias||p.name)+(p.hidden?'（隠れ）':'');
+  const relation=p.hidden?(p.hidden_kind==='duplicate'?'隠れ（重複起動）':'隠れ（Launcher管理外）'):p.related?'Sirius / ROS':'関連なし';
   const details=document.createElement('dl');details.className='detail-list';
-  for(const [label,value] of [['PID',p.pid],['CPU',percent(p.cpu_percent)+' / 1 core'],['メモリ',bytes(p.memory_bytes)],['ステータス',p.status],['稼働時間',uptime(p.age_seconds)]]){const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;details.append(dt,dd);}
+  for(const [label,value] of [['PID',p.pid],['関係',relation],['起動管理',p.managed?'管理下':p.hidden?'管理外':'—'],['CPU',percent(p.cpu_percent)+' / 1 core'],['メモリ',bytes(p.memory_bytes)],['ステータス',p.status],['稼働時間',uptime(p.age_seconds)]]){const dt=document.createElement('dt');dt.textContent=label;const dd=document.createElement('dd');dd.textContent=value;details.append(dt,dd);}
   const command=document.createElement('pre');command.className='detail-command';command.textContent=p.command||p.name;
   const actions=document.createElement('div');actions.className='detail-actions';
-  if(p.alias){const log=document.createElement('button');log.className='hbtn';log.textContent='ログを確認';log.onclick=()=>{modal.remove();showLog(p.alias);};actions.append(log);}
+  const stop=document.createElement('button');stop.className='hbtn danger';stop.textContent='停止';stop.title='プロセスと子孫を停止';stop.onclick=()=>stopProcess(p,modal);actions.append(stop);
+  if(p.alias&&!p.hidden){const log=document.createElement('button');log.className='hbtn';log.textContent='ログを確認';log.onclick=()=>{modal.remove();showLog(p.alias);};actions.append(log);}
   const close=document.createElement('button');close.className='hbtn';close.textContent='閉じる';close.onclick=()=>modal.remove();actions.append(close);box.append(heading,details,command,actions);modal.append(box);document.body.append(modal);
   modal.onclick=e=>{if(e.target===modal)modal.remove();};close.focus();
+}
+async function stopProcess(p,modal){
+  const program=!p.hidden&&(p.session||p.alias);
+  const target=program?('「'+program+'」'+(p.session?'（セッション）':'')):('PID '+p.pid+(p.alias?'（'+p.alias+'）':''));
+  if(!confirm(target+' を停止しますか？（子孫も停止）'))return;
+  try{
+    const res=program?await api('/api/stop',{name:program}):await api('/api/ps/kill',{pid:p.pid});
+    if(res.error){toast('停止できません: '+res.error,true);return;}
+    if(modal)modal.remove();toast('停止: '+target);refresh();
+    if(PAGE==='resources')setTimeout(()=>pollResources(true),800);
+  }catch(e){toast('停止に失敗しました',true);}
 }
 renderTermTabs=function(){
   const bar=document.getElementById('termtabs');bar.replaceChildren();
@@ -173,6 +227,7 @@ renderTermTabs=function(){
     const close=document.createElement('span');close.className='x';close.textContent='×';close.title='セッションを終了';close.onclick=e=>{e.stopPropagation();closeTerm(name);};tab.append(close);bar.append(tab);});
   const interrupt=document.getElementById('term-interrupt');if(interrupt)interrupt.disabled=!TERM.active;
   if(!TERM.sessions.length){const label=document.createElement('span');label.className='muted';label.style.padding='5px';label.textContent='新しいターミナルを開くと、ここに表示されます';bar.append(label);}
+  const add=document.createElement('button');add.className='ttab new-term';add.title='新しいターミナル';add.setAttribute('aria-label','新しいターミナル');add.innerHTML=ICONS.plus+'<span>新規</span>';add.onclick=()=>newTerm('');bar.append(add);
 };
 
 async function sendTermControl(){
@@ -195,24 +250,63 @@ function initTerminalControls(){
   const button=document.createElement('button');button.id='term-interrupt';button.className='hbtn';button.textContent='Ctrl+C';
   button.title='実行中のコマンドに割り込みを送る';button.disabled=!TERM.active;button.onclick=sendTermControl;
   document.querySelector('#term .tin').append(button);
-  document.querySelector('.terminal-workspace').addEventListener('keydown',e=>{
-    if(e.defaultPrevented||e.isComposing||!e.ctrlKey||e.altKey||e.metaKey||e.key.toLowerCase()!=='c')return;
-    const selectedInput=e.target.selectionStart!==undefined&&e.target.selectionStart!==e.target.selectionEnd;
-    if(selectedInput||window.getSelection().toString())return;
-    if(!TERM.active)return;e.preventDefault();sendTermControl();
-  });
+
 }
 initTerminalControls();
 
 function reloadConsole(){
   sessionStorage.setItem('sirius-active-terminal',TERM.active||'');
+  if(window.parent!==window&&typeof parent.siriusReloadApp==='function'){parent.siriusReloadApp();return;}
   location.reload();
 }
 (function(){
   const brand=document.querySelector('.brand'),button=document.createElement('button');
   button.className=brand.className;button.innerHTML=brand.innerHTML;button.title='画面を再読み込み';button.setAttribute('aria-label','画面を再読み込み');button.onclick=reloadConsole;
   const badge=document.createElement('span');badge.className='brand-reload';badge.setAttribute('aria-hidden','true');badge.innerHTML=ICONS.refresh;button.append(badge);brand.replaceWith(button);
+  const title=document.querySelector('.app-name'),reload=document.createElement('button');
+  reload.type='button';reload.id='header-reload';reload.className='app-name header-reload';
+  reload.title='ページ全体を再読み込み';reload.setAttribute('aria-label',reload.title);
+  reload.append(...title.childNodes);reload.onclick=reloadConsole;title.replaceWith(reload);
 })();
+function initPanelCollapse(panel,button,key,openTitle,closeTitle){
+  if(!panel||!button)return;
+  function apply(collapsed){
+    panel.classList.toggle('collapsed',collapsed);
+    button.setAttribute('aria-expanded',String(!collapsed));
+    button.title=collapsed?openTitle:closeTitle;
+  }
+  apply(localStorage.getItem(key)==='1');
+  button.addEventListener('click',()=>{
+    const collapsed=!panel.classList.contains('collapsed');
+    apply(collapsed);
+    localStorage.setItem(key,collapsed?'1':'0');
+  });
+}
+initPanelCollapse(document.querySelector('.panel.presets'),document.getElementById('preset-toggle'),'sirius-presets-collapsed','クイックスタートを展開','クイックスタートを折りたたむ');
+initPanelCollapse(document.querySelector('.sidebar'),document.getElementById('running-toggle'),'sirius-running-collapsed','稼働中を展開','稼働中を折りたたむ');
+function initHomeSplit(){
+  const layout=document.querySelector('.home-layout'),splitter=document.getElementById('gutter');
+  if(!layout||!splitter)return;
+  const MIN_MAIN=360,MIN_SIDE=220;
+  function clampShare(value){
+    const width=layout.clientWidth;
+    if(!width)return value;
+    const min=MIN_SIDE/width,max=Math.max(min,1-MIN_MAIN/width);
+    return Math.min(max,Math.max(min,value));
+  }
+  let share=parseFloat(localStorage.getItem('sirius-home-side-share'));
+  if(!Number.isFinite(share))share=.26;
+  function apply(){if(layout.clientWidth)layout.style.setProperty('--home-side-share',(clampShare(share)*100).toFixed(2)+'%');}
+  apply();
+  let drag=false;
+  splitter.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag=true;splitter.setPointerCapture(e.pointerId);e.preventDefault();document.body.classList.add('split-dragging');});
+  splitter.addEventListener('pointermove',e=>{if(!drag)return;const rect=layout.getBoundingClientRect();if(!rect.width)return;share=clampShare((rect.right-e.clientX)/rect.width);apply();});
+  function end(){if(!drag)return;drag=false;document.body.classList.remove('split-dragging');localStorage.setItem('sirius-home-side-share',String(share));}
+  splitter.addEventListener('pointerup',end);splitter.addEventListener('pointercancel',end);
+  splitter.addEventListener('keydown',e=>{const step=e.key==='ArrowLeft'?-.02:e.key==='ArrowRight'?.02:0;if(!step)return;e.preventDefault();share=clampShare(share+step);apply();localStorage.setItem('sirius-home-side-share',String(share));});
+  window.addEventListener('resize',apply);
+}
+initHomeSplit();
 function initHomeLayout(){
   const main=document.querySelector('.home-main'),presets=main.querySelector('.presets'),sidebar=document.querySelector('.sidebar');
   const side=document.createElement('div');side.className='home-side';sidebar.before(side);side.append(sidebar);
@@ -223,12 +317,13 @@ function initHomeLayout(){
 initHomeLayout();
 async function initConsole(){
   setTheme(localStorage.getItem('sirius-theme')||'dark');
-  try{await load();document.getElementById('autostart-status').textContent=DATA.console&&DATA.console.autostart?'自動起動 有効':'自動起動 未登録';const terms=await api('/api/term/list');for(const term of terms.terms||[])if(term.alive&&!TERM.sessions.includes(term.name))TERM.sessions.push(term.name);if(TERM.sessions.length){const saved=sessionStorage.getItem('sirius-active-terminal');TERM.active=TERM.sessions.includes(saved)?saved:TERM.sessions[0];}setPage(location.hash.slice(1)||'home');}
+  try{await load();document.getElementById('autostart-status').textContent=DATA.console&&DATA.console.autostart?'自動起動 有効':'自動起動 未登録';const terms=await api('/api/term/list');for(const term of terms.terms||[])if(term.alive&&!TERM.sessions.includes(term.name))TERM.sessions.push(term.name);if(TERM.sessions.length){const saved=sessionStorage.getItem('sirius-active-terminal');TERM.active=(TERM.sessions.includes(saved)||(saved?.startsWith('program:')&&DATA.groups.some(g=>g.items.some(item=>item.name===saved.slice(8)))))?saved:TERM.sessions[0];}setPage(location.hash.slice(1)||'home');}
   catch(error){connection(false);toast('ホストに接続できません。再読み込みで接続を確認してください。',true);}
   pollResources(true);
 }
 setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});if(LAST_GOOD_STATUS&&Date.now()-LAST_GOOD_STATUS>7000)connection(false);},1000);
-setInterval(()=>{if(PAGE==='tf')pollTF();},1000);setInterval(refresh,2000);setInterval(pollTerm,700);setInterval(pollLog,700);setInterval(teleopPoll,2000);setInterval(()=>pollResources(),2000);
+// TF health must update even while Home or another tab is open.
+pollTF();setInterval(pollTF,1000);setInterval(refresh,2000);setInterval(()=>pollTerm(),200);setInterval(pollLog,700);setInterval(()=>pollResources(),2000);
 window.addEventListener('hashchange',()=>setPage(location.hash.slice(1)));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open'));closeLog();}});
 initConsole();

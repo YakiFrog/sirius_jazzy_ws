@@ -4,6 +4,7 @@ set -u
 WS="$HOME/sirius_jazzy_ws"
 PORT="${SIRIUS_WEB_PORT:-8090}"
 DOMAIN="${ROS_DOMAIN_ID:-53}"
+BROWSER_PROFILE="$HOME/.local/share/sirius/console-browser"
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/sirius_console"
 mkdir -p "$STATE"
 if [ "${1:-}" = "--serve" ]; then
@@ -35,7 +36,8 @@ if ! healthy; then
         exit 1
     fi
 fi
-flock -u 9
+# Keep the startup lock until the browser window is mapped as well. Browser
+# children close fd 9 so the lock is not retained for their entire lifetime.
 [ "${SIRIUS_WEB_NO_BROWSER:-0}" = "1" ] && exit 0
 if [ -f "$WS/bash/startup_bash/detect_gui_env.sh" ]; then
     source "$WS/bash/startup_bash/detect_gui_env.sh"
@@ -43,19 +45,31 @@ if [ -f "$WS/bash/startup_bash/detect_gui_env.sh" ]; then
 fi
 focus_console() {
     command -v wmctrl >/dev/null 2>&1 || return 1
-    wmctrl -l | grep -q 'SiriusLauncher Web' || return 1
-    wmctrl -a 'SiriusLauncher Web' || true
-    [ "${SIRIUS_WEB_KIOSK:-1}" != "1" ] || wmctrl -r 'SiriusLauncher Web' -b add,fullscreen
-    return 0
+    # Titles change between the shell and individual pages. Identify only our
+    # dedicated Chrome profile and URL, without focusing other browser windows.
+    local wid desktop pid host rest command_line
+    while read -r wid desktop pid host rest; do
+        [ -r "/proc/$pid/cmdline" ] || continue
+        # Chrome can rewrite argv into a single space-separated string.
+        # Normalize both forms and require complete option/value boundaries.
+        command_line=" $(tr '\0' ' ' < "/proc/$pid/cmdline") "
+        if [[ "$command_line" == *" --user-data-dir=$BROWSER_PROFILE "* ]] &&
+           [[ "$command_line" == *" --app=$URL "* ]]; then
+            wmctrl -i -a "$wid" || true
+            [ "${SIRIUS_WEB_KIOSK:-1}" != "1" ] || wmctrl -i -r "$wid" -b add,fullscreen
+            return 0
+        fi
+    done < <(wmctrl -lp)
+    return 1
 }
 if focus_console; then
     exit 0
 fi
 for browser in google-chrome google-chrome-stable chromium chromium-browser; do
     if command -v "$browser" >/dev/null 2>&1; then
-        BROWSER_ARGS=("--app=$URL" "--user-data-dir=$HOME/.local/share/sirius/console-browser" --no-first-run --no-default-browser-check --disable-session-crashed-bubble)
+        BROWSER_ARGS=("--app=$URL" "--user-data-dir=$BROWSER_PROFILE" --no-first-run --no-default-browser-check --disable-session-crashed-bubble --class=SiriusLauncher)
         [ "${SIRIUS_WEB_KIOSK:-1}" = "1" ] && BROWSER_ARGS+=(--kiosk --start-fullscreen)
-        "$browser" "${BROWSER_ARGS[@]}" >/dev/null 2>&1 &
+        "$browser" "${BROWSER_ARGS[@]}" >/dev/null 2>&1 9>&- &
         # App mode may initially ignore kiosk size; apply the window state once mapped.
         for _ in $(seq 1 30); do
             focus_console && break
@@ -64,4 +78,4 @@ for browser in google-chrome google-chrome-stable chromium chromium-browser; do
         exit 0
     fi
 done
-xdg-open "$URL" >/dev/null 2>&1 &
+xdg-open "$URL" >/dev/null 2>&1 9>&- &

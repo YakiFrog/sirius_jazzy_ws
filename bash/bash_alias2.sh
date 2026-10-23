@@ -1,38 +1,66 @@
+# PRESET: フルセンサ & FastLIO-自己位置推定
+# PRESET_ITEMS: roboteq,velodyne,imu,odom_path_real,tf_real,foxglove,hokuyo,lio3d_lite
+# PRESET_UI: {"category": "共通", "visible": true, "note": ""}
+
+# PRESET: こまったときのROSBAG録画
+# PRESET_ITEMS: record_mapping
+# PRESET_UI: {"category": "共通", "visible": true, "note": "とりあえずこれで記録しておけば後処理できる"}
+
 # PRESET: フルセンサーセット
 # PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real,odom_path_real
+# PRESET_UI: {"category": "センサー", "visible": true, "note": ""}
 
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
+# PRESET_UI: {"category": "シミュレーション", "visible": true, "note": ""}
 
 # PRESET: 実機オフライン録画準備 (録画は別ボタン)
 # PRESET_ITEMS: roboteq,velodyne,imu,rviz2real,sf_real,slamtoolbox_real,zed_offline_recorder
+# PRESET_UI: {"category": "地図生成", "visible": true, "note": ""}
 
 # PRESET: ZED, THETA起動_real
 # PRESET_ITEMS: theta_capture,zed_offline_recorder
+# PRESET_UI: {"category": "センサー", "visible": true, "note": ""}
 
 # PRESET: 現実自律移動セット
-# PRESET_ITEMS: rviz2real,twist_mux,llm_goal,sirius_ble_gateway_ui,pos,nav2_real,foxglove
+# PRESET_ITEMS: twist_mux,llm_goal,sirius_ble_gateway_ui,pos,nav2_real,mv_goal
+# PRESET_UI: {"category": "自律移動", "visible": true, "note": ""}
 
 # PRESET: THETA色付き3D地図（実機）
 # PRESET_ITEMS: rviz2real,theta_capture,theta_colorize
+# PRESET_UI: {"category": "地図生成", "visible": true, "note": ""}
 
 # PRESET: 3D地図生成セット
-# PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,rtab3d
+# PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d_lite,rtab3d,theta_capture
+# PRESET_UI: {"category": "地図生成", "visible": true, "note": ""}
 
 # PRESET: 3D自律移動セット
 # PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d,twist_mux,nav2_3d
+# PRESET_UI: {"category": "自律移動", "visible": true, "note": ""}
 
 # PRESET: 3D地図で自己位置推定（実機・録画は別）
 # PRESET_ITEMS: roboteq,velodyne,imu,tf_real,lio3d_loc,loc3d,foxglove
+# PRESET_UI: {"category": "自己位置推定", "visible": true, "note": ""}
 
 # PRESET: 3D地図生成セット(Webシミュ)
 # PRESET_ITEMS: rosbridge,tf_sim,lio3d_sim
+# PRESET_UI: {"category": "シミュレーション", "visible": true, "note": ""}
 
 # PRESET: 3D自律移動セット(Webシミュ)
 # PRESET_ITEMS: rosbridge,tf_sim,lio3d_sim,twist_mux,nav2_3d_sim
+# PRESET_UI: {"category": "シミュレーション", "visible": true, "note": ""}
 
 # PRESET: PCデバッグ
 # PRESET_ITEMS: foxglove
+# PRESET_UI: {"category": "その他", "visible": true, "note": ""}
+
+# PRESET: 2D地図生成セット
+# PRESET_ITEMS: slamtoolbox_real,get_pos_dis,get_pos_ent,map_save
+# PRESET_UI: {"category": "地図生成", "visible": true, "note": "SLAMTOOLBOXで地図生成。同時にウェイポイント保存。"}
+
+# PRESET: 路面地図生成セット（THETA）
+# PRESET_ITEMS: run_offline_theta_mapping,sam3_docker_gpu
+# PRESET_UI: {"category": "地図生成", "visible": true, "note": "SAM3用Dockerも起動"}
 
 # TAB: センサー・ハードウェア
 # GROUP: センサー・ハードウェア
@@ -93,6 +121,9 @@ alias rviz2theta='src && rviz2 -d "$HOME/sirius_jazzy_ws/install/sirius_navigati
 # Foxglove Bridge 起動
 # ポートは8766固定（8765はDartsRobot monitor_dashboardが使用中のため）。接続URLを表示する
 alias foxglove='bash ~/sirius_jazzy_ws/bash/startup_bash/start_foxglove.sh'
+
+# Lichtblick軽量表示用（補正後点群を5Hz・点数約1/2で配信。全16リング・元時刻を維持、記録やLIO入力には不使用）
+alias points_preview='bash ~/sirius_jazzy_ws/bash/startup_bash/start_pointcloud_preview.sh'
 
 # Unity上のZEDカメラのトピックをROS2に流す
 alias sam3_bridge='src && ros2 launch sirius_navigation sam3_bridge.launch.py use_sim_time:=true'
@@ -161,7 +192,7 @@ alias sf_sim='src && ros2 launch sirius_navigation sensor_fusion.launch.py use_s
 alias sf='sf_sim'
 
 # 優先順位制御（twist_mux）起動
-alias twist_mux='src && ros2 launch sirius_navigation twist_mux.launch.py'
+alias twist_mux='bash ~/sirius_jazzy_ws/bash/startup_bash/start_twist_mux.sh'
 
 # 手動操作 V2（優先順位対応版）
 alias keyop2='src && ros2 run sirius_keyop sirius_keyop_v2'
@@ -273,7 +304,7 @@ alias nav_strict_slow='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.
 alias nav_strict='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh strict_safe'
 alias nav_mode='bash ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode.sh'
 
-# ROS2 bag記録起動
+# 自律移動記録：FAST-LIO結果・TF・SAM3地図/コストマップ。生3D点群/カメラは record_mapping。
 alias record_rosbag='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag.sh'
 
 # 好きなタイミングで実験メモを送信するエイリアス
@@ -399,6 +430,9 @@ alias lio3d='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh'
 # 自己位置推定用FAST-LIO2（蓄積地図・軌跡の全量配信を無効化）
 alias lio3d_loc='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh real localization'
 
+# オフラインSLAM用の軽量FAST-LIO2（/OdometryとTFのみ。地図・軌跡・点群は配信しない）
+alias lio3d_lite='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh real odometry'
+
 # 3D LiDAR-IMUオドメトリ (FAST-LIO2) 起動 (Webシミュ用。use_sim_time=true)
 alias lio3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_lio.sh sim'
 
@@ -419,7 +453,12 @@ alias colored3d_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/start_3d_colored_m
 # 録画前に必須トピック・TF・レートが揃っているか検査（緑=OK）
 alias check_3dmap_ready='bash ~/sirius_jazzy_ws/bash/startup_bash/check_theta_3dmap_ready.sh'
 
-# 3D後処理用bag録画（生点群+RGB+IMU+車輪。実機、THETA画像は任意）
+# THETA+ZED路面・3D・slam_toolbox用統合録画（カメラ任意）。容量/10分: THETAあり・ZEDなし約3.6GB［30秒実測換算］、両方約5〜8GB［ZED8fps・JPEG0.3〜0.8MB/枚の仮定、未実測］。条件で変動。
+alias record_mapping='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real --profile all_mapping'
+# THETA+ZED路面・3D・slam_toolbox用の統合録画（シミュレーション）
+alias record_mapping_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim --profile all_mapping'
+
+# 3D後処理用bag録画（実機。生点群・IMU・車輪＋THETA画像を記録、派生点群は省略。容量目安：約3.6 GB/10分［従来比約67%減、実測30秒から換算・配信条件で変動］）
 alias record_3dmap='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh real'
 # 3D後処理用bag録画（Webシミュ。RGB点群・IMU・/odom・/clockを必須確認）
 alias record_3dmap_sim='bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim'

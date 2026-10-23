@@ -162,3 +162,32 @@ def test_battery_api_auth_and_dead_receiver_is_never_live(monkeypatch):
     assert result.json['battery']['state']==result.json['driver']['state']=='receiver_error'
     assert Monitor.cached['battery']['state']==Monitor.cached['driver']['state']=='live'
     assert result.json['details']['state']=='receiver_error' and Monitor.cached['details']['state']=='live'
+
+
+def test_physical_stop_inference_is_independent_of_electronic_stop():
+    assert normalize(motor(voltage=13,flags=0),'RoboteqStatus')['physical_emergency_stop'] is False
+    low=normalize(motor(voltage=6.9,flags=0),'RoboteqStatus')
+    assert low['physical_emergency_stop'] is True and low['emergency_stop'] is False
+    electronic=normalize(motor(voltage=13,flags=16),'RoboteqStatus')
+    assert electronic['physical_emergency_stop'] is False and electronic['emergency_stop'] is True
+    assert normalize(motor(voltage=0),'RoboteqStatus')['physical_emergency_stop'] is True
+    assert normalize(motor(voltage=math.nan),'RoboteqStatus')['physical_emergency_stop'] is None
+    assert normalize(standard(voltage=3),'BatteryState')['physical_emergency_stop'] is None
+
+
+def test_gradual_bus_decay_uncertain_band_and_hysteresis():
+    store=BatteryStore()
+    for now,voltage,expected in [(0,13,False),(1,12,False),(2,10.5,None),(3,9,None),
+                                 (4,8,True),(5,6.9,True),(6,9,True),(7,10.9,True),(8,11,False)]:
+        store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=voltage,flags=0),now)
+        assert store.snapshot(now)['driver']['physical_emergency_stop'] is expected
+
+
+def test_physical_inference_is_unknown_after_stale_or_missing_voltage():
+    store=BatteryStore();store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=4),0)
+    assert store.snapshot(6)['driver']['physical_emergency_stop'] is None
+    store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=9),7)
+    assert store.snapshot(7)['driver']['physical_emergency_stop'] is None
+    store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=4),8)
+    store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=math.nan),9)
+    assert store.snapshot(9)['driver']['physical_emergency_stop'] is None

@@ -37,6 +37,16 @@
 :root[data-theme="light"] .xbtn {background:#ffedf0;color:#97243a;border-color:#dca0ad}
 :root[data-theme="light"] .xbtn.gray {background:var(--panel-2);color:var(--muted)}
 :root[data-theme="light"] .hbtn.on {background:var(--accent-bg);color:var(--accent);border-color:#9caee5}
+.running-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px;flex-shrink:0}
+.nav-item[data-page="home"]{position:relative;overflow:visible}
+#home-error-badge{position:absolute;top:3px;right:6px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#bd2637;color:#fff;border:2px solid var(--panel);font:700 10px/1 sans-serif;pointer-events:none}
+#home-error-badge[hidden]{display:none!important}
+.sidebar .running-caption{border-bottom:0}
+.running-actions .hbtn{width:100%;min-width:0;min-height:38px;padding:8px 5px;font-size:11px;white-space:nowrap;background:var(--panel-2);color:var(--text);border:1px solid var(--line)}
+.running-actions .hbtn:hover{background:var(--accent-bg)}
+.running-actions .bulk-stop{color:#f28b99}
+:root[data-theme="light"] .running-actions .bulk-stop{color:#ad2338}
+.sidebar.collapsed>.running-actions{display:none!important}
 /* Legacy ID rules and autocomplete labels need explicit theme colors. */
 :root[data-theme="light"] #cmdin,
 :root[data-theme="light"] .prow input {background:var(--panel);color:var(--text);border-color:var(--line)}
@@ -75,25 +85,30 @@
 :root[data-theme="light"] .battery-source-group.is-stale .battery-power-totals,
 :root[data-theme="light"] .battery-source-group.is-stale .battery-ports {opacity:1}
 :root[data-theme="light"] .battery-values section.is-stale {border-style:dashed}
+.header-reload{border:0;border-radius:6px;background:none;padding:0;min-height:44px;cursor:pointer}
+.header-reload:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
 /* A bottom navigation bar leaves the full phone width available for content. */
-@media(max-width:620px) {
-  :root {--mobile-nav-height:calc(64px + env(safe-area-inset-bottom,0px))}
+@media(max-width:620px), (max-width:1000px) and (max-height:500px) {
+  :root {--mobile-nav-height:calc(112px + env(safe-area-inset-bottom,0px))}
   .rail {
     inset:auto 0 0;
     width:auto;
     height:var(--mobile-nav-height);
-    padding:4px 8px calc(4px + env(safe-area-inset-bottom,0px));
-    flex-direction:row;
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    grid-template-rows:repeat(2,48px);
+    gap:4px 0;
     border-right:0;
     border-top:1px solid var(--line);
   }
   .rail>.brand,.rail-version {display:none}
-  .rail-nav {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;flex:1;min-width:0;height:56px}
-  .rail .nav-item {width:100%;height:52px;min-width:0;gap:4px;border-radius:9px;font-size:9px}
+  .rail .rail-nav,.rail .rail-bottom {display:contents}
+  .rail .nav-item {width:100%;height:48px;min-height:44px;min-width:0;gap:4px;border-radius:9px;font-size:9px}
   .rail .nav-item svg {width:20px;height:20px}
   .rail .nav-item.active:before {top:-3px;left:calc(50% - 10px);width:20px;height:3px;border-radius:0 0 3px 3px}
   .rail-bottom {margin:0;padding:0;gap:0;flex:0 0 44px}
-  .rail-bottom .nav-item {width:44px}
+  .rail .rail-bottom .nav-item {width:100%}
   .app-shell {margin-left:0;height:calc(100dvh - var(--mobile-nav-height))}
   .appbar {height:60px;min-height:60px;padding:0 14px;gap:10px}
   .top-status {gap:8px;min-width:0}
@@ -108,4 +123,51 @@
   .home-main {padding-right:0}
   .log {inset:66px 10px calc(var(--mobile-nav-height) + 10px) 10px}
   #toast {bottom:calc(var(--mobile-nav-height) + 12px)}
+}
+
+/* Keep header controls together even when battery/stop styles are loaded later. */
+@media(max-width:620px) {
+  .app-shell .appbar {padding:8px 12px;gap:6px}
+  .app-shell .top-status {width:100%;flex-wrap:nowrap;justify-content:space-between;gap:4px}
+  .app-shell .power-status {gap:4px}
+  .app-shell .domain-pill {font-size:0;padding:6px}
+  .app-shell .domain-pill b {font-size:10px}
+  .app-shell .host-name,.app-shell .clock {display:none}
+  .app-shell .settings-card {min-width:0;padding:18px 16px}
+  .app-shell .setting-row>span {min-width:0;overflow-wrap:anywhere}
+  .app-shell .setting-row {gap:12px}
+  .app-shell .hbtn {min-height:40px}
+  .app-shell .program-action,.app-shell .xbtn {min-height:40px;min-width:40px}
+  .app-shell .segmented button {min-height:40px}
+  .app-shell .topic-row {min-height:44px}
+  .app-shell .viz-toolbar {flex-wrap:wrap;gap:8px}
+  .app-shell .viz-toolbar-actions {margin-left:auto}
+  .app-shell .tin {flex-wrap:wrap}
+  .app-shell .tin input {min-width:0;flex:1 1 160px}
+  body .modal {padding:12px}
+  body .modalbox {max-height:calc(100dvh - 24px);padding:18px;min-width:0}
+  :root body input,:root body select,:root body textarea {font-size:16px}
+  .modal .hbtn,.modal .xbtn,.log .hbtn {min-height:40px}
+  #prows .prow {display:grid;grid-template-columns:36px minmax(0,1fr) 52px;gap:7px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+  #prows .pdrag {grid-column:1;grid-row:1;height:40px}
+  #prows .prow input.nm {grid-column:2;grid-row:1;width:100%}
+  #prows .prow input:not(.nm) {grid-column:1/-1;grid-row:2;width:100%}
+  #prows .xbtn {grid-column:3;grid-row:1}
+  #drive-drawer .drive-close {min-width:40px;min-height:40px}
+}
+/* Landscape phones have enough width for one row of nine controls. */
+@media(min-width:621px) and (max-width:1100px) and (min-height:501px) {
+  .app-shell .appbar {height:auto;min-height:64px;flex-wrap:wrap;gap:8px;padding:10px 18px}
+  .app-shell .top-status {flex-wrap:wrap;justify-content:flex-end;gap:8px;min-width:0}
+}
+@media(min-width:621px) and (max-width:1000px) and (max-height:500px) {
+  :root {--mobile-nav-height:calc(60px + env(safe-area-inset-bottom,0px))}
+  .rail {grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:48px;gap:0}
+  .app-shell .appbar {height:auto;min-height:60px;padding:6px 14px;gap:8px}
+  .app-shell .top-status {flex-wrap:nowrap;gap:8px}
+  .app-shell .host-name,.app-shell .clock {display:none}
+  .app-shell .sirius-title-logo {width:110px}
+  .app-shell .page-identity {flex-shrink:0}
+  .app-shell .app-divider,.app-shell #page-label {display:none}
+  #drive-drawer {bottom:calc(var(--mobile-nav-height) + 8px)}
 }

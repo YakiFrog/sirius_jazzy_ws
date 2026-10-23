@@ -33,8 +33,14 @@ bash ~/sirius_jazzy_ws/bash/startup_bash/record_rosbag_3dmap.sh sim hallway_001
 - 時間指定: `record_3dmap_sim hallway_001 --duration 60`（実時間の秒数）
 - 保存先変更: `--directory /path/to/bags`
 - 校正変更: `--config /path/to/fast_lio_config.yaml`
-- 実機の記録: `record_3dmap name`。実機ではRGB付き `/velodyne_points_colored` も必須です。
+- 実機の記録: `record_3dmap name`。生LiDAR・IMU・車輪を必須とし、色付け用のTHETA画像も記録します。
   実機回転LiDARの後処理の制限は下記を参照してください。
+
+通常は再生成できる `/velodyne_points_colored` と `/velodyne_points_leveled` を記録対象から省き、
+生LiDARの全リング・点時刻、IMU、画像、TF、校正情報は維持します。色付けには画像の配信が必要です。
+自己位置推定用の `record_loc3d` は、当時の入力を検証できるよう `/cloud_registered_body` と参照地図も残します。
+派生点群も必要な場合は `record_3dmap name --include-derived-clouds` または
+`record_loc3d name --include-derived-clouds` を指定します。MCAPは引き続き `zstd_fast` 圧縮です。
 
 ### 自己位置推定の検証を記録する
 

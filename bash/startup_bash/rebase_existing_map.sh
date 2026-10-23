@@ -6,6 +6,7 @@
 
 WS_DIR="${HOME}/sirius_jazzy_ws"
 MAPS_DIR="$WS_DIR/maps_waypoints/maps"
+ROAD_SEMANTIC_DIR="${ROAD_SEMANTIC_DIR:-$MAPS_DIR/road_semantic}"
 REBASE_SCRIPT="$WS_DIR/bash/startup_bash/rebase_semantic_map_to_slam.py"
 
 echo "================================================="
@@ -100,7 +101,7 @@ echo "選択された地図: $SOURCE_BASE"
 
 # 2. 構造ベースにする SLAM Toolbox 地図YAMLを選択
 mapfile -t SLAM_MAP_YAMLS < <(
-    find "$MAPS_DIR" -maxdepth 1 -type f -name '*.yaml' | sort
+    find "$MAPS_DIR" -maxdepth 2 -type d \( -name road_semantic -o -name backup -o -name rtabmaps -o -name 'rtabmap_*' -o -name 'theta_*' \) -prune -o -type f -name '*.yaml' -print | sort
 )
 if [ ${#SLAM_MAP_YAMLS[@]} -eq 0 ]; then
     echo ""
@@ -125,7 +126,8 @@ echo "SLAM Toolbox構造地図: $SLAM_BASE_YAML"
 
 echo ""
 echo "重ね合わせを実行中..."
-if python3 "$REBASE_SCRIPT" "$SOURCE_BASE" "$SLAM_BASE_YAML" ${REBASE_ARGS:-}; then
+REBASE_OUTPUT="$ROAD_SEMANTIC_DIR/$(basename "$(dirname "$SOURCE_BASE")")_slam_base_$(basename "${SLAM_BASE_YAML%.yaml}")"
+if python3 "$REBASE_SCRIPT" "$SOURCE_BASE" "$SLAM_BASE_YAML" --output-dir "$REBASE_OUTPUT" ${REBASE_ARGS:-}; then
     echo ""
     echo "✓ 重ね合わせ地図を生成しました。"
 else

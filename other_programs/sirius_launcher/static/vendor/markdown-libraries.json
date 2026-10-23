@@ -1,0 +1,7 @@
+{
+  "versions": {
+    "marked": "18.1.1",
+    "dompurify": "3.4.17"
+  },
+  "source": "npm registry; vendored for offline browser use"
+}

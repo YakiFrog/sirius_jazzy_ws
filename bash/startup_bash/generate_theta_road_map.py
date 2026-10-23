@@ -21,6 +21,7 @@ from theta_road_pipeline import (DEFAULT_CONFIG, load_config, fingerprint,
     enhanced_shadow, dark_mask, add_shadow, refine_semantics)
 from theta_texture_quality import TextureFusion, aggregate_frame
 from theta_texture_tone import lift_texture, tone_report
+from indexed_road_export import render_indexed_review
 
 
 def write_json(path, value):
@@ -224,6 +225,7 @@ def render_review(output, labels, texture, resolution):
 
 
 def run(args):
+    from sirius_navigation.indexed_road_map import encode_road_map
     import rclpy
     from rclpy.time import Time
     from sirius_navigation.theta_bev_node import ThetaBevNode
@@ -239,7 +241,13 @@ def run(args):
     output, bag = args.output.resolve(), args.bag.resolve()
     if output == bag or bag in output.parents:
         raise ValueError('Output must be outside the original ROSBAG directory')
-    if output.exists():
+    map_prefix = getattr(args, 'map_prefix', 'road_temporal')
+    if map_prefix not in {'map', 'road_temporal'}:
+        raise ValueError('Unsupported map prefix')
+    if output.exists() and getattr(args, 'reserved_output', False):
+        from road_map_output import check_reserved_output
+        check_reserved_output(output, bag)
+    elif output.exists():
         if not args.resume:
             raise ValueError('Output already exists: use a new directory or --resume')
         if not (output/'run_identity.json').is_file():
@@ -256,6 +264,8 @@ def run(args):
     source_files = [Path(__file__), Path(__file__).with_name('theta_road_pipeline.py'),
         Path(__file__).with_name('theta_texture_quality.py'),
         Path(__file__).with_name('theta_texture_tone.py'),
+        Path(__file__).with_name('indexed_road_export.py'),
+        nav_dir/'indexed_road_map.py',
         Path(__file__).with_name('theta_road_cache.py'),
         Path(__file__).with_name('refine_theta_road_regions.py'),
         Path(__file__).with_name('experiment_theta_tactile_context.py'),
@@ -267,6 +277,7 @@ def run(args):
         'theta_road_weights.py', 'theta_road_visibility.py', 'theta_indexed_map_node.py',
         'semantic_costs.py', 'sam3_experiment_client.py') if (nav_dir/name).exists()]
     identity = dict(config=cfg, calibration=calibration, bag=str(bag), max_frames=args.max_frames,
+                    map_prefix=map_prefix,
                     input_files={str(p.relative_to(bag)): dict(size=p.stat().st_size, mtime_ns=p.stat().st_mtime_ns)
                         for p in sorted(bag.iterdir()) if p.is_file()},
                     pipeline_version=1, server=args.server if cfg['semantic']['enabled'] else None,
@@ -465,43 +476,46 @@ def run(args):
             raise AssertionError('Semantic labels outside observed texture')
         # Refine semantics with original colors; tone affects exported RGB only.
         if cfg['texture']['tone']['enabled']:
-            save_image(output/'road_temporal.raw.texture.png', texture)
+            save_image(output/f'{map_prefix}.raw.texture.png', texture)
         toned = lift_texture(texture, cfg['texture']['tone'])
         texture_tone = tone_report(texture, toned, cfg['texture']['tone'])
         texture = toned
-        save_image(output/'road_temporal.texture.png', texture)
-        save_image(output/'road_temporal.colored.pgm', labels)
+        save_image(output/f'{map_prefix}.texture.png', texture)
+        indexed, palette, indexed_report = encode_road_map(labels, texture)
+        save_image(output/f'{map_prefix}.colored.pgm', indexed)
         save_image(output/'baseline.class_ids.png', baseline)
         for name, image in layers.items():
             save_image(output/(name+'.png'), image)
         np.savez_compressed(output/'map_evidence.npz', temporal_votes=votes, sample_coverage=coverage)
         from sirius_navigation.theta_indexed_map_node import SEMANTIC_CLASSES
         from sirius_navigation.semantic_costs import load_semantic_costs, costs_for
-        costs, _ = load_semantic_costs(); palette = np.zeros((125, 3), np.uint8)
-        palette[:7] = [[127,127,127], [0,0,0], [255,255,255], [0,255,0], [255,255,0], [0,0,255], [128,128,128]]
+        costs, _ = load_semantic_costs()
         metadata = dict(resolution=res, origin=origin.tolist(), width=int(width), height=int(height),
             palette=palette.tolist(), semantic_encoding='class_id', map_frame=cfg['map_frame'],
+            indexed_texture=indexed_report,
             labels={str(cid): dict(name=info['name'], color=info['color'], **costs_for(costs, info['name']))
                     for cid, info in SEMANTIC_CLASSES.items()})
-        write_json(output/'road_temporal.colored.json', metadata)
-        manifest = dict(bag=str(bag), run_identity_sha256=identity_hash, input_stream_sha256=input_digest, config=cfg,
+        write_json(output/f'{map_prefix}.colored.json', metadata)
+        manifest = dict(bag=str(bag), map_prefix=map_prefix, run_identity_sha256=identity_hash, input_stream_sha256=input_digest, config=cfg,
             full_bag=not args.max_frames, input_camera_frames=total_frames, selected_camera_frames=len(records),
             inferred_frames=len(inference_rows), frame_count=len(mapped), frames=mapped, skipped=skipped,
             reused_baseline_frames=reused_baseline_frames,
             grid={k: metadata[k] for k in ('origin', 'resolution', 'width', 'height')},
             refinements=refinements, camera_sha256_verified=True, recorded_tf_only=True,
             texture_tone=texture_tone,
+            indexed_texture=indexed_report,
             no_coordinate_warp=True, unobserved_space_not_filled=True,
             semantic_cells={str(k): int((labels == k).sum()) for k in range(3, 7)},
             elapsed_sec=time.time()-started, status='complete')
         render_review(output, labels, texture, res)
+        render_indexed_review(output, indexed, metadata, map_prefix)
         write_json(output/'manifest.json', manifest)
         # Small packets are a temporary pass bridge; inference caches and provenance remain.
         for path in packets.glob('*.npz'):
             path.unlink()
         packets.rmdir()
         write_json(output/'completed.json', dict(status='complete', frame_count=len(mapped), identity=identity_hash))
-        print(f'MAP COMPLETE: {output}/road_temporal ({len(mapped)}/{len(records)} frames)', flush=True)
+        print(f'MAP COMPLETE: {output}/{map_prefix} ({len(mapped)}/{len(records)} frames)', flush=True)
         return manifest
     finally:
         if session is not None and hasattr(session, 'restoration'):
@@ -521,6 +535,8 @@ def main():
     p.add_argument('--server', default='http://localhost:8080')
     p.add_argument('--reuse-study', type=Path, help='Verified legacy full-image SAM3 cache; exact JPEG/settings checks required')
     p.add_argument('--domain', type=int, default=74)
+    p.add_argument('--map-prefix', choices=['map', 'road_temporal'], default='road_temporal')
+    p.add_argument('--reserved-output', action='store_true', help='Use a fresh directory reserved by road_map_output.py')
     p.add_argument('--resume', action='store_true'); p.add_argument('--no-semantic', action='store_true')
     p.add_argument('--max-frames', type=int, default=0, help='Smoke test only; 0 processes all frames')
     args = p.parse_args()

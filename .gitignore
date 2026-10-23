@@ -16,3 +16,6 @@ graphify-out/
 
 # Generated 3D maps (colored point-cloud PLY etc.)
 maps_waypoints/maps3d/
+
+# Deployment-specific public Launcher address
+other_programs/sirius_launcher/static/share-link.json

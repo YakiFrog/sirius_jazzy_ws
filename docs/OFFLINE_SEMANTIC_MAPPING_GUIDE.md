@@ -170,3 +170,32 @@ SAM3解像度、深度方式、深度解像度、最大距離などを変更で�
 画像入力元はオンラインのカメラに対してオフラインはrosbag、深度入力は実機PCで
 ZED SDKを使えないためオフラインではFastStereoになります。この2点以外のSAM3
 認識条件は共通です。
+
+
+## 保存先の整理
+
+`run_offline_mapping`（ZED）と `run_offline_theta_mapping`（THETA）の生成結果は、
+`~/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/` に保存します。
+THETAの逐次処理・従来RTAB-Map方式・保存スクリプトがない場合のフォールバックも同じ保存先です。
+既存地図の重ね合わせモードで新しく作る結果も、このフォルダに保存します。
+
+通常のslam_toolboxのPGM/YAMLは `maps/<地図名>/` にまとめます。
+既存地図の整理は別途実施し、路面地図は関連画像・設定ごと `road_semantic/` へ移動します。
+これらの生成コマンド自体は既存ファイルを移動しません。
+`sam3_map_load` はサブフォルダ内も探索するため、新しい保存先の地図も選択できます。
+必要な場合は `ROAD_SEMANTIC_DIR` で別の保存先を指定できます。汎用 `rtabmap_save` の通常保存先は変更しません。
+
+### 短い地図名
+
+両オフラインコマンドの新規出力は、センサー名＋元BAGの収録日時に統一します。
+
+- THETA: `road_semantic/theta_20261022_194816/`
+- ZED: `road_semantic/zed_20261022_194816/`
+- 再生成: 同名があれば `_02`、`_03` を追加し、上書きしません。
+
+主なファイル名は `map.pgm`、`map.yaml`、`map.colored.pgm`、`map.colored.json`、
+`map.texture.png` などです（出力する種類は処理方式によります）。
+元BAGの完全な名前・パス、処理方式、生成日時は `source_bag.json` に保存します。
+BAG名に収録日時がない場合は生成日時（日本時間）を使います。
+従来方式でSLAM Toolbox重ね合わせを指定した場合は、同じ出力フォルダの `slam/slam.*` に保存します。
+既存の地図名と、単独で実行する汎用 `rtabmap_save` の命名は維持します。

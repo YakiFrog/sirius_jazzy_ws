@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>Sirius view preparation</title></head>
+<body>
+<script>
+(function(){
+  try{
+    var key='fox.workspace';
+    if(localStorage.getItem('sirius.workspace.initialized')==='1'){throw new Error('already initialized');}
+    var data={state:{},version:1};
+    var raw=localStorage.getItem(key);
+    if(raw){data=JSON.parse(raw);}
+    data.state=data.state||{};
+    data.state.sidebars=data.state.sidebars||{};
+    data.state.sidebars.left=Object.assign({},data.state.sidebars.left,{item:'panel-settings',open:false});
+    data.state.sidebars.right=Object.assign({},data.state.sidebars.right,{item:undefined,open:false});
+    data.version=data.version||1;
+    localStorage.setItem(key,JSON.stringify(data));
+    localStorage.setItem('sirius.workspace.initialized','1');
+  }catch(error){}
+  try{parent.postMessage({type:'sirius:viz-workspace-ready'},'*');}catch(error){}
+})();
+</script>
+</body></html>

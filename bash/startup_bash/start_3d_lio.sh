@@ -1,6 +1,7 @@
 #!/bin/bash
 # FAST-LIO2（LiDAR-IMUオドメトリ）を起動する。odom->base_footprint を配信する。
-# 使い方: start_3d_lio.sh [sim|real] [mapping|localization]
+# 使い方: start_3d_lio.sh [sim|real] [mapping|localization|odometry]
+#   odometry: /Odometry と TF のみ配信（地図・軌跡・点群は配信しない）
 set -u
 WS="$HOME/sirius_jazzy_ws"
 MODE="${1:-real}"
@@ -10,12 +11,15 @@ if [ "$MODE" != "sim" ] && [ "$MODE" != "real" ]; then
     echo "使い方: $0 [sim|real]"
     exit 1
 fi
-if [ "$PROFILE" != "mapping" ] && [ "$PROFILE" != "localization" ]; then
-    echo "使い方: $0 [sim|real] [mapping|localization]"
+if [ "$PROFILE" != "mapping" ] && [ "$PROFILE" != "localization" ] \
+        && [ "$PROFILE" != "odometry" ]; then
+    echo "使い方: $0 [sim|real] [mapping|localization|odometry]"
     exit 1
 fi
 LOCALIZATION_MODE=false
 if [ "$PROFILE" = "localization" ]; then LOCALIZATION_MODE=true; fi
+ODOMETRY_ONLY=false
+if [ "$PROFILE" = "odometry" ]; then ODOMETRY_ONLY=true; fi
 
 cd "$WS" || exit 1
 set +u
@@ -75,4 +79,5 @@ ros2 launch sirius_navigation theta_3d_lio.launch.py \
     imu_height:="$IMU_HEIGHT" \
     mount_config:="${MOUNT_CONFIG:-none}" \
     localization_mode:="$LOCALIZATION_MODE" \
+    odometry_only:="$ODOMETRY_ONLY" \
     use_sim_time:="$USE_SIM_TIME"

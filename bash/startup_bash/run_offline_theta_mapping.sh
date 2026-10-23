@@ -7,6 +7,7 @@
 
 WS_DIR="${HOME}/sirius_jazzy_ws"
 ROSBAG_DIR="${HOME}/rosbag2_data"
+ROAD_SEMANTIC_DIR="${ROAD_SEMANTIC_DIR:-$WS_DIR/maps_waypoints/maps/road_semantic}"
 
 # Set domain isolation to prevent collisions with running Unity simulation
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-42}
@@ -178,16 +179,18 @@ if [ "$RUN_MODE" = "1" ]; then
     read -r -p "SAM3セマンティック分類も行いますか？ (Y/n) [Y]: " ROAD_SAM3
     ROAD_ARGS=()
     case "${ROAD_SAM3,,}" in n|no) ROAD_ARGS+=(--no-semantic) ;; esac
-    ROAD_OUTPUT="$WS_DIR/maps_waypoints/maps/theta_road_${BAG_NAME}_$(date +%Y%m%d_%H%M%S)"
+    ROAD_OUTPUT=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
+        "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" theta sequential) || exit 1
     echo "全画像を順番に処理します。設定・元の分類・推論キャッシュも保存します。"
     echo "出力先: $ROAD_OUTPUT"
     if ! python3 "$WS_DIR/bash/startup_bash/generate_theta_road_map.py" \
         "$SELECTED_BAG" "$ROAD_OUTPUT" --calibration "$ROAD_CALIB" \
-        --config "$ROAD_CONFIG" "${ROAD_ARGS[@]}"; then
+        --config "$ROAD_CONFIG" --reserved-output --map-prefix map "${ROAD_ARGS[@]}"; then
         echo "生成に失敗しました。原因と途中データは上記の出力先で確認できます。"
         exit 1
     fi
-    echo "✓ 地図生成が完了しました。Map Select: $(basename "$ROAD_OUTPUT")/road_temporal"
+    MAP_SELECT_NAME="${ROAD_OUTPUT#"$WS_DIR/maps_waypoints/maps/"}"
+    echo "✓ 地図生成が完了しました。Map Select: $MAP_SELECT_NAME/map"
     echo "比較画像: $ROAD_OUTPUT/images.html"
     exit 0
 fi
@@ -384,7 +387,7 @@ if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
     SLAM_OVERLAY_CHOICE=$(echo "${SLAM_OVERLAY_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
     if [ "$SLAM_OVERLAY_CHOICE" = "y" ] || [ "$SLAM_OVERLAY_CHOICE" = "yes" ]; then
         mapfile -t SLAM_MAP_YAMLS < <(
-            find "$WS_DIR/maps_waypoints/maps" -maxdepth 1 -type f -name '*.yaml' 2>/dev/null | sort
+            find "$WS_DIR/maps_waypoints/maps" -maxdepth 2 -type d \( -name road_semantic -o -name backup -o -name rtabmaps -o -name 'rtabmap_*' -o -name 'theta_*' \) -prune -o -type f -name '*.yaml' -print 2>/dev/null | sort
         )
         if [ "${#SLAM_MAP_YAMLS[@]}" -eq 0 ]; then
             echo "警告: SLAM Toolbox地図YAMLが見つかりません。重ね合わせは行いません。"
@@ -407,19 +410,21 @@ if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
 
     MAP_SAVE_SCRIPT="$WS_DIR/bash/startup_bash/rtabmap_save.sh"
     if [ -f "$MAP_SAVE_SCRIPT" ]; then
-        AUTO_MAP_NAME="theta_road_${BAG_NAME}"
+        MAP_OUTPUT_DIR=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
+            "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" theta rtabmap) || exit 1
+        AUTO_MAP_NAME="$(basename "$MAP_OUTPUT_DIR")"
         echo "地図保存スクリプトを実行中 (indexed地図: /theta/save_indexed_map)..."
         echo "  自動地図名: $AUTO_MAP_NAME"
+        MAP_OUTPUT_DIR="$MAP_OUTPUT_DIR" MAP_FILE_STEM=map MAP_SAVE_ROOT="$ROAD_SEMANTIC_DIR" \
         COLORIZER_SCRIPT="$WS_DIR/src/sirius/sirius_navigation/sirius_navigation/theta_colorize_map.py" \
             INDEXED_SAVE_TOPIC=/theta/save_indexed_map \
             REBASE_ARGS="" \
             bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
     else
-        echo "保存先ディレクトリ: $WS_DIR/maps_waypoints"
-        mkdir -p "$WS_DIR/maps_waypoints"
-        ros2 run nav2_map_server map_saver_cli -f "$WS_DIR/maps_waypoints/theta_road_${BAG_NAME}" --ros-args \
-            -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
-        echo "✓ 地図を保存しました: $WS_DIR/maps_waypoints/theta_road_${BAG_NAME}"
+        MAP_OUTPUT_DIR=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
+            "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" theta fallback) || exit 1
+        ros2 run nav2_map_server map_saver_cli -f "$MAP_OUTPUT_DIR/map" --ros-args -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
+        echo "✓ 地図を保存しました: $MAP_OUTPUT_DIR/map"
     fi
 fi
 

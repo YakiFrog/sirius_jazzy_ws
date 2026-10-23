@@ -17,7 +17,7 @@ echo "------------------------------------------------"
 cd "$MAP_DIR" || exit
 # 路面RGB試験など、構造地図(.pgm)を持たない .colored.pgm も選択できる。
 # 両形式を持つ地図は同じprefixにまとめ、空白を含む名前も保持する。
-mapfile -t maps < <(find . -maxdepth 3 -type f -name "*.pgm" 2>/dev/null |
+mapfile -t maps < <(find . -type f -name "*.pgm" 2>/dev/null |
     sed 's|^\./||; s/\.colored\.pgm$//; s/\.pgm$//' | sort -u)
 
 if [ ${#maps[@]} -eq 0 ]; then
@@ -41,33 +41,18 @@ SELECTED_MAP="${maps[$choice]}"
 SELECTED_PATH="$MAP_DIR/$SELECTED_MAP"
 
 echo ""
-echo "RVizに表示する内容を選択してください:"
-echo "  [1] 路面RGBとセマンティックを別トピックで両方 [推奨]"
-echo "  [2] 路面RGBテクスチャのみ (.texture.png)"
-echo "  [3] SAM3セマンティッククラス色のみ (.colored.pgm)"
+echo "RVizに表示する内容を選択してください（PGM＋JSONのみ）:"
+echo "  [1] 分類色＋減色RGBをPGMから復元 [推奨]"
+echo "  [2] セマンティック分類だけを抽出"
 read -p "表示 [1]: " display_choice
 
 case "${display_choice:-1}" in
-    1)
-        DISPLAY_MODE="both"
-        Z_OFFSET="0.03"
-        CLOUD_TOPIC="/sam3/static_texture_map_cloud と /sam3/static_colored_map_cloud"
-        ;;
-    2)
-        DISPLAY_MODE="texture"
-        Z_OFFSET="0.03"
-        CLOUD_TOPIC="/sam3/static_texture_map_cloud"
-        ;;
-    3)
-        DISPLAY_MODE="semantic"
-        Z_OFFSET="-0.20"
-        CLOUD_TOPIC="/sam3/static_colored_map_cloud"
-        ;;
-    *)
-        echo "エラー: 1、2、3 のいずれかを選択してください。"
-        exit 1
-        ;;
+    1) DISPLAY_MODE="indexed" ;;
+    2) DISPLAY_MODE="semantic" ;;
+    *) echo "エラー: 1 または 2 を選択してください。"; exit 1 ;;
 esac
+Z_OFFSET="-0.20"
+CLOUD_TOPIC="/sam3/static_colored_map_cloud"
 
 echo ""
 echo "配信方法を選択してください:"

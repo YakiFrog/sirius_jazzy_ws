@@ -48,11 +48,13 @@ class TransformStore:
         frames = sorted({e[k] for e in rows for k in ('parent', 'child')})
         children = {e['child'] for e in rows}
         sources = {}
-        for edge in rows:
+        # Retain stale edges for inspection, but diagnose the current graph.
+        active_rows = [edge for edge in rows if not edge['stale']]
+        for edge in active_rows:
             sources.setdefault(edge['child'], set()).add((edge['parent'], edge['publisher_gid'], edge['static']))
         # Detect actual cycle members, rather than all descendants of a cycle.
         adjacency = {f: [] for f in frames}
-        for edge in rows:
+        for edge in active_rows:
             adjacency[edge['parent']].append(edge['child'])
         visited, cyclic = set(), set()
         for root in frames:

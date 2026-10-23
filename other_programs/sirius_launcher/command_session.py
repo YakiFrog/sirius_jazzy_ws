@@ -12,6 +12,7 @@ import socket
 import struct
 import termios
 import time
+from input_wait import InputWaitMonitor
 
 
 def socket_path(name):
@@ -69,6 +70,7 @@ def run(name, script):
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
     pending = bytearray()
+    input_wait = InputWaitMonitor()
     try:
         with open(f'/tmp/sirius_launcher_{name}.log', 'ab', buffering=0) as log:
             while not stopping:
@@ -113,6 +115,9 @@ def run(name, script):
                                     raise ValueError('入力の処理待ちです')
                                 pending.extend(encoded)
                             reply = {'ok': True, 'pid': os.getpid()}
+                            if data is None:
+                                reply['input_wait'] = input_wait.snapshot(
+                                    pid, f'/tmp/sirius_launcher_{name}.log', interactive=True)
                         except (OSError, ValueError, AttributeError) as error:
                             reply = {'ok': False, 'error': str(error)}
                         try:

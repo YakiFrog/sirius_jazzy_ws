@@ -1,0 +1,133 @@
+{
+  "name": "3D地図生成（今回）",
+  "updated": 1792582937,
+  "layout": {
+    "configById": {
+      "3D!sirius": {
+        "layers": {
+          "sirius-grid": {
+            "visible": true,
+            "frameLocked": true,
+            "label": "Grid",
+            "instanceId": "sirius-grid",
+            "layerId": "foxglove.Grid",
+            "size": 30,
+            "divisions": 30,
+            "lineWidth": 1,
+            "color": "#248eff",
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "order": 1
+          }
+        },
+        "cameraState": {
+          "distance": 28,
+          "perspective": true,
+          "phi": 55,
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "targetOffset": [
+            0,
+            0,
+            0
+          ],
+          "targetOrientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "thetaOffset": 45,
+          "fovy": 45,
+          "near": 0.5,
+          "far": 5000
+        },
+        "followMode": "follow-pose",
+        "followTf": "sirius3/odom",
+        "scene": {},
+        "transforms": {},
+        "topics": {
+          "/map": {
+            "visible": false
+          },
+          "/velodyne_points": {
+            "visible": false,
+            "colorField": "intensity",
+            "colorMode": "colormap",
+            "colorMap": "turbo"
+          },
+          "/scan": {
+            "visible": false,
+            "colorField": "intensity",
+            "colorMode": "colormap",
+            "colorMap": "turbo"
+          },
+          "/hokuyo_scan": {
+            "visible": false
+          },
+          "/localization/map": {
+            "visible": false
+          },
+          "/plan": {
+            "visible": false
+          },
+          "/local_plan": {
+            "visible": false
+          },
+          "/sirius_markers": {
+            "visible": false
+          },
+          "/colored_map_3d": {
+            "visible": true,
+            "colorMode": "rgb",
+            "colorField": "rgb",
+            "pointSize": 2
+          },
+          "/Laser_map": {
+            "visible": false,
+            "colorMode": "colormap",
+            "colorField": "intensity",
+            "colorMap": "turbo",
+            "pointSize": 2
+          },
+          "/cloud_registered_body": {
+            "visible": true,
+            "colorMode": "colormap",
+            "colorField": "intensity",
+            "colorMap": "turbo"
+          },
+          "/path": {
+            "visible": true
+          }
+        },
+        "publish": {
+          "type": "point",
+          "poseTopic": "/sirius_visualization/disabled_pose",
+          "pointTopic": "/sirius_visualization/disabled_point",
+          "poseEstimateTopic": "/initialpose",
+          "poseEstimateXDeviation": 0.5,
+          "poseEstimateYDeviation": 0.5,
+          "poseEstimateThetaDeviation": 0.26179939
+        },
+        "imageMode": {}
+      }
+    },
+    "globalVariables": {},
+    "userNodes": {},
+    "playbackConfig": {
+      "speed": 1
+    },
+    "layout": "3D!sirius"
+  }
+}
