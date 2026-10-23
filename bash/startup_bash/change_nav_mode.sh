@@ -2,7 +2,9 @@
 # change_nav_mode.sh: Nav2 MPPI controller 走行モード動的切り替えスクリプト (一括設定高速版)
 # 使い方: ./change_nav_mode.sh [normal|normal_active|safe|slow|wait_normal|wait_active|strict_normal|strict_safe|strict_slow|strict] (未指定の場合はメニューから選択)
 
-MODE=$1
+MODE=${1:-}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 # 引数がない場合は選択メニューを表示
 if [ -z "$MODE" ]; then
@@ -51,11 +53,12 @@ echo "========================================="
 echo " Nav2 MPPI 走行モード切り替え: $MODE"
 echo "========================================="
 
-# ROS 2環境のセットアップ確認
-if ! command -v ros2 &> /dev/null; then
-    source /opt/ros/jazzy/setup.bash 2>/dev/null
-    source ~/sirius_jazzy_ws/install/setup.bash 2>/dev/null
+# ros2が存在しても、Siriusのoverlayが読み込まれているとは限らない。
+if [ ! -f "${WORKSPACE}/install/setup.bash" ]; then
+    echo "[エラー] SiriusのROS環境が見つかりません: ${WORKSPACE}/install/setup.bash" >&2
+    exit 1
 fi
+source "${WORKSPACE}/install/setup.bash" || exit 1
 
 # ノード起動確認
 if ! ros2 node list 2>/dev/null | grep "/controller_server" >/dev/null 2>&1; then
@@ -64,6 +67,8 @@ if ! ros2 node list 2>/dev/null | grep "/controller_server" >/dev/null 2>&1; the
 fi
 
 # Python一括設定スクリプトを呼び出し
-python3 ~/sirius_jazzy_ws/bash/startup_bash/change_nav_mode_fast.py "$MODE"
+python3 "${SCRIPT_DIR}/change_nav_mode_fast.py" "$MODE"
+RESULT=$?
 
 echo "========================================="
+exit "$RESULT"
