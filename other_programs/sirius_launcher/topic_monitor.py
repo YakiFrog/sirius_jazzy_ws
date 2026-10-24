@@ -5,6 +5,7 @@ and JSON commands.
 """
 import atexit
 import json
+import math
 import os
 from pathlib import Path
 import queue
@@ -20,6 +21,14 @@ MEASURE_RETENTION_SECONDS = 30.0
 DEFAULT_MEASURE_SECONDS = 3.0
 MIN_MEASURE_SECONDS = 1.0
 MAX_MEASURE_SECONDS = 10.0
+WATCH_LEASE_SECONDS = 10.0
+MIN_WATCH_LEASE_SECONDS = 3.0
+MAX_WATCH_LEASE_SECONDS = 30.0
+MESSAGE_MAX_CHARS = 12000
+MESSAGE_MAX_ITEMS = 24
+MESSAGE_MAX_DEPTH = 5
+MESSAGE_MAX_STRING = 400
+MESSAGE_MAX_BYTES = 32
 LOG_PATH = '/tmp/sirius_launcher_topic_monitor.log'
 MONITOR_NODE = 'sirius_launcher_topic_monitor'
 
@@ -96,6 +105,155 @@ def rate_from_timestamps(timestamps):
     return (len(timestamps) - 1) / (last - first)
 
 
+def _is_sequence(value):
+    if isinstance(value, (str, bytes, bytearray, dict)):
+        return False
+    if hasattr(value, 'get_fields_and_field_types'):
+        return False
+    try:
+        len(value)
+    except (TypeError, ValueError):
+        return False
+    return hasattr(value, '__getitem__')
+
+
+class _MessagePreview:
+    """Convert a ROS message into a small, JSON-safe preview.
+
+    Images and point clouds can contain megabytes of binary/array data. Never
+    serialize the whole payload; show a bounded prefix and retain its length.
+    """
+
+    def __init__(self):
+        self.remaining = MESSAGE_MAX_CHARS
+        self.truncated = False
+
+    def _text(self, value, limit=MESSAGE_MAX_STRING):
+        text = str(value)
+        if len(text) > limit:
+            text = text[:limit] + '…'
+            self.truncated = True
+        if self.remaining <= 0:
+            self.truncated = True
+            return '…'
+        if len(text) > self.remaining:
+            text = text[:max(0, self.remaining)] + '…'
+            self.truncated = True
+        self.remaining -= len(text)
+        return text
+
+    def _number(self, value):
+        self.remaining -= 8
+        return value
+
+    def value(self, value, depth=0):
+        if self.remaining <= 0:
+            self.truncated = True
+            return '…'
+        if depth > MESSAGE_MAX_DEPTH:
+            self.truncated = True
+            return '…'
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, int):
+            return self._number(value)
+        if isinstance(value, float):
+            if math.isfinite(value):
+                return self._number(value)
+            self.truncated = True
+            return str(value)
+        if isinstance(value, str):
+            return self._text(value)
+        if isinstance(value, (bytes, bytearray)):
+            data = bytes(value)
+            if len(data) <= MESSAGE_MAX_BYTES:
+                return {'__type__': 'bytes', 'length': len(data), 'hex': data.hex()}
+            self.truncated = True
+            return {'__type__': 'bytes', 'length': len(data)}
+        if hasattr(value, 'get_fields_and_field_types'):
+            result = {}
+            try:
+                fields = value.get_fields_and_field_types()
+            except Exception:
+                fields = {}
+            for name in fields:
+                if self.remaining <= 0:
+                    self.truncated = True
+                    break
+                try:
+                    field = getattr(value, name)
+                except Exception:
+                    continue
+                result[name] = self.value(field, depth + 1)
+            return result
+        if isinstance(value, dict):
+            result = {}
+            for key, item in value.items():
+                if self.remaining <= 0:
+                    self.truncated = True
+                    break
+                result[str(key)] = self.value(item, depth + 1)
+            return result
+        if _is_sequence(value):
+            try:
+                length = len(value)
+            except (TypeError, ValueError):
+                length = 0
+            limit = min(length, MESSAGE_MAX_ITEMS)
+            items = []
+            for index in range(limit):
+                if self.remaining <= 0:
+                    self.truncated = True
+                    break
+                try:
+                    items.append(self.value(value[index], depth + 1))
+                except (IndexError, KeyError, TypeError):
+                    break
+            if len(items) < length:
+                self.truncated = True
+                return {'__type__': 'array', 'length': length, 'items': items}
+            return items
+        if hasattr(value, 'item') and callable(value.item):
+            try:
+                return self.value(value.item(), depth)
+            except Exception:
+                pass
+        return self._text(value)
+
+
+def message_preview(message):
+    """Return a bounded JSON text preview and whether anything was omitted."""
+    preview = _MessagePreview()
+    data = preview.value(message)
+    try:
+        text = json.dumps(data, ensure_ascii=False, allow_nan=False, indent=2)
+    except (TypeError, ValueError):
+        preview.truncated = True
+        text = json.dumps(str(data), ensure_ascii=False)
+    if len(text) > MESSAGE_MAX_CHARS:
+        text = text[:MESSAGE_MAX_CHARS].rstrip() + '\n…'
+        preview.truncated = True
+    return text, preview.truncated
+
+
+def _watch_public(watch):
+    if not watch:
+        return None
+    return {
+        'topic': watch.get('topic', ''),
+        'type': watch.get('type', ''),
+        'state': watch.get('state', 'stopped'),
+        'count': watch.get('count', 0),
+        'received_at': watch.get('received_at'),
+        'text': watch.get('text'),
+        'truncated': bool(watch.get('truncated')),
+        'error': watch.get('error', ''),
+        'expired': bool(watch.get('expired')),
+    }
+
+
 class TopicMonitor:
     def __init__(self):
         self._lock = threading.RLock()
@@ -158,6 +316,60 @@ class TopicMonitor:
                 self._error = str(error)
             return {'started': False, 'error': 'topic receiver is not running', 'status': 503}
         return {'started': True, 'topic': topic, 'duration': duration}
+
+    def watch(self, domain, topic, lease=WATCH_LEASE_SECONDS):
+        topic = topic_name(topic)
+        if topic is None:
+            return {'started': False, 'error': 'invalid topic', 'status': 400}
+        try:
+            lease = float(lease)
+        except (TypeError, ValueError):
+            lease = WATCH_LEASE_SECONDS
+        lease = min(MAX_WATCH_LEASE_SECONDS, max(MIN_WATCH_LEASE_SECONDS, lease))
+        with self._lock:
+            same_domain = self._ensure_started_locked(domain)
+            proc = self._proc
+            if not same_domain:
+                return {'started': False, 'error': 'ROSドメインが変更されました', 'status': 503}
+        if proc is None or proc.poll() is not None:
+            for _ in range(20):
+                time.sleep(0.05)
+                with self._lock:
+                    proc = self._proc
+                if proc is not None and proc.poll() is None:
+                    break
+        if proc is None or proc.poll() is not None:
+            return {'started': False, 'error': 'topic receiver is not running', 'status': 503}
+        command = json.dumps({'action': 'watch', 'topic': topic, 'lease': lease})
+        try:
+            with self._stdin_lock:
+                proc.stdin.write(command + '\n')
+                proc.stdin.flush()
+        except (BrokenPipeError, OSError, ValueError) as error:
+            with self._lock:
+                self._error = str(error)
+            return {'started': False, 'error': 'topic receiver is not running', 'status': 503}
+        return {'started': True, 'topic': topic, 'lease': lease}
+
+    def unwatch(self, domain):
+        with self._lock:
+            if self._thread is None:
+                return {'stopped': True}
+            same_domain = self._ensure_started_locked(domain)
+            proc = self._proc
+            if not same_domain:
+                return {'stopped': False, 'error': 'ROSドメインが変更されました', 'status': 503}
+        if proc is None or proc.poll() is not None:
+            return {'stopped': False, 'error': 'topic receiver is not running', 'status': 503}
+        try:
+            with self._stdin_lock:
+                proc.stdin.write(json.dumps({'action': 'unwatch'}) + '\n')
+                proc.stdin.flush()
+        except (BrokenPipeError, OSError, ValueError) as error:
+            with self._lock:
+                self._error = str(error)
+            return {'stopped': False, 'error': 'topic receiver is not running', 'status': 503}
+        return {'stopped': True}
 
     def _run(self):
         script = Path(__file__).resolve()
@@ -244,6 +456,7 @@ def receive():
     commands = queue.Queue()
     stop = threading.Event()
     measurements = {}
+    watch = {}
 
     def command_reader():
         for line in sys.stdin:
@@ -334,6 +547,101 @@ def receive():
             'rate_hz': None,
         }
 
+    def watch_qos(topic):
+        from rclpy.qos import DurabilityPolicy, ReliabilityPolicy
+        try:
+            endpoints = node.get_publishers_info_by_topic(topic)
+        except Exception:
+            endpoints = []
+        reliable = bool(endpoints)
+        transient = bool(endpoints)
+        for endpoint in endpoints:
+            profile = getattr(endpoint, 'qos_profile', None)
+            if profile is None:
+                reliable = transient = False
+                break
+            if getattr(profile, 'reliability', None) != ReliabilityPolicy.RELIABLE:
+                reliable = False
+            if getattr(profile, 'durability', None) != DurabilityPolicy.TRANSIENT_LOCAL:
+                transient = False
+        return QoSProfile(
+            depth=10,
+            history=HistoryPolicy.KEEP_LAST,
+            reliability=ReliabilityPolicy.RELIABLE if reliable else ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.TRANSIENT_LOCAL if transient else DurabilityPolicy.VOLATILE,
+        )
+
+    def stop_watch(expired=False):
+        sub = watch.pop('sub', None)
+        if sub is not None:
+            try:
+                node.destroy_subscription(sub)
+            except Exception:
+                pass
+        if not watch:
+            return
+        if watch.get('state') in ('starting', 'watching'):
+            watch['state'] = 'stopped'
+        watch['expired'] = bool(expired)
+        watch['deadline'] = 0.0
+        if expired and watch.get('count', 0) == 0 and not watch.get('error'):
+            watch['error'] = 'メッセージを受信できませんでした'
+
+    def start_watch(topic, lease):
+        topic = topic_name(topic)
+        if topic is None:
+            return
+        try:
+            lease = float(lease)
+        except (TypeError, ValueError):
+            lease = WATCH_LEASE_SECONDS
+        lease = min(MAX_WATCH_LEASE_SECONDS, max(MIN_WATCH_LEASE_SECONDS, lease))
+        if watch.get('topic') == topic and watch.get('state') in ('starting', 'watching'):
+            watch['deadline'] = time.monotonic() + lease
+            return
+        stop_watch()
+        watch.clear()
+        try:
+            types = dict(node.get_topic_names_and_types()).get(topic, [])
+        except Exception as error:
+            watch.update(topic=topic, state='error', error=str(error), count=0,
+                         received_at=None, text=None, truncated=False, expired=False)
+            return
+        if not types:
+            watch.update(topic=topic, state='error', error='トピックが見つかりません',
+                         count=0, received_at=None, text=None, truncated=False,
+                         expired=False)
+            return
+        type_name = types[0]
+        watch.update(topic=topic, type=type_name, state='starting', count=0,
+                     received_at=None, text=None, truncated=False, error='',
+                     expired=False, deadline=time.monotonic() + lease)
+        try:
+            message_type = get_message(type_name)
+            qos = watch_qos(topic)
+
+            def on_message(message):
+                if watch.get('topic') != topic:
+                    return
+                text, truncated = message_preview(message)
+                watch['text'] = text
+                watch['truncated'] = truncated
+                watch['received_at'] = time.time()
+                watch['count'] = watch.get('count', 0) + 1
+                watch['state'] = 'watching'
+
+            sub = node.create_subscription(message_type, topic, on_message, qos)
+        except Exception as error:
+            watch.update(state='error', error=str(error))
+            return
+        watch['sub'] = sub
+        watch['state'] = 'watching'
+
+    def finish_watch_due(now):
+        if (watch.get('state') in ('starting', 'watching') and
+                watch.get('deadline', 0) and now > watch['deadline']):
+            stop_watch(expired=True)
+
     def topic_rows():
         rows = []
         try:
@@ -367,6 +675,7 @@ def receive():
     def emit():
         now = time.monotonic()
         finish_due(now)
+        finish_watch_due(now)
         prune(now)
         rows, error = topic_rows()
         data = {
@@ -374,6 +683,7 @@ def receive():
             'topics': rows,
             'measurements': {topic: _measurement_public(topic, measurement)
                              for topic, measurement in sorted(measurements.items())},
+            'watch': _watch_public(watch),
         }
         if error:
             data['error'] = error
@@ -392,10 +702,16 @@ def receive():
                     command = commands.get_nowait()
                 except queue.Empty:
                     break
-                if command.get('action') == 'measure':
+                action = command.get('action')
+                if action == 'measure':
                     start_measure(command.get('topic'), command.get('duration'))
+                elif action == 'watch':
+                    start_watch(command.get('topic'), command.get('lease'))
+                elif action == 'unwatch':
+                    stop_watch()
             now = time.monotonic()
             finish_due(now)
+            finish_watch_due(now)
             if now - last_emit >= 1.0:
                 emit()
                 last_emit = now

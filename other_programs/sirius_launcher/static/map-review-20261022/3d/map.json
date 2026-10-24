@@ -1,0 +1,34 @@
+{
+  "title": "オフライン3D地図（既知床補正）",
+  "source_bag": "mapping_all_real_20261022_194816",
+  "geometry": "FAST-LIO recompute + DUFOMap + known-single-floor",
+  "color": "camera_rgb",
+  "source_points": 318403,
+  "preview_points": 240000,
+  "trajectory_points": 300,
+  "keyframes": 300,
+  "max_pose_sync_error_s": 0.0,
+  "center": [
+    7.313662365576867,
+    -2.403806105509104,
+    0.0
+  ],
+  "radius": 20.043128725870663,
+  "z_range": [
+    -0.49941501021385193,
+    2.499990463256836
+  ],
+  "bounds": [
+    [
+      -6.647233009338379,
+      -20.5650577545166,
+      -0.49941501021385193
+    ],
+    [
+      22.788942337036133,
+      14.13667106628418,
+      2.499990463256836
+    ]
+  ],
+  "notes": "3D map from the same bag as the 2D SLAM comparison. Viewer crop: route +/- 10 m, z -0.5..2.5 m. The known-floor correction is an explicit flat-floor assumption."
+}

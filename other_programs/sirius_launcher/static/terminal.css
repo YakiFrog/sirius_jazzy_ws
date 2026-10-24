@@ -42,3 +42,11 @@
 #termtabs .ttab>.x:hover,#termtabs .ttab>.x:focus-visible{background:var(--accent-bg);color:var(--red);outline:2px solid var(--accent);outline-offset:-3px}
 .terminal-pane-header>button{display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;min-width:44px;min-height:44px;padding:0;font-size:21px;line-height:1;touch-action:manipulation}
 .terminal-pane-header>button:not(:disabled):hover{background:var(--accent-bg);color:var(--red)}
+
+.terminal-program-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.terminal-programs .terminal-program-open{flex:1;min-width:0;border-bottom:0}
+.terminal-programs .terminal-program-restart{flex:0 0 38px;width:38px;min-width:38px;justify-content:center;padding:0;border:none;border-left:1px solid var(--line);color:var(--muted);font-size:17px;line-height:1}
+.terminal-programs .terminal-program-restart:hover,.terminal-programs .terminal-program-restart:focus-visible{color:var(--accent);background:var(--accent-bg)}
+.terminal-programs .terminal-program-restart.busy{opacity:.45;pointer-events:none}
+.terminal-pane-header>button.terminal-pane-restart{color:var(--muted);font-size:17px}
+.terminal-pane-header>button.terminal-pane-restart:hover{background:var(--accent-bg);color:var(--accent)}

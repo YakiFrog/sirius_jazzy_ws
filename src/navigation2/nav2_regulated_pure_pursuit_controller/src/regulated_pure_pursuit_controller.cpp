@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <chrono>
 #include <string>
 #include <limits>
 #include <memory>
@@ -59,6 +60,31 @@ void RegulatedPurePursuitController::configure(
     node, plugin_name_, logger_, costmap_->getSizeInMetersX());
   params_ = param_handler_->getParams();
 
+  nav2_util::declare_parameter_if_not_declared(
+    node, name + ".sirius_wait_for_clear", rclcpp::ParameterValue(false));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name + ".sirius_clear_time", rclcpp::ParameterValue(1.0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name + ".sirius_restart_accel", rclcpp::ParameterValue(0.3));
+  node->get_parameter(name + ".sirius_wait_for_clear", sirius_wait_for_clear_);
+  node->get_parameter(name + ".sirius_clear_time", sirius_clear_time_);
+  node->get_parameter(name + ".sirius_restart_accel", sirius_restart_accel_);
+  if (!std::isfinite(sirius_clear_time_) || sirius_clear_time_ < 0.0 ||
+    !std::isfinite(sirius_restart_accel_) || sirius_restart_accel_ <= 0.0)
+  {
+    throw nav2_core::ControllerException("Invalid Sirius wait/restart limits");
+  }
+
+  if (sirius_wait_for_clear_) {
+    collision_state_sub_ = node->create_subscription<nav2_msgs::msg::CollisionMonitorState>(
+      "collision_monitor_state", rclcpp::QoS(10),
+      [this](nav2_msgs::msg::CollisionMonitorState::ConstSharedPtr state) {
+        using State = nav2_msgs::msg::CollisionMonitorState;
+        collision_monitor_blocking_ = state->action_type == State::STOP ||
+          state->action_type == State::APPROACH;
+      });
+  }
+
   // Handles global path transformations
   path_handler_ = std::make_unique<PathHandler>(
     tf2::durationFromSec(params_->transform_tolerance), tf_, costmap_ros_);
@@ -87,6 +113,7 @@ void RegulatedPurePursuitController::cleanup()
     "Cleaning up controller: %s of type"
     " regulated_pure_pursuit_controller::RegulatedPurePursuitController",
     plugin_name_.c_str());
+  collision_state_sub_.reset();
   global_path_pub_.reset();
   carrot_pub_.reset();
   curvature_carrot_pub_.reset();
@@ -273,10 +300,57 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
 
   // Collision checking on this velocity heading
   const double & carrot_dist = hypot(carrot_pose.pose.position.x, carrot_pose.pose.position.y);
-  if (params_->use_collision_detection &&
-    collision_checker_->isCollisionImminent(pose, linear_vel, angular_vel, carrot_dist))
-  {
+  const bool collision = params_->use_collision_detection &&
+    collision_checker_->isCollisionImminent(pose, linear_vel, angular_vel, carrot_dist);
+  if (collision && !sirius_wait_for_clear_) {
     throw nav2_core::NoValidControl("RegulatedPurePursuitController detected collision ahead!");
+  }
+  if (sirius_wait_for_clear_) {
+    const double now = std::chrono::duration<double>(
+      std::chrono::steady_clock::now().time_since_epoch()).count();
+    if (last_wait_check_ >= 0.0 && now - last_wait_check_ >
+      std::max(0.5, 3.0 * control_duration_))
+    {
+      clear_since_ = -1.0;  // A pause in checks is not evidence of continuous clearance.
+      previous_wait_speed_ = 0.0;
+    }
+    last_wait_check_ = now;
+    if (collision || collision_monitor_blocking_.load()) {
+      if (!collision_waiting_) {
+        RCLCPP_WARN(logger_, "WaitPath holding: collision predicted; waiting for continuous clearance");
+      }
+      collision_waiting_ = true;
+      clear_since_ = -1.0;
+    } else if (collision_waiting_) {
+      if (clear_since_ < 0.0) {
+        clear_since_ = now;
+      }
+      if (now - clear_since_ >= sirius_clear_time_) {
+        collision_waiting_ = false;
+        RCLCPP_INFO(logger_, "WaitPath clear: restarting with bounded acceleration");
+      }
+    }
+    if (collision_waiting_) {
+      linear_vel = 0.0;
+      angular_vel = 0.0;
+      if (cancelling_) {
+        finished_cancelling_ = true;
+      }
+    } else {
+      // Limit acceleration only. Emergency deceleration must remain immediate.
+      // Scale omega with v to preserve the collision-checked curvature.
+      const double requested = linear_vel;
+      if (requested * previous_wait_speed_ < 0.0) {
+        linear_vel = 0.0;
+      } else {
+        linear_vel = std::copysign(std::min(std::abs(requested),
+          std::abs(previous_wait_speed_) + sirius_restart_accel_ * control_duration_), requested);
+      }
+      if (std::abs(requested) > 1e-6) {
+        angular_vel *= linear_vel / requested;
+      }
+    }
+    previous_wait_speed_ = linear_vel;
   }
 
   // Publish whether we are rotating to goal heading
@@ -511,6 +585,8 @@ void RegulatedPurePursuitController::setSpeedLimit(
 
 void RegulatedPurePursuitController::reset()
 {
+  // Preserve the obstacle-clearance hold across BT retries/new goals.
+  previous_wait_speed_ = 0.0;
   cancelling_ = false;
   finished_cancelling_ = false;
   has_reached_xy_tolerance_ = false;

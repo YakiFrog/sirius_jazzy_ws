@@ -535,3 +535,35 @@ waypoint_follower:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
       enabled: false
       waypoint_pause_duration: 0 # ウェイポイント到達後の待機時間[ms] default: 200
+# Jazzy bringup時もNav2出力を安全監視経由でtwist_muxへ渡す。
+collision_monitor:
+  ros__parameters:
+    use_sim_time: false
+    base_frame_id: base_footprint
+    odom_frame_id: odom
+    cmd_vel_in_topic: cmd_vel_smoothed
+    cmd_vel_out_topic: cmd_vel_nav_safe
+    state_topic: collision_monitor_state
+    transform_tolerance: 0.35  # 実測TF待ち最大約297msに余裕を確保。長い欠落時の停止は維持。
+    source_timeout: 1.0
+    base_shift_correction: true
+    stop_pub_timeout: 2.0
+    polygons:
+    - FootprintApproach
+    FootprintApproach:
+      type: polygon
+      action_type: approach
+      footprint_topic: /local_costmap/published_footprint
+      time_before_collision: 1.2
+      simulation_time_step: 0.1
+      min_points: 6
+      visualize: false
+      enabled: true
+    observation_sources:
+    - scan
+    scan:
+      type: scan
+      topic: scan3
+      min_height: 0.15
+      max_height: 2.0
+      enabled: true

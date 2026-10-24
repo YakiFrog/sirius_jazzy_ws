@@ -1,0 +1,56 @@
+{
+  "status": "complete",
+  "operation": "PGM indexed-color export only",
+  "derived_from": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/theta_road_bright_map_20261020",
+  "bag": "/home/kotantu-desktop/rosbag2_data/0920/real_both_mapping_20260920_113447_recovered",
+  "frame_count": 5956,
+  "full_bag": true,
+  "grid": {
+    "resolution": 0.05,
+    "origin": [
+      -109.65,
+      -167.05
+    ],
+    "width": 2668,
+    "height": 3991
+  },
+  "indexed_texture": {
+    "format": "semantic_ids_and_quantized_rgb",
+    "semantic_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "rgb_index_range": [
+      7,
+      131
+    ],
+    "rgb_steps": [
+      0,
+      64,
+      128,
+      192,
+      255
+    ],
+    "palette_entries": 132,
+    "observed_cells": 1795307,
+    "texture_index_cells": 501887,
+    "semantic_cells": 1293420,
+    "policy": "semantic class colors; quantized RGB in observed unclassified cells",
+    "consumer_files": [
+      "colored.pgm",
+      "colored.json"
+    ]
+  },
+  "source_sha256": {
+    "road_temporal.colored.pgm": "6d430cecf14f08379046e882eed58755cc05cf89d95998fa138a692400f2cde7",
+    "road_temporal.colored.json": "093c18b042d1eada9003beb996c9e85bf2bcf58c9faacd943cfaefd1e6bf3949",
+    "road_temporal.texture.png": "39650966e9c73315d326aeeaddb849e21b13e51dfad3fc417d6609fb4e705746"
+  },
+  "exporter_sha256": "07b54af6ec48356e4383456e3392743d70ca4bfd95fe9a4fc225cd456295bb38",
+  "codec_sha256": "949171ab49b8f56bae2081fef8c4923f770d48f082f096cd36e0d43db27b0042"
+}

@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """Apply a named Sirius Nav2 mode from the command line."""
 
-from pathlib import Path
+import json
+import os
 import sys
+import time
+from contextlib import redirect_stdout
+from pathlib import Path
 
 import rclpy
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
@@ -13,7 +17,10 @@ from std_msgs.msg import String
 
 try:
     from sirius_navigation.navigation_modes import (
+        NAVIGATION_MODE_INFO,
+        NAVIGATION_MODE_PRESENTATION,
         navigation_mode_controller,
+        navigation_mode_speech,
         normalize_navigation_mode,
         resolve_navigation_mode_config,
     )
@@ -21,10 +28,35 @@ except ImportError:
     workspace = Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(workspace / "src/sirius/sirius_navigation"))
     from sirius_navigation.navigation_modes import (  # noqa: E402
+        NAVIGATION_MODE_INFO,
+        NAVIGATION_MODE_PRESENTATION,
         navigation_mode_controller,
+        navigation_mode_speech,
         normalize_navigation_mode,
         resolve_navigation_mode_config,
     )
+
+
+def log(message):
+    print(message, file=sys.stderr if JSON_OUTPUT else sys.stdout)
+
+
+def write_confirmed_state(mode):
+    domain = str(os.environ.get("ROS_DOMAIN_ID", "53"))
+    path = Path("/tmp") / f"sirius_nav_mode_applied_{domain}.json"
+    payload = {
+        "status": "ok",
+        "mode": mode,
+        "domain": domain,
+        "received_at": time.time(),
+        "source": "apply",
+    }
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    os.replace(temporary, path)
+
+
+JSON_OUTPUT = False
 
 
 class ParameterSetter(Node):
@@ -41,20 +73,51 @@ class ParameterSetter(Node):
         self.navigation_mode_pub = self.create_publisher(
             String, "/sirius/navigation_mode", selector_qos
         )
+        self.current_mode = None
+        self.errors = []
+        self.current_subscription = self.create_subscription(
+            String, "/sirius/navigation_mode", self.on_current_mode, selector_qos
+        )
+
+    def on_current_mode(self, message):
+        self.current_mode = str(message.data or "").strip() or None
+
+    def read_current_mode(self, timeout_sec=0.5):
+        from time import monotonic
+
+        domain = str(os.environ.get("ROS_DOMAIN_ID", "53"))
+        for name in (f"sirius_nav_mode_applied_{domain}.json",
+                     f"sirius_nav_mode_state_{domain}.json"):
+            state_path = Path("/tmp") / name
+            try:
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                pid = state.get("pid")
+                alive = not pid or Path(f"/proc/{pid}").exists()
+                if alive and state.get("status") == "ok" and state.get("mode"):
+                    self.current_mode = str(state["mode"])
+                    return self.current_mode
+            except (OSError, ValueError):
+                pass
+
+        deadline = monotonic() + timeout_sec
+        while monotonic() < deadline and self.current_mode is None:
+            rclpy.spin_once(self, timeout_sec=0.05)
+        return self.current_mode
 
     def publish_mode(self, mode):
-        """Publish the controller selection and confirmed Sirius mode."""
         selector = String(data=navigation_mode_controller(mode))
         status = String(data=mode)
         self.controller_selector_pub.publish(selector)
         self.navigation_mode_pub.publish(status)
-        rclpy.spin_once(self, timeout_sec=0.2)
+        for _ in range(6):
+            rclpy.spin_once(self, timeout_sec=0.1)
 
     def set_node_parameters(self, node_name, params_dict):
         srv_name = f"{node_name}/set_parameters"
         client = self.create_client(SetParameters, srv_name)
         if not client.wait_for_service(timeout_sec=5.0):
-            print(f"[Warning] Node '{node_name}' is not running or service not available.")
+            self.errors.append(f"{node_name}: サービスが見つかりません")
+            log(f"[Warning] Node '{node_name}' is not running or service not available.")
             return False
 
         request = SetParameters.Request()
@@ -89,13 +152,15 @@ class ParameterSetter(Node):
         future = client.call_async(request)
         rclpy.spin_until_future_complete(self, future, timeout_sec=5.0)
         if not future.done():
-            print(f"Timeout setting parameters on {node_name}")
+            self.errors.append(f"{node_name}: パラメータ設定がタイムアウトしました")
+            log(f"Timeout setting parameters on {node_name}")
             return False
 
         try:
             response = future.result()
         except Exception as exc:
-            print(f"Parameter request failed on {node_name}: {exc}")
+            self.errors.append(f"{node_name}: {exc}")
+            log(f"Parameter request failed on {node_name}: {exc}")
             return False
 
         success = True
@@ -103,40 +168,102 @@ class ParameterSetter(Node):
         for index, result in enumerate(response.results):
             if not result.successful:
                 name = names[index] if index < len(names) else "unknown"
-                print(f"Failed to set parameter '{name}' on {node_name}: {result.reason}")
+                message = f"{node_name}.{name}: {result.reason}"
+                self.errors.append(message)
+                log(f"Failed to set parameter '{name}' on {node_name}: {result.reason}")
                 success = False
         return success
 
 
+def speak_mode(mode):
+    text = navigation_mode_speech(mode)
+    try:
+        from sirius_navigation.dialogue.face_client import FaceClient
+
+        output = sys.stderr if JSON_OUTPUT else sys.stdout
+        with redirect_stdout(output):
+            ok = bool(FaceClient().send_speak(text))
+        return {
+            "ok": ok,
+            "text": text,
+            "error": None if ok else "SiriusFaceの音声APIに接続できません",
+        }
+    except Exception as error:  # noqa: BLE001
+        return {"ok": False, "text": text, "error": str(error)}
+
+
+def emit_error(message):
+    if JSON_OUTPUT:
+        print(json.dumps({"ok": False, "error": message}, ensure_ascii=False))
+    else:
+        print(f"Error: {message}", file=sys.stderr)
+
+
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: change_nav_mode_fast.py <mode>")
+    global JSON_OUTPUT
+
+    raw_args = sys.argv[1:]
+    JSON_OUTPUT = "--json" in raw_args
+    speech_enabled = (
+        "--no-speech" not in raw_args
+        and os.environ.get("SIRIUS_NAV_MODE_SPEECH", "1").lower()
+        not in {"0", "false", "no", "off"}
+    )
+    mode_args = [arg for arg in raw_args if not arg.startswith("--")]
+    if len(mode_args) != 1:
+        emit_error("Usage: change_nav_mode_fast.py <mode> [--json] [--no-speech]")
         return 1
 
-    mode = normalize_navigation_mode(sys.argv[1])
+    mode = normalize_navigation_mode(mode_args[0])
     if mode is None:
-        print(f"Error: Mode '{sys.argv[1]}' is not defined.")
+        emit_error(f"Mode '{mode_args[0]}' is not defined.")
         return 1
 
+    info = NAVIGATION_MODE_INFO[mode]
+    presentation = NAVIGATION_MODE_PRESENTATION[mode]
     rclpy.init()
     node = ParameterSetter()
+    success = True
+    audio = None
+    previous_mode = None
     try:
-        success = True
         for node_name, params in resolve_navigation_mode_config(mode).items():
-            print(f"Setting parameters on '{node_name}'...")
+            log(f"Setting parameters on '{node_name}'...")
             if not node.set_node_parameters(node_name, params):
                 success = False
         if success:
+            previous_mode = node.read_current_mode()
             node.publish_mode(mode)
+            write_confirmed_state(mode)
+            if not speech_enabled:
+                audio = {"ok": True, "skipped": True, "reason": "disabled"}
+            elif normalize_navigation_mode(previous_mode) == mode:
+                audio = {"ok": True, "skipped": True, "reason": "same_mode"}
+            else:
+                audio = speak_mode(mode)
+                if not audio["ok"]:
+                    log(f"[Warning] 音声通知に失敗しました: {audio['error']}")
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
-    if success:
+    result = {
+        "ok": success,
+        "mode": mode,
+        "label": presentation["label"],
+        "speed": float(info["speed"]),
+        "previous_mode": previous_mode,
+        "audio": audio,
+        "errors": node.errors if not success else [],
+    }
+    if JSON_OUTPUT:
+        print(json.dumps(result, ensure_ascii=False))
+    elif success:
         print(f"✓ Successfully applied all navigation parameters for '{mode}'!")
-        return 0
-    print(f"⚠ Some parameters failed while applying '{mode}'.")
-    return 1
+    else:
+        print(f"⚠ Some parameters failed while applying '{mode}'.")
+    return 0 if success else 1
 
 
 if __name__ == "__main__":

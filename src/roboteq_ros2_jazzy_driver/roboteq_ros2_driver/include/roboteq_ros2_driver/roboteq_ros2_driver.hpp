@@ -16,6 +16,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "std_msgs/msg/bool.hpp"
 #include "roboteq_ros2_driver/msg/roboteq_status.hpp"
+#include "roboteq_ros2_driver/msg/roboteq_diagnostics.hpp"
 
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -53,6 +54,25 @@ class Roboteq : public rclcpp::Node
   double tel_rpm_ch2_{0.0};
   double tel_temperature_{0.0};
   int tel_fault_flags_{0};
+  bool publish_diagnostics_{true};
+  double diagnostics_publish_hz_{50.0};
+  int tel_status_flags_{0};
+  int tel_motor_flags_[2]{0, 0};
+  double tel_md_output_[2]{0.0, 0.0};
+  bool tel_status_flags_received_{false};
+  bool tel_motor_flags_received_[2]{false, false};
+  bool tel_md_output_received_[2]{false, false};
+  double tel_status_flags_stamp_{0.0};
+  double tel_motor_flags_stamp_[2]{0.0, 0.0};
+  double tel_md_output_stamp_[2]{0.0, 0.0};
+  std::mutex command_mutex_;
+  int sent_command_[2]{0, 0};
+  bool command_write_ok_[2]{false, false};
+  double sent_command_stamp_[2]{0.0, 0.0};
+  roboteq_ros2_driver::msg::RoboteqDiagnostics control_diagnostics_;
+  roboteq_ros2_driver::msg::RoboteqDiagnostics stop_diagnostics_;
+  uint32_t latched_stop_reason_mask_{0};
+  rclcpp::Publisher<roboteq_ros2_driver::msg::RoboteqDiagnostics>::SharedPtr diagnostics_pub_;
 
   // --- ソフトウェア閉ループ車輪速度制御 ---
   // エンコーダから推定した実車輪速度をフィードバックし、同定したFF(duty)に
@@ -90,6 +110,7 @@ class Roboteq : public rclcpp::Node
   bool estop_active_{false};     // 上記のOR。制御はこのフラグで停止する
   int estop_bad_count_{0};       // 検知デバウンス
   int estop_good_count_{0};
+  bool estop_latch_hardware{true};
   bool estop_detect_fault{};
   int estop_ff_mask{};
   double estop_min_voltage{};
@@ -226,6 +247,9 @@ class Roboteq : public rclcpp::Node
   void update_estop_state();
   void reset_closed_loop_state();
   void check_hardware_estop();
+  bool protection_release_ready();
+  void record_stop_event(uint32_t reason);
+  void diagnostics_publish();
   //void odom_hs_run();
   void odom_ms_run();
   void odom_ls_run();

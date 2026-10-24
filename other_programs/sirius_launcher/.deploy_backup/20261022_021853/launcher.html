@@ -1,0 +1,427 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101216"><title>SiriusLauncher</title><link rel="icon" type="image/png" href="/static/branding/sirius-icon.png"><link rel="apple-touch-icon" href="/static/branding/sirius-icon.png"><link rel="stylesheet" href="/static/console.css"><link rel="stylesheet" href="/static/tf.css"><link rel="stylesheet" href="/static/adaptive.css">
+<link rel="stylesheet" href="/static/branding.css"><script defer src="/static/branding.js"></script>
+<link rel="manifest" href="/static/manifest.webmanifest"><meta name="application-name" content="SiriusLauncher"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="SiriusLauncher"><link rel="stylesheet" href="/static/app-install.css"><script defer src="/static/app-install.js"></script>
+<link rel="stylesheet" href="/static/share-link.css"><script defer src="/static/share-link.js"></script>
+</head><body data-page="home">
+<aside class="rail"><a class="brand" href="#home" aria-label="Sirius Home" onclick="setPage('home');return false"><img class="sirius-icon" src="/static/branding/sirius-icon.png" alt="" width="64" height="64"></a><div class="rail-nav"><button class="nav-item active" data-page="home" onclick="setPage('home')" title="Home" aria-label="Home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></button><button class="nav-item" data-page="terminal" onclick="setPage('terminal')" title="Terminal" aria-label="Terminal" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m7 9 3 3-3 3m6 0h4"/></svg><span>Terminal</span></button><button class="nav-item" data-page="resources" onclick="setPage('resources')" title="Monitor" aria-label="Monitor" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>Monitor</span></button><button class="nav-item" data-page="visualization" onclick="setPage('visualization')" title="3D Visualization" aria-label="3D Visualization" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 5-9 5-9-5z"/><path d="m3 7 9 5 9-5M3 12l9 5 9-5M3 17l9 5 9-5"/></svg><span>3D</span></button><button class="nav-item" data-page="tf" onclick="setPage('tf')" title="TF Tree" aria-label="TF Tree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="5" rx="1"/><rect x="2" y="17" width="6" height="5" rx="1"/><rect x="16" y="17" width="6" height="5" rx="1"/><path d="M12 7v5M5 17v-5h14v5"/></svg><span>TF Tree</span></button><button class="nav-item" data-page="settings" onclick="setPage('settings')" title="設定" aria-label="設定" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3-1 3-3 1-2 3 2 2-1 3 2 3h3l2 3h3l1-3 3-1 2-3-2-2 1-3-2-3h-3l-2-3z"/><circle cx="11.5" cy="12" r="3"/></svg><span>設定</span></button></div><div class="rail-bottom"><button class="nav-item" id="fullscreenBtn" onclick="toggleFullscreen()" title="フルスクリーン" aria-label="フルスクリーン"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg><span>画面</span></button><span class="rail-version">SIRIUS</span></div></aside>
+<div class="app-shell"><header class="appbar"><div class="page-identity"><span class="app-name"><img class="sirius-title-logo" src="/static/branding/sirius-title.png?v=0f40f4a116" alt="SiriusLauncher" width="2048" height="683"></span><span class="app-divider"></span><span id="page-label">Home</span></div><div class="top-status"><span class="connection" id="connection"><i></i><span>接続中</span></span><span class="host-name" id="host-name">—</span><button class="domain-pill" onclick="setPage('settings')" title="ROSドメイン設定">DOMAIN <b id="domain-label">—</b></button><span class="clock" id="clock">—</span><button class="appbar-icon" onclick="refresh()" title="状態を更新" aria-label="状態を更新"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m-4-4a8 8 0 0 1 14-3l1 3M4 16l1 3a8 8 0 0 0 14-3"/></svg></button></div></header>
+<main class="workspace"><section class="page active" id="page-home" aria-label="Home"><div class="home-layout"><div class="home-main"><section class="panel presets"><div class="section-heading"><h2><button class="preset-toggle" id="preset-toggle" aria-expanded="true" aria-controls="presets" title="クイックスタートを折りたたむ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span>クイックスタート</span> <span id="preset-count"></span></button></h2><button id="pedit" class="text-button">編集</button></div><div class="plist preset-grid" id="presets"></div><button class="text-button more-presets" onclick="toggleAllPresets()" id="more-presets">すべてのプリセットを見る</button><div id="pt_presets" hidden></div></section><section class="program-section"><div class="section-heading"><h2>プログラム</h2><span class="muted" id="command-count"></span></div><div class="cmdbar"><div class="cmdwrap"><span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></span><input id="cmdin" aria-label="プログラム・コマンド検索" placeholder="プログラムを検索、またはコマンドを入力" autocomplete="off" spellcheck="false"><div class="sugg hidden" id="sugg"></div></div><button class="hbtn" id="cmdrun" onclick="runCmd()">実行 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></button></div><div class="tabs" id="tabs" role="tablist" aria-label="プログラムカテゴリ"></div><div class="view" id="view"></div></section></div><div id="gutter" class="home-splitter" role="separator" aria-orientation="vertical" aria-label="左右の幅を変更" title="ドラッグで左右の幅を変更" tabindex="0"></div><aside class="sidebar"><div class="section-heading"><h2><button class="running-toggle" id="running-toggle" aria-expanded="true" aria-controls="running" title="稼働中を折りたたむ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span>稼働中</span> <span id="runhint"></span><span id="runerrhint" class="run-error-hint" hidden></span></button></h2><span class="live-dot"></span></div><div id="pt_running" hidden></div><div id="cnt" class="running-caption">状態を確認中</div><div class="plist" id="running"><div class="empty">接続を待っています</div></div><div class="sidebar-footer"><button class="text-button" id="teleopBtn" onclick="toggleTeleop()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m12 5 3 7-3 7-3-7z"/></svg>ロボット操作</button><button id="errcnt" onclick="openErrors()" class="text-button"></button></div><div class="mini-health"><span>HOST HEALTH</span><button onclick="setPage('resources')"><b id="mini-cpu">—</b> CPU <i>·</i> <b id="mini-memory">—</b> メモリ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button></div></aside></div></section>
+<section class="page" id="page-terminal" aria-label="Terminal"><div class="terminal-layout"><aside class="terminal-programs"><h2>プログラムのログ</h2><div id="terminal-program-list"><p class="empty">接続を待っています</p></div></aside><div class="terminal-workspace"><div class="term" id="term">
+ <div class="tbar" id="termtabs"></div>
+ <pre id="termout"></pre>
+ <div class="tin"><input id="termin" placeholder="コマンドを入力してEnter（例: src && ros2 topic list）" onkeydown="termInput(event)"></div>
+</div>
+</div></div><div class="terminal-note"><span class="live-dot"></span>タブを切り替えてもセッションは継続します。<span>Ctrl + C で実行を中断</span></div></section>
+<section class="page" id="page-resources" aria-label="リソースモニター"><div class="resource-status-row"><span class="sample-status" id="sample-status"><i class="live-dot"></i>更新を待っています</span></div><div class="metrics-grid"><article class="metric-card"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 1v5m6-5v5M9 18v5m6-5v5M1 9h5m-5 6h5m12-6h5m-5 6h5"/></svg><span>CPU使用率</span></div><div class="metric-value" id="metric-cpu">—</div><div class="metric-detail" id="detail-cpu">接続を待っています</div><div class="meter"><i id="meter-cpu"></i></div></article><article class="metric-card"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10v4m5-4v4m5-4v4M7 18v3m5-3v3m5-3v3"/></svg><span>メモリ</span></div><div class="metric-value" id="metric-memory">—</div><div class="metric-detail" id="detail-memory">接続を待っています</div><div class="meter"><i id="meter-memory"></i></div></article><article class="metric-card"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 4-3 11v5h20v-5L19 4zM2 15h20m-5 3h2"/></svg><span>ストレージ</span></div><div class="metric-value" id="metric-disk">—</div><div class="metric-detail" id="detail-disk">接続を待っています</div><div class="meter"><i id="meter-disk"></i></div></article><article class="metric-card"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14V5a2 2 0 0 1 4 0v9a5 5 0 1 1-4 0"/><path d="M12 9v9"/></svg><span>CPU温度</span></div><div class="metric-value" id="metric-temperature">—</div><div class="metric-detail" id="detail-temperature">接続を待っています</div><div class="meter"><i id="meter-temperature"></i></div></article></div><div class="chart-grid"><article class="surface chart-card"><div class="section-heading"><h2><span class="legend blue"></span>CPU <span class="chart-caption">過去2分</span></h2><b id="cpu-chart-value">—</b></div><div class="chart" id="cpu-chart"></div><div class="chart-axis"><span>2分前</span><span>現在</span></div></article><article class="surface chart-card"><div class="section-heading"><h2><span class="legend mint"></span>メモリ <span class="chart-caption">過去2分</span></h2><b id="memory-chart-value">—</b></div><div class="chart" id="memory-chart"></div><div class="chart-axis"><span>2分前</span><span>現在</span></div></article></div><article class="surface core-card"><div class="section-heading"><h2>CPUコア <span id="core-count"></span></h2><span class="muted" id="load-average">—</span></div><div id="cpu-cores" class="cpu-cores"></div></article><article class="surface process-card"><div class="section-heading"><h2>プロセス <span id="process-count"></span></h2><div class="process-tools"><div class="segmented"><button class="active" data-scope="related" onclick="setProcessScope('related')">Sirius / ROS</button><button data-scope="all" onclick="setProcessScope('all')">すべて</button></div><input id="process-search" placeholder="名前・PIDで検索" aria-label="プロセス検索" oninput="renderProcesses()"></div></div><div class="process-table-wrap"><table class="process-table"><thead><tr><th>プロセス</th><th>PID</th><th><button onclick="sortProcesses('cpu_percent')" id="sort-cpu">CPU ↓</button></th><th><button onclick="sortProcesses('memory_bytes')" id="sort-memory">メモリ</button></th><th>スレッド</th><th>稼働時間</th><th></th></tr></thead><tbody id="resource-processes"><tr><td colspan="7" class="table-empty">データを取得しています</td></tr></tbody></table></div><div class="table-footer"><span>プロセスCPUは1コアを100%として表示</span><button class="text-button" id="process-more" onclick="showMoreProcesses()">さらに表示</button></div></article><div class="resource-footer"><span id="resource-system">—</span><span id="resource-network">—</span></div></section>
+<section class="page" id="page-tf" aria-label="TF Tree">
+<div class="tf-toolbar"><div class="tf-counts" id="tf-counts">/tf · /tf_static</div><span class="sample-status" id="tf-status">接続を待っています</span><div class="tf-tools"><input id="tf-search" placeholder="フレームを検索" aria-label="TFフレーム検索" list="tf-frames" oninput="searchTF(this.value)"><datalist id="tf-frames"></datalist><button class="hbtn" onclick="fitTF()">全体表示</button><button class="hbtn" onclick="zoomTF(.8)" aria-label="TFを拡大">＋</button><button class="hbtn" onclick="zoomTF(1.25)" aria-label="TFを縮小">−</button></div></div>
+<div id="tf-warning" class="tf-warning" hidden></div>
+<div class="tf-layout"><article class="surface tf-canvas" id="tf-canvas"><svg id="tf-svg" aria-label="現在のTFツリー" role="group"></svg><div class="tf-empty" id="tf-empty">TFを受信しています…</div><div class="tf-legend"><span><i></i>動的</span><span><i class="static"></i>静的</span><span><i class="stale"></i>更新停止</span><span>ドラッグで移動 · スクロールで拡大</span></div></article><aside class="surface tf-inspector" id="tf-inspector"><h2>フレームの詳細</h2><p class="tf-help">フレームを選択すると、変換値と配信状態を表示します。</p></aside></div>
+<p class="tf-footnote">/tf・/tf_staticを受信して約1秒ごとに更新します。Hzは受信頻度です。動的TFは3秒間受信がないと更新停止、60秒で一覧から除外します。静的TFは継続受信を必要としません。ROS側で配信元IDを取得できない場合は、同じトピックの配信元候補を表示します。</p>
+</section>
+<section class="page" id="page-visualization" aria-label="3D Visualization">
+<div class="viz-layout" id="viz-layout">
+<aside class="viz-sidebar surface" id="viz-sidebar">
+<div class="viz-head"><div><p class="eyebrow">LICHTBLICK / ROS 2</p><h2>3D Visualization</h2></div><button class="appbar-icon" onclick="toggleVizSidebar()" title="設定パネルを閉じる" aria-label="設定パネルを閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button></div>
+<div class="viz-connection"><div class="viz-status-row"><span><i id="viz-viewer-dot"></i>Viewer</span><b id="viz-viewer-state">待機中</b></div><div class="viz-status-row"><span><i id="viz-bridge-dot"></i>Bridge</span><b id="viz-bridge-state">未確認</b></div><p id="viz-status-detail">表示設定を読み込んでいます。</p><span class="viz-badge" id="viz-status-badge">準備中</span></div>
+<div class="viz-actions"><button class="hbtn" onclick="reloadVisualization()">再読み込み</button><button class="hbtn" onclick="toggleVisualizationFullscreen()">全画面</button><a class="hbtn" id="viz-open-tab" href="about:blank" target="_blank" rel="noopener">別タブ</a></div>
+<form class="viz-settings" id="viz-settings" onsubmit="saveVisualizationSettings(event)">
+<h3>接続設定</h3>
+<label>Viewer URL<input id="viz-viewer-url" type="url" inputmode="url" spellcheck="false" autocomplete="off"></label>
+<label>foxglove_bridge URL<input id="viz-bridge-url" type="text" inputmode="url" spellcheck="false" autocomplete="off"></label>
+<label class="viz-check"><input id="viz-auto" type="checkbox"> 表示時に自動接続</label>
+<div class="viz-form-actions"><button class="hbtn" type="submit">保存して再読み込み</button><button class="text-button" type="button" onclick="resetVisualizationSettings()">初期値に戻す</button></div>
+</form>
+<div class="viz-safety"><b>表示専用モード</b><p>速度指令やNav2ゴールは送信しません。Lichtblick標準のPublishツールは使用しないでください。</p></div>
+<div class="viz-layout-manager">
+<div class="viz-layout-head"><span>レイアウト</span><button class="text-button" onclick="resetVisualizationLayout()">既定に戻す</button></div>
+<select id="viz-layout-select" aria-label="保存済みレイアウト"></select>
+<div class="viz-layout-buttons"><button class="hbtn" type="button" onclick="applyVisualizationLayout()">適用</button><button class="hbtn" type="button" onclick="triggerVisualizationLayoutImport()">JSON取込</button><button class="hbtn" type="button" onclick="exportVisualizationLayout()">書出</button><button class="text-button" type="button" onclick="deleteVisualizationLayout()">削除</button></div>
+<input id="viz-layout-file" type="file" accept="application/json,.json" hidden onchange="importVisualizationLayoutFile(this)">
+<p class="viz-layout-note">Lichtblickで書き出したレイアウトJSONを保存できます。</p>
+</div>
+<p class="viz-help">左ドラッグ: 回転 · 右ドラッグ: 移動 · ホイール: ズーム<br>表示されない場合は固定フレームを <code>map</code> に設定してください。</p>
+</aside>
+<div class="viz-stage" id="viz-stage">
+<div class="viz-toolbar"><div class="viz-title"><span class="live-dot"></span><b>LIVE VIEW</b><span id="viz-frame-state">未読み込み</span></div><div class="viz-toolbar-actions"><button class="appbar-icon" onclick="toggleVizSidebar()" id="viz-panel-toggle" title="設定パネル" aria-label="設定パネル" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><button class="appbar-icon" onclick="reloadVisualization()" title="再読み込み" aria-label="再読み込み"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5m-4-4a8 8 0 0 1 14-3l1 3M4 16l1 3a8 8 0 0 0 14-3"/></svg></button><button class="appbar-icon" onclick="toggleVisualizationFullscreen()" title="全画面" aria-label="全画面"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg></button></div></div>
+<div class="viz-frame-wrap" id="viz-frame-wrap"><div class="viz-empty" id="viz-empty"><span class="viz-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5z"/><path d="m3 7 9 5 9-5M3 12l9 5 9-5M3 17l9 5 9-5"/></svg></span><b id="viz-empty-title">3Dビューを起動しています</b><span id="viz-empty-text">Lichtblickを読み込んでいます。初回は少し時間がかかります。</span><button class="hbtn" id="viz-retry" onclick="reloadVisualization()" hidden>再試行</button></div><iframe class="viz-frame" id="viz-frame" title="Lichtblick 3D Visualization" allow="fullscreen" allowfullscreen></iframe></div>
+</div>
+</div>
+</section>
+<section class="page" id="page-settings" aria-label="設定"><div class="settings-grid"><article class="surface settings-card"><div class="section-heading"><h2>ワークスペース</h2></div><label class="setting-row"><span><b>ROS Domain ID</b><small>これから起動するプログラムに適用します。</small></span><input id="domain" type="number" min="0" max="232" aria-label="ROS Domain ID"></label><div class="setting-row"><span><b>ホスト</b><small id="settings-host">接続を確認しています</small></span><span class="tag">接続中</span></div><div class="setting-row"><span><b>プリセット</b><small>よく使う起動構成をまとめます。</small></span><button class="hbtn" onclick="openPresets()">編集する</button></div></article><article class="surface settings-card"><div class="section-heading"><h2>ディスプレイ</h2></div><label class="setting-row"><span><b>カラーテーマ</b><small>このブラウザに保存されます。</small></span><select id="theme-select" onchange="setTheme(this.value)"><option value="dark">ダーク</option><option value="light">ライト</option></select></label><div class="setting-row"><span><b>フルスクリーン</b><small>画面全体を操作コンソールに使います。</small></span><button class="hbtn" onclick="toggleFullscreen()">切り替え</button></div><div class="setting-row"><span><b>専用画面での起動</b><small>ログイン後の自動起動の状態を表示します。</small></span><span class="tag" id="autostart-status">確認中</span></div></article><article class="surface settings-card"><div class="section-heading"><h2>システム操作</h2></div><div class="setting-row"><span><b>定義を再読み込み</b><small>最新のプリセット・プログラム一覧を取得します。</small></span><button class="hbtn" onclick="load()">再読み込み</button></div><div class="setting-row"><span><b>Webサーバー</b><small>起動済みプログラムを維持してUIを再起動します。</small></span><button class="hbtn" onclick="restartServer()">再起動</button></div><div class="setting-row"><span><b>稼働中を一括再起動</b><small>起動中のプログラムを停止し、同じプログラムを起動し直します。</small></span><button class="hbtn danger" onclick="restartAll()" id="restart-all-btn">一括再起動</button></div><label class="setting-row"><span><b>前回の起動入力を復元</b><small>ROS Domain IDと起動コマンドを、前回起動時の値で復元します。記録がない場合は現在の入力値を使います。</small></span><input id="restart-restore-inputs" type="checkbox" aria-label="前回の起動入力を復元"></label><div class="setting-row"><span><b>プログラムをすべて停止</b><small>起動中のプログラムを、外部起動・セッションも含めて停止します。</small></span><button class="hbtn danger" onclick="stopAll()">すべて停止</button></div></article></div></section></main><footer class="app-footer"><span><i class="live-dot"></i>Sirius Control Console</span><span id="footer-status">システムに接続しています</span><span class="footer-shortcut">Home · Terminal · Monitor</span></footer></div>
+<div class="modal" id="pmodal"><div class="modalbox">
+ <h3 style="margin-top:0">プリセット編集</h3>
+ <div style="color:#9aa4b2;font-size:12px;margin-bottom:6px">各行: 名前 / アイテム（エイリアス名のカンマ区切り）<br>左端の6点ハンドルをドラッグして並べ替えできます。保存で確定します。</div>
+ <div id="prows"></div>
+ <button class="hbtn" onclick="addPresetRow('','')">＋プリセット追加</button>
+ <button class="hbtn" onclick="addPresetFromRunning()" title="現在稼働中のプログラム名を新しいプリセットとして追加します">＋稼働中から作成</button>
+ <div style="margin-top:12px">
+  <button class="hbtn" style="background:#2f6fed;color:#fff;border:none" onclick="savePresets()">保存</button>
+  <button class="hbtn" onclick="closePresets()">閉じる</button>
+ </div>
+ <div id="perr" style="color:#ff8080;margin-top:6px;font-size:12px"></div>
+</div></div>
+<datalist id="aliaslist"></datalist>
+<div class="modal" id="pmodal2"><div class="modalbox">
+ <h3 style="margin-top:0">起動中のプロセス（外部起動も含む）</h3>
+ <div class="desc">ROS/sirius関連プロセスを表示します。「kill」で停止できます（子孫も停止）。</div>
+ <div class="proc" id="procrows"></div>
+ <div style="margin-top:12px"><button class="hbtn" onclick="openProcs()">再読み込み</button>
+ <button class="hbtn" onclick="closeProcs()">閉じる</button></div>
+</div></div>
+<div class="modal" id="emodal"><div class="modalbox">
+ <h3 style="margin-top:0;color:#ff8080">⚠ エラーが出ているプロセス</h3>
+ <div class="desc">ログ末尾に [ERROR]/[FATAL]/Traceback を含むプロセスです。「ログ」で内容を確認し、「停止」で止められます。</div>
+ <div class="proc" id="errrows"></div>
+ <div style="margin-top:12px"><button class="hbtn" onclick="openErrors()">再読み込み</button>
+ <button class="hbtn" onclick="closeErrors()">閉じる</button></div>
+</div></div>
+<div class="log" id="log" role="dialog" aria-label="コマンドのログと入力">
+ <div class="logbar"><span id="logtitle"></span><span id="logstate"></span>
+  <button class="hbtn" id="loginterrupt" onclick="sendLogControl()" disabled>Ctrl+C</button>
+  <button class="hbtn" id="logclose" onclick="closeLog()">閉じる</button></div>
+ <pre id="logout"></pre>
+ <div class="loghint" id="loghint"></div>
+ <form class="tin" onsubmit="sendLogInput(event)">
+  <input id="login" aria-label="コマンドへの入力" placeholder="番号やパスを入力してEnter" onkeydown="logKey(event)" disabled autocomplete="off">
+  <button class="hbtn" id="logsend" type="submit" disabled>送信 / Enter</button>
+ </form>
+</div>
+<div id="toast"></div>
+<div class="teleop" id="teleop">
+ <div class="thead"><span>⭕ テレオペ（/controller）</span><span class="tstate" id="tstate">待機</span><button class="xbtn gray" onclick="toggleTeleop(false)">✕</button></div>
+ <div class="tgrid">
+  <button class="tk up" data-k="65" title="前進 +0.1 m/s">▲</button>
+  <button class="tk left" data-k="68" title="左旋回 +0.157 rad/s">◀</button>
+  <button class="tk stop" data-k="stop" title="停止（並進・旋回をリセット）">■ 停止</button>
+  <button class="tk right" data-k="67" title="右旋回 -0.157 rad/s">▶</button>
+  <button class="tk down" data-k="66" title="後退 -0.1 m/s">▼</button>
+ </div>
+ <div class="tchk"><label><input type="checkbox" id="tkdm" checked> 離したら停止</label></div>
+ <div class="thint">押している間で加減速 / 矢印・Spaceキーでも可（scn起動中のみ有効）</div>
+</div>
+<script>
+const ICONS={"home": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z\"/></svg>", "terminal": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"m7 9 3 3-3 3m6 0h4\"/></svg>", "resources": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12h4l3-8 4 16 3-8h4\"/></svg>", "settings": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 3-1 3-3 1-2 3 2 2-1 3 2 3h3l2 3h3l1-3 3-1 2-3-2-2 1-3-2-3h-3l-2-3z\"/><circle cx=\"11.5\" cy=\"12\" r=\"3\"/></svg>", "fullscreen": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5\"/></svg>", "arrow": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg>", "play": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 11 7-11 7z\"/></svg>", "box": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"4\"/><path d=\"M9 4v6h6V4m-6 12h6\"/></svg>", "cpu": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"2\"/><path d=\"M9 1v5m6-5v5M9 18v5m6-5v5M1 9h5m-5 6h5m12-6h5m-5 6h5\"/></svg>", "memory": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"6\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M7 10v4m5-4v4m5-4v4M7 18v3m5-3v3m5-3v3\"/></svg>", "disk": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 4-3 11v5h20v-5L19 4zM2 15h20m-5 3h2\"/></svg>", "temperature": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14V5a2 2 0 0 1 4 0v9a5 5 0 1 1-4 0\"/><path d=\"M12 9v9\"/></svg>", "search": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m16 16 5 5\"/></svg>", "refresh": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 7v5h-5M4 17v-5h5m-4-4a8 8 0 0 1 14-3l1 3M4 16l1 3a8 8 0 0 0 14-3\"/></svg>", "plus": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>", "control": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m12 5 3 7-3 7-3-7z\"/></svg>", "stop": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"5\" y=\"5\" width=\"14\" height=\"14\" rx=\"3\"/></svg>", "chevron": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 5 7 7-7 7\"/></svg>"};
+
+let DATA=null,TAB=0,COLLAPSED={},LAST_STATUS=null;
+async function api(p,body){const o={method:body?'POST':'GET',headers:{'Content-Type':'application/json'}};if(body)o.body=JSON.stringify(body);else o.signal=AbortSignal.timeout(8000);const r=await fetch(p,o);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+async function load(){DATA=await api('/api/state');DATA.groups.forEach((g,i)=>{if(COLLAPSED['desc:'+i]===undefined)COLLAPSED['desc:'+i]=true;});renderTabs();render();refresh();
+ const dEl=document.getElementById('domain');
+ dEl.value=(localStorage.getItem('rosd')!==null?localStorage.getItem('rosd'):(DATA.default_domain||''));
+ dEl.onchange=()=>{localStorage.setItem('rosd',dEl.value);document.getElementById('domain-label').textContent=dEl.value||'—';};document.getElementById('domain-label').textContent=dEl.value||'—';
+ [['pt_presets','presets'],['pt_running','running']].forEach(([tid,cid])=>{const t=document.getElementById(tid);const c=document.getElementById(cid);
+  t.onclick=()=>{c.classList.toggle('hidden');t.classList.toggle('closed');};});
+ const dl=document.getElementById('aliaslist');dl.innerHTML='';DATA.groups.forEach(g=>g.items.forEach(it=>{const o=document.createElement('option');o.value=it.name;dl.appendChild(o);}));
+ buildCmdIndex();
+ const pe=document.getElementById('pedit');if(pe)pe.onclick=(e)=>{e.stopPropagation();openPresets();};}
+function openPresets(){const rows=document.getElementById('prows');rows.innerHTML='';
+ DATA.presets.forEach(p=>addPresetRow(p.name,p.items.join(',')));
+ document.getElementById('perr').textContent='';
+ document.getElementById('pmodal').classList.add('open');}
+function closePresets(){document.getElementById('pmodal').classList.remove('open');}
+function addPresetRow(name,items){const rows=document.getElementById('prows');const d=document.createElement('div');d.className='prow';
+ d.innerHTML='<button class="pdrag" type="button" aria-label="ドラッグして並べ替え" title="ドラッグして並べ替え"><svg viewBox="0 0 10 18" fill="currentColor" aria-hidden="true"><circle cx="2.5" cy="3" r="1.3"/><circle cx="7.5" cy="3" r="1.3"/><circle cx="2.5" cy="9" r="1.3"/><circle cx="7.5" cy="9" r="1.3"/><circle cx="2.5" cy="15" r="1.3"/><circle cx="7.5" cy="15" r="1.3"/></svg></button>'+
+  '<input class="nm" placeholder="プリセット名" list="aliaslist" value="'+(name||'')+'">'+
+  '<input placeholder="アイテム（エイリアス名をカンマ区切り）" list="aliaslist" value="'+(items||'')+'">'+
+  '<button class="xbtn" onclick="this.parentNode.remove()">削除</button>';
+ rows.appendChild(d);}
+const PRESET_ROWS=document.getElementById('prows');let PRESET_DRAG=null;
+function placePresetRow(y){
+ if(!PRESET_DRAG)return;
+ const box=PRESET_ROWS.closest('.modalbox'),rect=box.getBoundingClientRect();
+ if(y<rect.top+48)box.scrollTop-=14;else if(y>rect.bottom-48)box.scrollTop+=14;
+ const before=[...PRESET_ROWS.querySelectorAll('.prow')].filter(row=>row!==PRESET_DRAG.row)
+  .find(row=>{const r=row.getBoundingClientRect();return y<r.top+r.height/2;});
+ if(before)PRESET_ROWS.insertBefore(PRESET_DRAG.row,before);
+ else PRESET_ROWS.appendChild(PRESET_DRAG.row);
+}
+function endPresetDrag(){
+ if(!PRESET_DRAG)return;
+ PRESET_DRAG.row.classList.remove('dragging');
+ try{PRESET_DRAG.handle.releasePointerCapture(PRESET_DRAG.pointerId);}catch(e){}
+ PRESET_DRAG=null;
+}
+PRESET_ROWS.addEventListener('pointerdown',e=>{
+ const handle=e.target.closest('.pdrag');if(!handle||e.button!==0)return;
+ e.preventDefault();endPresetDrag();
+ const row=handle.closest('.prow');if(!row)return;
+ PRESET_DRAG={row,handle,pointerId:e.pointerId};
+ row.classList.add('dragging');handle.setPointerCapture(e.pointerId);
+});
+PRESET_ROWS.addEventListener('pointermove',e=>{
+ if(!PRESET_DRAG)return;e.preventDefault();placePresetRow(e.clientY);
+},{passive:false});
+PRESET_ROWS.addEventListener('pointerup',endPresetDrag);
+PRESET_ROWS.addEventListener('pointercancel',endPresetDrag);
+async function addPresetFromRunning(){
+ const err=document.getElementById('perr');err.textContent='';
+ let st;
+ try{st=await api('/api/status');}catch(e){err.textContent='稼働状況を確認できません';return;}
+ const order=new Map();DATA.groups.forEach((g,gi)=>g.items.forEach((it,ii)=>order.set(it.name,gi*1000+ii)));
+ const items=Object.entries(st).filter(([name,s])=>s&&s.running&&order.has(name))
+  .sort((a,b)=>(Number(b[1].uptime)||0)-(Number(a[1].uptime)||0)||order.get(a[0])-order.get(b[0]))
+  .map(([name])=>name);
+ if(!items.length){err.textContent='稼働中のプログラムがありません';return;}
+ const now=new Date(),pad=n=>String(n).padStart(2,'0');
+ const name='稼働中 '+now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+ addPresetRow(name,items.join(','));
+ const row=document.querySelector('#prows .prow:last-child');
+ if(row){row.scrollIntoView({block:'nearest'});const nm=row.querySelector('input.nm');nm.focus();nm.select();}
+ toast('稼働中の '+items.length+' 件からプリセットを作成しました');}
+async function savePresets(){const rows=Array.prototype.slice.call(document.querySelectorAll('#prows .prow'));
+ const presets=rows.map(r=>{const ins=r.querySelectorAll('input');return {name:ins[0].value.trim(),items:ins[1].value.split(',').map(s=>s.trim()).filter(Boolean)};}).filter(p=>p.name&&p.items.length);
+ const res=await api('/api/presets/save',{presets});
+ if(res.error){document.getElementById('perr').textContent='保存失敗: '+res.error;return;}
+ DATA.presets=res.presets;renderTabs();document.getElementById('perr').textContent='保存しました';closePresets();}
+function dom(){const v=document.getElementById('domain').value;localStorage.setItem('rosd',v);return v;}
+function paintTabBadges(st){DATA.groups.forEach((g,i)=>{let run=0,err=0;g.items.forEach(it=>{const s=st[it.name];if(!s)return;if(s.running)run++;if(s.error)err++;});const rb=document.getElementById('runbadge_'+i);if(rb){rb.textContent=run;rb.classList.toggle('hide',run===0);rb.parentElement.classList.toggle('has-run',run>0);}const eb=document.getElementById('badge_'+i);if(eb){eb.textContent=err;eb.classList.toggle('hide',err===0);}});}
+function renderTabs(){const t=document.getElementById('tabs');t.innerHTML='';
+ DATA.groups.forEach((g,i)=>{const d=document.createElement('div');d.className='tab'+(i==TAB?' active':'');d.textContent=g.name;const bd=document.createElement('span');bd.className='badge hide';bd.id='badge_'+i;d.appendChild(bd);const rb=document.createElement('span');rb.className='tab-run hide';rb.id='runbadge_'+i;rb.title='稼働中のプログラム数';d.appendChild(rb);d.onclick=()=>{TAB=i;renderTabs();render();};t.appendChild(d);});
+ document.getElementById('preset-count').textContent=DATA.presets.length;document.getElementById('command-count').textContent=DATA.groups.reduce((n,g)=>n+g.items.length,0)+' programs';
+ const p=document.getElementById('presets');p.innerHTML='';
+ DATA.presets.forEach(pr=>{const b=document.createElement('button');b.className='preset';b.textContent=pr.name;b.onclick=()=>runPreset(pr.name,b);const mark=document.createElement('span');mark.className='preset-mark';mark.innerHTML=ICONS.play;b.prepend(mark);p.appendChild(b);});if(LAST_STATUS)paintTabBadges(LAST_STATUS);}
+function makeBtn(it){const b=document.createElement('div');b.className='btn';b.id='btn_'+it.name;b.setAttribute('role','group');b.setAttribute('aria-label',it.name);
+ b.innerHTML='<b>'+esc(it.name)+'</b><span class="d">'+esc(it.desc||'')+'</span><div class="program-foot"><span class="st">確認中</span><button class="program-action" aria-label="'+esc(it.name)+'を起動"><span class="action-label">起動</span><span class="action-icon">'+ICONS.play+'</span></button></div>';
+ b.querySelector('.program-action').onclick=e=>{e.stopPropagation();toggle(it.name,b);};
+ b.onclick=()=>{if(b.dataset.running==='1')showLog(it.name);else toggle(it.name,b);};return b;}
+function render(){const g=DATA.groups[TAB];const v=document.getElementById('view');
+ v.innerHTML='<h3 style="font-size:14px;margin:0">'+g.name+(g.desc?'<span class="desc-toggle" id="dscbtn">[説明]</span>':'')+'</h3><div class="desc'+(COLLAPSED['desc:'+TAB]?' hidden':'')+'" id="gdesc">'+(g.desc||'')+'</div><div id="sections"></div>';
+ const db=document.getElementById('dscbtn');if(db)db.onclick=()=>{const d=document.getElementById('gdesc');d.classList.toggle('hidden');COLLAPSED['desc:'+TAB]=d.classList.contains('hidden');};
+ const secs=document.getElementById('sections');
+ const plain=g.items.filter(it=>!it.subgroup);
+ if(plain.length){const body=document.createElement('div');body.className='grid';plain.forEach(it=>body.appendChild(makeBtn(it)));secs.appendChild(body);}
+ const order=[],map={};
+ g.items.forEach(it=>{if(!it.subgroup)return;const k=it.subgroup;if(!map[k]){map[k]=[];order.push(k);}map[k].push(it);});
+ order.forEach(k=>{const key='sec:'+g.name+':'+k;const hid=!!COLLAPSED[key];
+  const sec=document.createElement('div');sec.className='sec';
+  const h=document.createElement('div');h.className='sec-h'+(hid?' closed':'');h.innerHTML='<span class="arr">▼</span>'+k;
+  const body=document.createElement('div');body.className='grid'+(hid?' hidden':'');
+  map[k].forEach(it=>body.appendChild(makeBtn(it)));
+  h.onclick=()=>{const closed=!h.classList.contains('closed');h.classList.toggle('closed',closed);body.classList.toggle('hidden',closed);COLLAPSED[key]=closed;};
+  sec.appendChild(h);sec.appendChild(body);secs.appendChild(sec);});}
+async function refreshStatus(){if(!DATA)return;const st=await api('/api/status');LAST_STATUS=st;paintSummary(st);
+ let errTotal=0;
+ document.querySelectorAll('.btn').forEach(b=>{const n=b.id.replace('btn_','');const s=st[n];
+  const run=s&&s.running, err=s&&s.error, op=OPS[n];
+  const age=run&&Number.isFinite(s.uptime)?(' · '+uptime(s.uptime)):'';
+  const health=s&&s.health, uncertain=!!run&&health&&health.state==='unknown';
+  b.dataset.running=run?'1':'0';
+  b.querySelector('.st').textContent=op?('⏳ '+op)
+    :(run&&health?((err?'⚠ ':uncertain?'△ ':'')+health.summary+' · pid '+s.pid+age)
+    :err?('⚠ エラー'+(run?(' / 稼働中 pid '+s.pid+age):''))
+    :(run?('稼働中 · '+s.pid+age):'未起動'));
+  b.querySelector('.st').title=health?(health.summary+(health.last_error?'\n過去ログ: '+health.last_error.message:'')):'';
+  const action=b.querySelector('.program-action');if(action){action.setAttribute('aria-label',n+'を'+(run?'停止':'起動'));action.querySelector('.action-label').textContent=run?'停止':'起動';action.querySelector('.action-icon').innerHTML=run?ICONS.stop:ICONS.play;}
+  b.classList.toggle('busy',!!op);
+  b.classList.toggle('run',!!run&&!err&&!uncertain&&!op);b.classList.toggle('uncertain',!!uncertain&&!op);b.classList.toggle('err',!!err&&!op);});
+ const errs=Object.entries(st).filter(([n,s])=>s.error);errTotal=errs.length;
+ const ec=document.getElementById('errcnt');
+ if(ec){ec.textContent=errTotal?('⚠ エラー: '+errTotal+'件'):'';ec.classList.toggle('on',errTotal>0);}
+ paintTabBadges(st);
+ const run=Object.entries(st).filter(([n,s])=>s.running);
+ SCN_RUN=run.some(([n])=>n==='scn');
+ document.getElementById('cnt').textContent='稼働中: '+run.length+' 件';
+ document.getElementById('runhint').textContent=run.length?run.length:'';
+ const reh=document.getElementById('runerrhint');if(reh){reh.textContent=errTotal?('⚠ '+errTotal):'';reh.hidden=!errTotal;}
+ const r=document.getElementById('running');
+ r.innerHTML=run.length?run.map(([n,s])=>{const op=OPS[n];const err=!!s.error;
+  const age=Number.isFinite(s.uptime)?', '+uptime(s.uptime):'';
+  const detail=s.health&&s.health.last_error?' title="'+esc(s.health.last_error.message)+'"':'';
+  return '<div class="ritem'+(err?' err':'')+(op?' busy':'')+'"'+detail+'>'+
+   (err?'<span class="ritem-alert"><span aria-hidden="true">⚠</span> エラー</span>':'')+
+   '<span class="n">'+(op?'⏳ ':'')+esc(n)+' ('+s.pid+(s.source==='external'?', 外部':s.source==='session'?', セッション':'')+age+')'+(s.health?' · '+esc(s.health.summary):'')+'</span>'+
+   (op?('<span class="st" style="color:#ffb86b">'+op+'</span>'):'<button class="xbtn gray" onclick="restartIt(\''+n+'\',this)">再起動</button><button class="xbtn" onclick="stopIt(\''+n+'\',this)">停止</button><button class="xbtn gray" onclick="showLog(\''+n+'\')">ログ</button>')+'</div>';}).join(''):'<div class="empty">稼働中のプログラムはありません</div>';}
+async function openErrors(){const st=await api('/api/status');const errs=Object.entries(st).filter(([n,s])=>s.error);const box=document.getElementById('errrows');
+ box.innerHTML=errs.length?errs.map(([n,s])=>'<div class="r dup"><span class="p">'+s.pid+'</span><span class="c">⚠ '+esc(n)+(s.source==='external'?' (外部)':s.source==='session'?' (セッション)':'')+'</span><button class="xbtn gray" onclick="showLog(\''+n+'\')">ログ</button><button class="xbtn" onclick="stopIt(\''+n+'\',this).then(openErrors)">停止</button></div>').join(''):'<div class="empty">エラーはありません</div>';
+ document.getElementById('emodal').classList.add('open');}
+function closeErrors(){document.getElementById('emodal').classList.remove('open');}
+const OPS={};let toastTimer=null;
+function toast(msg,bad){const t=document.getElementById('toast');t.textContent=msg;t.classList.toggle('bad',!!bad);t.style.display='block';
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.style.display='none',4000);}
+async function finishOp(n,msg){delete OPS[n];let bad=false;try{const st=await api('/api/status');const s=st[n];bad=!!(s&&s.error);}catch(e){}
+ toast(msg+(bad?' ⚠ エラーが出ています（ログ参照）':''),bad);refresh();}
+async function stopAll(){if(!confirm('全て停止しますか？'))return;await api('/api/stop_all',{});refresh();}
+async function restartAll(){
+ const btn=document.getElementById('restart-all-btn');
+ const restoreEl=document.getElementById('restart-restore-inputs');
+ const restore=!!(restoreEl&&restoreEl.checked);
+ let status={};
+ try{status=await api('/api/status');}catch(e){toast('稼働状況を確認できません',true);return;}
+ const count=Object.values(status).filter(state=>state.running).length;
+ if(!count){toast('稼働中のプログラムはありません');return;}
+ const mode=restore?'前回のROS Domain IDと起動コマンドを復元します。':'現在画面に入力されているROS Domain IDを使用します。';
+ if(!confirm('稼働中のプログラム '+count+' 件をすべて停止して再起動します。\n'+mode+'\n\nロボットが動作中の場合は危険です。続行しますか？'))return;
+ if(btn){btn.disabled=true;btn.textContent='再起動中…';}
+ try{
+  const result=await api('/api/restart_all',{domain:dom(),restore});
+  const failed=(result.failed||[]).length;
+  toast('一括再起動: 起動 '+(result.started||[]).length+'件'+(failed?' / 失敗 '+failed+'件':'')+(restore?'（入力を復元）':''),failed>0);
+  refresh();
+ }catch(e){toast('一括再起動に失敗しました',true);}
+ finally{if(btn){btn.disabled=false;btn.textContent='一括再起動';}}
+}
+async function restartServer(){if(!confirm('Webサーバー（SiriusLauncher Web）を再起動しますか？\n起動中のプロセスは維持されます。'))return;
+ try{await api('/api/restart_server',{});}catch(e){}
+ setTimeout(()=>location.reload(),3000);}
+async function runPreset(n,el){if(el&&el.classList.contains('busy'))return;if(el){el.classList.add('busy');el.textContent='起動中… '+n;}
+ try{const res=await api('/api/preset',{name:n,domain:dom()});
+  if(res&&(res.started||res.skipped||res.failed)){const started=(res.started||[]).length,skipped=(res.skipped||[]).length,failed=(res.failed||[]).length;
+   const parts=[];if(started)parts.push('起動 '+started+'件');if(skipped)parts.push('起動済み '+skipped+'件');if(failed)parts.push('失敗 '+failed+'件');
+   toast('プリセット '+n+': '+(parts.join(' / ')||'変更なし'),failed>0);}
+  else toast('プリセット実行: '+n);
+ }catch(e){toast('プリセットに失敗: '+n,true);}
+ finally{if(el){el.classList.remove('busy');renderTabs();}refresh();}}
+let LOG_NAME=null,LOG_REQUEST=0,LOG_FOCUS=false,LOG_BUSY=false;
+async function showLog(n){LOG_NAME=n;LOG_FOCUS=true;document.getElementById('logtitle').textContent=n;
+ document.getElementById('loghint').textContent=(n==='scn')?'KeyOp操作: A=前進 B=後退 C=右旋回 D=左旋回 / ,=並進リセット .=旋回リセット（入力してEnter）':'';
+ document.getElementById('logout').textContent='';document.getElementById('login').value='';
+ document.getElementById('log').classList.add('open');await pollLog();}
+function closeLog(){LOG_NAME=null;LOG_REQUEST++;document.getElementById('log').classList.remove('open');}
+async function pollLog(){if(!LOG_NAME)return;const name=LOG_NAME,requestId=++LOG_REQUEST;
+ try{const j=await api('/api/log?name='+encodeURIComponent(name));if(LOG_NAME!==name||requestId!==LOG_REQUEST)return;
+ const out=document.getElementById('logout'),bottom=out.scrollHeight-out.clientHeight-out.scrollTop<40;
+ out.innerHTML=colorizeLog(j.log||j.error||'');if(bottom)out.scrollTop=out.scrollHeight;
+ ['login','logsend','loginterrupt'].forEach(id=>document.getElementById(id).disabled=!j.interactive);
+ document.getElementById('logstate').textContent=j.interactive?'入力可能（Enterで送信）':'入力端末なし：終了済み、または更新前の起動。入力する場合はこのコマンドを再起動してください。';
+ if(j.interactive&&LOG_FOCUS){document.getElementById('login').focus();LOG_FOCUS=false;}}
+ catch(e){if(LOG_NAME===name)document.getElementById('logstate').textContent='接続を再試行しています…';}}
+async function writeLog(data){if(!LOG_NAME||LOG_BUSY)return false;const name=LOG_NAME;LOG_BUSY=true;
+ try{const r=await api('/api/input',{name:name,data:data});if(!r.ok){toast(r.error||'入力を送信できません',true);return false;}return true;}
+ catch(e){toast('入力を送信できませんでした',true);return false;}finally{LOG_BUSY=false;pollLog();}}
+async function sendLogInput(e){e.preventDefault();const inp=document.getElementById('login');if(inp.disabled)return;
+ const name=LOG_NAME,value=inp.value;if(await writeLog(value+'\n')){if(LOG_NAME===name&&inp.value===value)inp.value='';}}
+function sendLogControl(){writeLog(String.fromCharCode(3));}
+function logKey(e){if(e.isComposing||e.keyCode===229){if(e.key==='Enter')e.preventDefault();return;}
+ if(e.ctrlKey&&e.key.toLowerCase()==='c'&&!window.getSelection().toString()&&e.target.selectionStart===e.target.selectionEnd){e.preventDefault();sendLogControl();}}
+const TERM={sessions:[],active:null,offsets:{}};
+function legacyToggleTerm(){const t=document.getElementById('term');t.classList.toggle('open');
+ document.getElementById('termBtn').textContent=t.classList.contains('open')?'⌨ ターミナル ▼':'⌨ ターミナル';
+ if(t.classList.contains('open')){if(!TERM.sessions.length){newTerm('');}else if(TERM.active){selectTerm(TERM.active);}else{selectTerm(TERM.sessions[0]);}}}
+async function newTerm(cmd){const r=await api('/api/term/open',{cmd:cmd||''});if(r.error&&r.error!=='exists'){alert('起動できません: '+r.error);return;}const n=r.name;if(!TERM.sessions.includes(n))TERM.sessions.push(n);selectTerm(n);}
+function selectTerm(n){if(!n)return;if(!TERM.sessions.includes(n))TERM.sessions.push(n);TERM.active=n;TERM.offsets[n]=0;renderTermTabs();document.getElementById('termout').textContent='';pollTerm();}
+function renderTermTabs(){const b=document.getElementById('termtabs');b.innerHTML='';
+ TERM.sessions.forEach(n=>{const d=document.createElement('div');d.className='ttab'+(n===TERM.active?' active':'');const s=document.createElement('span');s.textContent=n;const x=document.createElement('span');x.className='x';x.textContent='×';x.title='閉じる';x.onclick=(e)=>{e.stopPropagation();closeTerm(n);};d.appendChild(s);d.appendChild(x);d.onclick=()=>selectTerm(n);b.appendChild(d);});
+ const a=document.createElement('button');a.className='hbtn';a.textContent='＋ シェル';a.title='新しいターミナル（対話シェル）';a.onclick=()=>newTerm('');b.appendChild(a);
+ const c=document.createElement('button');c.className='hbtn';c.textContent='✕ 閉じる';c.onclick=()=>toggleTerm();b.appendChild(c);}
+
+async function pollTerm(){if(!TERM.active)return;if(!document.getElementById('term').classList.contains('open'))return;
+ const r=await api('/api/term/read?name='+encodeURIComponent(TERM.active)+'&offset='+(TERM.offsets[TERM.active]||0));
+ if(r.error)return;TERM.offsets[TERM.active]=r.offset;if(r.data){const o=document.getElementById('termout');const atBottom=(o.scrollHeight-o.clientHeight-o.scrollTop)<40;o.insertAdjacentHTML('beforeend',colorizeLog(r.data));if(atBottom)o.scrollTop=o.scrollHeight;}}
+
+async function openProcs(){const j=await api('/api/ps');const rows=(j.processes||[]);const dups=(j.duplicates||[]);const box=document.getElementById('procrows');
+ let html='';
+ if(dups.length){html+='<div class="desc" style="color:#ffb86b">⚠ 重複（同じプログラムが複数動いています。通常は不要なので停止推奨）</div>';
+  dups.forEach(d=>{html+='<div class="r dup"><span class="p">'+d.count+'個</span><span class="c">'+esc(d.alias)+'  (pids: '+d.pids.join(', ')+')</span><button class="xbtn" onclick="killMany('+JSON.stringify(d.pids)+')">重複を停止</button></div>';});
+  html+='<div class="desc" style="margin-top:10px">その他のプロセス</div>';}
+ html+=rows.length?rows.map(p=>'<div class="r'+(p.dup?' dup':'')+(p.error?' err':'')+'"><span class="p">'+p.pid+'</span><span class="c">'+(p.error?'⚠ ':'')+esc((p.alias?('['+p.alias+'] '):'')+p.cmd)+'</span><span class="p" style="flex:0 0 74px;text-align:right">'+p.age_txt+'</span><button class="xbtn gray" onclick="killProc('+p.pid+')">kill</button></div>').join(''):'<div class="empty">ROS/sirius関連のプロセスはありません</div>';
+ box.innerHTML=html;
+ document.getElementById('pmodal2').classList.add('open');}
+function closeProcs(){document.getElementById('pmodal2').classList.remove('open');}
+async function killProc(pid){if(!confirm('PID '+pid+' を停止しますか？（子孫も停止）'))return;await api('/api/ps/kill',{pid:pid});openProcs();refresh();}
+async function killMany(pids){if(!confirm('重複プロセス '+pids.length+' 個を停止しますか？（子孫も停止）'))return;await api('/api/ps/kill_many',{pids:pids});openProcs();refresh();}
+// ---- コマンドバー（エイリアス名は管理起動 / それ以外は新ターミナルで実行） ----
+let CMDS=[],SUGG=[],SEL=-1,HIST=[],HISTIX=-1;
+try{HIST=JSON.parse(localStorage.getItem('cmdhist')||'[]');if(!Array.isArray(HIST))HIST=[];}catch(e){HIST=[];}
+function buildCmdIndex(){CMDS=[];DATA.groups.forEach(g=>g.items.forEach(it=>{if(!CMDS.some(c=>c.name===it.name))CMDS.push({name:it.name,desc:it.desc||'',group:g.name});}));}
+function matchCmds(q){const s=q.trim().toLowerCase();if(!s)return CMDS.slice(0,12);
+ const starts=[],has=[];CMDS.forEach(c=>{const n=c.name.toLowerCase();
+  if(n.startsWith(s))starts.push(c);else if(n.includes(s)||(c.desc||'').toLowerCase().includes(s))has.push(c);});
+ return starts.concat(has).slice(0,12);}
+function hideSugg(){document.getElementById('sugg').classList.add('hidden');SEL=-1;}
+function renderSugg(){const box=document.getElementById('sugg');const inp=document.getElementById('cmdin');
+ if(document.activeElement!==inp){box.classList.add('hidden');return;}
+ SUGG=matchCmds(inp.value);if(!SUGG.length){box.classList.add('hidden');return;}
+ if(SEL>=SUGG.length)SEL=SUGG.length-1;
+ box.innerHTML=SUGG.map((c,i)=>'<div class="si'+(i===SEL?' active':'')+'" title="'+esc(c.name+' — '+(c.desc||''))+'" onmousedown="pickSugg(event,'+i+')"><span class="nm">'+esc(c.name)+'</span><span class="d">'+esc(c.desc)+'</span><span class="g">'+esc(c.group)+'</span><span class="mv" style="'+(i===SEL?'':'visibility:hidden')+'">▸ Enter</span></div>').join('');
+ box.classList.remove('hidden');}
+function pickSugg(e,i){e.preventDefault();const c=SUGG[i];if(!c)return;const inp=document.getElementById('cmdin');inp.value=c.name;hideSugg();runCmd();}
+function cmdHistory(dir){const inp=document.getElementById('cmdin');if(!HIST.length)return;
+ HISTIX+=dir;
+ if(HISTIX<0){HISTIX=-1;inp.value='';return;}
+ if(HISTIX>=HIST.length)HISTIX=HIST.length-1;
+ inp.value=HIST[HISTIX]||'';}
+function cmdKey(e){if(e.isComposing||e.keyCode===229)return;
+ const open=!document.getElementById('sugg').classList.contains('hidden');
+ if(e.key==='ArrowDown'){e.preventDefault();if(!open){cmdHistory(1);return;}SEL=Math.min(SEL+1,SUGG.length-1);renderSugg();return;}
+ if(e.key==='ArrowUp'){e.preventDefault();if(!open){cmdHistory(-1);return;}SEL=Math.max(SEL-1,0);renderSugg();return;}
+ if(e.key==='Tab'){e.preventDefault();if(open){const c=SUGG[SEL>=0?SEL:0];if(c){document.getElementById('cmdin').value=c.name;hideSugg();}}return;}
+ if(e.key==='Enter'){e.preventDefault();if(open&&SEL>=0&&SUGG[SEL])document.getElementById('cmdin').value=SUGG[SEL].name;runCmd();return;}
+ if(e.key==='Escape'){hideSugg();return;}}
+function pushHist(v){HIST=[v].concat(HIST.filter(h=>h!==v)).slice(0,50);HISTIX=-1;try{localStorage.setItem('cmdhist',JSON.stringify(HIST));}catch(e){}}
+async function startByName(n){if(OPS[n])return;
+ try{const st=await api('/api/status');const s=st[n];
+  if(s&&s.running){toast(n+' は既に起動中です'+(s.error?'（⚠ エラーあり）':''));await showLog(n);return;}}
+ catch(e){}
+ OPS[n]='起動中…';refresh();
+ try{const res=await api('/api/start',{name:n,domain:dom()});
+  if(res.error){delete OPS[n];toast('起動できません: '+n+' ('+res.error+')',true);refresh();return;}
+  await finishOp(n,'起動: '+n);}
+ catch(e){delete OPS[n];toast('操作に失敗: '+n,true);refresh();}}
+async function runInTerminal(cmd){const name='cmd_'+Date.now();
+ const r=await api('/api/term/open',{cmd:'',name:name});
+ let n=name;if(r.error){if(r.error==='exists'){n=r.name||name;}else{toast('ターミナルを開けません: '+r.error,true);return;}}
+ if(!TERM.sessions.includes(n))TERM.sessions.push(n);
+ if(document.getElementById('term').classList.contains('open'))selectTerm(n);else renderTermTabs();
+ toast('ターミナルで実行: '+cmd+'（⌨ ターミナルで確認）');
+ setTimeout(()=>{api('/api/term/write',{name:n,data:cmd+'\n'});setTimeout(pollTerm,250);},150);}
+async function runCmd(){const inp=document.getElementById('cmdin');const v=inp.value.trim();if(!v)return;
+ const alias=CMDS.find(c=>c.name===v);hideSugg();inp.value='';pushHist(v);
+ if(alias)await startByName(alias.name);else await runInTerminal(v);}
+(function(){const ci=document.getElementById('cmdin');
+ ci.addEventListener('input',()=>{SEL=-1;renderSugg();});
+ ci.addEventListener('focus',()=>{SEL=-1;renderSugg();});
+ ci.addEventListener('keydown',cmdKey);
+ document.addEventListener('mousedown',e=>{if(!e.target.closest('.cmdwrap'))hideSugg();});})();
+function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function colorizeLog(s){const safe=esc(s||'');return safe.replace(/\b(FATAL|CRITICAL|ERROR|ERR|WARNING|WARN|INFO|DEBUG|TRACE)\b/gi,function(m){const k=m.toUpperCase();let cls='lv-debug';if(k==='FATAL'||k==='CRITICAL'||k==='ERROR'||k==='ERR')cls='lv-error';else if(k==='WARNING'||k==='WARN')cls='lv-warn';else if(k==='INFO')cls='lv-info';return '<span class="log-level '+cls+'">'+m+'</span>';});}
+// ---- テレオペ（十字キーパッド → /controller） ----
+let SCN_RUN=false,TK_TIMER=null,TK_KEY=null;
+const TK_MAP={ArrowUp:65,ArrowDown:66,ArrowLeft:68,ArrowRight:67};
+function deadmanOn(){const c=document.getElementById('tkdm');return !c||c.checked;}
+function toggleTeleop(force){const p=document.getElementById('teleop');
+ const open=(force!==undefined)?force:!p.classList.contains('open');
+ p.classList.toggle('open',open);
+ document.getElementById('teleopBtn').classList.toggle('on',open);
+ if(open)teleopPoll();
+ try{localStorage.setItem('teleop',open?'1':'0');}catch(e){}}
+async function teleopSend(k){try{const r=await api('/api/teleop',{key:k,domain:dom()});
+ if(!r.ok)toast(r.error||'テレオペ送信に失敗しました',true);teleopState(r);}catch(e){toast('テレオペ送信に失敗しました',true);}}
+function teleopState(r){const s=document.getElementById('tstate');if(!s)return;
+ let cls='',txt='';
+ if(r&&r.error){cls='warn';txt='⚠ '+r.error;}
+ else if(SCN_RUN){if(r&&r.alive){cls='ok';txt='操作可能';}else{txt='scn起動中・ブリッジ待機';}}
+ else if(r&&r.alive){cls='ok';txt='ブリッジ稼働'+(r.domain?(' (D'+r.domain+')'):'');}
+ else{txt='待機（キー操作で起動 / scn未起動）';}
+ s.className='tstate '+cls;s.textContent=txt;}
+async function teleopPoll(){if(!document.getElementById('teleop').classList.contains('open'))return;
+ try{teleopState(await api('/api/teleop/status'));}catch(e){}}
+function startHold(k,el){stopHold();el.classList.add('on');teleopSend(k);TK_KEY=k;TK_TIMER=setInterval(()=>teleopSend(k),120);}
+function stopHold(){if(TK_TIMER){clearInterval(TK_TIMER);TK_TIMER=null;}
+ if(TK_KEY!==null){const k=TK_KEY;TK_KEY=null;document.querySelectorAll('.tk').forEach(b=>b.classList.remove('on'));
+  if(k!=='stop'&&deadmanOn())teleopSend('stop');}}
+function teleopKeyGuard(e){if(!document.getElementById('teleop').classList.contains('open'))return false;
+ if(e.isComposing||e.keyCode===229)return false;
+ const t=e.target;return !(t&&t.closest&&t.closest('input,textarea,select,[contenteditable]'));}
+(function(){document.querySelectorAll('#teleop .tk').forEach(b=>{
+ b.addEventListener('pointerdown',e=>{e.preventDefault();const dk=b.dataset.k;startHold(dk==='stop'?'stop':parseInt(dk,10),b);});
+ b.addEventListener('pointerleave',stopHold);
+ b.addEventListener('contextmenu',e=>e.preventDefault());});
+ window.addEventListener('pointerup',stopHold);window.addEventListener('pointercancel',stopHold);
+ document.addEventListener('keydown',e=>{
+  if(!teleopKeyGuard(e))return;
+  if(e.key===' '){e.preventDefault();if(!e.repeat)teleopSend('stop');return;}
+  const k=TK_MAP[e.key];if(k!==undefined){e.preventDefault();teleopSend(k);}});
+ document.addEventListener('keyup',e=>{
+  if(!teleopKeyGuard(e))return;
+  if(TK_MAP[e.key]!==undefined&&deadmanOn())teleopSend('stop');});
+ const dm=document.getElementById('tkdm');
+ dm.checked=localStorage.getItem('tkdm')!=='0';
+ dm.addEventListener('change',()=>{try{localStorage.setItem('tkdm',dm.checked?'1':'0');}catch(e){}});
+ toggleTeleop(false);})();
+(function(){const el=document.getElementById('restart-restore-inputs');if(!el)return;
+ el.checked=localStorage.getItem('sirius-restart-restore')!=='0';
+ el.addEventListener('change',()=>{try{localStorage.setItem('sirius-restart-restore',el.checked?'1':'0');}catch(e){}});})();
+
+
+</script>
+<script src="/static/tf.js"></script><script src="/static/visualization.js"></script><script src="/static/console.js"></script></body></html>

@@ -68,12 +68,29 @@ function paintHomeHealth(status){
 function openProgramInput(name){setPage('terminal');selectTerm('program:'+name,true);}
 function paintInputWaiting(status){
   const count=Object.values(status).filter(state=>state?.running&&state.input_waiting).length;
-  const nav=document.querySelector('.nav-item[data-page="terminal"]');if(!nav)return;
-  let badge=document.getElementById('terminal-wait-badge');
-  if(!badge){badge=document.createElement('span');badge.id='terminal-wait-badge';badge.className='input-wait-nav-badge';badge.setAttribute('aria-hidden','true');nav.append(badge);}
-  badge.hidden=count===0;badge.textContent=count>99?'99+':String(count);
-  nav.title=count?'Terminal：入力待ち '+count+' 件':'Terminal';
-  nav.setAttribute('aria-label',count?'Terminal、入力待ち '+count+' 件':'Terminal');
+  const nav=document.querySelector('.nav-item[data-page="terminal"]');
+  if(nav){
+    let badge=document.getElementById('terminal-wait-badge');
+    if(!badge){badge=document.createElement('span');badge.id='terminal-wait-badge';badge.className='input-wait-nav-badge';badge.setAttribute('aria-hidden','true');nav.append(badge);}
+    badge.hidden=count===0;badge.textContent=count>99?'99+':String(count);
+    nav.title=count?'Terminal：入力待ち '+count+' 件':'Terminal';
+    nav.setAttribute('aria-label',count?'Terminal、入力待ち '+count+' 件':'Terminal');
+  }
+  const toggle=document.querySelector('.running-toggle');
+  let hint=document.getElementById('runwaithint');
+  if(!hint&&toggle){
+    hint=document.createElement('span');
+    hint.id='runwaithint';
+    hint.className='run-wait-hint';
+    const anchor=document.getElementById('runhint')||document.getElementById('runerrhint');
+    if(anchor)anchor.after(hint);else toggle.append(hint);
+  }
+  if(hint){
+    hint.hidden=count===0;
+    hint.textContent=count?'⌨ 入力待ち '+count:'';
+    hint.title=count?'入力待ちのプロセスが '+count+' 件あります':'';
+    hint.setAttribute('aria-label',count?'入力待ち '+count+' 件':'');
+  }
 }
 function paintSummary(status){
   LAST_GOOD_STATUS=Date.now();connection(true);
@@ -82,9 +99,14 @@ function paintSummary(status){
   document.getElementById('footer-status').textContent=running.length+' programs running';
   const target=document.getElementById('terminal-program-list');target.replaceChildren();
   for(const [name,state] of running){
-    const button=document.createElement('button');button.innerHTML=ICONS.terminal;
+    const row=document.createElement('div');row.className='terminal-program-row';
+    const button=document.createElement('button');button.className='terminal-program-open';button.innerHTML=ICONS.terminal;
     const text=document.createElement('span');text.textContent=name;button.append(text);
-    button.title=name+' のコンソール';button.onclick=()=>selectTerm('program:'+name);target.append(button);
+    button.title=name+' のコンソール';button.onclick=()=>selectTerm('program:'+name);
+    const restart=document.createElement('button');restart.type='button';restart.className='terminal-program-restart';
+    restart.textContent='↻';restart.title=name+' を再起動';restart.setAttribute('aria-label',name+'を再起動');
+    restart.onclick=event=>{event.stopPropagation();restartIt(name,restart);};
+    row.append(button,restart);target.append(row);
   }
   if(window.syncProgramTerminals)syncProgramTerminals(status);
   if(!running.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='稼働中のプログラムはありません';target.append(empty);}
@@ -287,32 +309,45 @@ initPanelCollapse(document.querySelector('.sidebar'),document.getElementById('ru
 function initHomeSplit(){
   const layout=document.querySelector('.home-layout'),splitter=document.getElementById('gutter');
   if(!layout||!splitter)return;
-  const MIN_MAIN=360,MIN_SIDE=220;
-  function clampShare(value){
+  const MIN_MAIN=360,MIN_SIDE=260;
+  function limits(){
     const width=layout.clientWidth;
-    if(!width)return value;
-    const min=MIN_SIDE/width,max=Math.max(min,1-MIN_MAIN/width);
-    return Math.min(max,Math.max(min,value));
+    const gutter=parseFloat(getComputedStyle(layout).getPropertyValue('--home-gutter-size'))||16;
+    return width>=720?{min:MIN_SIDE/width,max:1-(MIN_MAIN+gutter)/width}:{min:.15,max:.85};
   }
+  function clampShare(value){const {min,max}=limits();return Math.min(max,Math.max(min,value));}
   let share=parseFloat(localStorage.getItem('sirius-home-side-share'));
-  if(!Number.isFinite(share))share=.26;
-  function apply(){if(layout.clientWidth)layout.style.setProperty('--home-side-share',(clampShare(share)*100).toFixed(2)+'%');}
+  if(!Number.isFinite(share))share=.3;
+  function apply(){
+    if(!layout.clientWidth)return;
+    const value=clampShare(share),{min,max}=limits();
+    layout.style.setProperty('--home-side-share',(value*100).toFixed(4)+'%');
+    splitter.setAttribute('aria-valuemin',Math.round(min*100));
+    splitter.setAttribute('aria-valuemax',Math.round(max*100));
+    splitter.setAttribute('aria-valuenow',Math.round(value*100));
+  }
   apply();
   let drag=false;
   splitter.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag=true;splitter.setPointerCapture(e.pointerId);e.preventDefault();document.body.classList.add('split-dragging');});
-  splitter.addEventListener('pointermove',e=>{if(!drag)return;const rect=layout.getBoundingClientRect();if(!rect.width)return;share=clampShare((rect.right-e.clientX)/rect.width);apply();});
+  splitter.addEventListener('pointermove',e=>{if(!drag)return;const rect=layout.getBoundingClientRect();if(!rect.width)return;const gutter=parseFloat(getComputedStyle(layout).getPropertyValue('--home-gutter-size'))||16;share=clampShare((rect.right-e.clientX-gutter/2)/rect.width);apply();});
   function end(){if(!drag)return;drag=false;document.body.classList.remove('split-dragging');localStorage.setItem('sirius-home-side-share',String(share));}
   splitter.addEventListener('pointerup',end);splitter.addEventListener('pointercancel',end);
-  splitter.addEventListener('keydown',e=>{const step=e.key==='ArrowLeft'?-.02:e.key==='ArrowRight'?.02:0;if(!step)return;e.preventDefault();share=clampShare(share+step);apply();localStorage.setItem('sirius-home-side-share',String(share));});
-  window.addEventListener('resize',apply);
+  splitter.addEventListener('keydown',e=>{const step=e.key==='ArrowLeft'?.02:e.key==='ArrowRight'?-.02:0;if(!step)return;e.preventDefault();share=clampShare(share+step);apply();localStorage.setItem('sirius-home-side-share',String(share));});
+  if(window.ResizeObserver)new ResizeObserver(apply).observe(layout);
+  else window.addEventListener('resize',apply);
 }
 initHomeSplit();
 function initHomeLayout(){
   const main=document.querySelector('.home-main'),presets=main.querySelector('.presets'),sidebar=document.querySelector('.sidebar');
   const side=document.createElement('div');side.className='home-side';sidebar.before(side);side.append(sidebar);
-  const desktop=matchMedia('(min-width:821px)');
-  function arrange(){if(desktop.matches)side.prepend(presets);else main.prepend(presets);}
-  desktop.addEventListener('change',arrange);arrange();
+  const page=document.getElementById('page-home');
+  function arrange(){
+    const destination=page.clientWidth-parseFloat(getComputedStyle(page).paddingLeft)-parseFloat(getComputedStyle(page).paddingRight)>=720?side:main;
+    if(presets.parentElement!==destination)destination.prepend(presets);
+  }
+  if(window.ResizeObserver)new ResizeObserver(arrange).observe(page);
+  else window.addEventListener('resize',arrange);
+  arrange();
 }
 initHomeLayout();
 async function initConsole(){

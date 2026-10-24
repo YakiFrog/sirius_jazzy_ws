@@ -85,3 +85,41 @@
 #presets .preset>.preset-start{flex:0 0 auto;min-height:44px;min-width:64px;gap:5px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:var(--accent-bg);font-size:11px;justify-content:center}
 #presets .preset-start .preset-mark{min-width:16px;width:16px;height:20px;background:none}
 #presets .preset-info{min-width:44px;min-height:44px}
+
+/* Compact process rows; keep metadata and touch controls available. */
+#running .ritem{padding:7px 0 7px 8px!important;gap:4px 6px}
+#running .ritem.err{padding:7px 8px!important;margin:3px 0!important}
+#running .ritem .n{width:auto;flex:1 1 150px;min-width:0;line-height:1.5}
+#running .running-uptime{flex:0 0 auto;gap:4px;margin:0;font-size:9px}
+#running .running-uptime b{font-size:11px}
+#running .running-labels,#running .running-presets{flex-basis:auto;max-width:100%;gap:3px;margin:0;font-size:9px;line-height:1.4}
+#running .running-labels:empty{display:none}
+#running .running-group,#running .running-preset{padding:1px 5px;overflow-wrap:anywhere}
+#running .xbtn{min-height:28px;min-width:42px;padding:4px 7px;font-size:10px}
+#running .ritem-alert,#running .input-wait-badge{padding:3px 6px}
+.sidebar .running-caption{padding-bottom:6px}
+.sidebar .running-actions{gap:6px;margin-bottom:6px}
+.sidebar .running-actions .hbtn{min-height:32px;padding:6px 4px}
+@media(max-width:820px),(pointer:coarse){#running .xbtn{min-height:40px;min-width:44px}.sidebar .running-actions .hbtn{min-height:40px}}
+#running .running-presets{flex-basis:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+#running .running-presets>span{flex-shrink:0;white-space:nowrap}
+
+/* Reserve identical tracks so status text never moves the process controls. */
+#running .ritem,#running .ritem.err{display:grid;position:relative;grid-template-columns:minmax(0,1fr) repeat(3,42px);grid-template-rows:28px 18px 18px 20px;gap:4px 6px;padding:7px 8px!important;margin:0!important;border-width:1px 1px 1px 3px!important;border-style:solid!important;align-items:center}
+#running .ritem:not(.err){border-top-color:transparent!important;border-right-color:transparent!important}
+#running .ritem>.n{grid-area:1/1;white-space:nowrap;width:100%;min-width:0}
+#running .ritem>.xbtn:not(.input-wait-action){grid-row:1;width:42px;min-width:42px;padding:4px 0;white-space:nowrap}
+#running .ritem>.xbtn[onclick^="restartIt("]{grid-column:2}
+#running .ritem>.xbtn[onclick^="stopIt("]{grid-column:3}
+#running .ritem>.xbtn[onclick^="showLog("]{grid-column:4}
+#running .running-uptime{grid-area:2/1;min-width:0;overflow:hidden;white-space:nowrap;font-size:0;gap:0}
+#running .ritem-alert{grid-area:2/2;font-size:8px;padding:2px;gap:2px;white-space:nowrap;justify-self:end}
+#running .input-wait-badge{grid-area:2/3/3/5;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 4px;font-size:9px;justify-self:end}
+#running .running-labels{grid-area:3/1/4/5}
+#running .running-presets{grid-area:4/1/5/5}
+#running .running-labels,#running .running-presets{min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:0;max-height:100%}
+#running .running-labels>span{flex-shrink:0;white-space:nowrap}
+#running .ritem>.st{grid-area:1/2/2/5;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#running .input-wait-action,#running .input-wait-original{grid-area:3/2/5/5;justify-self:end;align-self:center}
+#running .ritem:has(.input-wait-action) .running-labels,#running .ritem:has(.input-wait-action) .running-presets,#running .ritem:has(.input-wait-original) .running-labels,#running .ritem:has(.input-wait-original) .running-presets{grid-column:1}
+@media(max-width:820px),(pointer:coarse){#running .ritem,#running .ritem.err{grid-template-columns:minmax(0,1fr) repeat(3,44px);grid-template-rows:40px 18px 18px 20px}#running .ritem>.xbtn:not(.input-wait-action){width:44px;min-width:44px}}

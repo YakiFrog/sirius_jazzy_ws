@@ -1,0 +1,54 @@
+{
+  "semantic_ids_unchanged": true,
+  "semantic_costs_unchanged": true,
+  "world_grid_unchanged": true,
+  "pgm_roundtrip_exact": true,
+  "source_sha256": {
+    "road_temporal.colored.pgm": "6d430cecf14f08379046e882eed58755cc05cf89d95998fa138a692400f2cde7",
+    "road_temporal.colored.json": "093c18b042d1eada9003beb996c9e85bf2bcf58c9faacd943cfaefd1e6bf3949",
+    "road_temporal.texture.png": "39650966e9c73315d326aeeaddb849e21b13e51dfad3fc417d6609fb4e705746"
+  },
+  "output_pgm_sha256": "7a7674568e09c9bf0a0bc27aef5241f92b2e9aee26e2957a8e696a3832ef9142",
+  "runtime_inputs": [
+    "road_temporal.colored.pgm",
+    "road_temporal.colored.json"
+  ],
+  "texture_sidecar_in_output": false,
+  "format": "semantic_ids_and_quantized_rgb",
+  "semantic_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "rgb_index_range": [
+    7,
+    131
+  ],
+  "rgb_steps": [
+    0,
+    64,
+    128,
+    192,
+    255
+  ],
+  "palette_entries": 132,
+  "observed_cells": 1795307,
+  "texture_index_cells": 501887,
+  "semantic_cells": 1293420,
+  "policy": "semantic class colors; quantized RGB in observed unclassified cells",
+  "consumer_files": [
+    "colored.pgm",
+    "colored.json"
+  ],
+  "actual_loader_cloud_cells": 1795307,
+  "actual_loader_palette_colors_exact": true,
+  "actual_loader_xy_verified": true,
+  "global_and_local_cost_arrays_identical": true,
+  "missing_texture_sidecar_verified": true,
+  "reproduced_with_current_exporter": true,
+  "current_exporter_sha256": "1e2d9145073a0fa77dad7d21b39ab8526a821b3739bb54b96ae77a83dce594c6"
+}

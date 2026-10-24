@@ -1,0 +1,186 @@
+{
+  "status": "complete",
+  "mode": "nuc",
+  "kept_latest": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_20260920_113447_pgm",
+  "latest_sha256": {
+    "road_temporal.colored.pgm": "7a7674568e09c9bf0a0bc27aef5241f92b2e9aee26e2957a8e696a3832ef9142",
+    "road_temporal.colored.json": "7484e38dd108077f24cb3a9aced6da701622eef51ce069ca87b2060477abd472"
+  },
+  "moves": [
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/0919-nakanoshima-theta",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/0919-nakanoshima-theta",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/0919-nakanoshima-zed",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/0919-nakanoshima-zed",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/0920",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/0920",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/backup",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/backup",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/rtabmap_semantic_offline_real_20260825_114739_recovered_02",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/rtabmap_semantic_offline_real_20260825_114739_recovered_02",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/rtabmap_semantic_offline_real_20260825_114739_recovered_OIT1F",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/rtabmap_semantic_offline_real_20260825_114739_recovered_OIT1F",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/rtabmap_semantic_offline_real_20260825_114739_recovered_OIT1F_02",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/rtabmap_semantic_offline_real_20260825_114739_recovered_OIT1F_02",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/rtabmap_semantic_real_both_mapping_20260920_113447_recovered",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/rtabmap_semantic_real_both_mapping_20260920_113447_recovered",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/rtabmap_semantic_real_both_mapping_20260920_113447_recovered_02",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/rtabmap_semantic_real_both_mapping_20260920_113447_recovered_02",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/rtabmap_semantic_real_both_mapping_20260920_113447_recovered_02_slam_base_0920-nakanoshima",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/rtabmap_semantic_real_both_mapping_20260920_113447_recovered_02_slam_base_0920-nakanoshima",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/rtabmap_theta_road_real_both_mapping_20260920_113447_recovered",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/rtabmap_theta_road_real_both_mapping_20260920_113447_recovered",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_20261022_194816",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_20261022_194816",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_20261022_194816_02",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_20261022_194816_02",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_diag2",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_diag2",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_direction_trial_20261019",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_direction_trial_20261019",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_fixtest",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_fixtest",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_fixtest2",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_fixtest2",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_fixtest3",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_fixtest3",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_fixtest4",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_fixtest4",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_fixtest5",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_fixtest5",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_grass_extent_20261020",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_grass_extent_20261020",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_half_test",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_half_test",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_real_gate_test",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_real_gate_test",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_real_nogate_test",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_real_nogate_test",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_road_bright_map_20261020",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_road_bright_map_20261020",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_road_general_full_20261020",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_road_general_full_20261020",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_road_visibility_20261019",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_road_visibility_20261019",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_road_visibility_20261019_padded025",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_road_visibility_20261019_padded025",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_semantic_map_20261019",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_semantic_map_20261019",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_semantic_regions_map_20261020",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_semantic_regions_map_20261020",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_semantic_shadow_map_20261020",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_semantic_shadow_map_20261020",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_semantic_tactile_context_map_20261020",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_semantic_tactile_context_map_20261020",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_semantic_yellow_full_map_20261019",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_semantic_yellow_full_map_20261019",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_semantic_yellow_map_20261019",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_semantic_yellow_map_20261019",
+      "moved": true
+    },
+    {
+      "source": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/theta_texture_quality_map_20261020",
+      "destination": "/home/sirius-jazzy-nuc/sirius_jazzy_ws/maps_waypoints/map_archive/road_semantic_history_20261023/road_semantic/theta_texture_quality_map_20261020",
+      "moved": true
+    }
+  ]
+}

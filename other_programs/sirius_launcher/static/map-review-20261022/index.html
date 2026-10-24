@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026-10-22 BAG | 2D SLAM vs 3D offline</title>
+<style>
+:root{--bg:#0b1320;--panel:#121f30;--line:#2b4058;--text:#eaf3ff;--muted:#a7bbd2;--accent:#8fe9df;--warn:#ffbd66}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif}
+header{padding:28px 22px 16px;max-width:1500px;margin:0 auto}h1{margin:0 0 8px;font-size:clamp(20px,3vw,30px)}
+.sub{color:var(--muted);line-height:1.7;font-size:14px}a{color:var(--accent)}
+main{max-width:1500px;margin:0 auto;padding:0 22px 48px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:14px}
+.card .k{color:var(--muted);font-size:12px}.card .v{font-size:22px;font-weight:700;margin-top:5px}.card .note{color:var(--muted);font-size:11px;margin-top:5px;line-height:1.5}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 12px}
+.tabs button{font:inherit;font-size:14px;color:var(--text);background:#1b2c42;border:1px solid var(--line);border-radius:999px;padding:9px 18px;cursor:pointer}
+.tabs button.active{background:var(--accent);color:#062028;border-color:var(--accent)}
+.tab{display:none}.tab.active{display:block}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.panel h2{font-size:16px;margin:2px 0 10px}.panel p{color:var(--muted);font-size:13px;line-height:1.7;margin:8px 0}
+.map-img{display:block;width:100%;max-height:78vh;object-fit:contain;background:#08101b;border-radius:10px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:900px){.split{grid-template-columns:1fr}}
+iframe{width:100%;height:78vh;border:0;border-radius:10px;background:#08101b}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:500}
+.warn{color:var(--warn)}.small{font-size:12px;color:var(--muted);line-height:1.7}
+</style></head><body>
+<header><h1>2026-10-22 BAG：2D SLAM と 3D オフライン地図</h1>
+<div class="sub">BAG: <code>mapping_all_real_20261022_194816</code>（440秒、手押し） / 2D: SLAM Toolbox <code>/scan3</code> / 3D: FAST-LIO再計算 + DUFOMap + 既知単一床補正<br>
+同じBAGから2Dと3Dを別経路で生成し、XYの整合性を比較しています。</div></header>
+<main>
+<div class="cards">
+<div class="card"><div class="k">2D 占有格子</div><div class="v">0.050 m</div><div class="note">map_slam.pgm / 1440 poses / 全体 30.9 × 52.0 m / 表示は経路±8m</div></div>
+<div class="card"><div class="k">3D 地図点数</div><div class="v">411,471</div><div class="note">表示は318,403点にクロップ / 床p95 4.5 cm / DUFOMap 18,453点除去</div></div>
+<div class="card"><div class="k">再計算前LIO 3D</div><div class="v">23.8 cm</div><div class="note">Z range / 床p95 6.1 cm / DUFOMap なし</div></div>
+<div class="card"><div class="k">2D vs 3D XY</div><div class="v">5.5 cm</div><div class="note">RMSE / 中央値 3.4 cm / p95 13.2 cm</div></div>
+<div class="card"><div class="k">3D ループ残差</div><div class="v">3.3 cm</div><div class="note">p95 / 平均 1.3 cm / max 10.8 cm</div></div>
+<div class="card"><div class="k">壁の2D↔3D距離</div><div class="v">3.7 cm</div><div class="note">3D壁→2D占有セル中央値 / p95 26.1 cm</div></div>
+</div>
+<div class="tabs"><button class="active" data-tab="two">2D SLAM</button><button data-tab="three">3D（再計算＋床補正）</button><button data-tab="before">3D（再計算前LIO）</button><button data-tab="xy">XY 検証</button></div>
+<section class="tab active" id="two"><div class="panel"><h2>2D 占有格子（軌跡オーバーレイ）</h2>
+<img class="map-img" src="2d/map_slam_crop_route.png" alt="2D SLAM map with trajectory">
+<p>橙線が2D SLAMの軌跡、緑が開始、赤が終了。表示は経路±8mにクロップ。 <a href="2d/map_slam_crop.png">表示範囲の軌跡なし</a> / <a href="2d/map_slam_route.png">全体画像</a> / <a href="2d/map_slam.yaml">YAML</a> / <a href="2d/slam_pose.csv">軌跡CSV</a></p></div></section>
+<section class="tab" id="three"><div class="panel"><h2>3D オフライン地図（既知床補正）</h2>
+<iframe src="3d/index.html" loading="lazy" title="3D offline map"></iframe>
+<p>3Dビューアは回転・拡大できます。表示は経路±10m・高さ-0.5〜2.5mにクロップ。 <a href="3d/overview.png" target="_blank">俯瞰画像</a> / <a href="3d/map.json">map.json</a> / <a href="3d/map_3d_colored.ply">全PLY</a></p></div></section>
+<section class="tab" id="before"><div class="panel"><h2>再計算前LIOの3D地図（Zブレあり）</h2>
+<iframe src="3d_before/index.html" loading="lazy" title="3D map before recompute"></iframe>
+<p>収録時のLIOをそのまま使い、再計算なし・DUFOMapなしで生成。Z range <b>23.8 cm</b>、床p95 <b>6.1 cm</b>。3Dビューアは回転・拡大できます。 <a href="3d_before/overview.png" target="_blank">俯瞰画像</a> / <a href="3d_before/map.json">map.json</a> / <a href="3d_before/map_3d_colored.ply">全PLY</a></p></div></section>
+<section class="tab" id="xy"><div class="panel"><h2>XY 整合性チェック</h2>
+<div class="split"><div><img class="map-img" src="xy/xy_comparison.png" alt="XY trajectory comparison"><p class="small">2D軌跡を3D軌跡へ剛体アライメント。灰=3D、橙=2D、青=車輪odom（手押しのため参考）。</p></div>
+<div><img class="map-img" src="xy/xy_map_overlay.png" alt="3D walls on 2D map"><p class="small">2D占有格子に3D壁点（赤）を投影。位置合わせは軌跡の剛体変換。</p></div></div>
+<table><tr><th>指標</th><th>値</th><th>意味</th></tr>
+<tr><td>2D vs 3D XY RMSE</td><td>5.5 cm</td><td>軌跡形状の一致（剛体アライメント後）</td></tr>
+<tr><td>2D vs 3D XY p95</td><td>13.2 cm</td><td>大きいズレの95%値</td></tr>
+<tr><td>2D vs 3D XY max</td><td>18.8 cm</td><td>最大ズレ</td></tr>
+<tr><td>開始→終了の距離（2D）</td><td>17.3 cm</td><td>ループの閉じ残り（同一地点に戻った場合）</td></tr>
+<tr><td>開始→終了の距離（3D）</td><td>21.0 cm</td><td>同上</td></tr>
+<tr><td>3Dループ残差 p95</td><td>3.3 cm</td><td>3D最適化のループ整合（自己整合）</td></tr>
+<tr><td>3D壁→2D地図 中央値 / p95</td><td>3.7 / 26.1 cm</td><td>3D壁点から最寄り2D占有セル</td></tr>
+<tr><td>2D地図→3D壁 中央値 / p95</td><td>1.7 / 15.5 cm</td><td>2D占有セルから最寄り3D壁点</td></tr>
+</table>
+<p class="warn">絶対精度の真値ではありません。XYは「2Dと3Dの相互整合」「ループ/開始終了」「壁の最近傍」による検証です。車輪odomは手押しのため比較対象外（参考値 RMSE 3.3 m）。</p>
+</div></section>
+<p class="small">3Dの既知床補正は「屋内床が単一平面」という明示的な仮定です。実機のFAST-LIO設定・既存地図は変更していません。<br>
+BAG: <code>mapping_all_real_20261022_194816</code> / 2D: SLAM Toolbox / 3D: offline FAST-LIO + DUFOMap + known-floor。</p>
+</main>
+<script>
+for (const button of document.querySelectorAll('[data-tab]')) {
+  button.onclick = () => {
+    document.querySelectorAll('[data-tab]').forEach(item => item.classList.toggle('active', item === button));
+    document.querySelectorAll('.tab').forEach(item => item.classList.toggle('active', item.id === button.dataset.tab));
+  };
+}
+</script></body></html>

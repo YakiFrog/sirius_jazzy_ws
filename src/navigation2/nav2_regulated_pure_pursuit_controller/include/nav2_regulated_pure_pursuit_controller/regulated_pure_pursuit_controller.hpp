@@ -17,6 +17,8 @@
 #define NAV2_REGULATED_PURE_PURSUIT_CONTROLLER__REGULATED_PURE_PURSUIT_CONTROLLER_HPP_
 
 #include <string>
+#include <atomic>
+#include "nav2_msgs/msg/collision_monitor_state.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>
@@ -217,6 +219,15 @@ protected:
   Parameters * params_;
   double goal_dist_tol_;
   double control_duration_;
+  bool sirius_wait_for_clear_ = false;
+  double sirius_clear_time_ = 1.0;
+  double sirius_restart_accel_ = 0.3;
+  std::atomic<bool> collision_monitor_blocking_{false};
+  rclcpp::Subscription<nav2_msgs::msg::CollisionMonitorState>::SharedPtr collision_state_sub_;
+  double last_wait_check_ = -1.0;
+  bool collision_waiting_ = false;
+  double clear_since_ = -1.0;
+  double previous_wait_speed_ = 0.0;
   bool cancelling_ = false;
   bool finished_cancelling_ = false;
   bool is_rotating_to_heading_ = false;

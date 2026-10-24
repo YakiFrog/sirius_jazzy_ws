@@ -1,0 +1,89 @@
+#!/bin/bash
+# change_nav_mode.sh: Nav2 MPPI controller 走行モード動的切り替えスクリプト (一括設定高速版)
+# 使い方: ./change_nav_mode.sh [normal|normal_active|safe|slow|wait_normal|wait_active|strict_normal|strict_safe|strict_slow|strict] (未指定の場合はメニューから選択)
+
+MODE=${1:-}
+JSON_MODE=0
+if [ "${2:-}" = "--json" ]; then
+    JSON_MODE=1
+    exec 3>&1
+    exec 1>&2
+fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKSPACE="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# 引数がない場合は選択メニューを表示
+if [ -z "$MODE" ]; then
+    echo "========================================="
+    echo " 走行モードを選択してください (Select Navigation Mode)"
+    echo "========================================="
+    echo "1) 通常走行モード (normal) - 0.9 m/s"
+    echo "2) 通常走行・探索強化モード (normal_active) - 1.0 m/s (探索広め・加速強め・安全重視)"
+    echo "3) ゆっくり安全歩行モード (safe) - 0.4 m/s"
+    echo "4) 超低速安全歩行モード (slow) - 0.2 m/s"
+    echo "5) 待機優先モード (wait_normal) - 0.6 m/s (障害物前で停止・再試行)"
+    echo "6) パス追従優先・通常速度モード (strict_normal) - 0.9 m/s"
+    echo "7) パス追従優先・ゆっくり速度モード (strict_safe) - 0.4 m/s"
+    echo "8) パス追従優先・超低速速度モード (strict_slow) - 0.2 m/s"
+    echo "9) 待機優先・高速モード (wait_active) - 0.72 m/s (障害物前で停止・再試行)"
+    echo "10) 高速モード (fast) - 1.2 m/s (減速緩和で回生OVLを抑制・閉ループ前提)"
+    echo "-----------------------------------------"
+    read -p "選択してください [1-10]: " CHOICE
+    case "$CHOICE" in
+        1) MODE="normal" ;;
+        2) MODE="normal_active" ;;
+        3) MODE="safe" ;;
+        4) MODE="slow" ;;
+        5) MODE="wait_normal" ;;
+        6) MODE="strict_normal" ;;
+        7) MODE="strict_safe" ;;
+        8) MODE="strict_slow" ;;
+        9) MODE="wait_active" ;;
+        10) MODE="fast" ;;
+        *) echo "無効な選択です。終了します。"; exit 1 ;;
+    esac
+fi
+
+# 互換性のため、strict は strict_safe にリダイレクト
+if [ "$MODE" = "strict" ]; then
+    MODE="strict_safe"
+fi
+
+if [ "$MODE" != "normal" ] && [ "$MODE" != "normal_active" ] && [ "$MODE" != "fast" ] && [ "$MODE" != "safe" ] && [ "$MODE" != "slow" ] && [ "$MODE" != "wait_normal" ] && [ "$MODE" != "wait_active" ] && [ "$MODE" != "strict_normal" ] && [ "$MODE" != "strict_safe" ] && [ "$MODE" != "strict_slow" ]; then
+    echo "エラー: 走行モードを正しく指定してください。"
+    echo "使い方: $0 [normal|normal_active|fast|safe|slow|wait_normal|wait_active|strict_normal|strict_safe|strict_slow]"
+    exit 1
+fi
+
+echo "========================================="
+echo " Nav2 MPPI 走行モード切り替え: $MODE"
+echo "========================================="
+
+# ros2が存在しても、Siriusのoverlayが読み込まれているとは限らない。
+if [ -f "/opt/ros/${ROS_DISTRO:-jazzy}/setup.bash" ]; then
+    source "/opt/ros/${ROS_DISTRO:-jazzy}/setup.bash"
+fi
+if [ ! -f "${WORKSPACE}/install/setup.bash" ]; then
+    echo "[エラー] SiriusのROS環境が見つかりません: ${WORKSPACE}/install/setup.bash" >&2
+    exit 1
+fi
+source "${WORKSPACE}/install/setup.bash" || exit 1
+
+# ノード起動確認
+if ! ros2 node list 2>/dev/null | grep "/controller_server" >/dev/null 2>&1; then
+    echo "[警告] /controller_server ノードが起動していません。Nav2を起動した状態で実行してください。"
+    exit 1
+fi
+
+# Python一括設定スクリプトを呼び出し
+if [ "$JSON_MODE" = 1 ]; then
+    python3 "${SCRIPT_DIR}/change_nav_mode_fast.py" "$MODE" --json >&3
+    RESULT=$?
+    exec 3>&-
+else
+    python3 "${SCRIPT_DIR}/change_nav_mode_fast.py" "$MODE"
+    RESULT=$?
+fi
+
+echo "========================================="
+exit "$RESULT"

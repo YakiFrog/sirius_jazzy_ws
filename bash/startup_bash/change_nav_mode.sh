@@ -3,6 +3,12 @@
 # 使い方: ./change_nav_mode.sh [normal|normal_active|safe|slow|wait_normal|wait_active|strict_normal|strict_safe|strict_slow|strict] (未指定の場合はメニューから選択)
 
 MODE=${1:-}
+JSON_MODE=0
+if [ "${2:-}" = "--json" ]; then
+    JSON_MODE=1
+    exec 3>&1
+    exec 1>&2
+fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
@@ -54,6 +60,11 @@ echo " Nav2 MPPI 走行モード切り替え: $MODE"
 echo "========================================="
 
 # ros2が存在しても、Siriusのoverlayが読み込まれているとは限らない。
+if ! command -v ros2 >/dev/null 2>&1; then
+    if [ -f "/opt/ros/${ROS_DISTRO:-jazzy}/setup.bash" ]; then
+        source "/opt/ros/${ROS_DISTRO:-jazzy}/setup.bash"
+    fi
+fi
 if [ ! -f "${WORKSPACE}/install/setup.bash" ]; then
     echo "[エラー] SiriusのROS環境が見つかりません: ${WORKSPACE}/install/setup.bash" >&2
     exit 1
@@ -67,8 +78,14 @@ if ! ros2 node list 2>/dev/null | grep "/controller_server" >/dev/null 2>&1; the
 fi
 
 # Python一括設定スクリプトを呼び出し
-python3 "${SCRIPT_DIR}/change_nav_mode_fast.py" "$MODE"
-RESULT=$?
+if [ "$JSON_MODE" = 1 ]; then
+    python3 "${SCRIPT_DIR}/change_nav_mode_fast.py" "$MODE" --json >&3
+    RESULT=$?
+    exec 3>&-
+else
+    python3 "${SCRIPT_DIR}/change_nav_mode_fast.py" "$MODE"
+    RESULT=$?
+fi
 
 echo "========================================="
 exit "$RESULT"

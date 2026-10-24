@@ -1,0 +1,104 @@
+/* The available pane width, rather than just the viewport, controls Home density. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+#page-home{container:home-page / inline-size}
+#page-home .home-main{container:home-main / inline-size;min-width:0}
+#page-home .home-side{container:home-side / inline-size;min-width:0}
+#page-home .home-layout{--home-gutter-size:16px}
+#page-home .section-heading{min-width:0;gap:8px}
+#page-home .section-heading h2{min-width:0}
+#page-home .section-heading h2 button{max-width:100%;text-align:left}
+#page-home .cmdbar,#page-home .cmdwrap,#page-home .tabs{min-width:0}
+#page-home .tabs{overflow-x:auto;overscroll-behavior-x:contain}
+#sections .btn>b{min-width:0;font-size:clamp(12px,calc(11px + .45cqw),14px);overflow-wrap:anywhere}
+#sections .btn>.d{min-width:0;font-size:11px;line-height:1.55;overflow-wrap:anywhere}
+#sections .btn .program-controls{min-width:0}
+#page-home .home-side .preset-name{font-size:12px;line-height:1.5}
+#page-home .home-side .preset-note{font-size:11px;line-height:1.5}
+
+/* Keep branding and fullscreen reachable; the tab list gets its own scroll area. */
+@media(min-width:621px) and (min-height:501px), (min-width:1001px){
+ .rail{height:100dvh;min-height:0;overflow:hidden}
+ .rail .brand{flex:0 0 auto;margin-bottom:16px}
+ .rail .rail-nav{flex:1 1 auto;min-height:0;width:100%;align-items:center;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:thin;gap:8px;padding:4px 0 12px}
+ .rail .rail-nav>.nav-item{flex:0 0 auto}
+ .rail .rail-nav>.nav-item.active:before{left:2px}
+ .rail .rail-bottom{flex:0 0 auto;margin-top:8px;gap:8px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+}
+@media(min-width:621px) and (max-width:1280px) and (min-height:501px){
+ .rail .nav-item{height:56px;min-height:48px;gap:5px;font-size:10px}
+ .rail .nav-item svg{width:21px;height:21px}
+ #page-home{padding:16px 18px 20px}
+ #page-home .section-heading{margin-bottom:12px}
+ #page-home .section-heading h2{font-size:13px}
+}
+@media(pointer:coarse){
+ #page-home .home-layout{--home-gutter-size:22px}
+ #running .ritem,#running .ritem.err{grid-template-rows:44px 18px 18px 20px}
+ #running .xbtn{min-height:44px}
+ #page-home .program-action,#page-home .program-restart,#page-home .program-log,
+ #page-home .preset-start,#page-home .preset-info{min-height:44px}
+}
+
+@container home-page (min-width:720px){
+ #page-home .home-layout{display:grid;grid-template-columns:minmax(360px,1fr) var(--home-gutter-size) clamp(260px,var(--home-side-share,30%),calc(100% - 360px - var(--home-gutter-size)));gap:0}
+ #page-home .home-splitter{display:block;min-width:0}
+}
+@container home-page (max-width:719.99px){
+ #page-home .home-layout{display:flex;flex-direction:column;gap:18px;overflow-y:auto;overflow-x:hidden}
+ #page-home .home-splitter{display:none}
+ #page-home .home-main,#page-home .home-side{flex:none;overflow:visible;width:100%;padding-right:0;scrollbar-gutter:auto}
+ #page-home .home-main>.presets{margin-bottom:20px}
+}
+
+/* Move controls below descriptions instead of squeezing text between fixed buttons. */
+@container home-main (max-width:560px){
+ #sections .btn{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;gap:6px;padding:12px;min-height:0}
+ #sections .btn>b{grid-area:1/1}
+ #sections .btn>.d{grid-area:2/1}
+ #sections .btn>.program-foot{grid-area:3/1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:100%;margin-top:4px;white-space:normal}
+ #sections .program-foot>.st{min-width:0;max-width:none;white-space:normal;overflow-wrap:anywhere;font-size:10px}
+ #sections .btn .program-controls{display:flex;flex-wrap:nowrap;max-width:none;gap:6px;justify-content:flex-end}
+ #sections .btn .program-action,#sections .program-restart,#sections .program-log{min-width:52px;min-height:44px;padding:7px 8px;font-size:11px;white-space:nowrap}
+}
+
+/* Narrow quick starts and process rows retain full-sized, stable control rows. */
+@container home-side (max-width:340px){
+ #page-home .home-side>.panel.presets,#page-home .home-side>.sidebar{padding:12px}
+ #presets .preset{display:grid;grid-template-columns:minmax(0,1fr) 64px 44px;gap:6px;padding:9px}
+ #presets .preset>.preset-copy{grid-area:1/1/2/4;min-width:0}
+ #presets .preset>.preset-category-badge{grid-area:2/1;min-width:0;max-width:100%;margin:0;justify-self:start;font-size:10px}
+ #presets .preset>.preset-start{grid-area:2/2;min-width:0;width:64px;min-height:44px;padding:6px;font-size:11px}
+ #presets .preset>.preset-info{grid-area:2/3;width:44px;min-width:44px;min-height:44px}
+ #running .ritem,#running .ritem.err{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:24px 18px 20px 22px 44px;gap:5px 6px}
+ #running .ritem>.n{grid-area:1/1/2/4;font-size:11px}
+ #running .running-uptime{grid-area:2/1}
+ #running .ritem-alert{grid-area:2/2;min-width:0}
+ #running .input-wait-badge{grid-area:2/3;min-width:0;max-width:100%}
+ #running .running-labels{grid-area:3/1/4/4}
+ #running .running-presets{grid-area:4/1/5/4}
+ #running .ritem>.xbtn:not(.input-wait-action){grid-row:5;width:100%;min-width:0;min-height:44px;font-size:11px}
+ #running .ritem>.xbtn[onclick^="restartIt("]{grid-column:1}
+ #running .ritem>.xbtn[onclick^="stopIt("]{grid-column:2}
+ #running .ritem>.xbtn[onclick^="showLog("]{grid-column:3}
+ #running .ritem>.st{grid-area:5/1/6/4}
+ #running .input-wait-action,#running .input-wait-original{grid-area:3/2/5/4}
+ #running .ritem:has(.input-wait-action) .running-labels,#running .ritem:has(.input-wait-action) .running-presets,#running .ritem:has(.input-wait-original) .running-labels,#running .ritem:has(.input-wait-original) .running-presets{grid-column:1}
+ .home-side .running-actions .hbtn{font-size:11px;min-height:40px;white-space:normal}
+}
+@container home-page (max-width:719.99px){
+ #page-home .home-main>.presets .preset-grid{grid-template-columns:minmax(0,1fr)}
+ #page-home .home-main>.presets .preset-name{font-size:12px;line-height:1.5}
+ #page-home .home-main>.presets .preset-note{font-size:11px}
+}
+@media(min-width:621px) and (max-width:1280px) and (min-height:501px){
+ .appbar .top-status{gap:6px}
+ .appbar .connection,.appbar .domain-pill{flex-shrink:0;white-space:nowrap}
+ .appbar .connection>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ .appbar .domain-pill{font-size:0;padding:6px}
+ .appbar .domain-pill b{font-size:11px;margin-left:0}
+ .appbar .header-teleop kbd{display:none}
+ .appbar .hotspot-chip{max-width:90px}
+ .appbar .hotspot-chip>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+ .appbar .header-nav-mode{max-width:150px}
+ .appbar .header-nav-mode .nav-mode-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
+}

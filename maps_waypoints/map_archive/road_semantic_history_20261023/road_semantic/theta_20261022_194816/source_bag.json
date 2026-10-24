@@ -1,0 +1,9 @@
+{
+  "source_bag": "/home/sirius-jazzy-nuc/rosbag2_data/mapping_all_real_20261022_194816_recovered",
+  "source_bag_name": "mapping_all_real_20261022_194816_recovered",
+  "sensor": "theta",
+  "method": "sequential",
+  "created_at": "2026-10-23T00:54:08.177670+09:00",
+  "name_time_source": "bag_name",
+  "map_prefix": "map"
+}

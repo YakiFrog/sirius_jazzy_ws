@@ -62,6 +62,9 @@ body.split-dragging{user-select:none;cursor:col-resize}
 .btn.run .program-action{background:#3a1418;color:#ffc9cd;border:1px solid #ff849066}
 .running-toggle #runhint{background:var(--run);color:var(--run-ink);border-radius:999px;padding:2px 8px;font-weight:700;min-width:18px;text-align:center}
 .running-toggle #runhint:empty{display:none}
+.running-toggle #runwaithint{display:inline-flex;align-items:center;gap:4px;border:1px solid #d9a44188;border-radius:999px;padding:2px 7px;background:#8b620024;color:#f4cd71;font-size:9px;font-weight:700;line-height:1.4;white-space:nowrap;letter-spacing:.01em}
+.running-toggle #runwaithint[hidden]{display:none}
+[data-theme="light"] .running-toggle #runwaithint{color:#735000;background:#fff2cb;border-color:#b58235}
 .ritem{border-left:3px solid var(--run)!important;padding-left:10px!important}
 .tbar .new-term{margin-left:auto;border:1px dashed var(--line);color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
 .tbar .new-term svg{width:14px;height:14px}.tbar .new-term span{font-size:10px}.tbar .new-term:hover{color:var(--accent);border-color:var(--accent)}

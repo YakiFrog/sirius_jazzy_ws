@@ -3,7 +3,14 @@
 .topics-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .topics-tools input{width:230px;font-size:11px}
 .topics-tools .hbtn{padding:9px 12px}
-.topics-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px}
+.topics-layout{display:grid;grid-template-columns:minmax(0,1fr) 16px var(--topics-inspector-width,330px);gap:0;align-items:stretch}
+.topics-splitter{position:relative;align-self:stretch;min-height:120px;cursor:col-resize;touch-action:none;outline:none}
+.topics-splitter span{position:absolute;top:0;bottom:0;left:50%;width:1px;transform:translateX(-50%);background:var(--line);border-radius:2px;transition:background .15s,width .15s}
+.topics-splitter:hover span,.topics-splitter:focus-visible span,.topics-resizing .topics-splitter span{background:var(--accent);width:2px}
+.topics-splitter:focus-visible{outline:2px solid var(--accent);outline-offset:-4px;border-radius:4px}
+.topics-layout.topics-stacked{grid-template-columns:minmax(0,1fr);gap:16px}
+.topics-layout.topics-stacked .topics-splitter{display:none}
+body.topics-resizing{user-select:none;cursor:col-resize}
 .topics-list{display:flex;flex-direction:column;min-width:0;height:calc(100dvh - 245px);min-height:430px;overflow:hidden}
 .topics-list-head,.topic-row{display:grid;grid-template-columns:minmax(170px,1.55fr) minmax(145px,1fr) 72px 44px 44px;gap:9px;align-items:center}
 .topics-list-head{padding:12px 15px;border-bottom:1px solid var(--line);color:var(--muted);font:10px ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
@@ -32,11 +39,22 @@
 .topics-rate.rate-error .topics-rate-value{color:var(--red);font-size:15px}
 .topics-rate .hbtn{margin-top:11px}
 .topics-help{color:var(--muted);font-size:10px;line-height:1.8;margin:0}
+.topics-message{padding-top:17px;margin-top:17px;border-top:1px solid var(--line)}
+.topics-message h3{font-size:11px;font-weight:500;margin:0 0 11px;color:var(--text)}
+.topics-message-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--muted);font:10px ui-monospace,monospace;margin-bottom:8px}
+.topics-message-state{color:var(--muted)}
+.topics-message-state.state-watching{color:var(--mint)}
+.topics-message-state.state-starting{color:var(--accent)}
+.topics-message-state.state-error{color:var(--red)}
+.topics-message-error{color:var(--red)}
+.topics-message-text{margin:10px 0;padding:10px 11px;max-height:320px;overflow:auto;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;color:var(--text);font:10px/1.6 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2}
+.topics-message-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.topics-message-actions .hbtn{padding:8px 11px}
 .topics-endpoints{padding-top:17px;margin-top:17px;border-top:1px solid var(--line)}
 .topics-endpoint{display:flex;flex-direction:column;gap:4px;padding:8px 0;border-bottom:1px solid var(--line)}
 .topics-endpoint:last-child{border-bottom:0}
 .topics-endpoint b{font:11px ui-monospace,monospace;color:var(--text);overflow-wrap:anywhere}
 .topics-endpoint span{font:9px ui-monospace,monospace;color:var(--muted);overflow-wrap:anywhere;line-height:1.5}
 .topics-footnote{color:var(--muted);font-size:10px;line-height:1.9;margin:14px 0 0}
-@media(max-width:1100px){.topics-layout{grid-template-columns:minmax(0,1fr)}.topics-list{height:480px;min-height:0}.topics-inspector{height:auto;max-height:none;min-height:120px}}
+@media(max-width:1100px){.topics-layout{grid-template-columns:minmax(0,1fr);gap:16px}.topics-splitter{display:none}.topics-list{height:480px;min-height:0}.topics-inspector{height:auto;max-height:none;min-height:120px}}
 @media(max-width:620px){.topics-tools input{width:100%}.topics-tools{width:100%}.topics-list-head,.topic-row{grid-template-columns:minmax(0,1fr) 58px 28px 28px;gap:6px;padding-left:12px;padding-right:12px}.topics-list-head span:nth-child(2),.topic-type{display:none}.topics-list{height:430px}.topics-inspector{padding:16px}.topics-counts{flex-wrap:wrap;gap:10px}.topics-tools .segmented{order:3}}

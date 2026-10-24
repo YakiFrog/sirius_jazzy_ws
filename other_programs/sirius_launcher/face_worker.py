@@ -12,16 +12,29 @@ def call(root, data):
     from google.protobuf.empty_pb2 import Empty
 
     action = data['action']
-    target = '127.0.0.1:50052' if action == 'speak' else '127.0.0.1:50051'
+    target = '127.0.0.1:50052' if action in {'speak', 'instruction'} else '127.0.0.1:50051'
     with grpc.insecure_channel(target) as channel:
         if action == 'speak':
             text = data['text']
-            # Face's speech API also accepts [nav]/[llm] control tags. This
-            # launcher panel is plain speech only and must never route commands.
+            # Plain speech must never route commands; instruction actions add the
+            # [llm]/[nav] prefix explicitly below.
             if '[' in text or ']' in text:
                 raise ValueError('読み上げには制御タグを使えません')
             services.PythonControlServiceStub(channel).Speak(messages.SpeakRequest(text=text), timeout=2.5)
             return {'ok': True}
+        if action == 'instruction':
+            mode = data.get('mode')
+            text = str(data.get('text') or '').strip()
+            if mode not in {'llm', 'nav'}:
+                raise ValueError('行動指示の方式を選んでください')
+            if not text or len(text) > 200:
+                raise ValueError('行動指示を1〜200文字で入力してください')
+            if '[' in text or ']' in text:
+                raise ValueError('行動指示には制御タグを使えません')
+            prefix = '[llm]' if mode == 'llm' else '[nav]'
+            services.PythonControlServiceStub(channel).Speak(
+                messages.SpeakRequest(text=prefix + text), timeout=2.5)
+            return {'ok': True, 'mode': mode}
         stub = services.FaceServiceStub(channel)
         if action == 'status':
             status = stub.GetStatus(Empty(), timeout=1.0)

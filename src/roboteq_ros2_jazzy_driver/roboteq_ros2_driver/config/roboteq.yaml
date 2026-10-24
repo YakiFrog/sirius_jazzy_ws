@@ -15,13 +15,17 @@ roboteq_ros2_driver:
     gear_ratio: 1.0  # pulseが既に車輪1回転あたりのカウント数を表す場合は1.0に設定
     pulse: 475  # エンコーダのパルス数（車輪1回転あたり）
     max_speed: 1.5  # m/s
-    # Roboteqストリームはラウンドロビン(1周期1クエリ)。全テレメトリを5msで回すと各約29Hz。
-    odom_stream_interval_ms: 5
+    # 全10項目を単一ストリームで取得。3ms/項目で各約33Hz（エンコーダ含む）。
+    odom_stream_interval_ms: 3
     odom_publish_hz: 20.0
     # 電圧/電流/フォルト等のテレメトリ配信
     publish_status: true
     status_topic: "roboteq/status"
     status_publish_hz: 20.0
+    # 診断も同じ定期受信に含める。個別問い合わせは定期受信を停止させるため禁止。
+    publish_diagnostics: true
+    diagnostics_topic: "roboteq/diagnostics"
+    diagnostics_publish_hz: 50.0
     # ソフトウェア閉ループ車輪速度制御(エンコーダ速度フィードバック + FF + PI)
     # 規定: 有効。蛇行・左右差・過電圧を改善(15F-0925ループで検証)。
     # falseにすると従来のオープンループ指令。
@@ -38,6 +42,9 @@ roboteq_ros2_driver:
     cl_feedback_alpha: 0.5 # 車輪速度フィードバック平滑化(小=強い) 0.3は蛇行悪化のため0.5
     # 非常停止(e-stop)検知: /stop に加え Roboteq のフォルト等を e-stop として扱い、
     # 閉ループ状態(目標/積分/duty)をリセットして解除時の暴走を防ぐ。
+    # 電圧低下による物理停止を電子停止へラッチしない。復電後は物理側のみ自動復帰。
+    estop_latch_hardware: false
+    estop_start_active: true  # Restarting the driver must not resume an old Nav2 command.
     estop_detect_fault: true   # FFビットによる検知を有効化
     estop_ff_mask: 20          # 4=UnderVoltage | 16=E-Stop (bit2 overvoltageは回生で頻発するため除外)
     # 物理e-stopは電源遮断でFFが出ず(?)、バッテリ電圧のみ降下するため電圧検知を有効化。

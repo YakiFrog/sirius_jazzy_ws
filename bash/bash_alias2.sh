@@ -6,9 +6,9 @@
 # PRESET_ITEMS: record_mapping
 # PRESET_UI: {"category": "共通", "visible": true, "note": "とりあえずこれで記録しておけば後処理できる"}
 
-# PRESET: フルセンサーセット
-# PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real,odom_path_real
-# PRESET_UI: {"category": "センサー", "visible": true, "note": ""}
+# PRESET: フルセンサ &  sf_real
+# PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real,odom_path_real,foxglove,tf_real
+# PRESET_UI: {"category": "共通", "visible": true, "note": ""}
 
 # PRESET: シミュレータセット
 # PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
@@ -23,7 +23,7 @@
 # PRESET_UI: {"category": "センサー", "visible": true, "note": ""}
 
 # PRESET: 現実自律移動セット
-# PRESET_ITEMS: twist_mux,llm_goal,sirius_ble_gateway_ui,pos,nav2_real,mv_goal
+# PRESET_ITEMS: twist_mux,llm_goal,pos,nav2_real,mv_goal,record_rosbag,sirius_ble_gateway
 # PRESET_UI: {"category": "自律移動", "visible": true, "note": ""}
 
 # PRESET: THETA色付き3D地図（実機）
@@ -176,7 +176,7 @@ alias nav2='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_sim.sh'
 alias nav_bt_reload='bash ~/sirius_jazzy_ws/bash/startup_bash/reload_bt_navigator.sh'
 
 # Nav2起動（MAPなし）
-alias nav2slam='src && ros2 launch nav2_bringup bringup_launch.py \
+alias nav2slam='src && ros2 launch sirius_navigation nav2_mux.launch.py \
 params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params_sim_slam.yaml \
 slam:=True \
 use_composition:=False \
@@ -247,7 +247,7 @@ alias pos='src2 && ros2 run position position_node'
 alias nav2_real='bash ~/sirius_jazzy_ws/bash/startup_bash/nav2_bringup_real.sh'
 
 # Nav2起動(MAPなし、実時間)
-alias nav2slam_real='src && ros2 launch nav2_bringup bringup_launch.py \
+alias nav2slam_real='src && ros2 launch sirius_navigation nav2_mux.launch.py \
 params_file:=${HOME}/sirius_jazzy_ws/params/nav2_params.yaml \
 slam:=True \
 use_composition:=False \

@@ -117,7 +117,7 @@ while : ;do
         echo "セマンティックレイヤーを無効にして起動します。"
     fi
     
-    ros2 launch nav2_bringup bringup_launch.py \
+    ros2 launch sirius_navigation nav2_mux.launch.py \
     use_sim_time:=False \
     map:=$selected_map \
     params_file:="$PARAMS_FILE" \

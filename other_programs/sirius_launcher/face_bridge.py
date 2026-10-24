@@ -198,7 +198,7 @@ class FaceBridge:
         if not isinstance(data, dict):
             raise ValueError('操作内容が不正です')
         action = data.get('action')
-        if action not in {'launch', 'focus', 'focus_launcher', 'expression', 'gaze', 'subtitle', 'clear_text', 'speak'}:
+        if action not in {'launch', 'focus', 'focus_launcher', 'expression', 'gaze', 'subtitle', 'clear_text', 'speak', 'instruction'}:
             raise ValueError('対応していないFace操作です')
         payload = {'action': action}
         if action == 'expression':
@@ -212,6 +212,16 @@ class FaceBridge:
             if action == 'speak' and ('[' in text or ']' in text):
                 raise ValueError('読み上げには制御タグを使えません')
             payload['text'] = text.strip()
+        if action == 'instruction':
+            text = data.get('text')
+            mode = data.get('mode')
+            if mode not in {'llm', 'nav'}:
+                raise ValueError('行動指示の方式を選んでください')
+            if not isinstance(text, str) or not text.strip() or len(text.strip()) > 200:
+                raise ValueError('行動指示を1〜200文字で入力してください')
+            if '[' in text or ']' in text:
+                raise ValueError('行動指示には制御タグを使えません')
+            payload.update(mode=mode, text=text.strip())
         if action == 'gaze' and data.get('direction') not in GAZE:
             raise ValueError('視線の方向を選んでください')
         # Window switching must work even when Face's API is unavailable.
@@ -236,6 +246,8 @@ class FaceBridge:
                 return dict(ok=True, starting=True)
             if not state['connected']:
                 raise FaceError('SiriusFaceへ接続できません。顔の起動状態を確認してください')
+            if action == 'instruction' and not state.get('speech_ready'):
+                raise FaceError('SiriusFaceの指示APIへ接続できません。音声APIの状態を確認してください')
             if action == 'gaze':
                 windows = self.windows(self.shortcut())
                 if not windows:

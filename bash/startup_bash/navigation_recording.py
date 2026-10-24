@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 from datetime import datetime
 
@@ -13,13 +14,13 @@ import yaml
 TOPICS = '''
 /experiment_metadata /scan3 /scan /odom /odom/filtered /odometry/filtered /imu /magnetometer
 /Odometry /fastlio/diagnostics /diagnostics /rosout /tf /tf_static /robot_description /joint_states
-/cmd_vel /cmd_vel_nav /cmd_vel_teleop /cmd_vel_web /cmd_vel_smoothed /cmd_vel_direct /cmd_vel_idle
+/cmd_vel /cmd_vel_nav /cmd_vel_nav_safe /collision_monitor_state /sirius/navigation_mode /cmd_vel_teleop /cmd_vel_web /cmd_vel_smoothed /cmd_vel_direct /cmd_vel_idle
 /amcl_pose /initialpose /map /map_updates /plan /optimal_trajectory /goal_pose
 /global_costmap/costmap /global_costmap/costmap_updates /global_costmap/costmap_raw
 /global_costmap/costmap_raw_updates /global_costmap/published_footprint /global_costmap/footprint
 /local_costmap/costmap /local_costmap/costmap_updates /local_costmap/costmap_raw
 /local_costmap/costmap_raw_updates /local_costmap/published_footprint /local_costmap/footprint
-/roboteq/odom /roboteq/status /blinker_led_command /npc/odom
+/roboteq/odom /roboteq/status /roboteq/diagnostics /blinker_led_command /npc/odom
 /target_detector/target_markers /target_follower/status /robot_path /robot_path_marker
 /llm_instruction /sirius/command_queue /sirius/landmark_status /sirius/landmark_markers
 /nav_control /stop /sirius/battery_status /battery_state /parameter_events
@@ -96,11 +97,17 @@ def snapshot(destination, workspace):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--exec-recorder', nargs=argparse.REMAINDER)
     parser.add_argument('--topics',action='store_true')
     parser.add_argument('--check',action='store_true')
     parser.add_argument('--capture',type=Path)
     parser.add_argument('--workspace',type=Path,default=Path.home()/'sirius_jazzy_ws')
     args=parser.parse_args()
+    if args.exec_recorder is not None:
+        # Bash background jobs inherit ignored SIGINT; restore it before rosbag initializes.
+        for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT):
+            signal.signal(sig, signal.SIG_DFL)
+        os.execvp('ros2', ['ros2', 'bag', 'record', *args.exec_recorder])
     if args.topics:print('\n'.join(TOPICS))
     if args.check:
         live=query('topic','list','--include-hidden-topics')

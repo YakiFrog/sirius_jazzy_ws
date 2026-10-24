@@ -1,0 +1,41 @@
+back:
+  center:
+  - 1441.082
+  - 479.213
+  distortion:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  focal:
+  - 287.065
+  - 286.869
+  image_roll_degrees: 0.0
+  max_theta_degrees: 95.0
+bev_extent_m: 10.0
+bev_size: 512
+camera_position:
+- 0.0
+- 0.0
+- 1.1
+front:
+  center:
+  - 476.678
+  - 481.148
+  distortion:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  focal:
+  - 285.297
+  - 284.682
+  image_roll_degrees: 0.0
+  max_theta_degrees: 95.0
+image_size:
+- 1920
+- 1080
+rpy_degrees:
+- 0.0
+- 0.0
+- 0.0

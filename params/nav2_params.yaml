@@ -456,6 +456,10 @@ controller_server:
     # 待機優先モード用。経路から外れて回避せず、衝突予測時は制御失敗を返す。
     # BTがその失敗を受けて停止・待機し、同じグローバルパスを再試行する。
     WaitPath:
+      # Hold until the candidate path is continuously clear; collision checks stay enabled.
+      sirius_wait_for_clear: true
+      sirius_clear_time: 1.0
+      sirius_restart_accel: 0.3
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
       desired_linear_vel: 0.90
       lookahead_dist: 0.90
@@ -598,14 +602,14 @@ map_saver:
 
 collision_monitor:
   ros__parameters:
-    enable: false
+    # 起動・停止はlifecycleで管理。enableパラメータでは無効化できない。
     use_sim_time: false
     base_frame_id: "sirius3/base_footprint"
     odom_frame_id: "sirius3/odom"
     cmd_vel_in_topic: "cmd_vel_smoothed"
-    cmd_vel_out_topic: "cmd_vel"
+    cmd_vel_out_topic: "cmd_vel_nav_safe"
     state_topic: "collision_monitor_state"
-    transform_tolerance: 0.2
+    transform_tolerance: 0.35  # 実測TF待ち最大約297msに余裕を確保。長い欠落時の停止は維持。
     source_timeout: 1.0
     base_shift_correction: True
     stop_pub_timeout: 2.0

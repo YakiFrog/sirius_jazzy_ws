@@ -19,6 +19,9 @@ def velocity_route(mode, outputs, inputs):
     topic = '/cmd_vel_web' if mode == 'mux' else ('/cmd_vel_teleop' if mux_output else '/cmd_vel')
     if mode == 'mux' and not (mux_output and any('twist_mux' in name for name in inputs)):
         return topic, 'twist_muxの入力・出力接続を確認できません（直接出力しません）'
+    bypass = sorted(name for name in outputs if 'twist_mux' not in name)
+    if mode == 'mux' and bypass:
+        return topic, '/cmd_velへの迂回配信を検出しました: '+', '.join(bypass)
     return topic, ''
 
 
@@ -36,9 +39,14 @@ def main():
     commands = queue.Queue(maxsize=64)
     eof = threading.Event()
     driver = {'at': 0., 'physical': None, 'electronic': None}
-    route = {'topic': '/cmd_vel', 'blocked': '接続確認中', 'at': 0., 'mode': 'auto'}
-    publishers = {t: node.create_publisher(Twist, t, 1)
-                  for t in ('/cmd_vel', '/cmd_vel_teleop', '/cmd_vel_web')}
+    route = {'topic': '/cmd_vel_web', 'blocked': '接続確認中', 'at': 0., 'mode': 'mux'}
+    publishers = {}
+
+    def publish(topic, message):
+        # A mux session must not even advertise a direct motor output.
+        if topic not in publishers:
+            publishers[topic] = node.create_publisher(Twist, topic, 1)
+        publishers[topic].publish(message)
 
     def telemetry(msg):
         driver['at'] = time.monotonic()
@@ -79,9 +87,12 @@ def main():
                  if p.node_name != node.get_name()}
         route['blocked'] = blocked or (('他の速度配信元が起動中: '+', '.join(sorted(other))) if other else '')
         if topic != route['topic'] and model.owner:
-            publishers[route['topic']].publish(Twist())
+            publish(route['topic'], Twist())
             model.stop('速度指令の経路が変わったため停止しました')
         route['topic'] = topic
+        for previous_topic in list(publishers):
+            if previous_topic != topic:
+                node.destroy_publisher(publishers.pop(previous_topic))
 
     def interlock(now):
         if now-driver['at'] > 2.:
@@ -126,7 +137,8 @@ def main():
             report(data.get('request_id'), error)
         if eof.is_set():
             model.stop('操作画面との接続が終了しました')
-            publishers[route['topic']].publish(Twist())
+            if publishers:
+                publish(route['topic'], Twist())
             return
         model.tick(now, now-previous, interlock(now))
         previous = now
@@ -136,7 +148,7 @@ def main():
             msg = Twist()
             msg.linear.x = model.linear
             msg.angular.z = model.angular
-            publishers[route['topic']].publish(msg)
+            publish(route['topic'], msg)
             zero_ticks = max(0, zero_ticks-1)
         report()
 
@@ -147,8 +159,8 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        if rclpy.ok():
-            publishers[route['topic']].publish(Twist())
+        if rclpy.ok() and publishers:
+            publish(route['topic'], Twist())
         node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()

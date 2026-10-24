@@ -13,7 +13,8 @@ def test_navigation_topics_cover_lio_tf_semantic_and_costmap_updates():
     assert {'/Odometry','/fastlio/diagnostics','/tf','/tf_static','/robot_description',
         '/sam3/static_colored_map_grid','/sam3/static_semantic_cost_grid',
         '/global_costmap/costmap_raw_updates','/local_costmap/costmap_updates',
-        '/cmd_vel_web','/cmd_vel_nav'}<=set(recording.TOPICS)
+        '/cmd_vel_web','/cmd_vel_nav','/cmd_vel_nav_safe','/collision_monitor_state',
+        '/sirius/navigation_mode','/roboteq/diagnostics'}<=set(recording.TOPICS)
     assert not {'/velodyne_points','/velodyne_points_leveled','/cloud_registered'}&set(recording.TOPICS)
     root=Path(__file__).resolve().parents[3]
     qos=yaml.safe_load((root/'params/rosbag_navigation_qos.yaml').read_text())

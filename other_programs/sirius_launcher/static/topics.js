@@ -1,5 +1,5 @@
 'use strict';
-const TOPIC_VIEW={data:null,busy:false,selected:null,search:'',filter:'all',shape:'',lastPoll:0,measureBusy:false};
+const TOPIC_VIEW={data:null,busy:false,selected:null,search:'',filter:'all',shape:'',lastPoll:0,measureBusy:false,watchBusy:false,watchTopic:null,watchSentAt:0,messageScroll:0};
 
 function topicElement(tag,className,text){
   const element=document.createElement(tag);
@@ -10,6 +10,19 @@ function topicElement(tag,className,text){
 
 function topicMeasurement(topic){
   return (TOPIC_VIEW.data&&TOPIC_VIEW.data.measurements||{})[topic]||null;
+}
+
+function topicWatch(){
+  const watch=TOPIC_VIEW.data&&TOPIC_VIEW.data.watch;
+  return watch&&watch.topic===TOPIC_VIEW.selected?watch:null;
+}
+
+function topicWatchState(watch){
+  if(!watch)return '未表示';
+  if(watch.state==='watching')return '受信中';
+  if(watch.state==='starting')return '購読を開始しています';
+  if(watch.state==='error')return 'エラー';
+  return '停止中';
 }
 
 function topicRateLabel(topic){
@@ -88,6 +101,10 @@ function renderTopicRows(){
 }
 
 function selectTopic(topic){
+  if(TOPIC_VIEW.selected!==topic){
+    TOPIC_VIEW.messageScroll=0;
+    if(TOPIC_VIEW.watchTopic&&TOPIC_VIEW.watchTopic!==topic)stopTopicWatch(true);
+  }
   TOPIC_VIEW.selected=topic;
   renderTopicRows();
   renderTopicDetails();
@@ -111,17 +128,84 @@ function topicEndpointSection(title,endpoints,emptyText){
   return section;
 }
 
+function topicMessageSection(topicName){
+  const section=topicElement('section','topics-message');
+  section.append(topicElement('h3','','メッセージ'));
+  const watch=topicWatch();
+  if(!watch){
+    section.append(topicElement('p','topics-help','選択したトピックを読み取り専用で購読し、最新メッセージを表示します。画像・点群などの大きな配列は先頭のみ表示します。'));
+    const button=topicElement('button','hbtn',TOPIC_VIEW.watchBusy?'開始中…':'最新メッセージを表示');
+    button.disabled=TOPIC_VIEW.watchBusy;
+    button.onclick=()=>startTopicWatch(topicName);
+    section.append(button);
+    return section;
+  }
+  const state=watch.state||'stopped';
+  const status=topicElement('div','topics-message-status');
+  const stateLabel=topicElement('span','topics-message-state',topicWatchState(watch));
+  stateLabel.classList.add('state-'+state);
+  status.append(stateLabel);
+  if(watch.count)status.append(topicElement('span','','受信 '+watch.count+' 件'));
+  if(watch.received_at){
+    const received=new Date(watch.received_at*1000);
+    status.append(topicElement('span','','最終受信 '+received.toLocaleTimeString('ja-JP',{hour12:false})+'.'+String(received.getMilliseconds()).padStart(3,'0')));
+  }
+  section.append(status);
+  if(watch.error)section.append(topicElement('p','topics-help topics-message-error',watch.error));
+  if(state==='stopped'&&watch.expired)section.append(topicElement('p','topics-help','一定時間が経過したため購読を停止しました。再表示すると再開します。'));
+  if(watch.text){
+    const pre=topicElement('pre','topics-message-text',watch.text);
+    pre.id='topics-message-text';
+    pre.tabIndex=0;
+    section.append(pre);
+    if(watch.truncated)section.append(topicElement('p','topics-help','長い配列・文字列・深い階層は省略しています。'));
+  }else if(state==='watching'||state==='starting'){
+    section.append(topicElement('p','topics-help','メッセージを待っています…'));
+  }else if(!watch.error){
+    section.append(topicElement('p','topics-help','メッセージはまだありません。'));
+  }
+  const actions=topicElement('div','topics-message-actions');
+  if(state==='watching'||state==='starting'){
+    const stop=topicElement('button','hbtn','停止');
+    stop.disabled=TOPIC_VIEW.watchBusy;
+    stop.onclick=()=>stopTopicWatch();
+    actions.append(stop);
+  }else{
+    const start=topicElement('button','hbtn',watch.text?'再表示':'表示');
+    start.disabled=TOPIC_VIEW.watchBusy;
+    start.onclick=()=>startTopicWatch(topicName);
+    actions.append(start);
+  }
+  if(watch.text){
+    const copy=topicElement('button','hbtn','コピー');
+    copy.onclick=async()=>{
+      try{
+        await navigator.clipboard.writeText(watch.text);
+        copy.textContent='コピーしました';
+        setTimeout(()=>{if(copy.isConnected)copy.textContent='コピー';},1500);
+      }catch(error){
+        toast('メッセージをコピーできませんでした',true);
+      }
+    };
+    actions.append(copy);
+  }
+  section.append(actions);
+  return section;
+}
+
 function renderTopicDetails(){
   const box=document.getElementById('topics-inspector');
   if(!box)return;
   const scroll=box.scrollTop;
+  const previousMessage=document.getElementById('topics-message-text');
+  const messageScroll=previousMessage?previousMessage.scrollTop:TOPIC_VIEW.messageScroll;
   box.replaceChildren();
   const topic=TOPIC_VIEW.selected;
   const data=TOPIC_VIEW.data;
   const row=data&&(data.topics||[]).find(item=>item.name===topic);
   if(!topic||!row){
     box.append(topicElement('h2','','トピックの詳細'));
-    box.append(topicElement('p','topics-help','一覧からトピックを選択すると、配信周期と宛先を表示します。'));
+    box.append(topicElement('p','topics-help','一覧からトピックを選択すると、配信周期・宛先・メッセージを表示します。'));
     return;
   }
   box.append(topicElement('h2','',row.name));
@@ -169,9 +253,13 @@ function renderTopicDetails(){
   rateSection.append(measureButton);
   box.append(rateSection);
 
+  box.append(topicMessageSection(row.name));
+
   box.append(topicEndpointSection('配信元（Publisher）',row.publishers,'このトピックを配信しているノードはありません。'));
   box.append(topicEndpointSection('購読先（Subscriber）',row.subscribers,'このトピックを購読しているノードはありません。'));
   box.scrollTop=scroll;
+  const nextMessage=document.getElementById('topics-message-text');
+  if(nextMessage)nextMessage.scrollTop=messageScroll;
 }
 
 async function measureTopic(topic){
@@ -187,6 +275,47 @@ async function measureTopic(topic){
     TOPIC_VIEW.measureBusy=false;
     renderTopicDetails();
   }
+}
+
+async function startTopicWatch(topic){
+  if(TOPIC_VIEW.watchBusy||!topic)return;
+  TOPIC_VIEW.watchBusy=true;
+  TOPIC_VIEW.watchTopic=topic;
+  TOPIC_VIEW.watchSentAt=Date.now();
+  TOPIC_VIEW.messageScroll=0;
+  renderTopicDetails();
+  try{
+    await api('/api/topics/watch',{action:'start',topic,lease:10});
+    await pollTopics(true);
+  }catch(error){
+    TOPIC_VIEW.watchTopic=null;
+    toast('メッセージを表示できませんでした',true);
+  }finally{
+    TOPIC_VIEW.watchBusy=false;
+    renderTopicDetails();
+  }
+}
+
+async function stopTopicWatch(silent=false){
+  if(!TOPIC_VIEW.watchTopic)return;
+  TOPIC_VIEW.watchTopic=null;
+  TOPIC_VIEW.watchSentAt=0;
+  try{
+    await api('/api/topics/watch',{action:'stop'});
+  }catch(error){
+    if(!silent)toast('メッセージ購読を停止できませんでした',true);
+  }
+  if(!silent)await pollTopics(true);
+}
+
+function renewTopicWatch(){
+  const topic=TOPIC_VIEW.watchTopic;
+  const watch=TOPIC_VIEW.data&&TOPIC_VIEW.data.watch;
+  if(!topic||TOPIC_VIEW.watchBusy||!watch||watch.topic!==topic)return;
+  if(watch.state!=='watching'&&watch.state!=='starting')return;
+  if(Date.now()-TOPIC_VIEW.watchSentAt<5000)return;
+  TOPIC_VIEW.watchSentAt=Date.now();
+  api('/api/topics/watch',{action:'start',topic,lease:10}).catch(()=>{});
 }
 
 function renderTopicSummary(data){
@@ -222,12 +351,101 @@ async function pollTopics(force=false){
       renderTopicRows();
     }
     renderTopicDetails();
+    renewTopicWatch();
   }catch(error){
     status.classList.add('stale');
     status.textContent='接続を再試行しています';
   }finally{
     TOPIC_VIEW.busy=false;
   }
+}
+
+function initTopicsSplit(){
+  const layout=document.getElementById('topics-layout');
+  const splitter=document.getElementById('topics-splitter');
+  if(!layout||!splitter)return;
+  const key='sirius-topics-inspector-width';
+  const DEFAULT=330,MIN_INSPECTOR=260,MIN_LIST=320,HANDLE=16;
+  const desktop=matchMedia('(min-width:1101px)');
+  let preferred=null,drag=null;
+  try{
+    const saved=Number(localStorage.getItem(key));
+    if(Number.isFinite(saved)&&saved>0)preferred=saved;
+  }catch(error){}
+  function bounds(){
+    const max=Math.max(MIN_INSPECTOR,layout.clientWidth-MIN_LIST-HANDLE);
+    return {min:MIN_INSPECTOR,max:Math.round(max)};
+  }
+  function clamp(value){
+    const range=bounds();
+    return Math.max(range.min,Math.min(range.max,value));
+  }
+  function apply(){
+    const stacked=layout.clientWidth>0&&layout.clientWidth<700;
+    layout.classList.toggle('topics-stacked',stacked);
+    if(!desktop.matches||!layout.clientWidth||stacked){
+      layout.style.removeProperty('--topics-inspector-width');
+      return;
+    }
+    const range=bounds();
+    const width=clamp(preferred===null?DEFAULT:preferred);
+    layout.style.setProperty('--topics-inspector-width',width+'px');
+    splitter.setAttribute('aria-valuemin',String(range.min));
+    splitter.setAttribute('aria-valuemax',String(range.max));
+    splitter.setAttribute('aria-valuenow',String(Math.round(width)));
+  }
+  function save(){
+    try{
+      if(preferred===null)localStorage.removeItem(key);
+      else localStorage.setItem(key,String(Math.round(preferred)));
+    }catch(error){}
+  }
+  function finish(){
+    if(!drag)return;
+    drag=null;
+    document.body.classList.remove('topics-resizing');
+    save();
+  }
+  splitter.addEventListener('pointerdown',event=>{
+    if(event.button!==0||!desktop.matches)return;
+    drag={pointerId:event.pointerId};
+    splitter.setPointerCapture(event.pointerId);
+    document.body.classList.add('topics-resizing');
+    event.preventDefault();
+  });
+  splitter.addEventListener('pointermove',event=>{
+    if(!drag||event.pointerId!==drag.pointerId)return;
+    const rect=layout.getBoundingClientRect();
+    preferred=clamp(rect.right-event.clientX);
+    apply();
+  });
+  splitter.addEventListener('pointerup',finish);
+  splitter.addEventListener('pointercancel',finish);
+  splitter.addEventListener('lostpointercapture',finish);
+  splitter.addEventListener('dblclick',()=>{
+    preferred=null;
+    save();
+    apply();
+  });
+  splitter.addEventListener('keydown',event=>{
+    if(!desktop.matches||!['ArrowLeft','ArrowRight','Home'].includes(event.key))return;
+    event.preventDefault();
+    event.stopPropagation();
+    if(event.key==='Home'){
+      preferred=null;
+      save();
+      apply();
+      return;
+    }
+    const current=parseFloat(getComputedStyle(layout).getPropertyValue('--topics-inspector-width'))||DEFAULT;
+    preferred=clamp(current+(event.key==='ArrowLeft'?20:-20));
+    save();
+    apply();
+  });
+  new ResizeObserver(()=>{if(!drag)apply();}).observe(layout);
+  desktop.addEventListener('change',()=>{if(!drag)apply();});
+  window.addEventListener('resize',()=>{if(drag)finish();apply();});
+  apply();
 }
 
 function initTopicsPage(){
@@ -249,7 +467,7 @@ function initTopicsPage(){
   section.className='page';
   section.id='page-topics';
   section.setAttribute('aria-label','Topic Monitor');
-  section.innerHTML='<div class="topics-toolbar"><div class="topics-counts" id="topics-counts">—</div><span class="sample-status" id="topics-status">接続を待っています</span><div class="topics-tools"><input id="topics-search" placeholder="トピック・型・ノードを検索" aria-label="トピック検索"><div class="segmented" id="topics-filter" role="group" aria-label="トピック絞り込み"><button class="active" data-topic-filter="all">すべて</button><button data-topic-filter="active">配信あり</button><button data-topic-filter="measured">測定済み</button></div><button class="hbtn" id="topics-refresh">更新</button></div></div><div class="topics-layout"><article class="surface topics-list"><div class="topics-list-head"><span>トピック</span><span>型</span><span>Hz</span><span>Pub</span><span>Sub</span></div><div class="topics-rows" id="topics-rows" role="listbox" aria-label="ROSトピック一覧"><div class="topics-empty">トピックを待っています…</div></div></article><aside class="surface topics-inspector" id="topics-inspector"><h2>トピックの詳細</h2><p class="topics-help">一覧からトピックを選択すると、配信周期と宛先を表示します。</p></aside></div><p class="topics-footnote">ROS 2グラフから約1秒ごとに一覧を更新します。Hzは選択したトピックを約3秒受信したときの実測値です。LichtblickのTopicsパネルでは購読中トピックのHzしか出ないため、全トピックの宛先確認はこの画面を使用してください。</p>';
+  section.innerHTML='<div class="topics-toolbar"><div class="topics-counts" id="topics-counts">—</div><span class="sample-status" id="topics-status">接続を待っています</span><div class="topics-tools"><input id="topics-search" placeholder="トピック・型・ノードを検索" aria-label="トピック検索"><div class="segmented" id="topics-filter" role="group" aria-label="トピック絞り込み"><button class="active" data-topic-filter="all">すべて</button><button data-topic-filter="active">配信あり</button><button data-topic-filter="measured">測定済み</button></div><button class="hbtn" id="topics-refresh">更新</button></div></div><div class="topics-layout" id="topics-layout"><article class="surface topics-list" id="topics-list-panel"><div class="topics-list-head"><span>トピック</span><span>型</span><span>Hz</span><span>Pub</span><span>Sub</span></div><div class="topics-rows" id="topics-rows" role="listbox" aria-label="ROSトピック一覧"><div class="topics-empty">トピックを待っています…</div></div></article><div class="topics-splitter" id="topics-splitter" role="separator" aria-orientation="vertical" aria-label="トピック一覧と詳細の幅を変更" aria-controls="topics-list-panel topics-inspector" aria-valuemin="260" aria-valuemax="660" aria-valuenow="330" tabindex="0" title="ドラッグまたは←→キーで幅を変更。ダブルクリックで既定に戻す"><span></span></div><aside class="surface topics-inspector" id="topics-inspector"><h2>トピックの詳細</h2><p class="topics-help">一覧からトピックを選択すると、配信周期・宛先・メッセージを表示します。</p></aside></div><p class="topics-footnote">ROS 2グラフから約1秒ごとに一覧を更新します。Hzは選択したトピックを約3秒受信したときの実測値です。メッセージは読み取り専用で購読し、大きな配列は先頭のみ表示します。LichtblickのTopicsパネルでは購読中トピックのHzしか出ないため、全トピックの宛先確認はこの画面を使用してください。</p>';
   document.querySelector('main.workspace').append(section);
   if(typeof PAGE_LABELS==='object')PAGE_LABELS.topics='Topic Monitor';
   document.getElementById('topics-search').addEventListener('input',event=>{TOPIC_VIEW.search=event.target.value;renderTopicRows();});
@@ -261,6 +479,7 @@ function initTopicsPage(){
     };
   });
   document.getElementById('topics-refresh').onclick=()=>pollTopics(true);
+  initTopicsSplit();
   if(location.hash==='#topics')pollTopics(true);
 }
 

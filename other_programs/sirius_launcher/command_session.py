@@ -51,6 +51,10 @@ def run(name, script):
     listener.listen(4)
     pid, master = pty.fork()
     if pid == 0:
+        # Web services started by nohup/background shells can inherit SIG_IGN.
+        # Bash cannot install a trap for an ignored signal inherited at startup.
+        for sig in (signal.SIGINT, signal.SIGQUIT, signal.SIGHUP, signal.SIGTERM):
+            signal.signal(sig, signal.SIG_DFL)
         listener.close()
         env = os.environ.copy()
         env['TERM'] = 'xterm-256color'

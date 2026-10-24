@@ -1,0 +1,34 @@
+{
+  "title": "再計算前LIOの3D地図（Zブレあり）",
+  "source_bag": "mapping_all_real_20261022_194816",
+  "geometry": "FAST-LIO recompute + DUFOMap + known-single-floor",
+  "color": "camera_rgb",
+  "source_points": 332374,
+  "preview_points": 240000,
+  "trajectory_points": 299,
+  "keyframes": 299,
+  "max_pose_sync_error_s": 0.0,
+  "center": [
+    7.354121530324332,
+    -2.412160006362259,
+    0.0
+  ],
+  "radius": 19.919619323678408,
+  "z_range": [
+    -0.492434561252594,
+    2.4999611377716064
+  ],
+  "bounds": [
+    [
+      -6.6336517333984375,
+      -20.551382064819336,
+      -0.492434561252594
+    ],
+    [
+      22.819400787353516,
+      14.04411506652832,
+      2.4999611377716064
+    ]
+  ],
+  "notes": "3D map from the same bag as the 2D SLAM comparison. Viewer crop: route +/- 10 m, z -0.5..2.5 m. The known-floor correction is an explicit flat-floor assumption."
+}

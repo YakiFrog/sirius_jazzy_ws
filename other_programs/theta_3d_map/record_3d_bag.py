@@ -44,7 +44,7 @@ def recording_topics(mode, profile='mapping', include_derived_clouds=False):
     topics = ['/velodyne_points', '/imu', '/odom', '/scan3', '/scan',
               '/odom/filtered', '/odometry/filtered', '/magnetometer', '/Odometry',
               '/tf', '/tf_static', '/theta/dual_fisheye/image_raw/compressed',
-              '/fastlio/diagnostics', '/diagnostics', '/rosout', '/roboteq/status',
+              '/fastlio/diagnostics', '/diagnostics', '/rosout', '/roboteq/status', '/roboteq/diagnostics',
               '/camera/stereo_sbs/compressed', '/camera/stereo_params',
               '/robot_description', '/joint_states', '/cmd_vel', '/cmd_vel_nav',
               '/cmd_vel_teleop', '/parameter_events', '/roboteq/odom', '/experiment_metadata']

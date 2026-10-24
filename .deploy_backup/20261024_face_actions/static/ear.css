@@ -1,0 +1,23 @@
+.ear-device-tabs{display:flex;gap:8px;grid-column:1/-1}.ear-device-tabs button{min-width:86px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.ear-device-tabs svg{width:16px;height:16px}.ear-device-tabs button[aria-selected=true]{color:var(--accent);background:var(--accent-bg);border-color:var(--accent)}.face-dialog.has-ear-tabs>[data-device-pane][hidden]{display:none!important}.ear-main{min-width:0;grid-column:1/-1}.ear-status-box{padding:16px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px}.ear-status-box>strong{font-size:13px}.ear-connections{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.ear-connections span{font-size:11px;color:var(--muted);padding:5px 8px;border:1px solid var(--line);border-radius:6px}.ear-connections .ear-connected{color:var(--mint);border-color:var(--mint)}.ear-note{color:var(--muted);font-size:11px;line-height:1.8;margin:12px 0 0;overflow-wrap:anywhere}.ear-options{display:flex;align-items:end;flex-wrap:wrap;gap:16px;margin:20px 0}.ear-options label{display:grid;gap:8px;color:var(--muted);font-size:11px}.ear-options input{height:44px;width:72px;padding:5px}.ear-options select{min-height:44px;min-width:100px;background:var(--panel-2);color:var(--text)}.ear-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ear-main>.ear-auto{width:100%;margin-top:12px}.ear-card-button.ear-ready{color:var(--mint);border-color:var(--mint)}.ear-presets [aria-pressed=true],.ear-teleop button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}.ear-teleop{grid-column:1/-1;padding-top:14px;border-top:1px solid var(--line)}.ear-teleop-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;margin-bottom:10px}.ear-teleop-heading>span{color:var(--muted);font-size:10px}.ear-quick-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ear-quick-buttons button{min-height:44px;border:1px solid var(--line);border-radius:7px;background:var(--panel-2);color:var(--text);padding:8px 4px;font-size:10px;cursor:pointer}.ear-quick-buttons button:disabled{opacity:.4;cursor:default}.ear-teleop>small{display:block;margin-top:10px;font-size:9px;line-height:1.8;color:var(--muted)}
+@media(min-width:821px){.face-dialog.has-ear-tabs .ear-device-tabs{grid-row:2}.face-dialog.has-ear-tabs .face-status-area,.face-dialog.has-ear-tabs .face-expressions-section{grid-row:3}.face-dialog.has-ear-tabs .face-gaze-section,.face-dialog.has-ear-tabs .face-message-section{grid-row:4}.face-dialog.has-ear-tabs .ear-main{grid-row:3}.face-dialog.ear-selected{width:min(780px,calc(100vw - 64px))}}
+@media(max-width:480px){.ear-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.face-card-bottom{gap:7px;flex-wrap:wrap}.face-card-bottom>span{flex:1;min-width:70px}}
+.ear-device-tabs button,.ear-presets button,.ear-auto{min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--text);font:inherit;font-size:12px;cursor:pointer}.ear-device-tabs button:hover,.ear-presets button:not(:disabled):hover,.ear-auto:not(:disabled):hover{border-color:var(--accent)}.ear-presets button:disabled,.ear-auto:disabled{opacity:.45;cursor:default}.ear-device-tabs button[aria-selected=true],.ear-presets button[aria-pressed=true]{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
+
+
+/* Desktop: show face and ear controls together instead of switching tabs. */
+@media(min-width:980px){
+ .face-dialog.ear-side-by-side{width:min(1200px,calc(100vw - 64px))}
+ .face-dialog.ear-side-by-side[open]{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(290px,.9fr);grid-template-rows:auto auto auto auto auto;gap:18px 20px}
+ .face-dialog.ear-side-by-side .ear-device-tabs{display:none}
+ .face-dialog.ear-side-by-side.has-ear-tabs .face-status-area,
+ .face-dialog.ear-side-by-side.has-ear-tabs .face-expressions-section{grid-row:2}
+ .face-dialog.ear-side-by-side.has-ear-tabs .face-gaze-section,
+ .face-dialog.ear-side-by-side.has-ear-tabs .face-message-section{grid-row:3}
+ .face-dialog.ear-side-by-side .face-status-area,
+ .face-dialog.ear-side-by-side .face-gaze-section{grid-column:1}
+ .face-dialog.ear-side-by-side .face-expressions-section,
+ .face-dialog.ear-side-by-side .face-message-section{grid-column:2}
+ .face-dialog.ear-side-by-side .face-feedback{grid-column:1/3;grid-row:4;margin:0}
+ .face-dialog.ear-side-by-side>.face-panel-note{grid-column:1/3;grid-row:5;margin:0}
+ .face-dialog.ear-side-by-side.has-ear-tabs .ear-main{grid-column:3;grid-row:2/6;align-self:stretch}
+}

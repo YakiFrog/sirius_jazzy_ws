@@ -1,0 +1,134 @@
+{
+  "name": "layout",
+  "updated": 1792566525,
+  "layout": {
+    "configById": {
+      "3D!sirius": {
+        "layers": {
+          "sirius-grid": {
+            "visible": true,
+            "frameLocked": true,
+            "label": "Grid",
+            "instanceId": "sirius-grid",
+            "layerId": "foxglove.Grid",
+            "size": 30,
+            "divisions": 30,
+            "lineWidth": 1,
+            "color": "#248eff",
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "order": 1
+          }
+        },
+        "cameraState": {
+          "perspective": false,
+          "distance": 27.88401833529071,
+          "phi": 34.10051348275647,
+          "thetaOffset": 13.4169974734353,
+          "targetOffset": [
+            0.5041065836090027,
+            3.5770077424822686,
+            1.463633563290164e-16
+          ],
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "targetOrientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fovy": 45,
+          "near": 0.5,
+          "far": 5000
+        },
+        "followMode": "follow-none",
+        "followTf": "map",
+        "scene": {
+          "backgroundColor": "#000000",
+          "enableStats": false,
+          "ignoreColladaUpAxis": false
+        },
+        "transforms": {},
+        "topics": {
+          "/map": {
+            "visible": true
+          },
+          "/velodyne_points": {
+            "visible": true,
+            "colorField": "intensity",
+            "colorMode": "flat",
+            "colorMap": "turbo",
+            "flatColor": "#ffb800ff",
+            "pointSize": 3
+          },
+          "/scan": {
+            "visible": false,
+            "colorField": "intensity",
+            "colorMode": "colormap",
+            "colorMap": "turbo"
+          },
+          "/hokuyo_scan": {
+            "visible": true,
+            "colorField": "intensity",
+            "colorMode": "flat",
+            "colorMap": "turbo",
+            "flatColor": "#c32020ff",
+            "pointSize": 3
+          },
+          "/localization/map": {
+            "visible": true,
+            "colorField": "rgb",
+            "colorMode": "rgb",
+            "colorMap": "turbo",
+            "pointSize": 3
+          },
+          "/plan": {
+            "visible": true
+          },
+          "/local_plan": {
+            "visible": true
+          },
+          "/sirius_markers": {
+            "visible": true
+          },
+          "/scan3": {
+            "visible": true,
+            "colorField": "intensity",
+            "colorMode": "flat",
+            "colorMap": "turbo",
+            "flatColor": "#00ff3cff",
+            "pointSize": 5
+          }
+        },
+        "publish": {
+          "type": "pose_estimate",
+          "poseTopic": "/sirius_visualization/disabled_pose",
+          "pointTopic": "/sirius_visualization/disabled_point",
+          "poseEstimateTopic": "/sirius_visualization/disabled_pose_estimate",
+          "poseEstimateXDeviation": 0.5,
+          "poseEstimateYDeviation": 0.5,
+          "poseEstimateThetaDeviation": 0.26179939
+        },
+        "imageMode": {}
+      }
+    },
+    "globalVariables": {},
+    "userNodes": {},
+    "playbackConfig": {
+      "speed": 1
+    },
+    "layout": "3D!sirius"
+  }
+}

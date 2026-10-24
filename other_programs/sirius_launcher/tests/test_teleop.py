@@ -150,6 +150,8 @@ def test_web_validation_auth_and_acknowledged_state(monkeypatch):
     ('mux', {'twist_mux'}, set(), '/cmd_vel_web', True),
     ('mux', set(), {'twist_mux'}, '/cmd_vel_web', True),
     ('mux', {'twist_mux'}, {'twist_mux'}, '/cmd_vel_web', False),
+    ('mux', {'twist_mux', 'collision_monitor'}, {'twist_mux'}, '/cmd_vel_web', True),
+    ('mux', {'twist_mux', 'docking_server'}, {'twist_mux'}, '/cmd_vel_web', True),
     ('auto', set(), set(), '/cmd_vel', False),
     ('auto', {'twist_mux'}, {'twist_mux'}, '/cmd_vel_teleop', False),
 ])

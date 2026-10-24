@@ -20,6 +20,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -54,7 +55,8 @@ target_include_directories(roboteq_ros2_driver_node PUBLIC
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/RoboteqStatus.msg"
-  DEPENDENCIES std_msgs
+  "msg/RoboteqDiagnostics.msg"
+  DEPENDENCIES std_msgs builtin_interfaces
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target

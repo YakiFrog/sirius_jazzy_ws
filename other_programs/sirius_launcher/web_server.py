@@ -50,6 +50,7 @@ from teleop_control import VelocityControl
 from documentation_notes import register_documentation_notes
 from file_browser import register_file_browser
 from face_bridge import register_face
+from nav_mode_service import NavModeService
 from ear_control import register_ear
 from hotspot_status import register_hotspot
 from research_archive import register_research_archive
@@ -59,6 +60,7 @@ RESOURCES = ResourceMonitor()
 TF_MONITOR = TFMonitor()
 TOPIC_MONITOR = TopicMonitor()
 EMERGENCY_STOP_LOCK = threading.Lock()
+NAV_MODE = NavModeService()
 
 app = Flask(__name__)
 app.wsgi_app = LocalHTTPSProxy(app.wsgi_app)
@@ -1481,6 +1483,45 @@ def api_teleop_status():
     return response
 
 
+@app.route("/api/navigation_modes")
+def api_navigation_modes():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    modes = NAV_MODE.modes()
+    response = jsonify({"modes": modes, "error": NAV_MODE._modes_error or None})
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.route("/api/navigation_mode")
+def api_navigation_mode():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    try:
+        domain = NAV_MODE.domain(request.args.get("domain") or DEFAULT_DOMAIN or "53")
+        data = NAV_MODE.state(domain)
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    response = jsonify(data)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.route("/api/navigation_mode", methods=["POST"])
+def api_navigation_mode_apply():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    body = request.get_json(silent=True)
+    if not isinstance(body, dict):
+        return jsonify({"ok": False, "error": "invalid request"}), 400
+    try:
+        domain = NAV_MODE.domain(body.get("domain") or DEFAULT_DOMAIN or "53")
+        result, status = NAV_MODE.apply(str(body.get("mode", "")), domain)
+    except ValueError as error:
+        return jsonify({"ok": False, "error": str(error)}), 400
+    return jsonify(result), status
+
+
 @app.route("/api/tf")
 def api_tf():
     if not auth_ok():
@@ -1507,6 +1548,19 @@ def api_topics_measure():
         return jsonify({"error": "auth"}), 401
     body = request.json or {}
     result = TOPIC_MONITOR.measure(DEFAULT_DOMAIN, body.get("topic"), body.get("duration"))
+    status = result.pop("status", 200)
+    return jsonify(result), status
+
+
+@app.route("/api/topics/watch", methods=["POST"])
+def api_topics_watch():
+    if not auth_ok():
+        return jsonify({"error": "auth"}), 401
+    body = request.get_json(silent=True) or {}
+    if str(body.get("action") or "start") == "stop":
+        result = TOPIC_MONITOR.unwatch(DEFAULT_DOMAIN)
+    else:
+        result = TOPIC_MONITOR.watch(DEFAULT_DOMAIN, body.get("topic"), body.get("lease"))
     status = result.pop("status", 200)
     return jsonify(result), status
 
@@ -1728,6 +1782,8 @@ def main():
         _load_launch_specs_locked()
     RESOURCES.start()
     threading.Thread(target=TELEOP.ensure, args=(DEFAULT_DOMAIN,), daemon=True).start()
+    if str(DEFAULT_DOMAIN).isdigit():
+        threading.Thread(target=NAV_MODE.ensure_watcher, args=(DEFAULT_DOMAIN,), daemon=True).start()
     print(f"SiriusLauncher Web: http://{args.host}:{args.port}  "
           f"({len(BUTTONS)} aliases, {len(GROUPS)} groups, {len(PRESETS)} presets)")
     if PASSWORD:

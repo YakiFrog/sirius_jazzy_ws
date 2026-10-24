@@ -3,7 +3,7 @@
 # 使い方: ./record_rosbag.sh
 #         ファイル名を入力して記録開始
 
-WS="$HOME/sirius_jazzy_ws"
+WS="${SIRIUS_WS_DIR:-$HOME/sirius_jazzy_ws}"
 SUPPORT="$WS/bash/startup_bash/navigation_recording.py"
 mapfile -t TOPICS < <(python3 "$SUPPORT" --topics)
 if [ "${#TOPICS[@]}" -eq 0 ]; then echo "記録トピックを取得できません" >&2; exit 1; fi
@@ -13,7 +13,20 @@ CURRENT_BAG_PATH=""
 RESULT_SHOWN=false
 experiment_memo="No description"
 
-trap 'echo ""; echo "記録を停止・保存しています..."; kill -INT $ROSBAG_PID 2>/dev/null; wait $ROSBAG_PID 2>/dev/null; show_result; exit 0' INT TERM HUP
+stop_recording() {
+    # One Ctrl+C is enough; further interrupts must not interrupt MCAP finalization.
+    trap '' INT TERM HUP
+    if [ -n "$ROSBAG_PID" ]; then
+        echo ""
+        echo "記録を停止・保存しています...（追加のCtrl+Cは不要です）"
+        kill -INT "$ROSBAG_PID" 2>/dev/null || true
+        wait "$ROSBAG_PID" 2>/dev/null || true
+        ROSBAG_PID=""
+    fi
+    show_result
+    exit 0
+}
+trap stop_recording INT TERM HUP
 
 ROSBAG_DIR="${HOME}/rosbag2_data"
 
@@ -26,6 +39,14 @@ show_result() {
         return
     fi
     RESULT_SHOWN=true
+    if [ -z "$CURRENT_BAG_PATH" ]; then return 0; fi
+    if [ -n "${CAPTURE_PID:-}" ]; then
+        for child in $(jobs -pr); do
+            if [ "$child" = "$CAPTURE_PID" ]; then kill -TERM "$child" 2>/dev/null || true; fi
+        done
+        wait "$CAPTURE_PID" 2>/dev/null || true
+        CAPTURE_PID=""
+    fi
     if [ -n "${METADATA_PID:-}" ]; then
         for child in $(jobs -pr); do
             if [ "$child" = "$METADATA_PID" ]; then kill -TERM "$child" 2>/dev/null || true; fi
@@ -35,38 +56,31 @@ show_result() {
         echo "記録を確定できませんでした。保存先に metadata.yaml がありません。"
         return 1
     fi
-    if [ -d "$CURRENT_BAG_PATH" ]; then
-        python3 "$SUPPORT" --capture "$CURRENT_BAG_PATH.capture/finish" --workspace "$WS"
-    fi
     
     echo ""
     echo "========================================="
     echo "✓ 記録が完了しました"
     echo "  保存先: $CURRENT_BAG_PATH"
     
-    # 未インデックス対策: MCAPファイルを自動修復/インデックス処理する
-    if [ -d "$CURRENT_BAG_PATH" ]; then
-        # フォルダ内の .mcap ファイルを探す
-        local mcap_file=$(find "$CURRENT_BAG_PATH" -name "*.mcap" | head -n 1)
-        if [ -n "$mcap_file" ] && [ -f "$mcap_file" ]; then
-            echo "  [MCAP] インデックスの整合性を自動チェック・修復中..."
-            local tmp_mcap="${mcap_file}.tmp"
-            if "${HOME}/sirius_jazzy_ws/mcap" recover "$mcap_file" -o "$tmp_mcap" >/dev/null 2>&1; then
-                mv "$tmp_mcap" "$mcap_file"
-                echo "  [MCAP] ✓ インデックス処理が正常に完了しました（Foxgloveで開けます）"
-            else
-                rm -f "$tmp_mcap"
-                echo "  [MCAP] ⚠ 自動修復に失敗しました。手動で mcap recover を試してください"
-            fi
+    # Clean rosbag shutdown already writes the MCAP summary/footer. Do not rewrite
+    # the entire recording on every stop. Recovery is an explicit separate operation.
+    local mcap_file
+    while IFS= read -r -d '' mcap_file; do
+        if [ -x "$WS/mcap" ] && ! timeout 3s "$WS/mcap" info "$mcap_file" >/dev/null 2>&1; then
+            echo "  注意: MCAP確認が完了しませんでした。元データは変更していません。"
+            echo "  必要に応じて recover_mcap_rosbag.sh で別フォルダへ復旧できます。"
         fi
-    fi
-    
+    done < <(find "$CURRENT_BAG_PATH" -maxdepth 1 -name '*.mcap' -print0)
+
     # ファイルサイズ表示
     if [ -d "$CURRENT_BAG_PATH" ]; then
         size=$(du -sh "$CURRENT_BAG_PATH" | cut -f1)
         echo "  サイズ: $size"
     fi
     echo "========================================="
+    echo "記録は保存済みです。補助情報を保存します（最大8秒）..."
+    timeout 8s python3 "$SUPPORT" --capture "$CURRENT_BAG_PATH.capture/finish" --workspace "$WS" ||
+        echo "補助情報の取得を打ち切りました。BAG本体は保存済みです。"
 }
 
 # ファイル名を入力
@@ -136,12 +150,14 @@ start_recording() {
 
     METADATA_PID=$!
 
-    ros2 bag record -s mcap --storage-preset-profile zstd_fast \
+    python3 "$SUPPORT" --exec-recorder -s mcap --storage-preset-profile zstd_fast \
         --qos-profile-overrides-path "$WS/params/rosbag_navigation_qos.yaml" \
         --include-hidden-topics -o "$CURRENT_BAG_PATH" --topics "${TOPICS[@]}" &
     
     ROSBAG_PID=$!
-    python3 "$SUPPORT" --capture "$CURRENT_BAG_PATH.capture/start" --workspace "$WS"
+    mkdir -p "$CURRENT_BAG_PATH.capture"
+    timeout 12s python3 "$SUPPORT" --capture "$CURRENT_BAG_PATH.capture/start" --workspace "$WS" &
+    CAPTURE_PID=$!
     printf '%s\n' "$experiment_memo" > "$CURRENT_BAG_PATH.capture/experiment_memo.txt"
     wait "$ROSBAG_PID"
     ROSBAG_PID=""
@@ -150,7 +166,7 @@ start_recording() {
 }
 
 # メイン処理（ループ）
-cd ~/sirius_jazzy_ws
+cd "$WS"
 source install/setup.bash
 
 while : ; do

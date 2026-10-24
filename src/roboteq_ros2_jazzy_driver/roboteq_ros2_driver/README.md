@@ -82,3 +82,47 @@ large odometry jump.
 
 * **Chad Attermann** - *Initial work* - [Ecos Technologies](https://github.com/ecostech)
 * **Chase Devitt** - *ROS2 Migration*
+
+## Drive diagnostics
+
+`/roboteq/diagnostics` (`roboteq_ros2_driver/msg/RoboteqDiagnostics`) supplements
+`/roboteq/status`; the existing status interface is unchanged. It is recorded by
+`record_rosbag`, `record_mapping`, `record_3dmap`, and `record_loc3d` on subsequent runs.
+
+- Read-only `?FS`, `?FM`, `?P` queries run at 10 Hz independently of the original
+  encoder/voltage stream. Flag labels follow the common Roboteq flag tables;
+  raw values remain available for firmware-specific interpretation.
+- Every MD value has validity and age fields. Unsupported, malformed, absent,
+  or older-than-0.5-second replies are not healthy zero. A one-channel response
+  never supplies channel 2. `md_output_*` is the raw motor-power-output query
+  result, **not watts**.
+- ROS FF+PI values include wheel targets, filtered feedback, errors, integrals,
+  FF/P/I terms, and output before/after filtering and limits. `control_stamp`
+  identifies the control sample; `control_sample_valid=false` while stopped or
+  when the software closed loop is disabled. The configured D gain is not used
+  by the current FF+PI implementation; no artificial D term is reported.
+- `sent_command_*`, write-result and age fields describe serial `!G` writes.
+  They do not prove that the MD applied the commands; compare `md_output_*`.
+- Stop events record the reason mask, voltage, FF bits and timestamp before
+  the driver sends `!EX`. Reasons include low voltage, MD fault, stale telemetry,
+  startup stop, software request and rejected release. With `estop_latch_hardware=true`, a protection latch keeps
+  its originating reason until an accepted manual release. The deployed default
+  is false: physical/supply stops do not enable the software stop; supply
+  recovery clears the hardware stop. Manually enabled software stops remain
+  latched. Existing velocity publishers may resume motion after supply recovery. FF16 produced by our
+  own `!EX` is not labelled as a new external MD fault. A physical switch that
+  only cuts the supply still cannot be distinguished from other supply loss.
+
+Diagnostics publication is configured for up to 50 Hz; use message timestamps
+and measured rates when analyzing timing. Parameters are `publish_diagnostics`,
+`diagnostics_topic` and `diagnostics_publish_hz`. All MD fields share one
+periodic stream (CB/V/FF/A/BA/BS/T/FS/FM/P); standalone queries cancel this
+controller's stream and must not be interleaved. The default 3 ms per slot
+provides approximately 33 Hz per field. `diagnostics_poll_hz` is accepted only
+for compatibility and has no effect. Streaming starts even with
+`pub_odom_tf=false`; V/FF reception continues with `publish_status=false`.
+
+The isolated PTY test at `test/test_protection_serial.py` exercises actual driver
+parsing, unknown/stale MD fields, PI accounting, serial commands, stop reasons,
+manual release and restart suppression. Source the workspace and run it with a
+non-production `ROS_DOMAIN_ID` (for example `231`).

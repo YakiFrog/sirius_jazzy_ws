@@ -13,3 +13,7 @@ target_link_libraries(test_regulated_pp
 # Path utils test
 ament_add_gtest(test_path_utils path_utils/test_path_utils.cpp path_utils/path_utils.cpp)
 ament_target_dependencies(test_path_utils nav_msgs geometry_msgs tf2_geometry_msgs)
+
+ament_add_gtest(test_sirius_wait test_sirius_wait.cpp)
+ament_target_dependencies(test_sirius_wait ${dependencies})
+target_link_libraries(test_sirius_wait ${library_name})
