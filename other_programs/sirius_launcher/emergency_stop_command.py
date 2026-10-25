@@ -38,6 +38,8 @@ def wait_for_driver(node, publisher, spin, timeout=3):
 
 def publish_stop(node, publisher, active, spin, duration, timeout=3, feedback=None):
     wait_for_driver(node, publisher, spin, timeout)
+    mux_present = any(s.node_name == 'twist_mux'
+                      for s in node.get_subscriptions_info_by_topic('/stop'))
     from std_msgs.msg import Bool
     message = Bool()
     message.data = active
@@ -45,12 +47,20 @@ def publish_stop(node, publisher, active, spin, duration, timeout=3, feedback=No
         feedback.clear()
     publisher.publish(message)
     if feedback is not None:
-        deadline = time.monotonic()+2
+        deadline = time.monotonic()+3
+        next_repeat = time.monotonic()+.25
         while time.monotonic() < deadline:
             spin(node, timeout_sec=.1)
-            if feedback.get('active') is active:
+            if (feedback.get('active') is active
+                    and (not mux_present or feedback.get('mux_active') is active)):
+                if not publisher.wait_for_all_acked(duration(seconds=1)):
+                    raise RuntimeError('停止指令の配信応答が未確認です。停止表示を確認してください')
                 return
-        raise RuntimeError('実機の停止状態の反映が未確認です。停止表示を確認してください')
+            # Retry only this explicit user request, while the sender is alive.
+            if time.monotonic() >= next_repeat:
+                publisher.publish(message)
+                next_repeat = time.monotonic()+.25
+        raise RuntimeError('停止状態の反映が未確認です（Roboteq / twist_mux）。停止表示を確認してください')
     if not publisher.wait_for_all_acked(duration(seconds=1)):
         raise RuntimeError('送信後の応答が未確認です。実機の停止表示を確認してください')
 
@@ -61,6 +71,7 @@ def main():
     from rclpy.duration import Duration
     from std_msgs.msg import Bool
     from roboteq_ros2_driver.msg import RoboteqStatus
+    from diagnostic_msgs.msg import DiagnosticArray
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--publish', choices=('on', 'off'))
@@ -78,6 +89,16 @@ def main():
         subscription = node.create_subscription(
             RoboteqStatus, '/roboteq/status',
             lambda msg: feedback.update(active=bool(msg.fault_flags & 16)), 10)
+        def mux_feedback(msg):
+            for status in msg.status:
+                if status.name == 'twist_mux: Twist mux status':
+                    for value in status.values:
+                        if value.key == 'lock locks.stop':
+                            text = value.value.strip()
+                            if text.startswith(('locked ', 'free ')):
+                                feedback['mux_active'] = text.startswith('locked ')
+        mux_subscription = node.create_subscription(
+            DiagnosticArray, '/diagnostics', mux_feedback, 10)
         publish_stop(node, publisher, args.publish == 'on', rclpy.spin_once, Duration,
                      feedback=feedback)
         print(json.dumps({'sent': True}))

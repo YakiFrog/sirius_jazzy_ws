@@ -125,7 +125,7 @@
     for(const key of ['ac_input','solar_input','ac_output','dc_output','usb_c1','usb_c2','usb_c3','usb_a1']){
       let value=watt((details.ports||{})[key]);
       const state=(details.output_states||{})[key==='ac_output'?'ac':key==='dc_output'?'dc':''];
-      if(state==='on'||state==='off')value+=' · '+state.toUpperCase();
+      if(key==='ac_output'||key==='dc_output')value=(details.state==='live'&&(state==='on'||state==='off')?state.toUpperCase():'状態未確認')+' · '+value;
       text('battery-port-'+key,value);
     }
     const noTime=['charging','discharging'].includes(details.time_remaining_kind)&&!Number.isFinite(details.runtime_hours)&&!Number.isFinite(details.charge_remaining_hours);

@@ -1,0 +1,155 @@
+{
+  "1024_theta_gyro": {
+    "source": "/home/kotantu-desktop/experiment_records/road_dual_20261024/theta_shadow",
+    "loader_prefix": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/1024_theta_gyro",
+    "costs": {
+      "3": {
+        "name": "grass",
+        "color": [
+          0,
+          255,
+          0
+        ],
+        "global_cost": 100,
+        "local_cost": 70
+      },
+      "4": {
+        "name": "tactile paving",
+        "color": [
+          255,
+          255,
+          0
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      },
+      "5": {
+        "name": "roadway",
+        "color": [
+          0,
+          0,
+          255
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      },
+      "6": {
+        "name": "sidewalk",
+        "color": [
+          128,
+          128,
+          128
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      }
+    },
+    "files": {
+      "1024_theta_gyro.colored.pgm": "7853fe48f71ded148faa1a7f3bea70e45d3573cc6b3fd52fafd13ee728931575",
+      "1024_theta_gyro.colored.json": "9e79434623b64fbe190ff6c382aeeb60157673c778a47824b88adfb214d71bf7",
+      "1024_theta_gyro.yaml": "8930d34de98472854c9e84537a00e88849a91d021f117fc0586a93b15f337f48"
+    }
+  },
+  "1024_zed_gyro": {
+    "source": "/home/kotantu-desktop/experiment_records/road_dual_20261024/zed",
+    "loader_prefix": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/1024_zed_gyro",
+    "costs": {
+      "3": {
+        "name": "grass",
+        "color": [
+          0,
+          255,
+          0
+        ],
+        "global_cost": 100,
+        "local_cost": 70
+      },
+      "4": {
+        "name": "tactile paving",
+        "color": [
+          255,
+          255,
+          0
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      },
+      "5": {
+        "name": "roadway",
+        "color": [
+          0,
+          0,
+          255
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      },
+      "6": {
+        "name": "sidewalk",
+        "color": [
+          128,
+          128,
+          128
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      }
+    },
+    "files": {
+      "1024_zed_gyro.colored.pgm": "0195c8d99db6b2ba278fdf6260409402099d227d56fa3eb47c83d3c1e0a43e6d",
+      "1024_zed_gyro.colored.json": "4c613086f07d7a6db6f12a2ee909ed79fdbd83092f84e9e505f8f1712cb735ae",
+      "1024_zed_gyro.yaml": "6743e681e16094e9ab5b5fdc8b47c5a6611964f33ba3a49eeb660a959d969e8e"
+    }
+  },
+  "1024_theta_texture_gyro": {
+    "source": "/home/kotantu-desktop/experiment_records/road_dual_20261024/theta_texture",
+    "loader_prefix": "/home/kotantu-desktop/sirius_jazzy_ws/maps_waypoints/maps/road_semantic/1024_theta_texture_gyro",
+    "costs": {
+      "3": {
+        "name": "grass",
+        "color": [
+          0,
+          255,
+          0
+        ],
+        "global_cost": 100,
+        "local_cost": 70
+      },
+      "4": {
+        "name": "tactile paving",
+        "color": [
+          255,
+          255,
+          0
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      },
+      "5": {
+        "name": "roadway",
+        "color": [
+          0,
+          0,
+          255
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      },
+      "6": {
+        "name": "sidewalk",
+        "color": [
+          128,
+          128,
+          128
+        ],
+        "global_cost": 0,
+        "local_cost": 0
+      }
+    },
+    "files": {
+      "1024_theta_texture_gyro.colored.pgm": "ea8735ab03a5aa0d786869a61d9e5f4e803cfe54eea73c61bd08e1ed1a5c8c17",
+      "1024_theta_texture_gyro.colored.json": "43a846df35c36a3b8ca452ce3ac5881ebb4f1d20f2499e06dedb78925b4701c3",
+      "1024_theta_texture_gyro.yaml": "1e29df9001a010ad3724ca36aa6dbd737ba4affb001127954c0d05f88e8a20db"
+    }
+  }
+}

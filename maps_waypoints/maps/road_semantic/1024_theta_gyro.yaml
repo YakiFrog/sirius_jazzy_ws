@@ -1,0 +1,10 @@
+free_thresh: 0.25
+image: 1024_theta_gyro.colored.pgm
+mode: raw
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -34.7
+- -116.65
+- 0.0
+resolution: 0.05

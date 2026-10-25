@@ -381,6 +381,12 @@ void Roboteq::bumper_callback(const std_msgs::msg::Bool::SharedPtr stop_msg)
 
     else
     {
+        // /stop=false is idempotent. A waypoint's redundant release must not
+        // create a new software stop below the manual recovery voltage.
+        // Voltage/fault protection remains owned by check_hardware_estop().
+        if (!software_estop_) {
+            return;
+        }
         // A release is an explicit acknowledgement, never an automatic voltage recovery.
         // Ignore FF bit 16 here: our own !EX sets it until !MG is sent.
         if (!protection_release_ready()) {

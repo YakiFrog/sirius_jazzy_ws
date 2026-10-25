@@ -1,5 +1,5 @@
 # PRESET: フルセンサ & FastLIO-自己位置推定
-# PRESET_ITEMS: roboteq,velodyne,imu,odom_path_real,tf_real,foxglove,hokuyo,lio3d_lite
+# PRESET_ITEMS: roboteq,velodyne,imu,odom_path_real,foxglove,hokuyo,lio3d_lite,rviz2real
 # PRESET_UI: {"category": "共通", "visible": true, "note": ""}
 
 # PRESET: こまったときのROSBAG録画
@@ -23,7 +23,7 @@
 # PRESET_UI: {"category": "センサー", "visible": true, "note": ""}
 
 # PRESET: 現実自律移動セット
-# PRESET_ITEMS: twist_mux,llm_goal,pos,nav2_real,mv_goal,record_rosbag,sirius_ble_gateway
+# PRESET_ITEMS: twist_mux,llm_goal,pos,nav2_real,mv_goal,record_rosbag,sirius_ble_gateway,sam3_map_load
 # PRESET_UI: {"category": "自律移動", "visible": true, "note": ""}
 
 # PRESET: THETA色付き3D地図（実機）

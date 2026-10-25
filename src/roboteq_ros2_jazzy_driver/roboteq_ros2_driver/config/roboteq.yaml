@@ -44,7 +44,7 @@ roboteq_ros2_driver:
     # 閉ループ状態(目標/積分/duty)をリセットして解除時の暴走を防ぐ。
     # 電圧低下による物理停止を電子停止へラッチしない。復電後は物理側のみ自動復帰。
     estop_latch_hardware: false
-    estop_start_active: true  # Restarting the driver must not resume an old Nav2 command.
+    estop_start_active: false # Electronic stop is controlled explicitly, not by startup.
     estop_detect_fault: true   # FFビットによる検知を有効化
     estop_ff_mask: 20          # 4=UnderVoltage | 16=E-Stop (bit2 overvoltageは回生で頻発するため除外)
     # 物理e-stopは電源遮断でFFが出ず(?)、バッテリ電圧のみ降下するため電圧検知を有効化。

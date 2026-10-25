@@ -89,17 +89,52 @@ def test_ros_command_publishes_once_and_checks_ack(monkeypatch):
 
 
 @pytest.mark.parametrize('active', [True, False])
-def test_live_driver_feedback_confirms_on_and_off_without_dds_ack(monkeypatch, active):
+def test_live_driver_feedback_confirms_on_and_off_with_dds_ack(monkeypatch, active):
     monkeypatch.setitem(sys.modules, 'std_msgs.msg', SimpleNamespace(Bool=SimpleNamespace))
     node = SimpleNamespace(get_subscriptions_info_by_topic=lambda topic: [
         SimpleNamespace(node_name='roboteq_ros2_driver')])
     messages, feedback = [], {'active': active}
     publisher = SimpleNamespace(get_subscription_count=lambda: 1,
                                 publish=lambda msg: messages.append(msg.data),
-                                wait_for_all_acked=lambda duration: pytest.fail('use actual feedback'))
+                                wait_for_all_acked=lambda duration: True)
     def spin(*args, **kwargs):
         assert not feedback  # Old feedback must be discarded before sending.
         feedback['active'] = active
     command.publish_stop(node, publisher, active, spin, lambda **kwargs: None,
                          feedback=feedback)
     assert messages == [active]
+
+
+def test_release_waits_for_mux_and_retries_explicit_request(monkeypatch):
+    monkeypatch.setitem(sys.modules, 'std_msgs.msg', SimpleNamespace(Bool=SimpleNamespace))
+    clock = [0.0]
+    monkeypatch.setattr(command.time, 'monotonic', lambda: clock[0])
+    node = SimpleNamespace(get_subscriptions_info_by_topic=lambda topic: [
+        SimpleNamespace(node_name='roboteq_ros2_driver'),
+        SimpleNamespace(node_name='twist_mux')])
+    sent, feedback = [], {}
+    publisher = SimpleNamespace(get_subscription_count=lambda: 2,
+        publish=lambda msg: sent.append(msg.data), wait_for_all_acked=lambda duration: True)
+    def spin(*args, **kwargs):
+        clock[0] += .1
+        feedback['active'] = False
+        feedback['mux_active'] = len(sent) < 2
+    command.publish_stop(node, publisher, False, spin, lambda **kwargs: None, feedback=feedback)
+    assert sent == [False, False]
+
+
+def test_release_does_not_report_success_with_mux_still_locked(monkeypatch):
+    monkeypatch.setitem(sys.modules, 'std_msgs.msg', SimpleNamespace(Bool=SimpleNamespace))
+    clock = [0.0]
+    monkeypatch.setattr(command.time, 'monotonic', lambda: clock[0])
+    node = SimpleNamespace(get_subscriptions_info_by_topic=lambda topic: [
+        SimpleNamespace(node_name='roboteq_ros2_driver'), SimpleNamespace(node_name='twist_mux')])
+    sent, feedback = [], {}
+    publisher = SimpleNamespace(get_subscription_count=lambda: 2,
+        publish=lambda msg: sent.append(msg.data), wait_for_all_acked=lambda duration: True)
+    def spin(*args, **kwargs):
+        clock[0] += .1
+        feedback.update(active=False, mux_active=True)
+    with pytest.raises(RuntimeError, match='twist_mux'):
+        command.publish_stop(node, publisher, False, spin, lambda **kwargs: None, feedback=feedback)
+    assert sent and not any(sent)

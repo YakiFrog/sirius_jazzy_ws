@@ -1,0 +1,10 @@
+free_thresh: 0.25
+image: 1024_zed_gyro.colored.pgm
+mode: raw
+negate: 0
+occupied_thresh: 0.65
+origin:
+- -69.23198971081676
+- -142.21626937745347
+- 0.0
+resolution: 0.05000000074505806

@@ -1,17 +1,18 @@
 format_version: '1.0'
 waypoints:
 - number: 1
-  x: 4.4
-  y: -0.15
+  x: 0.35
+  y: 0.15
   angle_radians: -0.009
+  speech: スタートするのだ！
   manual: true
 - number: 2
-  x: 8.55
-  y: -0.25
+  x: 4.9
+  y: 0.1
   angle_radians: -0.019
 - number: 3
-  x: 12.65
-  y: -0.4
+  x: 10.75
+  y: 0.0
   angle_radians: -0.002
 - number: 4
   x: 16.8
@@ -54,6 +55,7 @@ waypoints:
   y: -5.85
   angle_radians: -0.092
   wait_time: 10.0
+  speech: 一時停止するのだ！
   manual: true
 - number: 14
   x: 83.5
@@ -65,12 +67,12 @@ waypoints:
   y: -6.3
   angle_radians: -0.057
 - number: 16
-  x: 95.55
-  y: -7.05
+  x: 95.4
+  y: -6.45
   angle_radians: -0.128
 - number: 17
-  x: 100.95
-  y: -7.75
+  x: 102.65
+  y: -7.25
   angle_radians: -0.138
 - number: 18
   x: 107.6
@@ -81,12 +83,12 @@ waypoints:
   y: -17.8
   angle_radians: -0.636
 - number: 20
-  x: 118.3
-  y: -18.6
+  x: 115.25
+  y: -18.5
   angle_radians: -0.139
 - number: 21
-  x: 124.2
-  y: -18.6
+  x: 120.9
+  y: -19.05
   angle_radians: -0.065
 - number: 22
   x: 126.15
@@ -109,8 +111,8 @@ waypoints:
   y: -21.8
   angle_radians: -0.087
 - number: 27
-  x: 148.8
-  y: -22.25
+  x: 149.0
+  y: -22.55
   angle_radians: -0.073
 - number: 28
   x: 153.5
@@ -121,16 +123,16 @@ waypoints:
   y: -23.65
   angle_radians: -0.305
 - number: 30
-  x: 160.25
-  y: -24.8
+  x: 160.7
+  y: -25.0
   angle_radians: -1.025
 - number: 31
-  x: 160.45
-  y: -27.6
+  x: 160.6
+  y: -29.1
   angle_radians: -1.574
 - number: 32
-  x: 160.25
-  y: -32.5
+  x: 160.35
+  y: -34.35
   angle_radians: -1.594
 - number: 33
   x: 160.1
@@ -141,8 +143,8 @@ waypoints:
   y: -41.85
   angle_radians: -1.66
 - number: 35
-  x: 159.6
-  y: -46.8
+  x: 159.3
+  y: -46.9
   angle_radians: -1.678
 - number: 36
   x: 159.0
@@ -153,16 +155,16 @@ waypoints:
   y: -56.45
   angle_radians: -1.675
 - number: 38
-  x: 158.1
-  y: -62.4
+  x: 157.9
+  y: -61.95
   angle_radians: -1.607
 - number: 39
-  x: 157.7
-  y: -67.45
+  x: 156.85
+  y: -68.15
   angle_radians: -1.605
 - number: 40
-  x: 156.7
-  y: -72.25
+  x: 156.1
+  y: -72.35
   angle_radians: -1.731
 - number: 41
   x: 155.6
@@ -173,8 +175,8 @@ waypoints:
   y: -76.85
   angle_radians: -1.98
 - number: 43
-  x: 153.45
-  y: -82.3
+  x: 153.05
+  y: -83.1
   angle_radians: -1.69
 - number: 44
   x: 153.0
@@ -205,8 +207,8 @@ waypoints:
   y: -112.1
   angle_radians: 3.03
 - number: 51
-  x: 143.8
-  y: -111.25
+  x: 143.55
+  y: -110.7
   angle_radians: 2.857
 - number: 52
   x: 139.7
@@ -253,6 +255,7 @@ waypoints:
   y: -95.4
   angle_radians: 2.82
   wait_time: 10.0
+  speech: 一時停止するのだ！
   manual: true
 - number: 63
   x: 84.35
@@ -324,12 +327,12 @@ waypoints:
   y: -62.7
   angle_radians: 2.872
 - number: 80
-  x: 13.6
-  y: -61.25
+  x: 12.65
+  y: -60.8
   angle_radians: 2.636
 - number: 81
-  x: 11.1
-  y: -59.4
+  x: 10.05
+  y: -59.05
   angle_radians: 2.267
 - number: 82
   x: 7.75
@@ -348,12 +351,12 @@ waypoints:
   y: -44.2
   angle_radians: 1.941
 - number: 86
-  x: -4.95
-  y: -39.35
+  x: -4.4
+  y: -40.5
   angle_radians: 2.064
 - number: 87
-  x: -4.7
-  y: -36.5
+  x: -4.55
+  y: -36.0
   angle_radians: 1.541
 - number: 88
   x: -4.4
@@ -380,6 +383,7 @@ waypoints:
   y: -14.15
   angle_radians: 2.111
   wait_time: 10.0
+  speech: 一時停止するのだ！
   manual: true
 - number: 94
   x: -1.35
@@ -414,11 +418,13 @@ waypoints:
   x: -27.3
   y: -2.6
   angle_radians: 2.889
+  speech: ゴールしたのだ！
   manual: true
 - number: 102
   x: -30.1
   y: -0.5
   angle_radians: 1.368
+  speech: スタート地点に戻ります
 - number: 103
   x: -27.9
   y: 3.75
@@ -452,10 +458,15 @@ waypoints:
   y: 14.5
   angle_radians: -0.146
 - number: 111
-  x: 0.85
-  y: 13.5
+  x: 3.1
+  y: 12.8
   angle_radians: -0.364
 - number: 112
   x: 7.35
   y: 11.1
   angle_radians: -0.195
+  initial_pose:
+    yaw_mode: current
+    x: 0.35
+    y: 0.15
+  speech: もう一周するぞ！

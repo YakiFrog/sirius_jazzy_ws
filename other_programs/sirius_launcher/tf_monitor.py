@@ -16,6 +16,21 @@ class TransformStore:
     def __init__(self, retention=60, max_edges=2000):
         self.retention, self.max_edges = retention, max_edges
         self.edges = {}
+        self._static_publishers = None
+
+    def sync_static_publishers(self, publisher_ids):
+        """Request a fresh transient-local snapshot when static writers change.
+
+        Older rclpy versions omit message publisher GIDs, so cached static edges
+        cannot reliably be attributed to a departed writer. Re-subscribe to
+        replay all currently alive writers instead of retaining old geometry.
+        """
+        current = frozenset(publisher_ids)
+        if current == self._static_publishers:
+            return False
+        self._static_publishers = current
+        self.edges = {key: edge for key, edge in self.edges.items() if not edge['static']}
+        return True
 
     def ingest(self, parent, child, static, publisher, stamp, translation, rotation, now):
         if not parent or not child or not all(math.isfinite(v) for v in (*translation, *rotation, stamp)):
@@ -144,9 +159,11 @@ def receive():
     from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
     from tf2_msgs.msg import TFMessage
     from battery_monitor import BatteryReceiver
+    from navigation_monitor import NavigationReceiver
     rclpy.init()
     node = rclpy.create_node('sirius_launcher_tf_monitor')
     battery = BatteryReceiver(node)
+    navigation = NavigationReceiver(node)
     store, publishers, stop = TransformStore(), {}, threading.Event()
     # Parent/server closure closes the pipe, including exec/self-restarts.
     threading.Thread(target=lambda: (sys.stdin.read(), stop.set()), daemon=True).start()
@@ -160,19 +177,29 @@ def receive():
                          stamp.sec+stamp.nanosec/1e9, (t.x,t.y,t.z), (q.x,q.y,q.z,q.w), now)
     node.create_subscription(TFMessage, '/tf', lambda msg, info: callback(msg, info, False),
                              QoSProfile(depth=100, reliability=ReliabilityPolicy.BEST_EFFORT))
-    node.create_subscription(TFMessage, '/tf_static', lambda msg, info: callback(msg, info, True),
-                             QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE,
-                                        durability=DurabilityPolicy.TRANSIENT_LOCAL))
+    def subscribe_static():
+        return node.create_subscription(
+            TFMessage, '/tf_static', lambda msg, info: callback(msg, info, True),
+            QoSProfile(depth=100, reliability=ReliabilityPolicy.RELIABLE,
+                       durability=DurabilityPolicy.TRANSIENT_LOCAL))
+    static_subscription = subscribe_static()
     def publish_snapshot():
+        nonlocal static_subscription
         for topic in ('/tf','/tf_static'):
             candidates = []
-            for endpoint in node.get_publishers_info_by_topic(topic):
+            endpoints = node.get_publishers_info_by_topic(topic)
+            if topic == '/tf_static' and store.sync_static_publishers(
+                    bytes(endpoint.endpoint_gid).hex() for endpoint in endpoints):
+                node.destroy_subscription(static_subscription)
+                static_subscription = subscribe_static()
+            for endpoint in endpoints:
                 name = endpoint.node_namespace.rstrip('/')+'/'+endpoint.node_name
                 publishers[bytes(endpoint.endpoint_gid).hex()] = name
                 candidates.append(name)
             publishers['unknown:'+topic] = '候補: '+', '.join(sorted(set(candidates))) if candidates else '配信元を特定できません'
         data=store.snapshot(time.monotonic(), publishers)
         data['battery']=battery.store.snapshot(time.monotonic())
+        data['navigation']=navigation.state.snapshot(time.monotonic())
         print(json.dumps(data, allow_nan=False), flush=True)
     node.create_timer(1.0, publish_snapshot)
     try:
