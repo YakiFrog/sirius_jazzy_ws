@@ -27,6 +27,17 @@ def test_identifies_only_dedicated_launcher_despite_renamed_title(tmp_path, monk
     assert bridge.launcher_windows() == [dict(id='0x01', pid=123)]
 
 
+def test_identifies_old_localhost_app_for_screen_switch(tmp_path, monkeypatch):
+    original = Path.read_bytes
+    monkeypatch.setattr(Path, 'read_bytes', lambda path:
+        b'/opt/google/chrome/chrome\0--app=http://localhost:8090\0' if str(path)=='/proc/123/cmdline'
+        else b'chrome\0--app=http://localhost:80901\0' if str(path)=='/proc/456/cmdline' else original(path))
+    monkeypatch.setattr('face_bridge.shutil.which', lambda _: '/usr/bin/wmctrl')
+    monkeypatch.setattr('face_bridge.subprocess.run', lambda *a, **k: SimpleNamespace(
+        stdout='0x01 0 123 host Launcher\n0x02 0 456 host Other\n', returncode=0))
+    assert FaceBridge(tmp_path).launcher_windows() == [dict(id='0x01', pid=123)]
+
+
 def test_bidirectional_switch_uses_existing_windows_without_face_api(tmp_path, monkeypatch):
     bridge = FaceBridge(tmp_path)
     monkeypatch.setattr(bridge, 'windows', lambda _: [dict(id='0x11')])

@@ -50,6 +50,7 @@ from teleop_control import VelocityControl
 from documentation_notes import register_documentation_notes
 from file_browser import register_file_browser
 from face_bridge import register_face
+from lifecycle_service import register_lifecycle
 from nav_mode_service import NavModeService
 from ear_control import register_ear
 from hotspot_status import register_hotspot
@@ -945,6 +946,7 @@ def auth_ok():
 register_documentation_notes(app, auth_ok)
 register_file_browser(app, auth_ok)
 register_face(app, auth_ok)
+register_lifecycle(app,auth_ok,lambda:DEFAULT_DOMAIN,lambda:TF_MONITOR.snapshot(DEFAULT_DOMAIN))
 register_ear(app, auth_ok, domain=lambda: DEFAULT_DOMAIN)
 register_hotspot(app, auth_ok)
 register_research_archive(app, auth_ok)

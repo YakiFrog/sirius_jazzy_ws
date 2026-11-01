@@ -10,7 +10,7 @@ import subprocess
 import threading
 import time
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, Response, jsonify, request
 
 EXPRESSIONS = {'normal', 'happy', 'angry', 'sad', 'surprised', 'cat', 'wink', 'pien',
                'sleeping', 'battery', 'failure', 'hurt'}
@@ -31,6 +31,29 @@ class FaceBridge:
         self.cached_at = 0
         self.launch_until = 0
         self.gui = None
+        self.preview_lock = threading.Lock()
+        self.preview_cached = None
+        self.preview_at = 0
+
+    def preview(self):
+        """A small, fresh snapshot of the actual Face window; never the desktop."""
+        with self.preview_lock:
+            if self.preview_cached is not None and time.monotonic()-self.preview_at < .08:
+                return self.preview_cached
+            self.preview_cached = None
+            windows = self.windows(self.shortcut())
+            if not windows:
+                raise FaceError('SiriusFaceのウィンドウがありません')
+            window = max(windows, key=lambda w:w['width']*w['height'])
+            try:
+                result = subprocess.run(['/usr/bin/python3',str(Path(__file__).with_name('face_preview_worker.py')),window['id']],
+                    capture_output=True, timeout=2, env=self.gui_env())
+            except (OSError, subprocess.TimeoutExpired) as error:
+                raise FaceError('顔ウィンドウのキャプチャを取得できません') from error
+            if result.returncode or not result.stdout.startswith(b'\xff\xd8') or len(result.stdout)>150000:
+                raise FaceError('顔のキャプチャは未取得です（表示環境を確認してください）')
+            self.preview_cached, self.preview_at = result.stdout, time.monotonic()
+            return result.stdout
 
     def shortcut(self):
         explicit = os.environ.get('SIRIUS_FACE_SHORTCUT')
@@ -113,10 +136,10 @@ class FaceBridge:
             return []
 
     def launcher_windows(self):
-        """Identify our dedicated browser, including Chrome's space-joined argv."""
+        """Identify local Launcher app windows, including the older shortcut."""
         if not shutil.which('wmctrl'):
             return []
-        profile = str(self.home/'.local/share/sirius/console-browser')
+        port = os.environ.get('SIRIUS_WEB_PORT', '8090')
         try:
             result = subprocess.run(['wmctrl', '-lp'], env=self.gui_env(), capture_output=True,
                                     text=True, timeout=1)
@@ -131,7 +154,7 @@ class FaceBridge:
                 cmd = ' '+Path('/proc', fields[2], 'cmdline').read_bytes().replace(b'\0', b' ').decode()+' '
             except (OSError, UnicodeError):
                 continue
-            if ' --user-data-dir='+profile+' ' in cmd and ' --app=' in cmd:
+            if any(' --app=http://'+host+':'+port+' ' in cmd for host in ('127.0.0.1', 'localhost')):
                 found.append(dict(id=fields[0], pid=int(fields[2])))
         return found
 
@@ -262,6 +285,18 @@ class FaceBridge:
 def register_face(app, auth_ok, bridge=None):
     bridge = bridge or FaceBridge()
     bp = Blueprint('face_control', __name__)
+
+    @bp.get('/api/face/preview')
+    def preview():
+        if not auth_ok():
+            return jsonify(error='auth'), 401
+        try:
+            response = Response(bridge.preview(), mimetype='image/jpeg')
+            response.headers['Cache-Control'] = 'no-store'
+            response.headers['X-Content-Type-Options'] = 'nosniff'
+            return response
+        except FaceError as error:
+            return jsonify(error=str(error)), 503
 
     @bp.get('/api/face/status')
     def status():

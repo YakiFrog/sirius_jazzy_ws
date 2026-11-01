@@ -14,7 +14,7 @@ async function stopIt(n,el){if(OPS[n]||!confirm('「'+n+'」を停止します�
 let PAGE='home', RESOURCE_DATA=null, RESOURCE_BUSY=false, REFRESH_BUSY=false;
 let PROCESS_SCOPE='related', PROCESS_SORT='cpu_percent', PROCESS_ASC=false, PROCESS_LIMIT=40;
 let LAST_GOOD_STATUS=null, LAST_RESOURCE_POLL=0;
-const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',visualization:'3D Visualization',tf:'TF Tree',settings:'設定',docs:'操作ガイド',files:'ファイル'};
+const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',visualization:'3D Visualization',tf:'TF Tree',lifecycle:'Nav2 Lifecycle',settings:'設定',docs:'操作ガイド',files:'ファイル'};
 window.isPageVisible=page=>!!(window.APP_SPLIT?.has(page)||PAGE===page);
 const originalApi=api;
 api=async function(path,body){
@@ -317,7 +317,7 @@ function initHomeSplit(){
   }
   function clampShare(value){const {min,max}=limits();return Math.min(max,Math.max(min,value));}
   let share=parseFloat(localStorage.getItem('sirius-home-side-share'));
-  if(!Number.isFinite(share))share=.3;
+  if(!Number.isFinite(share))share=.40;
   function apply(){
     if(!layout.clientWidth)return;
     const value=clampShare(share),{min,max}=limits();
@@ -339,15 +339,8 @@ function initHomeSplit(){
 initHomeSplit();
 function initHomeLayout(){
   const main=document.querySelector('.home-main'),presets=main.querySelector('.presets'),sidebar=document.querySelector('.sidebar');
-  const side=document.createElement('div');side.className='home-side';sidebar.before(side);side.append(sidebar);
-  const page=document.getElementById('page-home');
-  function arrange(){
-    const destination=page.clientWidth-parseFloat(getComputedStyle(page).paddingLeft)-parseFloat(getComputedStyle(page).paddingRight)>=720?side:main;
-    if(presets.parentElement!==destination)destination.prepend(presets);
-  }
-  if(window.ResizeObserver)new ResizeObserver(arrange).observe(page);
-  else window.addEventListener('resize',arrange);
-  arrange();
+  const side=document.createElement('div');side.className='home-side';sidebar.before(side);
+  main.prepend(sidebar);side.append(presets);
 }
 initHomeLayout();
 async function initConsole(){

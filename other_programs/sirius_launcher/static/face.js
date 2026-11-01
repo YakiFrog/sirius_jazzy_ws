@@ -16,7 +16,7 @@
   card.innerHTML='<div class="face-card-heading"><span class="face-symbol" aria-hidden="true">'+FACE_ICON+'</span><div><h2>SiriusFace</h2><p id="face-card-summary">接続を確認中…</p></div><span id="face-card-light" class="face-light" aria-hidden="true"></span></div><div class="face-card-bottom"><span id="face-card-expression">表情 —</span><div class="face-card-actions"><button type="button" class="hbtn" id="face-panel-open">'+FACE_ICON+'<span>操作</span></button></div></div>';
   const screenButton=document.createElement('button');screenButton.type='button';screenButton.id='header-face';screenButton.className='appbar-icon';screenButton.title='NUCを顔画面に切り替え';screenButton.setAttribute('aria-label','NUCを顔画面に切り替え');screenButton.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="5"/><path d="M8 9v3m8-3v3m-8 3q4 3 8 0"/></svg>';document.querySelector('.top-status')?.prepend(screenButton);
   const presets=document.querySelector('.presets');if(!presets)return;
-  const arrange=()=>presets.before(card);arrange();matchMedia('(min-width:821px)').addEventListener('change',arrange);
+  const arrange=()=>presets.after(card);arrange();matchMedia('(min-width:821px)').addEventListener('change',arrange);
   const dialog=document.createElement('dialog');dialog.className='face-dialog';dialog.id='face-dialog';dialog.setAttribute('aria-labelledby','face-dialog-title');
   dialog.innerHTML=`<header class="face-dialog-heading"><div><p class="face-eyebrow">SIRIUS FACE / EAR</p><h2 id="face-dialog-title">顔の操作</h2></div><button type="button" id="face-close" class="face-close" aria-label="顔の操作を閉じる">×</button></header>
    <div class="face-widgets" data-device-pane="face">
@@ -103,7 +103,7 @@
   function message(text,bad=false){$('face-feedback').textContent=text;$('face-feedback').classList.toggle('error',bad);}
   function actionFeedback(text,bad=false){const el=$('face-action-feedback');if(!el)return;el.textContent=text;el.classList.toggle('error',bad);}
   function paintActionMode(){const ready=!!(state&&state.connected&&state.speech_ready);for(const button of document.querySelectorAll('[data-action-mode]')){button.setAttribute('aria-pressed',String(button.dataset.actionMode===actionMode));button.disabled=busy;}const input=$('face-action-text'),send=$('face-action-send');if(input)input.disabled=busy||!ready;if(send)send.disabled=busy||!ready;for(const button of document.querySelectorAll('[data-action-preset]'))button.disabled=busy||!ready;const note=$('face-action-note');if(note)note.textContent=!ready?'SiriusFaceの指示APIへ接続すると送信できます。':actionMode==='nav'?'LLMなし（直接）：ナビゲーション側の指示パーサーへ送ります。':'LLM経由：自由な文章をLLMが解釈して行動します。';}
-  function paint(){if(!state)return;const s=state,summary=s.connected?'接続済み':s.error?'接続を確認できません':s.starting?'起動中…':s.running?'起動中・API待ち':'未起動';
+  function paint(){if(!state)return;window.siriusFaceState=state;window.dispatchEvent(new CustomEvent('sirius:face-state',{detail:state}));const s=state,summary=s.connected?'接続済み':s.error?'接続を確認できません':s.starting?'起動中…':s.running?'起動中・API待ち':'未起動';
    $('face-card-summary').textContent=summary;$('face-status-text').textContent=s.error||summary;$('face-card-light').classList.toggle('connected',s.connected);
    $('face-card-expression').textContent='表情 '+(s.connected?(names[s.expression]||s.expression||'—'):'—');
    for(const[id,on,label]of[['face-api-state',s.connected,'API'],['face-window-state',s.window_visible,'画面'],['face-speech-state',s.speech_ready,'音声']]){const el=$(id);el.textContent=label+' '+(on?'接続可':'未確認');el.classList.toggle('ready',on);}
@@ -115,7 +115,7 @@
    $('face-subtitle').disabled=busy||!s.connected;$('face-clear-text').disabled=busy||!s.connected;$('face-speak').disabled=busy||!s.connected||!s.speech_ready;
    paintActionMode();
   }
-  async function poll(force=false){if(polling||busy||document.hidden||(!force&&!dialog.open&&!isPageVisible('home')))return;if(!force&&Date.now()-lastPoll<2500)return;polling=true;
+  async function poll(force=false){if(polling||busy||document.hidden)return;if(!force&&Date.now()-lastPoll<2500)return;polling=true;
    try{const response=await fetch('/api/face/status',{cache:'no-store',signal:AbortSignal.timeout(6500)});const data=await response.json();if(!response.ok)throw Error(data.error==='auth'?'Launcherへのログインが必要です':data.error||'状態を取得できません');state=data;lastPoll=Date.now();}
    catch(error){state={...(state||{}),connected:false,speech_ready:false,error:'Faceの状態を取得できません'};if(dialog.open)message(error.message,true);}
    finally{polling=false;paint();}
@@ -141,6 +141,15 @@
   initCollapse(document.querySelector('.face-gaze-section'),'gaze','視線');
   initCollapse(document.querySelector('.face-message-section'),'message','字幕・読み上げ');
   restoreWidgetOrder();
+  // Share the header's live snapshot instead of making a second capture request.
+  const facePreview=document.createElement('section');facePreview.className='face-live-preview';facePreview.setAttribute('aria-label','現在の顔表示');
+  facePreview.innerHTML='<div class="face-live-heading"><strong>現在の顔</strong><span>画面プレビュー</span></div><div class="face-live-frame"><img id="face-live-image" alt="現在のSiriusFace画面" hidden><div id="face-live-empty">顔画面を取得できません<br><small>顔の起動状態と接続を確認してください</small></div></div>';
+  dialog.querySelector('.face-widgets').prepend(facePreview);
+  const previewSource=$('mission-face-image'),previewImage=$('face-live-image'),previewEmpty=$('face-live-empty');
+  function syncFacePreview(){const visible=dialog.open&&!document.hidden&&previewSource&&!previewSource.hidden&&previewSource.getAttribute('src');if(visible){const src=previewSource.getAttribute('src');if(previewImage.getAttribute('src')!==src)previewImage.src=src;previewImage.hidden=false;previewEmpty.hidden=true;}else{previewImage.hidden=true;previewImage.removeAttribute('src');previewEmpty.hidden=false;}}
+  if(previewSource)new MutationObserver(syncFacePreview).observe(previewSource,{attributes:true,attributeFilter:['src','hidden']});
+  dialog.addEventListener('close',syncFacePreview);document.addEventListener('visibilitychange',syncFacePreview);
+  $('face-panel-open').addEventListener('click',syncFacePreview);
   dialog.addEventListener('keydown',e=>e.stopPropagation());state={connected:false,running:false,window_visible:false,shortcut_available:false,starting:false};paint();document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll(true);});poll();setInterval(()=>poll(),3000);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
