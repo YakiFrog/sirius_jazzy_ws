@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import time
+from tempfile import TemporaryDirectory
 
 import cv2
 import numpy as np
@@ -21,6 +22,7 @@ from theta_road_pipeline import (DEFAULT_CONFIG, load_config, fingerprint,
     enhanced_shadow, dark_mask, add_shadow, refine_semantics)
 from theta_texture_quality import TextureFusion, aggregate_frame
 from theta_texture_tone import lift_texture, tone_report
+from theta_semantic_exposure import inference_image
 from indexed_road_export import render_indexed_review
 
 
@@ -54,7 +56,7 @@ def open_reader(bag, topics):
     return reader
 
 
-def index_bag(bag, cfg, max_frames):
+def index_bag(bag, cfg, max_frames, trajectory=None, camera_spool=None):
     from rclpy.serialization import deserialize_message
     from rclpy.duration import Duration
     from sensor_msgs.msg import CompressedImage, LaserScan
@@ -71,6 +73,10 @@ def index_bag(bag, cfg, max_frames):
         digest.update(topic.encode()); digest.update(int(bag_ns).to_bytes(8, 'little', signed=True)); digest.update(data)
         if topic in ('/tf', '/tf_static'):
             for transform in deserialize_message(data, TFMessage).transforms:
+                if trajectory is not None and (
+                    topic == '/tf' or transform.child_frame_id == cfg['robot_frame']
+                ):
+                    continue
                 setter = buffer.set_transform_static if topic == '/tf_static' else buffer.set_transform
                 setter(transform, 'recorded_bag')
         elif topic == cfg['scan_topic']:
@@ -83,12 +89,27 @@ def index_bag(bag, cfg, max_frames):
             if not max_frames or index < max_frames:
                 records.append(dict(frame=index, bag_ns=bag_ns, occurrence=ordinal,
                     stamp_ns=stamp_ns(msg), sha256=hashlib.sha256(bytes(msg.data)).hexdigest()))
+                if camera_spool is not None:
+                    (camera_spool/str(index)).write_bytes(data)
             index += 1
     if not records:
         raise ValueError('No compressed camera frames found on ' + cfg['camera_topic'])
     if cfg['visibility']['strict'] and not scans:
         raise ValueError('Strict visibility requires recorded scans on ' + cfg['scan_topic'])
     scans.sort(key=lambda item: item[0])
+    if trajectory is not None:
+        from geometry_msgs.msg import TransformStamped
+        from theta_offline_trajectory import read_trajectory
+        for ns, x, y, yaw in read_trajectory(trajectory):
+            transform = TransformStamped()
+            transform.header.frame_id = cfg['map_frame']
+            transform.child_frame_id = cfg['robot_frame']
+            transform.header.stamp.sec, transform.header.stamp.nanosec = divmod(int(ns), 10**9)
+            transform.transform.translation.x = float(x)
+            transform.transform.translation.y = float(y)
+            transform.transform.rotation.z = float(np.sin(yaw/2))
+            transform.transform.rotation.w = float(np.cos(yaw/2))
+            buffer.set_transform(transform, 'offline_pose_graph')
     return records, scans, buffer, index, digest.hexdigest()
 
 
@@ -97,14 +118,17 @@ def read_camera(reader, record):
     from rclpy.serialization import deserialize_message
     from sensor_msgs.msg import CompressedImage
     # MCAP can treat seek(same_timestamp) as a no-op after read_next().
-    reader.seek(record['bag_ns'] - 1)
-    reader.seek(record['bag_ns'])
-    for _ in range(record['occurrence'] + 1):
-        if not reader.has_next():
-            raise RuntimeError('Camera message missing during indexed reread')
-        _, data, timestamp = reader.read_next()
-        if timestamp != record['bag_ns']:
-            raise RuntimeError('Camera bag timestamp changed during generation')
+    if isinstance(reader, Path):
+        data = (reader/str(record['frame'])).read_bytes()
+    else:
+        reader.seek(record['bag_ns'] - 1)
+        reader.seek(record['bag_ns'])
+        for _ in range(record['occurrence'] + 1):
+            if not reader.has_next():
+                raise RuntimeError('Camera message missing during indexed reread')
+            _, data, timestamp = reader.read_next()
+            if timestamp != record['bag_ns']:
+                raise RuntimeError('Camera bag timestamp changed during generation')
     msg = deserialize_message(data, CompressedImage)
     if stamp_ns(msg) != record['stamp_ns'] or hashlib.sha256(bytes(msg.data)).hexdigest() != record['sha256']:
         raise RuntimeError('Camera bytes/timestamp changed during generation')
@@ -142,14 +166,15 @@ class SemanticProcessor:
         if baseline is None:
             self.session.configure(s['prompt'], {p.strip(): s['score_min'] for p in s['prompt'].split(',')},
                                    threshold=1., resolution=s['resolution'])
-        for i, image in enumerate(views):
+        for i, image in enumerate(self.inference_views(views)):
             if baseline is not None:
                 ids, score = baseline['classes'][i].copy(), baseline['scores'][i].copy()
                 self.last_inference_metadata.append(baseline['metadata'][i])
             else:
                 ids, score, meta = self.session.infer(image)
                 self.calls += 1
-                self.last_inference_metadata.append(dict(kind='base', yaw=s['view_yaws'][i], **meta))
+                self.last_inference_metadata.append(dict(kind='base', yaw=s['view_yaws'][i],
+                    input_tone=dict(s['input_tone']), **meta))
             if (baseline is None and 'yellow tactile paving' in [p.strip() for p in s['prompt'].split(',')]
                     and 'yellow tactile paving' not in self.session.registry_before['ids']):
                 ids = ids.copy()
@@ -178,11 +203,15 @@ class SemanticProcessor:
         return dict(raw=np.stack(base), scores=np.stack(scores),
                     extra=np.stack(extra), extra_scores=np.stack(escores))
 
+    def inference_views(self, views):
+        return [inference_image(image, self.cfg['semantic']['input_tone']) for image in views]
+
     def track(self, views, packet, stamp):
         s, shadow = self.cfg['semantic'], self.cfg['semantic']['shadow']
         result, confidence, aux, aux_conf = [], [], [], []
+        inference_views = self.inference_views(views)
         for i, yaw in enumerate(s['view_yaws']):
-            ids, score, _ = self.normal[yaw].apply(views[i], packet['raw'][i], packet['scores'][i], stamp)
+            ids, score, _ = self.normal[yaw].apply(inference_views[i], packet['raw'][i], packet['scores'][i], stamp)
             extra, es = packet['extra'][i].copy(), packet['extra_scores'][i].copy()
             anchor = ids == 4
             extra[anchor], es[anchor] = 4, score[anchor]
@@ -238,6 +267,10 @@ def run(args):
     cfg = load_config(args.config)
     if args.no_semantic:
         cfg['semantic']['enabled'] = False
+    trajectory = getattr(args, 'trajectory', None)
+    observations_from = getattr(args, 'observations_from', None)
+    if trajectory is not None:
+        cfg['visibility']['fixed_frame'] = cfg['map_frame']
     output, bag = args.output.resolve(), args.bag.resolve()
     if output == bag or bag in output.parents:
         raise ValueError('Output must be outside the original ROSBAG directory')
@@ -271,7 +304,9 @@ def run(args):
         Path(__file__).with_name('experiment_theta_tactile_context.py'),
         Path(__file__).with_name('experiment_theta_grass_extent.py'),
         Path(__file__).with_name('render_theta_semantic_map.py'),
-        Path(__file__).with_name('compare_theta_sam3_projection.py')]
+        Path(__file__).with_name('compare_theta_sam3_projection.py'),
+        Path(__file__).with_name('theta_semantic_exposure.py'),
+        Path(__file__).with_name('theta_offline_trajectory.py')]
     source_files += [nav_dir/name for name in ('theta_bev_node.py', 'theta_bev_projection.py',
         'theta_ground_cloud_node.py', 'theta_perspective.py', 'theta_semantic_temporal.py',
         'theta_road_weights.py', 'theta_road_visibility.py', 'theta_indexed_map_node.py',
@@ -284,6 +319,14 @@ def run(args):
                     libraries=dict(numpy=np.__version__, opencv=cv2.__version__),
                     source_sha256={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                         for p in source_files})
+    if trajectory is not None:
+        identity['trajectory_sha256'] = hashlib.sha256(trajectory.read_bytes()).hexdigest()
+        os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
+    external_cache = None
+    if observations_from is not None:
+        from theta_offline_trajectory import CompletedObservations
+        external_cache = CompletedObservations(observations_from, cfg, calibration)
+        identity['completed_observations'] = external_cache.identity
     baseline_cache = None
     if args.reuse_study:
         from theta_road_cache import SemanticBaselineCache
@@ -309,8 +352,17 @@ def run(args):
         rosargs += ['-p', key+':='+str(value).lower() if isinstance(value, bool) else key+':='+str(value)]
     rclpy.init(args=rosargs)
     started = time.time(); session = None; bev = ground = None
+    camera_spool = None
     try:
-        records, scans, buffer, total_frames, input_digest = index_bag(bag, cfg, args.max_frames)
+        if trajectory is None:
+            records, scans, buffer, total_frames, input_digest = index_bag(bag, cfg, args.max_frames)
+        else:
+            if external_cache is not None:
+                camera_spool = TemporaryDirectory(prefix='camera-spool-', dir=output)
+            records, scans, buffer, total_frames, input_digest = index_bag(
+                bag, cfg, args.max_frames, trajectory,
+                Path(camera_spool.name) if camera_spool else None,
+            )
         digest_file = output/'input_stream_sha256.json'
         if digest_file.exists() and json.loads(digest_file.read_text())['sha256'] != input_digest:
             raise ValueError('Resume refused: camera/TF/scan message stream changed')
@@ -345,9 +397,13 @@ def run(args):
         bev.buffer = buffer; bev.pub = Capture()
         ground.visibility_tf = buffer; ground.lidar_gate = cfg['visibility']['strict']
         ground.pub = Capture(); ground.semantic_pub = None
-        reader = open_reader(bag, [cfg['camera_topic']])
+        reader = Path(camera_spool.name) if camera_spool else open_reader(bag, [cfg['camera_topic']])
         times = np.asarray([s[0] for s in scans], np.int64)
         semantic = cfg['semantic']['enabled']
+        if external_cache is not None:
+            if not semantic or args.reuse_study:
+                raise ValueError('Completed observations require semantics and exclude --reuse-study')
+            external_cache.stage(cache, valid, input_digest, bev, Time)
         session = Sam3ExperimentClient(args.server) if semantic else None
         mapped, inference_rows = [], []
         reused_baseline_frames = 0
@@ -367,7 +423,9 @@ def run(args):
                 write_json(output/'server_before.json', session.before)
                 write_json(output/'registry_used.json', session.registry_before)
             processor = SemanticProcessor(cfg, calibration, session) if semantic else None
-            for n, record in enumerate(valid, 1):
+            if external_cache is not None:
+                inference_rows = [dict(frame=r['frame'], sha256=r['sha256']) for r in valid]
+            for n, record in enumerate(valid if external_cache is None else (), 1):
                 msg = read_camera(reader, record)
                 bev.pub.msg = None; bev.receive(msg)
                 if bev.pub.msg is None:
@@ -384,7 +442,7 @@ def run(args):
                                 raise ValueError('Cached inference camera hash mismatch')
                             packet = {k: stored[k] for k in ('raw', 'scores', 'extra', 'extra_scores')}
                     else:
-                        cached_base = baseline_cache.load(record, views, cfg['semantic']) if baseline_cache else None
+                        cached_base = baseline_cache.load(record, processor.inference_views(views), cfg['semantic']) if baseline_cache else None
                         packet = processor.infer(views, baseline=cached_base)
                         reused_baseline_frames += int(cached_base is not None)
                         write_json(path.with_suffix('.json'), processor.last_inference_metadata)
@@ -405,6 +463,10 @@ def run(args):
         # Reverse tracking and native projection share a second bag pass.
         # RGB fusion is replayed in chronological order afterwards (EMA order matters).
         packets = output/'projection'; packets.mkdir(exist_ok=True)
+        if external_cache is not None:
+            write_json(output/'progress.json', dict(phase='cached_forward',
+                       completed=len(valid), frames=len(valid)))
+        projection_maps = {}
         for n, record in enumerate(reversed(valid), 1):
             msg = read_camera(reader, record); bev.pub.msg = None; bev.receive(msg); bmsg = bev.pub.msg
             if bmsg is None:
@@ -421,10 +483,17 @@ def run(args):
                 merged = reverse.merge(views, packet, forward, backward)
                 samples = []
                 for i, yaw in enumerate(cfg['semantic']['view_yaws']):
-                    u, v, ok = build_bev_to_view_maps(bev.calibration, yaw, bmsg.width,
-                        tuple(cfg['semantic']['view_size']), cfg['semantic']['hfov_deg'],
-                        cfg['projection']['min_radius'], cfg['projection']['max_radius'])
-                    samples.append((merged['classes'][i], merged['confidence'][i], u-.5, v-.5, ok, False))
+                    key = (tuple(bev.calibration['camera_position']),
+                           tuple(bev.calibration['rpy_degrees']), yaw, bmsg.width)
+                    if key not in projection_maps:
+                        u, v, ok = build_bev_to_view_maps(bev.calibration, yaw, bmsg.width,
+                            tuple(cfg['semantic']['view_size']), cfg['semantic']['hfov_deg'],
+                            cfg['projection']['min_radius'], cfg['projection']['max_radius'])
+                        if len(projection_maps) >= 8:
+                            projection_maps.clear()
+                        projection_maps[key] = (u-.5, v-.5, ok)
+                    u, v, ok = projection_maps[key]
+                    samples.append((merged['classes'][i], merged['confidence'][i], u, v, ok, False))
                 label, _ = project_labels(samples, cfg['semantic']['score_min'], image.shape[:2])
             if cfg['visibility']['strict']:
                 k = int(np.searchsorted(times, record['stamp_ns']))
@@ -501,7 +570,9 @@ def run(args):
             inferred_frames=len(inference_rows), frame_count=len(mapped), frames=mapped, skipped=skipped,
             reused_baseline_frames=reused_baseline_frames,
             grid={k: metadata[k] for k in ('origin', 'resolution', 'width', 'height')},
-            refinements=refinements, camera_sha256_verified=True, recorded_tf_only=True,
+            refinements=refinements, camera_sha256_verified=True, recorded_tf_only=trajectory is None,
+            trajectory_sha256=identity.get('trajectory_sha256'),
+            reused_completed_observations=len(valid) if external_cache is not None else 0,
             texture_tone=texture_tone,
             indexed_texture=indexed_report,
             no_coordinate_warp=True, unobserved_space_not_filled=True,
@@ -525,6 +596,8 @@ def run(args):
                 node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
+        if camera_spool is not None:
+            camera_spool.cleanup()
 
 
 def main():
@@ -534,6 +607,8 @@ def main():
     p.add_argument('--config', type=Path, default=DEFAULT_CONFIG)
     p.add_argument('--server', default='http://localhost:8080')
     p.add_argument('--reuse-study', type=Path, help='Verified legacy full-image SAM3 cache; exact JPEG/settings checks required')
+    p.add_argument('--trajectory', type=Path, help='Timestamped optimized robot trajectory NPZ')
+    p.add_argument('--observations-from', type=Path, help='Reuse a verified completed THETA forward cache')
     p.add_argument('--domain', type=int, default=74)
     p.add_argument('--map-prefix', choices=['map', 'road_temporal'], default='road_temporal')
     p.add_argument('--reserved-output', action='store_true', help='Use a fresh directory reserved by road_map_output.py')

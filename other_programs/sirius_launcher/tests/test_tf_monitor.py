@@ -69,6 +69,25 @@ def test_cycle_resolves_when_dynamic_edge_stops_but_static_conflict_remains():
     assert store.snapshot(4)['conflicts']==['b']
 
 
+def test_departed_static_writer_is_removed_and_live_writers_replayed():
+    store = TransformStore()
+    assert store.sync_static_publishers(['lio', 'robot'])
+    add(store, 'body', 'base', static=True, publisher='unknown:/tf_static')
+    add(store, 'odom', 'base', publisher='ekf')
+    assert store.snapshot(1)['conflicts'] == ['base']
+    assert store.sync_static_publishers(['robot'])
+    add(store, 'base', 'laser', static=True, publisher='unknown:/tf_static')
+    data = store.snapshot(1)
+    assert data['conflicts'] == []
+    assert {e['parent'] for e in data['edges']} == {'odom', 'base'}
+    assert not store.sync_static_publishers(['robot'])
+    assert len(store.edges) == 2
+    # Live contradictory static geometry still must be reported after replay.
+    assert store.sync_static_publishers(['robot', 'another'])
+    add(store, 'body', 'base', static=True, publisher='unknown:/tf_static')
+    assert store.snapshot(1)['conflicts'] == ['base']
+
+
 def test_tf_api_auth_domain_and_cache_policy(monkeypatch):
     web=importlib.import_module('web_server')
     class FakeMonitor:

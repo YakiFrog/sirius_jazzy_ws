@@ -64,6 +64,7 @@ def main():
         '--params-file', str(package / 'config/roboteq.yaml'),
         '-p', 'port:=' + os.ttyname(slave),
         '-p', 'pub_odom_tf:=false',
+        '-p', 'estop_start_active:=' + os.environ.get('TEST_START_ACTIVE', 'true'),
         '-p', 'estop_latch_hardware:=' + os.environ.get('TEST_LATCH', 'true'),
         '-p', 'publish_status:=' + os.environ.get('TEST_PUBLISH_STATUS', 'true')], stdout=log, stderr=log)
     rclpy.init()
@@ -89,7 +90,11 @@ def main():
         started = time.monotonic()
         run(2)
         assert velocity.get_subscription_count(), 'driver not discovered'
-        assert not nonzero(started), 'startup must stay stopped'
+        if os.environ.get('TEST_START_ACTIVE', 'true') == 'true':
+            assert not nonzero(started), 'explicit startup-stop mode must stay stopped'
+        else:
+            assert not diagnostics[-1].software_estop, 'startup must not enable electronic stop'
+            assert nonzero(started), 'manual-stop-only mode permits commands after startup'
         assert diagnostics and not diagnostics[-1].status_flags_valid, 'absent MD responses are unknown'
         assert not diagnostics[-1].motor_flags_valid_ch2
         state['extended'] = True; run(.3)
@@ -108,6 +113,16 @@ def main():
         acknowledged = time.monotonic()
         run(.5)
         assert nonzero(acknowledged), 'healthy manual release must work'
+        state['voltage'] = 11.4
+        run(.4)
+        redundant = time.monotonic()
+        stop.publish(Bool(data=False)); run(.4)
+        assert not diagnostics[-1].software_estop, 'redundant release must never latch software stop'
+        assert not diagnostics[-1].hardware_estop, '11.4V is above the configured trip voltage'
+        assert not any(c.startswith('!EX') or c == '!MG' for t, c in commands if t >= redundant)
+        assert nonzero(redundant), 'normal driving continues after redundant release'
+        state['voltage'] = 13.2
+        run(.3)
         pi = diagnostics[-1]
         assert pi.control_sample_valid
         assert abs(pi.target_speed_right-.6) < 1e-5 and abs(pi.target_speed_left-.6) < 1e-5
@@ -125,8 +140,15 @@ def main():
         if os.environ.get('TEST_LATCH') == 'false':
             assert diagnostics[-1].hardware_estop and not diagnostics[-1].software_estop
             assert diagnostics[-1].estop_active and not nonzero(time.monotonic() - .1)
-            state.update(voltage=13.2, fault=0); run(.4)
+            stop.publish(Bool(data=True)); run(.25)
+            assert diagnostics[-1].software_estop
+            stop.publish(Bool(data=False)); run(.3)
+            assert not diagnostics[-1].software_estop, 'physical stop must not prevent electronic OFF'
+            assert diagnostics[-1].hardware_estop and diagnostics[-1].estop_active
+            assert not nonzero(time.monotonic()-.1), 'physical/power protection must continue blocking motors'
+            state.update(voltage=13.2, fault=0); run(.5)
             assert not diagnostics[-1].hardware_estop and not diagnostics[-1].software_estop
+            assert nonzero(time.monotonic()-.1), 'after explicit OFF, physical recovery needs no second release'
             stop.publish(Bool(data=True)); run(.2)
             state.update(voltage=5.0, fault=4); run(.2)
             state.update(voltage=13.2, fault=0); run(.3)
@@ -151,13 +173,14 @@ def main():
             state.update(voltage=5.0, fault=4); run(.3)
         assert not nonzero(stopped), 'voltage recovery must never restart automatically'
         stop.publish(Bool(data=False)); run(.2)
-        assert state['ex'] and not nonzero(stopped), 'release with low voltage must be rejected'
+        assert not diagnostics[-1].software_estop, 'electronic release must be independent of low voltage'
+        assert state['ex'] and not nonzero(stopped), 'MD remains stopped by power protection'
         state.update(voltage=13.2, fault=0); run(.3)
         stop.publish(Bool(data=False)); released = time.monotonic(); run(.5)
         assert nonzero(released), 'release after recovery must work'
         stop.publish(Bool(data=True)); run(.2)
         print(json.dumps({'startup_stopped': True, 'fault_latched': True,
-            'automatic_restarts': 0, 'low_voltage_release_rejected': True,
+            'automatic_restarts': 0, 'electronic_off_independent_of_voltage': True,
             'healthy_manual_release': True, 'extended_md_fields': True, 'pi_terms': True,
             'stop_reasons': True, 'unknown_and_stale_fields': True, 'log': '/tmp/sirius-protection-serial.log'}))
     finally:

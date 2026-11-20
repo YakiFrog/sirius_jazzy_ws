@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.16)
+project(visual_loop_offline)
+set(CMAKE_CXX_STANDARD 17)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS serialization)
+get_filename_component(WORKSPACE "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
+set(SLAM_WS "${WORKSPACE}" CACHE PATH "Workspace containing SLAM Toolbox")
+add_executable(apply_loop apply_loop.cpp)
+ament_target_dependencies(apply_loop rclcpp_lifecycle pluginlib)
+target_include_directories(apply_loop PRIVATE "${SLAM_WS}/install/slam_toolbox/include")
+target_link_libraries(apply_loop
+  "${SLAM_WS}/install/slam_toolbox/lib/libkartoSlamToolbox.so"
+  Eigen3::Eigen Boost::serialization)

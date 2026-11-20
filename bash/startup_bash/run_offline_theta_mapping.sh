@@ -2,7 +2,7 @@
 # ==============================================================================
 # THETA オフライン路面マッピング 実行・保存スクリプト
 # 通常は記録画像を逐次処理し、品質保護・暗所認識・時系列追跡・領域補正を適用します。
-# 従来のRosbag再生 + RTAB-Mapも選択できます。
+# 始終点の画像ループ閉合を追加する場合は open・closed を別保存します。
 # ==============================================================================
 
 WS_DIR="${HOME}/sirius_jazzy_ws"
@@ -18,19 +18,18 @@ echo "================================================="
 echo "  THETA オフライン路面マッピング (Domain: $ROS_DOMAIN_ID)"
 echo "================================================="
 
-# 0. 実行モードの選択（重ね合わせのみならマッピングを起動しない）
+# 0. 実行モードの選択
 echo ""
 echo "実行内容を選択してください:"
 echo "  [1] 改善済みの逐次処理で新規マッピング（全画像・推奨）"
-echo "  [2] 既存の生成済み地図をSLAM Toolbox地図と重ね合わせる"
-echo "  [3] 従来のRosbag再生 + RTAB-Mapでマッピング"
-read -p "選択 [1]: " RUN_MODE
-RUN_MODE=${RUN_MODE:-1}
-if [ "$RUN_MODE" = "2" ]; then
-    exec bash "$WS_DIR/bash/startup_bash/rebase_existing_map.sh"
+echo "  [4] 始終点の画像ループ閉合を試す（open・closedを別保存）"
+if [ "${1:-}" = "--visual-loop" ]; then
+    RUN_MODE=4
+else
+    read -r -p "選択 [1]: " RUN_MODE
 fi
-
-if [ "$RUN_MODE" != "1" ] && [ "$RUN_MODE" != "3" ]; then
+RUN_MODE=${RUN_MODE:-1}
+if [ "$RUN_MODE" != "1" ] && [ "$RUN_MODE" != "4" ]; then
     echo "無効な実行内容です。"
     exit 1
 fi
@@ -95,346 +94,87 @@ fi
 BAG_NAME=$(basename "$SELECTED_BAG")
 echo "選択された Rosbag: $SELECTED_BAG"
 
-# 補正済みTFやTHETA画像が欠けたbagを再生すると誤った地図を生成するため、事前に拒否する。
-BAG_VALIDATOR="$WS_DIR/bash/startup_bash/validate_theta_offline_mapping_bag.py"
-if [ -f "$BAG_VALIDATOR" ]; then
-    echo ""
-    echo "Rosbagの必須情報を検証中..."
-    VALIDATION_STATUS=0
-
-    # metadata.yaml can still look healthy when the MCAP footer or final chunk
-    # is incomplete. Check the complete MCAP structure before trusting topic counts.
-    if [ -x "$WS_DIR/mcap" ]; then
-        mapfile -d '' SELECTED_MCAP_FILES < <(
-            find "$SELECTED_BAG" -maxdepth 1 -type f -name '*.mcap' -print0 | sort -z
-        )
-        if [ "${#SELECTED_MCAP_FILES[@]}" -gt 0 ]; then
-            echo "MCAPファイル構造を確認中..."
-            for mcap_file in "${SELECTED_MCAP_FILES[@]}"; do
-                if ! "$WS_DIR/mcap" doctor "$mcap_file" >/dev/null 2>&1; then
-                    echo "✗ MCAP破損または未完了を検出: $(basename "$mcap_file")"
-                    VALIDATION_STATUS=2
-                    break
-                fi
-            done
+# metadata.yaml が残っていても、中断した MCAP はフッタや末尾が欠けていることがある。
+# トピックと撮影時刻の TF は、後段の逐次生成が検証する。
+if [ -x "$WS_DIR/mcap" ]; then
+    mapfile -d '' SELECTED_MCAP_FILES < <(
+        find "$SELECTED_BAG" -maxdepth 1 -type f -name '*.mcap' -print0 | sort -z
+    )
+    for mcap_file in "${SELECTED_MCAP_FILES[@]}"; do
+        echo "MCAPファイル構造を確認中..."
+        if "$WS_DIR/mcap" doctor "$mcap_file" >/dev/null 2>&1; then
+            continue
         fi
-    fi
-
-    # The sequential pipeline validates its configured topics and timestamped
-    # TF itself. The legacy validator requires fixed topic/frame names and an
-    # odometry topic that the new recorded-TF path does not need.
-    if [ "$VALIDATION_STATUS" -eq 0 ] && [ "$RUN_MODE" = "3" ]; then
-        python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
-        VALIDATION_STATUS=$?
-    fi
-
-    # Exit code 2 means rosbag2 could not open the storage (interrupted recording).
-    # Recover into a new directory and validate again. Exit code 1 means readable
-    # data with missing inputs and must not be repaired.
-    if [ "$VALIDATION_STATUS" -eq 2 ]; then
+        echo "✗ MCAP破損または未完了を検出: $(basename "$mcap_file")"
         RECOVERY_SCRIPT="$WS_DIR/bash/startup_bash/recover_mcap_rosbag.sh"
         if [ ! -f "$RECOVERY_SCRIPT" ]; then
             echo "エラー: MCAP自動復旧スクリプトがありません: $RECOVERY_SCRIPT"
             exit 1
         fi
-
-        echo ""
-        echo "Rosbagを開けないため、MCAP自動復旧を試します..."
+        echo "MCAP自動復旧を試します..."
         if ! RECOVERED_BAG=$(bash "$RECOVERY_SCRIPT" "$SELECTED_BAG"); then
-            echo ""
             echo "エラー: MCAPを自動復旧できませんでした。元のRosbagは変更していません。"
             exit 1
         fi
-
         SELECTED_BAG="$RECOVERED_BAG"
         BAG_NAME=$(basename "$SELECTED_BAG")
-        echo ""
-        echo "復旧したRosbagを再検証中: $SELECTED_BAG"
-        VALIDATION_STATUS=0
-        if [ "$RUN_MODE" = "3" ]; then
-            python3 "$BAG_VALIDATOR" "$SELECTED_BAG"
-            VALIDATION_STATUS=$?
-        fi
-    fi
-
-    if [ "$VALIDATION_STATUS" -ne 0 ]; then
-        echo ""
-        echo "エラー: 必須情報が不足しているため、このRosbagは再生しません。"
-        echo "別のRosbagを選ぶか、録画機能で再録画してください。"
-        exit 1
-    fi
+        echo "復旧したRosbag: $SELECTED_BAG"
+        break
+    done
 fi
 
-# 通常経路: 推論速度によるフレーム落ちを避け、記録されたTFとscan3で逐次生成。
-# 実験で使った特定の地図・座標・フレーム範囲には依存しない。
-if [ "$RUN_MODE" = "1" ]; then
-    ROAD_CONFIG="${THETA_ROAD_CONFIG:-$WS_DIR/params/theta_road_mapping.yaml}"
-    DEFAULT_CALIB="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration.yaml"
-    case "$BAG_NAME" in
-        real_*|*_real_*) DEFAULT_CALIB="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml" ;;
-    esac
-    # Prefer the actual recording's snapshot, including when using a recovered BAG.
-    CAPTURE_CALIB="$SELECTED_BAG/capture/theta_calibration.yaml"
-    if [ ! -f "$CAPTURE_CALIB" ]; then
-        CAPTURE_CALIB="${SELECTED_BAG%_recovered*}/capture/theta_calibration.yaml"
+# 記録画像を逐次処理し、SAM3の推論速度に依存したフレーム落ちを防ぐ。
+ROAD_CONFIG="${THETA_ROAD_CONFIG:-$WS_DIR/params/theta_road_mapping.yaml}"
+DEFAULT_CALIB="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration.yaml"
+case "$BAG_NAME" in
+    real_*|*_real_*) DEFAULT_CALIB="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml" ;;
+esac
+# Prefer the actual recording's snapshot, including when using a recovered BAG.
+CAPTURE_CALIB="$SELECTED_BAG/capture/theta_calibration.yaml"
+if [ ! -f "$CAPTURE_CALIB" ]; then
+    CAPTURE_CALIB="${SELECTED_BAG%_recovered*}/capture/theta_calibration.yaml"
+fi
+if [ -f "$CAPTURE_CALIB" ]; then
+    DEFAULT_CALIB="$CAPTURE_CALIB"
+fi
+echo ""
+echo "共通設定: $ROAD_CONFIG"
+read -r -p "校正YAML [$DEFAULT_CALIB]: " ROAD_CALIB
+ROAD_CALIB="${ROAD_CALIB:-$DEFAULT_CALIB}"
+read -r -p "SAM3セマンティック分類も行いますか？ (Y/n) [Y]: " ROAD_SAM3
+ROAD_ARGS=()
+case "${ROAD_SAM3,,}" in n|no) ROAD_ARGS+=(--no-semantic) ;; esac
+if [ "$RUN_MODE" = "4" ]; then
+    read -r -e -p "保存済みSLAM Toolboxグラフ（.posegraphファイルまたは接頭辞）: " LOOP_GRAPH
+    LOOP_GRAPH="${LOOP_GRAPH/#\~/$HOME}"
+    LOOP_GRAPH="${LOOP_GRAPH%.posegraph}"
+    if [ -z "$LOOP_GRAPH" ] || [ ! -f "$LOOP_GRAPH.posegraph" ] || [ ! -f "$LOOP_GRAPH.data" ]; then
+        echo "同じBAGから保存した .posegraph と .data を指定してください。"
+        exit 1
     fi
-    if [ -f "$CAPTURE_CALIB" ]; then
-        DEFAULT_CALIB="$CAPTURE_CALIB"
+    read -r -p "短時間補間用のオドメトリトピック [/odom]: " LOOP_ODOM
+    read -r -e -p "連続EKF軌跡NPZ（任意、空欄ならBAGのオドメトリ）: " LOOP_POSES
+    LOOP_POSES="${LOOP_POSES/#\~/$HOME}"
+    if [ -n "$LOOP_POSES" ]; then
+        ROAD_ARGS+=(--pose-npz "$LOOP_POSES")
     fi
-    echo ""
-    echo "共通設定: $ROAD_CONFIG"
-    read -r -p "校正YAML [$DEFAULT_CALIB]: " ROAD_CALIB
-    ROAD_CALIB="${ROAD_CALIB:-$DEFAULT_CALIB}"
-    read -r -p "SAM3セマンティック分類も行いますか？ (Y/n) [Y]: " ROAD_SAM3
-    ROAD_ARGS=()
-    case "${ROAD_SAM3,,}" in n|no) ROAD_ARGS+=(--no-semantic) ;; esac
     ROAD_OUTPUT=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
         "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" theta sequential) || exit 1
-    echo "全画像を順番に処理します。設定・元の分類・推論キャッシュも保存します。"
-    echo "出力先: $ROAD_OUTPUT"
-    if ! python3 "$WS_DIR/bash/startup_bash/generate_theta_road_map.py" \
-        "$SELECTED_BAG" "$ROAD_OUTPUT" --calibration "$ROAD_CALIB" \
-        --config "$ROAD_CONFIG" --reserved-output --map-prefix map "${ROAD_ARGS[@]}"; then
-        echo "生成に失敗しました。原因と途中データは上記の出力先で確認できます。"
-        exit 1
-    fi
-    MAP_SELECT_NAME="${ROAD_OUTPUT#"$WS_DIR/maps_waypoints/maps/"}"
-    echo "✓ 地図生成が完了しました。Map Select: $MAP_SELECT_NAME/map"
-    echo "比較画像: $ROAD_OUTPUT/images.html"
-    exit 0
+    echo "出力先: $ROAD_OUTPUT/{open,closed}"
+    exec python3 "$WS_DIR/bash/startup_bash/run_theta_visual_loop.py" \
+        "$SELECTED_BAG" "$ROAD_OUTPUT" --graph "$LOOP_GRAPH" --calibration "$ROAD_CALIB" \
+        --config "$ROAD_CONFIG" --odom-topic "${LOOP_ODOM:-/odom}" "${ROAD_ARGS[@]}"
 fi
-
-# 2. 従来経路の再生速度の選択
-echo ""
-read -p "再生速度を選択してください (例: 0.5, 1.0) [0.5]: " PLAY_RATE
-PLAY_RATE=${PLAY_RATE:-0.5}
-
-# 2b. RViz2プレビューの選択
-echo ""
-read -p "RViz2でプレビューしながら実行しますか？ (Y/n) [Y]: " RVIZ_CHOICE
-RVIZ_CHOICE=$(echo "${RVIZ_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
-USE_RVIZ_FLAG="false"
-if [ "$RVIZ_CHOICE" != "n" ] && [ "$RVIZ_CHOICE" != "no" ]; then
-    USE_RVIZ_FLAG="true"
+ROAD_OUTPUT=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
+    "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" theta sequential) || exit 1
+echo "全画像を順番に処理します。設定・元の分類・推論キャッシュも保存します。"
+echo "出力先: $ROAD_OUTPUT"
+if ! python3 "$WS_DIR/bash/startup_bash/generate_theta_road_map.py" \
+    "$SELECTED_BAG" "$ROAD_OUTPUT" --calibration "$ROAD_CALIB" \
+    --config "$ROAD_CONFIG" --reserved-output --map-prefix map "${ROAD_ARGS[@]}"; then
+    echo "生成に失敗しました。原因と途中データは上記の出力先で確認できます。"
+    exit 1
 fi
-
-# 2c. SAM3セマンティック分類の選択（要 sam3 docker サーバ）
-echo ""
-read -p "SAM3でセマンティック分類も行いますか？ (y/N) [N]: " SAM3_CHOICE
-SAM3_CHOICE=$(echo "${SAM3_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
-USE_SAM3_FLAG="false"
-if [ "$SAM3_CHOICE" = "y" ] || [ "$SAM3_CHOICE" = "yes" ]; then
-    USE_SAM3_FLAG="true"
-    echo "※ sam3 docker サーバ (port 8080) が起動している必要があります。"
-fi
-
-# 2c-2. SAM3設定（共有YAML）と rosbag 事前確認
-if [ "$USE_SAM3_FLAG" = "true" ]; then
-    echo ""
-    read -p "SAM3設定ダイアログでprompt/クラス/閾値を編集しますか？ (Y/n) [Y]: " SAM3_SETTINGS_CHOICE
-    SAM3_SETTINGS_CHOICE=$(echo "${SAM3_SETTINGS_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
-    if [ "$SAM3_SETTINGS_CHOICE" != "n" ] && [ "$SAM3_SETTINGS_CHOICE" != "no" ]; then
-        echo "※ 保存先: classes=config/sam3_classes.yaml / threshold=config/theta_sam3.yaml（次回起動から反映）"
-        bash "$WS_DIR/bash/startup_bash/open_sam3_settings_dialog.sh"
-    fi
-
-    echo ""
-    read -p "選択中のrosbagでSAM3事前確認（代表フレーム→HTMLレポート）を行いますか？ (Y/n) [Y]: " SAM3_PREVIEW_CHOICE
-    SAM3_PREVIEW_CHOICE=$(echo "${SAM3_PREVIEW_CHOICE:-y}" | tr '[:upper:]' '[:lower:]')
-    if [ "$SAM3_PREVIEW_CHOICE" != "n" ] && [ "$SAM3_PREVIEW_CHOICE" != "no" ]; then
-        if ! bash "$WS_DIR/bash/startup_bash/run_theta_sam3_preview.sh" "$SELECTED_BAG"; then
-            echo ""
-            echo "警告: SAM3事前確認に失敗しました。設定を確認するか、このまま続行できます。"
-            read -p "このまま本番マッピングを続行しますか？ (Y/n): " SAM3_CONTINUE
-            SAM3_CONTINUE=$(echo "${SAM3_CONTINUE:-y}" | tr '[:upper:]' '[:lower:]')
-            if [ "$SAM3_CONTINUE" = "n" ] || [ "$SAM3_CONTINUE" = "no" ]; then
-                exit 1
-            fi
-        fi
-    fi
-fi
-
-# 2d. デバッグ可視化の選択（検出画像・意味色点群をRVizで同時表示）
-echo ""
-read -p "デバッグ可視化（検出画像/意味色点群をRViz表示）を使いますか？ (y/N) [N]: " DEBUG_CHOICE
-DEBUG_CHOICE=$(echo "${DEBUG_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
-DEBUG_ARGS=()
-if [ "$DEBUG_CHOICE" = "y" ] || [ "$DEBUG_CHOICE" = "yes" ]; then
-    DEBUG_ARGS=(publish_debug:=true publish_raw:=true "rviz_config:=$WS_DIR/src/sirius/sirius_navigation/rviz/theta_debug.rviz")
-    USE_RVIZ_FLAG="true"
-    echo "※ デバッグRViz表示のため RViz2 を有効にします。"
-fi
-
-# 2e. 地面点群の半径(幅)フィルタの選択
-echo ""
-echo "地面点群の半径(幅)フィルタを選択してください（床を広く取るには無効化）:"
-echo "  [1] 既定の半径を使う [推奨]  (sim=4.8m / 実機=3.0m)"
-echo "  [2] 半径を数値で指定"
-echo "  [3] 半径フィルタを無効化 (BEV全域・床を広くマッピング)"
-read -p "選択 [1]: " RADIUS_CHOICE
-RADIUS_CHOICE=${RADIUS_CHOICE:-1}
-
-# 3. マッピングノードを起動（sirius_navigationパッケージ）
-# 実機bag（real_*mapping_* / real_*theta*）は実機校正YAMLを自動適用し、
-# 地面点群の半径ベース値を3.0mにする。scan3(VLP-16 2.5D)ゲートも併用。
-# ゲートは高さ不一致(0.85m vs 1.135m)による過剰除外を避けるため、
-# 「自機ビーム除外・時刻合わせ・保留率<50%なら自動無効」のガード付き。
-CALIB_ARGS=()
-GATE_ARGS=()
-BASE_MAX_RADIUS=""
-BASE_GRID_RANGE=""
-CALIB_REAL="$WS_DIR/src/sirius/sirius_navigation/config/theta_calibration_real.yaml"
-case "$BAG_NAME" in
-    real_theta_mapping*|real_both_mapping*|real_*)
-        [ -f "$CALIB_REAL" ] && CALIB_ARGS=(calibration:="$CALIB_REAL")
-        BASE_MAX_RADIUS="3.0"
-        BASE_GRID_RANGE="3.0"
-        GATE_ARGS=(lidar_topic:=/scan3 lidar_gate:=true)
-        ;;
-esac
-
-RADIUS_ARGS=()
-GRID_ARGS=()
-RADIUS_DESCRIPTION=""
-case "$RADIUS_CHOICE" in
-    2)
-        read -p "最大半径[m] (0.1〜7.0): " radius_input
-        if ! awk -v r="$radius_input" \
-            'BEGIN { exit !(r ~ /^[0-9]+([.][0-9]+)?$/ && r >= 0.1 && r <= 7.0) }'; then
-            echo "エラー: 最大半径は 0.1〜7.0 の数値で指定してください。"
-            exit 1
-        fi
-        RADIUS_ARGS=(max_radius:="$radius_input")
-        RADIUS_DESCRIPTION="${radius_input}m"
-        # RTAB-Map の地図範囲が半径より狭いと床が切れるため追随させる
-        # （simの既定 grid_range_max=7.0 は半径上限7.0を覆うため変更不要）
-        if [ -n "$BASE_GRID_RANGE" ] && awk -v r="$radius_input" -v base="$BASE_GRID_RANGE" \
-            'BEGIN { exit !(r > base) }'; then
-            GRID_ARGS=(grid_range_max:="$radius_input")
-        fi
-        ;;
-    3)
-        RADIUS_ARGS=(max_radius:=0.0)
-        # BEV(10m四方)全域を覆うようRTAB-Mapの地図範囲を広げる
-        GRID_ARGS=(grid_range_max:=7.0)
-        RADIUS_DESCRIPTION="無効 (0.0)"
-        ;;
-    *)
-        [ -n "$BASE_MAX_RADIUS" ] && RADIUS_ARGS=(max_radius:="$BASE_MAX_RADIUS")
-        [ -n "$BASE_GRID_RANGE" ] && GRID_ARGS=(grid_range_max:="$BASE_GRID_RANGE")
-        RADIUS_DESCRIPTION="既定 (${BASE_MAX_RADIUS:-4.8}m)"
-        ;;
-esac
-
-LIDAR_ARGS=("${GATE_ARGS[@]}" "${RADIUS_ARGS[@]}" "${GRID_ARGS[@]}")
-
-echo "================================================="
-echo "路面マッピングパイプラインを起動しています..."
-echo "  Rosbag: $BAG_NAME"
-echo "  再生速度: ${PLAY_RATE}x"
-echo "  RViz2 プレビュー: $USE_RVIZ_FLAG"
-echo "  SAM3セマンティック: $USE_SAM3_FLAG"
-echo "  デバッグ可視化: $DEBUG_CHOICE"
-echo "  半径(幅)フィルタ: $RADIUS_DESCRIPTION"
-echo "  姿勢TF: bag内の補正済みTFを使用"
-echo "================================================="
-
-if [ ${#CALIB_ARGS[@]} -gt 0 ]; then
-    echo "実機校正を使用: $CALIB_REAL"
-fi
-if [ ${#LIDAR_ARGS[@]} -gt 0 ]; then
-    echo "地面点群/LiDAR引数: ${LIDAR_ARGS[*]}"
-fi
-ros2 launch sirius_navigation theta_offline_mapping.launch.py \
-    use_sim_time:=true rviz:="$USE_RVIZ_FLAG" sam3:="$USE_SAM3_FLAG" "${DEBUG_ARGS[@]}" "${CALIB_ARGS[@]}" "${LIDAR_ARGS[@]}" &
-LAUNCH_PID=$!
-
-sleep 5
-
-cleanup() {
-    echo ""
-    echo "マッピングノードを停止しています..."
-    kill -INT $LAUNCH_PID 2>/dev/null
-    wait $LAUNCH_PID 2>/dev/null
-    exit 0
-}
-trap cleanup INT TERM
-
-echo ""
-echo "================================================="
-echo "Rosbag 再生を開始します..."
-echo "================================================="
-echo "再生中のキー操作: Space=一時停止/再開、→=1メッセージ進む、↑/↓=速度変更"
-if [ ! -f "$SELECTED_BAG/metadata.yaml" ]; then
-    echo "Rosbag メタデータ (metadata.yaml) を生成・再インデックス中..."
-    ros2 bag reindex "$SELECTED_BAG" -s mcap
-fi
-
-PLAY_OPTIONS=(--rate "$PLAY_RATE")
-
-if ros2 bag info "$SELECTED_BAG" 2>/dev/null | grep -q "Topic: /clock"; then
-    echo "✓ 録画データ内の /clock を使用して再生します"
-    ros2 bag play "$SELECTED_BAG" "${PLAY_OPTIONS[@]}"
-else
-    echo "✓ --clock オプションを有効にして再生します"
-    ros2 bag play "$SELECTED_BAG" --clock "${PLAY_OPTIONS[@]}"
-fi
-
-echo ""
-echo "================================================="
-echo "✓ Rosbag の再生が完了しました！"
-echo "================================================="
-echo ""
-read -p "生成された路面地図を保存しますか？ (Y/n): " save_choice
-save_choice=$(echo "$save_choice" | tr '[:upper:]' '[:lower:]')
-
-if [ "$save_choice" != "n" ] && [ "$save_choice" != "no" ]; then
-    # SLAM Toolbox地図を構造ベースにした重ね合わせ版を作るか選択（ZEDと同じ）
-    SLAM_BASE_YAML=""
-    echo ""
-    read -p "SLAM Toolbox地図と重ね合わせた版も作りますか？ (y/N) [N]: " SLAM_OVERLAY_CHOICE
-    SLAM_OVERLAY_CHOICE=$(echo "${SLAM_OVERLAY_CHOICE:-n}" | tr '[:upper:]' '[:lower:]')
-    if [ "$SLAM_OVERLAY_CHOICE" = "y" ] || [ "$SLAM_OVERLAY_CHOICE" = "yes" ]; then
-        mapfile -t SLAM_MAP_YAMLS < <(
-            find "$WS_DIR/maps_waypoints/maps" -maxdepth 2 -type d \( -name road_semantic -o -name backup -o -name rtabmaps -o -name 'rtabmap_*' -o -name 'theta_*' \) -prune -o -type f -name '*.yaml' -print 2>/dev/null | sort
-        )
-        if [ "${#SLAM_MAP_YAMLS[@]}" -eq 0 ]; then
-            echo "警告: SLAM Toolbox地図YAMLが見つかりません。重ね合わせは行いません。"
-        else
-            echo "利用可能なSLAM Toolbox地図:"
-            for i in "${!SLAM_MAP_YAMLS[@]}"; do
-                echo "  [$((i+1))] $(basename "${SLAM_MAP_YAMLS[$i]}")"
-            done
-            read -p "構造ベースにする地図番号 [1]: " SLAM_MAP_CHOICE
-            SLAM_MAP_CHOICE=${SLAM_MAP_CHOICE:-1}
-            SLAM_MAP_INDEX=$((SLAM_MAP_CHOICE-1))
-            if [ "$SLAM_MAP_INDEX" -ge 0 ] && [ "$SLAM_MAP_INDEX" -lt "${#SLAM_MAP_YAMLS[@]}" ]; then
-                SLAM_BASE_YAML="${SLAM_MAP_YAMLS[$SLAM_MAP_INDEX]}"
-                echo "SLAM Toolbox構造地図: $SLAM_BASE_YAML"
-            else
-                echo "警告: 無効な選択です。重ね合わせは行いません。"
-            fi
-        fi
-    fi
-
-    MAP_SAVE_SCRIPT="$WS_DIR/bash/startup_bash/rtabmap_save.sh"
-    if [ -f "$MAP_SAVE_SCRIPT" ]; then
-        MAP_OUTPUT_DIR=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
-            "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" theta rtabmap) || exit 1
-        AUTO_MAP_NAME="$(basename "$MAP_OUTPUT_DIR")"
-        echo "地図保存スクリプトを実行中 (indexed地図: /theta/save_indexed_map)..."
-        echo "  自動地図名: $AUTO_MAP_NAME"
-        MAP_OUTPUT_DIR="$MAP_OUTPUT_DIR" MAP_FILE_STEM=map MAP_SAVE_ROOT="$ROAD_SEMANTIC_DIR" \
-        COLORIZER_SCRIPT="$WS_DIR/src/sirius/sirius_navigation/sirius_navigation/theta_colorize_map.py" \
-            INDEXED_SAVE_TOPIC=/theta/save_indexed_map \
-            REBASE_ARGS="" \
-            bash "$MAP_SAVE_SCRIPT" "$AUTO_MAP_NAME" "$SLAM_BASE_YAML"
-    else
-        MAP_OUTPUT_DIR=$(python3 "$WS_DIR/bash/startup_bash/road_map_output.py" \
-            "$ROAD_SEMANTIC_DIR" "$SELECTED_BAG" theta fallback) || exit 1
-        ros2 run nav2_map_server map_saver_cli -f "$MAP_OUTPUT_DIR/map" --ros-args -r map:=/rtabmap/grid_map -p map_subscribe_transient_local:=true -p save_map_timeout:=10000.0
-        echo "✓ 地図を保存しました: $MAP_OUTPUT_DIR/map"
-    fi
-fi
-
-cleanup
+MAP_SELECT_NAME="${ROAD_OUTPUT#"$WS_DIR/maps_waypoints/maps/"}"
+echo "✓ 地図生成が完了しました。Map Select: $MAP_SELECT_NAME/map"
+echo "比較画像: $ROAD_OUTPUT/images.html"

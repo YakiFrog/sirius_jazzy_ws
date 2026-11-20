@@ -32,4 +32,68 @@ function lifecycleGraphState(nav, domain, mapReady) {
     stopped===false&&communication?{tone:'ok',label:'応答あり'}:{tone:'unknown',label:'未確認'};
   return {tf,laser,mux,driver};
 }
-if(typeof module!=='undefined')module.exports={lifecycleState,lifecycleCostmap,lifecycleGraphState};
+function lifecycleHealth(payload, now = Date.now() / 1000) {
+  if (!payload?.available) return {tone: 'unknown', errors: []};
+  const rows = payload.telemetry?.nodes || {};
+  const logs = payload.telemetry?.logs || {};
+  const errors = [];
+  let observed = 0;
+  for (const [name, entry] of Object.entries(rows)) {
+    if (!entry?.fresh || !Number.isInteger(entry.value?.id)) continue;
+    observed++;
+    const id = entry.value.id;
+    let reason = id === 15 ? 'エラー処理中' : '';
+    const log = logs[name];
+    const unresolved = id !== 3 && Number.isFinite(log?.age) &&
+      Number.isFinite(entry.observed_seconds) &&
+      log.age <= entry.observed_seconds + 2;
+    const recovered = id === 3 && Number.isFinite(log?.age) &&
+      Number.isFinite(entry.observed_seconds) && log.age > entry.observed_seconds + 2;
+    if (log?.value?.level >= 40 && !recovered && (log.fresh || unresolved)) {
+      reason = log.value.text || 'エラーログを受信';
+    }
+    const operation = (payload.operations || []).filter(job => job.node === name)
+      .sort((a, b) => b.started - a.started)[0];
+    if (operation?.status === 'failed' && Number.isFinite(operation.finished) &&
+        Number.isFinite(entry.observed_seconds) &&
+        operation.finished >= now - entry.observed_seconds - 2) {
+      reason = operation.result?.error || '操作に失敗';
+    }
+    if (reason) errors.push({node: name, reason});
+  }
+  if (errors.length) return {tone: 'error', errors};
+  if (!observed) return {tone: 'unknown', errors};
+  // These two nodes can stay inactive when their optional features are unused.
+  const required = Object.keys(payload.nodes || rows)
+    .filter(name => name !== 'docking_server' && name !== 'waypoint_follower');
+  if (required.some(name => !rows[name]?.fresh || !Number.isInteger(rows[name].value?.id))) {
+    return {tone: 'unknown', errors};
+  }
+  const waiting = required.some(name => rows[name].value.id !== 3) ||
+    (payload.operations || []).some(job => job.status === 'running');
+  return {tone: waiting ? 'waiting' : 'ok', errors};
+}
+function lifecycleStartup(payload) {
+  if (!payload?.available) return [];
+  const rows = payload.telemetry?.nodes || {};
+  const logs = payload.telemetry?.logs || {};
+  const errors = lifecycleHealth(payload).errors;
+  const notices = [];
+  for (const [name, parent] of [
+    ['global_costmap/global_costmap', 'planner_server'],
+    ['local_costmap/local_costmap', 'controller_server'],
+  ]) {
+    const entry = rows[name];
+    if (!entry?.fresh) continue;
+    const failure = errors.find(error => error.node === name);
+    if (failure && /before timeout/i.test(failure.reason)) {
+      notices.push({node: name, parent, tone: 'error', label: 'TF待機タイムアウト', reason: failure.reason});
+    } else if (entry.value?.id === 13 && logs[name]?.fresh &&
+               /transform/i.test(logs[name].value?.text || '')) {
+      const seconds = Math.max(0, Math.floor(entry.observed_seconds || 0));
+      notices.push({node: name, parent, tone: 'waiting', label: 'TF接続待ち ' + seconds + '秒経過', reason: logs[name].value.text});
+    }
+  }
+  return notices;
+}
+if(typeof module!=='undefined')module.exports={lifecycleState,lifecycleCostmap,lifecycleGraphState,lifecycleHealth,lifecycleStartup};

@@ -36,12 +36,15 @@ Launcher側は既存認証を共有するサーバーAPIを設け、短いタイ
 
 ## NUCの全画面自動起動
 
-自動ログインは既に有効。`~/.config/autostart/sirius-console.desktop` から
-`bash/startup_bash/start_sirius_console.sh` を起動する。
-画面名の変更に依存せず、専用ブラウザのプロファイル・URL・ウィンドウIDで既存画面を
-特定して全画面化する。再実行時も同じウィンドウを使う。
-Web画面の自動起動設定であり、実験プログラムを追加起動する設定ではない。
-実機再起動は行わず、現行セッションで起動経路を2回実行して全画面状態・重複なしを確認した。
+自動ログイン後、`sirius-console.desktop` がLauncher Webを、
+`sirius-face.desktop` が既存のSiriusFace AppImageをそれぞれ別ウィンドウで起動する。
+登録は `bash/startup_bash/install_sirius_console_autostart.sh` と
+`bash/startup_bash/install_sirius_face_autostart.sh` で行う。
+それぞれウィンドウマネージャーの準備を待ち、既存ウィンドウがあれば再利用し、
+X11の全画面状態を確認してから起動完了とする。Launcherは専用ブラウザと以前の
+`localhost:8090` アプリ形式のどちらも認識する。
+画面切り替えには `Ctrl+Alt+F` と `Ctrl+Alt+W` を利用できる。
+自動起動するのは表示とWebサーバーであり、実験プログラムは起動しない。
 
 ## 起動元と実装
 

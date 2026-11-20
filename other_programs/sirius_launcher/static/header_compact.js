@@ -28,8 +28,7 @@
     }
     const mode = document.getElementById('header-nav-mode');
     if (mode) {
-      if (small.matches && mode.parentElement !== panel) panel.prepend(mode);
-      else if (!small.matches && mode.parentElement === panel) host.prepend(mode);
+      secondary(mode);
     }
     const ap = document.getElementById('hotspot-toggle');
     if (ap) { ap.setAttribute('aria-label', 'アクセスポイントの状態・接続方法'); ap.title = ap.textContent.trim() + '：接続方法を表示'; }

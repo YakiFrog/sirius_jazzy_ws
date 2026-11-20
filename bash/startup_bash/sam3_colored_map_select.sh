@@ -17,7 +17,8 @@ echo "------------------------------------------------"
 cd "$MAP_DIR" || exit
 # 路面RGB試験など、構造地図(.pgm)を持たない .colored.pgm も選択できる。
 # 両形式を持つ地図は同じprefixにまとめ、空白を含む名前も保持する。
-mapfile -t maps < <(find . -type f -name "*.pgm" 2>/dev/null |
+mapfile -t maps < <(find . \( -name '.theta-loop-work' -o -name '.open-working' -o -name '.closed-working' \) \
+    -prune -o -type f -name "*.pgm" -print 2>/dev/null |
     sed 's|^\./||; s/\.colored\.pgm$//; s/\.pgm$//' | sort -u)
 
 if [ ${#maps[@]} -eq 0 ]; then

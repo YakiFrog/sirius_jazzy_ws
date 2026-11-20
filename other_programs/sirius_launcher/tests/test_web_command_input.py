@@ -106,3 +106,24 @@ def test_web_input_auth_limits_and_log(command, monkeypatch):
     manager.process.wait(timeout=8)
     assert client.get('/api/log', query_string={'name': name}).json['interactive'] is False
     assert client.post('/api/input', json={'name': name, 'data': '\n'}).status_code == 409
+
+
+def test_command_session_resets_inherited_ignored_interrupt(tmp_path):
+    import subprocess
+    name = 'test_signal_' + uuid.uuid4().hex
+    script = tmp_path/'interrupt.sh'
+    script.write_text("trap 'echo INTERRUPTED; exit 0' INT\necho SIGNAL_READY\nwhile :; do sleep .1; done\n")
+    log_path = Path(f'/tmp/sirius_launcher_{name}.log')
+    process = subprocess.Popen([
+        'bash', '-c', 'trap "" INT; exec "$@"', 'bash', sys.executable,
+        str(LAUNCHER/'command_session.py'), '--name', name, '--script', str(script)],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        wait_for(lambda: log_path.exists() and 'SIGNAL_READY' in log_path.read_text())
+        assert session_request(name, '\x03')['ok']
+        process.wait(timeout=5)
+        assert 'INTERRUPTED' in log_path.read_text()
+    finally:
+        if process.poll() is None:
+            process.terminate(); process.wait(timeout=5)
+        log_path.unlink(missing_ok=True)

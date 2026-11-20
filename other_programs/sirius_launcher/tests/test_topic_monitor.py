@@ -5,9 +5,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from topic_monitor import (TopicMonitor, endpoint_dict, node_name,
-                           qos_dict, rate_from_timestamps, topic_name,
-                           unique_endpoints)
+from topic_monitor import (MESSAGE_MAX_CHARS, TopicMonitor, endpoint_dict,
+                           message_preview, node_name, qos_dict,
+                           rate_from_timestamps, topic_name, unique_endpoints)
 
 
 class FakeQoS:
@@ -65,6 +65,57 @@ def test_endpoints_are_unique_per_node():
     assert unique_endpoints([first, second]) == [first]
 
 
+class FakeHeader:
+    frame_id = 'map'
+    stamp = 1.5
+
+    def get_fields_and_field_types(self):
+        return {'stamp': 'builtin_interfaces/Time', 'frame_id': 'string'}
+
+
+class FakeDiagnosticMessage:
+    header = FakeHeader()
+    ranges = [1.0] * 100
+    data = b'\x00' * 100
+    note = 'x' * 1000
+    value = float('nan')
+
+    def get_fields_and_field_types(self):
+        return {'header': 'std_msgs/Header', 'ranges': 'double[]',
+                'data': 'uint8[]', 'note': 'string', 'value': 'double'}
+
+
+def test_message_preview_bounds_large_arrays_bytes_and_strings():
+    text, truncated = message_preview(FakeDiagnosticMessage())
+    assert truncated
+    assert '"__type__": "array"' in text
+    assert '"length": 100' in text
+    assert '"__type__": "bytes"' in text
+    assert '"length": 1000' not in text
+    assert 'nan' in text
+    assert len(text) <= MESSAGE_MAX_CHARS + 2
+
+
+def test_invalid_watch_is_rejected_without_starting_ros():
+    monitor = TopicMonitor()
+    assert monitor.watch('53', 'scan') == {'started': False, 'error': 'invalid topic', 'status': 400}
+    assert monitor._thread is None
+
+
+def test_topics_message_viewer_is_wired_to_watch_api():
+    root = Path(__file__).resolve().parents[1]
+    script = (root / 'static/topics.js').read_text(encoding='utf-8')
+    style = (root / 'static/topics.css').read_text(encoding='utf-8')
+    assert '/api/topics/watch' in script
+    assert "TOPIC_VIEW.watchTopic" in script
+    assert "topicMessageSection" in script
+    assert '.topics-message-text' in style
+    assert 'topics-splitter' in script
+    assert 'sirius-topics-inspector-width' in script
+    assert '.topics-splitter' in style
+    assert '--topics-inspector-width' in style
+
+
 def test_invalid_measurement_is_rejected_without_starting_ros():
     monitor = TopicMonitor()
     result = monitor.measure('53', 'scan')
@@ -78,6 +129,8 @@ def test_topics_api_auth_snapshot_and_measure(monkeypatch):
     class FakeMonitor:
         def __init__(self):
             self.measured = None
+            self.watched = None
+            self.unwatched = False
 
         def snapshot(self, domain):
             assert domain == '53'
@@ -88,6 +141,16 @@ def test_topics_api_auth_snapshot_and_measure(monkeypatch):
             self.measured = (topic, duration)
             return {'started': True, 'topic': topic, 'duration': 3.0}
 
+        def watch(self, domain, topic, lease):
+            assert domain == '53'
+            self.watched = (topic, lease)
+            return {'started': True, 'topic': topic, 'lease': 10.0}
+
+        def unwatch(self, domain):
+            assert domain == '53'
+            self.unwatched = True
+            return {'stopped': True}
+
     fake = FakeMonitor()
     monkeypatch.setattr(web, 'TOPIC_MONITOR', fake)
     monkeypatch.setattr(web, 'DEFAULT_DOMAIN', '53')
@@ -95,6 +158,7 @@ def test_topics_api_auth_snapshot_and_measure(monkeypatch):
     client = web.app.test_client()
     assert client.get('/api/topics').status_code == 401
     assert client.post('/api/topics/measure', json={'topic': '/scan'}).status_code == 401
+    assert client.post('/api/topics/watch', json={'topic': '/scan'}).status_code == 401
     client.set_cookie('pw', 'test-password')
     response = client.get('/api/topics')
     assert response.json['available'] and response.json['domain'] == '53'
@@ -103,3 +167,11 @@ def test_topics_api_auth_snapshot_and_measure(monkeypatch):
     assert response.status_code == 200
     assert response.json['started'] is True
     assert fake.measured == ('/scan', 3)
+    response = client.post('/api/topics/watch', json={'action': 'start', 'topic': '/scan', 'lease': 10})
+    assert response.status_code == 200
+    assert response.json['started'] is True
+    assert fake.watched == ('/scan', 10)
+    response = client.post('/api/topics/watch', json={'action': 'stop'})
+    assert response.status_code == 200
+    assert response.json['stopped'] is True
+    assert fake.unwatched is True

@@ -34,6 +34,11 @@ semantic:
   prompt: grass, yellow tactile paving, roadway, sidewalk
   score_min: 0.5
   resolution: 512
+  # Detector input only. Raw RGB fusion and geometry use the original image.
+  input_tone:
+    enabled: true
+    gain: 3.0
+    pivot: 180.0
   view_size: [640, 480]
   view_yaws: [0, 180]
   hfov_deg: 120.0

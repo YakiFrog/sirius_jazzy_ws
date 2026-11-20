@@ -14,10 +14,10 @@
   stopDialog.innerHTML=`<div class="emergency-stop-heading"><h2 id="emergency-stop-title">非常停止の状態</h2><button id="emergency-stop-close" type="button">閉じる</button></div>
     <div class="emergency-stop-cards">
       <section id="emergency-stop-physical-card"><h3>物理ボタン</h3><strong id="emergency-stop-physical">未確認</strong><p id="emergency-stop-voltage">駆動電圧：未取得</p><small>駆動電圧からの推定</small></section>
-      <section id="emergency-stop-electronic-card"><h3>電子非常停止</h3><strong id="emergency-stop-electronic">未確認</strong><p>Roboteqの非常停止フラグ</p></section>
+      <section id="emergency-stop-electronic-card"><h3>電子非常停止</h3><strong id="emergency-stop-electronic">未確認</strong><p>ドライバの電子停止状態（物理停止とは独立）</p></section>
     </div><div class="emergency-stop-actions"><button type="button" id="emergency-stop-on">電子停止 ON</button><button type="button" id="emergency-stop-off" disabled>電子停止 OFF（解除）</button></div>
     <p id="emergency-stop-command-status" role="status"></p><p id="emergency-stop-age" class="emergency-stop-age">受信待ち</p>
-    <p class="emergency-stop-note">物理ボタンは8V以下で押下を推定し、11V以上で未検出に戻します。押してから電圧が下がるまで表示が遅れます。「未検出」はボタン解除や走行可能を保証しません。ここで操作できるのは電子非常停止です。</p>`;
+    <p class="emergency-stop-note">物理ボタンは8V以下で押下を推定し、11V以上で未検出に戻します。押してから電圧が下がるまで表示が遅れます。「未検出」はボタン解除や走行可能を保証しません。ここで操作できるのは電子非常停止です。電子OFFでも物理停止・駆動保護中は動きません。</p>`;
   document.body.append(stopDialog);stopToggle.onclick=()=>{stopDialog.showModal();document.getElementById('emergency-stop-close').focus();};
   document.getElementById('emergency-stop-close').onclick=()=>stopDialog.close();
   stopDialog.addEventListener('click',e=>{if(e.target===stopDialog){const r=stopDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)stopDialog.close();}});
@@ -97,6 +97,8 @@
   }
   function render(data){
     last=data;
+    window.siriusBatterySnapshot=data;
+    window.dispatchEvent(new CustomEvent('sirius:battery-state',{detail:data}));
     const battery=source(data,'battery','BatteryState'),driver=source(data,'driver','RoboteqStatus'),details=source(data,'details','SolixStatus');
     const primary=data.source_type==='RoboteqStatus'?driver:battery;
     const live=primary.state==='live',driverLive=driver.state==='live';
@@ -168,7 +170,7 @@
     document.getElementById('emergency-stop-physical-card').dataset.state=physical===true?'active':physical===false?'clear':fresh?'checking':'unknown';
     document.getElementById('emergency-stop-electronic-card').dataset.state=electronic===true?'active':electronic===false?'clear':'unknown';
     set('emergency-stop-physical',physical===true?'押されている推定':physical===false?'押下を検出せず':fresh?'判定中':'確認できません');
-    set('emergency-stop-electronic',electronic===true?'停止中':electronic===false?'停止フラグなし':'確認できません');
+    set('emergency-stop-electronic',electronic===true?'ON・停止中':electronic===false?'OFF・解除済み':'確認できません');
     set('emergency-stop-voltage','駆動電圧：'+fmt(driver.voltage,'V')+(fresh?'':'（最終値）'));
     set('emergency-stop-age',fresh?'取得元：'+(driver.topic||'/roboteq/status')+' · '+(Number.isFinite(driver.age_seconds)?driver.age_seconds.toFixed(1)+'秒前':'受信中'):'現在の状態は未確認です：'+(labels[driver.state]||'未取得'));
   }

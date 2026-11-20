@@ -8,7 +8,7 @@ from urllib.parse import quote, unquote, urlsplit
 from flask import Blueprint, abort, jsonify, make_response, redirect, send_file
 
 ALLOWED = {'.html', '.js', '.css', '.json', '.png', '.jpg', '.jpeg', '.webp',
-           '.gif', '.svg', '.bin', '.csv', '.yaml', '.yml', '.pgm', '.ply', '.md', '.txt', '.py'}
+           '.gif', '.svg', '.bin', '.csv', '.yaml', '.yml', '.pgm', '.ply', '.md', '.txt', '.py', '.pdf'}
 ATTR = re.compile(r'''\b(href|src)\s*=\s*(["'])(.*?)\2''', re.IGNORECASE)
 BACK = ('<nav class="research-backbar" style="position:sticky;top:0;z-index:100;'
         'padding:10px 16px;margin-bottom:12px;border-radius:8px;background:#142e35;'

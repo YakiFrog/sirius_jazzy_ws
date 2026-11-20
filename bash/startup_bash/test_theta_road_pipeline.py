@@ -198,3 +198,17 @@ def test_baseline_reuse_never_uploads_normal_view_again():
     base = dict(classes=[np.full((32, 48), 5, np.uint8)], scores=[np.full((32, 48), 200, np.uint8)], metadata=[{'kind':'base_cached'}])
     packet = processor.infer([view], baseline=base)
     assert session.count == 1 and (packet['raw'] == 5).all()
+
+
+def test_default_detector_input_is_brightened_without_changing_texture_source():
+    c=load_config();c['semantic']['view_yaws']=[0];c['semantic']['shadow']['enabled']=False
+    view=np.full((32,48,3),[8,25,40],np.uint8);before=view.copy()
+    class Session:
+        registry_before={'ids':{}}
+        def configure(self,*args,**kwargs):pass
+        def infer(self,image):
+            assert image.max()>view.max()
+            return np.zeros(image.shape[:2],np.uint8),np.zeros(image.shape[:2],np.uint8),{}
+    processor=SemanticProcessor(c,{},Session());processor.infer([view])
+    np.testing.assert_array_equal(view,before)
+    assert processor.last_inference_metadata[0]['input_tone']['enabled']

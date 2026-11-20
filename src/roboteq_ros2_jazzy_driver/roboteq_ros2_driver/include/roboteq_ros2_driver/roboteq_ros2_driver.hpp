@@ -105,6 +105,7 @@ class Roboteq : public rclcpp::Node
   // --- 非常停止(e-stop) ---
   // ソフトe-stop(/stop) と Roboteq が報告するフォルト(FF: 低電圧/短絡/E-stop)を
   // 統合し、閉ループ制御を安全に停止・リセットする。
+  bool controller_release_pending_ = false;  // Explicit OFF awaits healthy MD, not a software latch.
   bool software_estop_{false};   // /stop(true) 由来
   bool hardware_estop_{false};   // FF/電圧/テレメトリ途絶 由来
   bool estop_active_{false};     // 上記のOR。制御はこのフラグで停止する

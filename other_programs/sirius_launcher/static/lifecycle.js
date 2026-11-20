@@ -1,10 +1,36 @@
 'use strict';
 (()=>{
- const style=document.createElement('link');style.rel='stylesheet';style.href='/static/lifecycle.css?v=20261027c';document.head.append(style);
+ const style=document.createElement('link');style.rel='stylesheet';style.href='/static/lifecycle.css?v=20261110-check';document.head.append(style);
  const nav=document.createElement('button');nav.className='nav-item';nav.dataset.page='lifecycle';nav.type='button';nav.title='Nav2ライフサイクル';nav.setAttribute('aria-label',nav.title);nav.innerHTML=ICONS.refresh+'<span>Lifecycle</span>';nav.onclick=()=>setPage('lifecycle');document.querySelector('.nav-item[data-page="tf"]').after(nav);
+ const errorBadge=document.createElement('span');errorBadge.id='lifecycle-error-badge';errorBadge.hidden=true;errorBadge.setAttribute('aria-hidden','true');nav.append(errorBadge);
+ function paintHealth(payload) {
+  const health=lifecycleHealth(payload),count=health.errors.length;
+  errorBadge.hidden=false;errorBadge.dataset.tone=health.tone;
+  errorBadge.textContent=health.tone==='ok'?'✓':health.tone==='unknown'?'?':health.tone==='waiting'?'…':count>99?'99+':String(count);
+  const detail=health.tone==='unknown'?'状態未取得':health.tone==='waiting'?'待機・遷移中':count?'エラー '+count+' 件。'+health.errors.map(e=>'/'+e.node+' '+e.reason).join('。'):'主要ノード稼働・エラー検出なし';
+  nav.title='Nav2 Lifecycle：'+detail;nav.setAttribute('aria-label',nav.title);
+ }
  const page=document.createElement('section');page.id='page-lifecycle';page.className='page';page.setAttribute('aria-label','Nav2ライフサイクル');
  page.innerHTML='<header class="lc-heading"><div><h1>Nav2 Lifecycle</h1><p>ノードのつながりと状態を確認</p></div><button type="button" class="hbtn" id="lc-refresh">更新</button></header><div class="lc-summary" id="lc-summary" role="status">状態を取得中…</div><div id="lc-job" class="lc-job" role="status" hidden></div><section class="lc-overview" aria-labelledby="lc-overview-title"><header><h2 id="lc-overview-title">自律移動のつながり</h2><span>概略図・構成により変わります</span></header><div class="lc-flows" id="lc-flows"></div><p class="lc-overview-note">線の動きはイメージです。実際の通信を示すものではありません。稼働と受信は別で、障害物センサーはTopicsで確認。</p></section><section class="lc-transition" aria-label="ノードの状態遷移"><strong>状態遷移</strong><span>未設定 <small>― 設定 →</small> 待機 <small>― 有効化 →</small> 稼働</span><span class="lc-transition-back">逆：無効化・設定解除</span></section><details class="lc-details" id="lc-details"><summary>全ノードの詳細・操作 <small>状態を確認してから操作</small></summary><p class="lc-note">有効化すると既存ゴールの走行が再開する場合があります。依存ノードは自動で操作しません。ウェイポイント・ドッキング等は用途と管理設定により必要性が変わります。</p><div class="lc-grid" id="lc-nodes"></div></details><details class="lc-history"><summary>状態の変化・操作履歴</summary><ol id="lc-history"></ol><p class="lc-note">状態履歴は監視開始後の最新60件です。監視前の起動失敗は過去ログも確認してください。</p></details>';
  document.querySelector('.workspace').append(page);
+ const startup=document.createElement('section');startup.id='lc-startup';startup.hidden=true;startup.setAttribute('aria-label','起動時のTF待機状況');startup.setAttribute('role','status');document.getElementById('lc-summary').after(startup);
+ function paintStartup(payload) {
+  const notices=lifecycleStartup(payload),signature=JSON.stringify(notices);
+  if(startup._shape===signature)return;
+  startup._shape=signature;startup.hidden=notices.length===0;startup.replaceChildren();
+  for(const notice of notices){
+   const row=document.createElement('article');row.className='lc-startup-notice';row.dataset.tone=notice.tone;
+   const title=text('strong',(notice.node.startsWith('global')?'グローバル':'ローカル')+'コストマップ · '+notice.label);
+   row.append(title,text('p',notice.tone==='error'?'初期位置を設定し、TF Treeで接続を確認した後、対象ノードの有効化を再試行してください。':'地図とロボットをつなぐTFを待っています。初期位置とTF Treeを確認してください。'));
+   row.append(text('small','経過時間は監視上の値です。TF待機上限の既定値は60秒です。'));
+   const detail=document.createElement('details');detail.append(text('summary','理由・元のログ'),text('p',notice.reason));row.append(detail);
+   const button=text('button','/'+notice.parent+' の操作を確認','hbtn');button.type='button';button.onclick=()=>{
+    document.getElementById('lc-details').open=true;
+    const card=[...document.querySelectorAll('.lc-node')].find(item=>item.dataset.node===notice.parent);
+    if(card){card.tabIndex=-1;card.focus({preventScroll:true});card.scrollIntoView({block:'center',behavior:'smooth'});}
+   };row.append(button);startup.append(row);
+  }
+ }
  if(PAGE==='lifecycle')setPage('lifecycle');
  const stateNames={0:'状態不明',1:'未設定',2:'待機',3:'稼働',4:'終了',10:'設定中',11:'設定解除中',12:'終了処理中',13:'有効化中',14:'無効化中',15:'エラー処理中'};
  const actions={configure:{id:1,label:'設定',from:1},activate:{id:3,label:'有効化',from:2},deactivate:{id:4,label:'無効化',from:3},cleanup:{id:2,label:'設定解除',from:2}};
@@ -76,6 +102,8 @@
  window.addEventListener('sirius:navigation-state',event=>{monitor=event.detail;monitorAt=Date.now();if(data)paintOverview(data);});
  function render(payload){
   data=payload;
+  paintHealth(payload);
+  paintStartup(payload);
   const rows=payload.telemetry?.nodes||{},logs=payload.telemetry?.logs||{},maps=payload.telemetry?.costmaps||{};
   const jobs=payload.operations||[],job=jobs[0],inFlight=jobs.some(j=>j.status==='running');
   const live=!!payload.available;
@@ -118,10 +146,11 @@
   if(!records.length)history.append(text('li','履歴はまだありません'));
  }
  async function refresh(force=false){
-  if(busy||document.hidden||(!force&&!isPageVisible('lifecycle'))||(!force&&Date.now()-lastPoll<1500))return;
+  const interval=isPageVisible('lifecycle')?1500:5000;
+  if(busy||document.hidden||(!force&&Date.now()-lastPoll<interval))return;
   busy=true;lastPoll=Date.now();
   try{const r=await fetch('/api/lifecycle',{cache:'no-store',signal:AbortSignal.timeout(5000)});const d=await r.json();if(!r.ok)throw Error(d.error||r.status);render(d);}
-  catch(error){shape='';monitor=null;if(data)render({...data,available:false});const summary=document.getElementById('lc-summary');summary._shape=null;summary.textContent='現在状態を取得できません：'+error.message;document.querySelectorAll('#lc-nodes button').forEach(b=>b.disabled=true);}
+  catch(error){shape='';monitor=null;paintHealth({available:false});if(data)render({...data,available:false});const summary=document.getElementById('lc-summary');summary._shape=null;summary.textContent='現在状態を取得できません：'+error.message;document.querySelectorAll('#lc-nodes button').forEach(b=>b.disabled=true);}
   finally{busy=false;}
  }
  async function send(node,action,state){

@@ -58,6 +58,9 @@
 .refined-categories button[aria-pressed=true]{background:var(--accent-bg);color:var(--accent);font-weight:600}
 .refined-ui #page-home .preset{display:grid;grid-template-columns:minmax(0,1fr) 32px 76px;gap:7px;padding:12px;border:1px solid var(--line);border-left:1px solid var(--line);border-radius:10px;background:var(--panel);min-height:72px;transform:none}
 .refined-ui #page-home .preset:hover{background:var(--panel-2);transform:none}
+.refined-ui #page-home #presets.preset-grid{max-height:400px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:4px}
+.refined-ui #page-home #presets>.preset{display:grid}
+.refined-ui #page-home #more-presets{display:none}
 .refined-ui #page-home .preset>.preset-copy{grid-column:1;grid-row:1;min-width:0}
 .refined-ui #page-home .preset-name{font-size:12px;line-height:1.5;font-weight:600;white-space:normal;overflow-wrap:anywhere}
 .refined-ui #page-home .preset-note{margin-top:3px;font-size:10px;line-height:1.5;-webkit-line-clamp:2}

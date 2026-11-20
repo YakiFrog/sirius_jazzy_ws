@@ -108,7 +108,10 @@ large odometry jump.
   startup stop, software request and rejected release. With `estop_latch_hardware=true`, a protection latch keeps
   its originating reason until an accepted manual release. The deployed default
   is false: physical/supply stops do not enable the software stop; supply
-  recovery clears the hardware stop. Manually enabled software stops remain
+  recovery clears the hardware stop. `estop_start_active=false` also avoids
+  automatically enabling the electronic stop on driver startup. Navigation
+  waypoint pauses use action cancellation instead of the motor `/stop` topic.
+  Manually enabled software stops remain
   latched. Existing velocity publishers may resume motion after supply recovery. FF16 produced by our
   own `!EX` is not labelled as a new external MD fault. A physical switch that
   only cuts the supply still cannot be distinguished from other supply loss.

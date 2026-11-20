@@ -4,7 +4,7 @@ set -u
 WS="$HOME/sirius_jazzy_ws"
 PORT="${SIRIUS_WEB_PORT:-8090}"
 DOMAIN="${ROS_DOMAIN_ID:-53}"
-BROWSER_PROFILE="$HOME/.local/share/sirius/console-browser"
+BROWSER_PROFILE="${SIRIUS_WEB_BROWSER_PROFILE:-$HOME/.local/share/sirius/console-browser}"
 STATE="${XDG_STATE_HOME:-$HOME/.local/state}/sirius_console"
 mkdir -p "$STATE"
 if [ "${1:-}" = "--serve" ]; then
@@ -41,29 +41,49 @@ fi
 [ "${SIRIUS_WEB_NO_BROWSER:-0}" = "1" ] && exit 0
 if [ -f "$WS/bash/startup_bash/detect_gui_env.sh" ]; then
     source "$WS/bash/startup_bash/detect_gui_env.sh"
-    sirius_detect_gui_env || true
+fi
+gui_ready=0
+for _ in $(seq 1 60); do
+    if declare -F sirius_detect_gui_env >/dev/null; then sirius_detect_gui_env || true; fi
+    if wmctrl -m >/dev/null 2>&1; then gui_ready=1; break; fi
+    sleep 1
+done
+if [ "$gui_ready" != 1 ]; then
+    echo "Desktop window manager did not become ready." >&2
+    exit 1
 fi
 focus_console() {
     command -v wmctrl >/dev/null 2>&1 || return 1
     # Titles change between the shell and individual pages. Identify only our
-    # dedicated Chrome profile and URL, without focusing other browser windows.
+    # local app URL, including the older localhost shortcut.
     local wid desktop pid host rest command_line
     while read -r wid desktop pid host rest; do
         [ -r "/proc/$pid/cmdline" ] || continue
         # Chrome can rewrite argv into a single space-separated string.
         # Normalize both forms and require complete option/value boundaries.
         command_line=" $(tr '\0' ' ' < "/proc/$pid/cmdline") "
-        if [[ "$command_line" == *" --user-data-dir=$BROWSER_PROFILE "* ]] &&
-           [[ "$command_line" == *" --app=$URL "* ]]; then
+        if [[ "$command_line" == *" --app=$URL "* ]] ||
+           [[ "$command_line" == *" --app=http://localhost:$PORT "* ]]; then
             wmctrl -i -a "$wid" || true
-            [ "${SIRIUS_WEB_KIOSK:-1}" != "1" ] || wmctrl -i -r "$wid" -b add,fullscreen
+            if [ "${SIRIUS_WEB_KIOSK:-1}" = "1" ]; then
+                wmctrl -i -r "$wid" -b add,fullscreen || return 2
+                xprop -id "$wid" _NET_WM_STATE 2>/dev/null | grep -q '_NET_WM_STATE_FULLSCREEN' || return 2
+            fi
             return 0
         fi
     done < <(wmctrl -lp)
     return 1
 }
-if focus_console; then
-    exit 0
+focus_console
+existing_result=$?
+if [ "$existing_result" -eq 0 ]; then exit 0; fi
+if [ "$existing_result" -eq 2 ]; then
+    for _ in $(seq 1 100); do
+        sleep 0.3
+        if focus_console; then exit 0; fi
+    done
+    echo "Existing Launcher window did not reach fullscreen." >&2
+    exit 1
 fi
 for browser in google-chrome google-chrome-stable chromium chromium-browser; do
     if command -v "$browser" >/dev/null 2>&1; then
@@ -71,11 +91,13 @@ for browser in google-chrome google-chrome-stable chromium chromium-browser; do
         [ "${SIRIUS_WEB_KIOSK:-1}" = "1" ] && BROWSER_ARGS+=(--kiosk --start-fullscreen)
         "$browser" "${BROWSER_ARGS[@]}" >/dev/null 2>&1 9>&- &
         # App mode may initially ignore kiosk size; apply the window state once mapped.
-        for _ in $(seq 1 30); do
-            focus_console && break
+        for _ in $(seq 1 100); do
+            if focus_console; then exit 0; fi
             sleep 0.3
         done
-        exit 0
+        echo "Launcher window did not reach fullscreen." >&2
+        exit 1
     fi
 done
-xdg-open "$URL" >/dev/null 2>&1 9>&- &
+echo "No supported browser found for the Launcher window." >&2
+exit 1

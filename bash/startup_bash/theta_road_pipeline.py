@@ -35,6 +35,7 @@ def load_config(path=DEFAULT_CONFIG):
 
 def validate_config(c):
     validate_tone(c['texture']['tone'])
+    validate_tone(c['semantic']['input_tone'])
     positive = [c['resolution'], c['max_grid_cells'], c['projection']['bev_size'],
                 c['projection']['stride'], c['projection']['max_radius'],
                 c['semantic']['min_weight'], c['semantic']['max_gap_sec'],

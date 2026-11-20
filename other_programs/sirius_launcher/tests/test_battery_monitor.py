@@ -25,7 +25,7 @@ def test_unknown_percent_stays_unknown_and_estop_is_separate():
     data=normalize(motor(),'RoboteqStatus')
     assert math.isclose(data['voltage'],5.8)
     assert data['percentage'] is None and data['charging'] is None
-    assert data['emergency_stop'] is True and data['fault_flags']==16
+    assert data['emergency_stop'] is None and data['controller_emergency_stop'] is True and data['fault_flags']==16
     assert math.isclose(data['current'],-.2)
 
 
@@ -72,11 +72,11 @@ def test_battery_and_driver_keep_separate_measurements_and_freshness():
     data=store.snapshot(2)
     assert data['battery']['percentage']==100 and data['battery']['voltage'] is None
     assert data['driver']['voltage']==5.8 and data['driver']['internal_voltage']==13.8
-    assert data['driver']['emergency_stop'] is True
+    assert data['driver']['controller_emergency_stop'] is True
     store.ingest('/roboteq/status','RoboteqStatus',motor(flags=0),6)
     data=store.snapshot(6)
     assert data['battery']['state']=='stale' and data['driver']['state']=='live'
-    assert data['battery']['percentage']==100 and data['driver']['emergency_stop'] is False
+    assert data['battery']['percentage']==100 and data['driver']['controller_emergency_stop'] is False
     store.ingest('/battery_state','BatteryState',standard(percentage=.98),12)
     data=store.snapshot(12)
     assert data['battery']['state']=='live' and data['driver']['state']=='stale'
@@ -87,7 +87,7 @@ def test_zero_or_missing_drive_voltage_does_not_hide_estop():
     for voltage in (0,math.nan):
         store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=voltage),0)
         driver=store.snapshot(0)['driver']
-        assert driver['state']=='live' and driver['emergency_stop'] is True
+        assert driver['state']=='live' and driver['controller_emergency_stop'] is True
         assert driver['internal_voltage']==13.8
     store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=0),1)
     assert store.snapshot(1)['driver']['voltage']==0
@@ -122,7 +122,7 @@ def test_solix_is_independent_and_never_replaces_battery_or_driver():
     store.ingest('/sirius/battery_status','SolixStatus',solix(battery_level=100),1)
     data=store.snapshot(2)
     assert data['source_type']=='BatteryState' and data['battery']['percentage']==75
-    assert data['details']['percentage']==100 and data['driver']['emergency_stop'] is True
+    assert data['details']['percentage']==100 and data['driver']['controller_emergency_stop'] is True
     store.ingest('/battery_state','BatteryState',standard(percentage=.74),7)
     data=store.snapshot(7)
     assert data['battery']['state']=='live' and data['details']['state']=='stale'
@@ -167,9 +167,9 @@ def test_battery_api_auth_and_dead_receiver_is_never_live(monkeypatch):
 def test_physical_stop_inference_is_independent_of_electronic_stop():
     assert normalize(motor(voltage=13,flags=0),'RoboteqStatus')['physical_emergency_stop'] is False
     low=normalize(motor(voltage=6.9,flags=0),'RoboteqStatus')
-    assert low['physical_emergency_stop'] is True and low['emergency_stop'] is False
+    assert low['physical_emergency_stop'] is True and low['emergency_stop'] is None
     electronic=normalize(motor(voltage=13,flags=16),'RoboteqStatus')
-    assert electronic['physical_emergency_stop'] is False and electronic['emergency_stop'] is True
+    assert electronic['physical_emergency_stop'] is False and electronic['emergency_stop'] is None
     assert normalize(motor(voltage=0),'RoboteqStatus')['physical_emergency_stop'] is True
     assert normalize(motor(voltage=math.nan),'RoboteqStatus')['physical_emergency_stop'] is None
     assert normalize(standard(voltage=3),'BatteryState')['physical_emergency_stop'] is None
@@ -191,3 +191,15 @@ def test_physical_inference_is_unknown_after_stale_or_missing_voltage():
     store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=4),8)
     store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=math.nan),9)
     assert store.snapshot(9)['driver']['physical_emergency_stop'] is None
+
+
+def test_electronic_state_comes_from_driver_diagnostics_independently_of_physical():
+    from types import SimpleNamespace
+    store=BatteryStore()
+    store.ingest('/roboteq/status','RoboteqStatus',motor(voltage=5.8,flags=16),10)
+    store.ingest('/roboteq/diagnostics','RoboteqDiagnostics',SimpleNamespace(software_estop=False,hardware_estop=True,estop_active=True),10)
+    d=store.snapshot(10.1)['driver']
+    assert d['emergency_stop'] is False and d['physical_emergency_stop'] is True
+    assert d['drive_stop_active'] is True and d['hardware_protection_stop'] is True
+    assert d['controller_emergency_stop'] is True
+    assert store.snapshot(12.1)['driver']['emergency_stop'] is None

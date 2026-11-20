@@ -70,7 +70,7 @@ def main():
     import rclpy
     from rclpy.duration import Duration
     from std_msgs.msg import Bool
-    from roboteq_ros2_driver.msg import RoboteqStatus
+    from roboteq_ros2_driver.msg import RoboteqDiagnostics
     from diagnostic_msgs.msg import DiagnosticArray
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -87,8 +87,8 @@ def main():
             return
         feedback = {}
         subscription = node.create_subscription(
-            RoboteqStatus, '/roboteq/status',
-            lambda msg: feedback.update(active=bool(msg.fault_flags & 16)), 10)
+            RoboteqDiagnostics, '/roboteq/diagnostics',
+            lambda msg: feedback.update(active=bool(msg.software_estop)), 10)
         def mux_feedback(msg):
             for status in msg.status:
                 if status.name == 'twist_mux: Twist mux status':

@@ -373,6 +373,7 @@ void Roboteq::bumper_callback(const std_msgs::msg::Bool::SharedPtr stop_msg)
         record_stop_event(DriveDiagnostics::STOP_SOFTWARE);
         RCLCPP_INFO(this->get_logger(), "Bumper!!!");
         software_estop_ = true;
+        controller_release_pending_ = false;
         // 閉ループの目標/積分を先に落としてから出力を切る。
         // (停止中に積分が巻き上がり、解除時に暴走するのを防ぐ)
         update_estop_state();
@@ -387,17 +388,8 @@ void Roboteq::bumper_callback(const std_msgs::msg::Bool::SharedPtr stop_msg)
         if (!software_estop_) {
             return;
         }
-        // A release is an explicit acknowledgement, never an automatic voltage recovery.
-        // Ignore FF bit 16 here: our own !EX sets it until !MG is sent.
-        if (!protection_release_ready()) {
-            record_stop_event(DriveDiagnostics::STOP_RELEASE_REJECTED);
-            software_estop_ = true;
-            update_estop_state();
-            safe_serial_write("!EX 1\r");
-            RCLCPP_WARN(this->get_logger(),
-                "Stop release rejected: drive voltage/fault/telemetry is not healthy");
-            return;
-        }
+        // Explicit software release is independent of physical/power protection.
+        // Keep the MD stopped until the existing health checks allow !MG.
         RCLCPP_INFO(this->get_logger(), "Restart!!!");
         // Releasing emergency stop. Reset command values to 0 to prevent the controller
         // from resuming previous non-zero velocities from its memory.
@@ -405,9 +397,11 @@ void Roboteq::bumper_callback(const std_msgs::msg::Bool::SharedPtr stop_msg)
         latched_stop_reason_mask_ = 0;
         safe_serial_write("!G 1 0\r");
         safe_serial_write("!G 2 0\r");
-        safe_serial_write("!MG\r");
+        controller_release_pending_ = true;
         linear_x = 0.0;
         angular_z = 0.0;
+        reset_closed_loop_state();
+        check_hardware_estop();
         update_estop_state();
     }
 }
@@ -430,7 +424,7 @@ void Roboteq::reset_closed_loop_state()
 
 void Roboteq::update_estop_state()
 {
-    const bool active = software_estop_ || hardware_estop_;
+    const bool active = software_estop_ || hardware_estop_ || controller_release_pending_;
     if (active == estop_active_) {
         return;
     }
@@ -452,6 +446,15 @@ void Roboteq::update_estop_state()
 
 void Roboteq::check_hardware_estop()
 {
+    if (controller_release_pending_ && !software_estop_ && protection_release_ready()) {
+        safe_serial_write("!G 1 0\r");
+        safe_serial_write("!G 2 0\r");
+        if (safe_serial_write("!MG\r")) {
+            controller_release_pending_ = false;
+            update_estop_state();
+            RCLCPP_INFO(this->get_logger(), "MD release sent after protection recovered; software stop remains OFF");
+        }
+    }
     const rclcpp::Time now = this->get_clock()->now();
     bool bad = false;
     uint32_t reason = 0;

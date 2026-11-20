@@ -19,6 +19,17 @@ def test_running_errors_get_a_prominent_frame_and_badge():
     assert '.btn.err{border:2px solid var(--danger)!important' in css
 
 
+def test_home_running_heading_shows_input_wait_count():
+    script = (ROOT / 'static' / 'console.js').read_text(encoding='utf-8')
+    css = (ROOT / 'static' / 'console.css').read_text(encoding='utf-8')
+
+    assert 'runwaithint' in script
+    assert 'state?.running&&state.input_waiting' in script
+    assert "hint.textContent=count?'⌨ 入力待ち '+count:''" in script
+    assert '.running-toggle #runwaithint{' in css
+    assert '.running-toggle #runwaithint[hidden]{display:none}' in css
+
+
 def test_process_card_left_bar_is_clipped_to_rounded_corners():
     css = (ROOT / 'static' / 'console.css').read_text(encoding='utf-8')
 
