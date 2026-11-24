@@ -49,11 +49,15 @@ from teleop_process import TeleopBridge
 from teleop_control import VelocityControl
 from documentation_notes import register_documentation_notes
 from file_browser import register_file_browser
+from map_editor import register_map_editor
 from face_bridge import register_face
 from lifecycle_service import register_lifecycle
 from nav_mode_service import NavModeService
 from ear_control import register_ear
 from hotspot_status import register_hotspot
+from host_audio import register_host_audio
+from host_power import register_host_power
+from launcher_access import enforce_tailnet_access, load_tailnet_access
 from research_archive import register_research_archive
 from preset_metadata import read_preset_metadata, preset_presentation
 
@@ -937,6 +941,11 @@ def stop_one(name):
     return False, "not started"
 
 
+@app.before_request
+def require_launcher_access():
+    return enforce_tailnet_access(app.config.get("SIRIUS_TAILNET_ACCESS"))
+
+
 def auth_ok():
     if not PASSWORD:
         return True
@@ -945,10 +954,13 @@ def auth_ok():
 
 register_documentation_notes(app, auth_ok)
 register_file_browser(app, auth_ok)
+register_map_editor(app, auth_ok)
 register_face(app, auth_ok)
 register_lifecycle(app,auth_ok,lambda:DEFAULT_DOMAIN,lambda:TF_MONITOR.snapshot(DEFAULT_DOMAIN))
 register_ear(app, auth_ok, domain=lambda: DEFAULT_DOMAIN)
 register_hotspot(app, auth_ok)
+register_host_audio(app, auth_ok)
+register_host_power(app, lambda: PASSWORD, LOCK)
 register_research_archive(app, auth_ok)
 
 
@@ -988,6 +1000,15 @@ def console():
         return LOGIN
     resp.headers["Cache-Control"] = "no-store"
     return resp
+
+
+@app.route("/power")
+def power_page():
+    if not auth_ok():
+        return LOGIN
+    response = make_response(Path(__file__).with_name("power.html").read_text(encoding="utf-8"))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.route("/api/health")
@@ -1279,7 +1300,7 @@ def api_restart_all():
     return jsonify(result)
 
 
-@app.route("/api/restart_server", methods=["POST", "GET"])
+@app.route("/api/restart_server", methods=["POST"])
 def api_restart_server():
     """Webサーバー自身を再起動する。
 
@@ -1773,6 +1794,15 @@ def main():
     ap.add_argument("--ros-domain", default=os.environ.get("ROS_DOMAIN_ID", "53"),
                     help="起動コマンドに渡すROS_DOMAIN_ID（既定: 環境変数 or 53）")
     args = ap.parse_args()
+    try:
+        tailnet_access = load_tailnet_access()
+    except (OSError, TypeError, KeyError, ValueError) as error:
+        ap.error(f"Tailscale認証設定を読み込めません: {error}")
+    if tailnet_access:
+        if args.password:
+            ap.error("Tailscale認証とパスワード認証は同時に設定できません")
+        args.host = "127.0.0.1"
+        app.config["SIRIUS_TAILNET_ACCESS"] = tailnet_access
     ALIAS_FILE = args.alias_file
     PASSWORD = args.password
     DEFAULT_DOMAIN = args.ros_domain

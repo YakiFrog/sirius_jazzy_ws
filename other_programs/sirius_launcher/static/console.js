@@ -14,7 +14,7 @@ async function stopIt(n,el){if(OPS[n]||!confirm('「'+n+'」を停止します�
 let PAGE='home', RESOURCE_DATA=null, RESOURCE_BUSY=false, REFRESH_BUSY=false;
 let PROCESS_SCOPE='related', PROCESS_SORT='cpu_percent', PROCESS_ASC=false, PROCESS_LIMIT=40;
 let LAST_GOOD_STATUS=null, LAST_RESOURCE_POLL=0;
-const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',visualization:'3D Visualization',tf:'TF Tree',lifecycle:'Nav2 Lifecycle',settings:'設定',docs:'操作ガイド',files:'ファイル'};
+const PAGE_LABELS={home:'Home',terminal:'Terminal',resources:'Monitor',visualization:'3D Visualization',tf:'TF Tree',lifecycle:'Nav2 Lifecycle',settings:'設定',docs:'操作ガイド',files:'ファイル','map-editor':'Map Editor'};
 window.isPageVisible=page=>!!(window.APP_SPLIT?.has(page)||PAGE===page);
 const originalApi=api;
 api=async function(path,body){

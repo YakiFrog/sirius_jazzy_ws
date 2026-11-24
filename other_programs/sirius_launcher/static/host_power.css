@@ -1,0 +1,122 @@
+.host-power-trigger {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.host-power-trigger svg { width: 16px; height: 16px; }
+.host-power-trigger:is(:hover, :focus-visible) {
+  color: var(--accent);
+  background: var(--panel-2);
+  border-color: var(--line);
+}
+.host-power-trigger[aria-expanded=true] {
+  color: var(--accent);
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+.host-power-popover {
+  position: fixed;
+  top: 70px;
+  right: 16px;
+  z-index: 130;
+  width: min(270px, calc(100vw - 20px));
+  max-height: min(70dvh, 460px);
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.host-power-popover[hidden] { display: none !important; }
+.host-power-popover .host-power-menu {
+  order: initial;
+  border: 0;
+  padding: 0;
+}
+@media(max-width:620px) {
+  .host-power-trigger { width: 32px; height: 32px; min-width: 32px; }
+}
+.host-power-menu {
+  order: 99;
+  border-top: 1px solid var(--border, #8494a155);
+  padding: 9px 0 3px;
+  display: grid;
+  gap: 6px;
+  color: var(--text);
+}
+.host-power-menu h3, .host-power-target, .host-power-menu-status { margin: 0; padding-inline: 8px; }
+.host-power-target, .host-power-menu-status { color: var(--muted); font-size: .82rem; overflow-wrap: anywhere; }
+.host-power-menu button { justify-content: flex-start; display: flex; align-items: center; gap: 9px; min-height: 38px; padding-inline: 10px; }
+.host-power-menu button svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.host-power-menu [data-power=poweroff] { color: #ffa5af; }
+:root[data-theme=light] .host-power-menu [data-power=poweroff] { color: #a42438; }
+.host-power-dialog {
+  box-sizing: border-box;
+  width: min(510px, calc(100vw - 28px));
+  padding: clamp(16px, 4vw, 24px);
+  background: var(--panel, #222733);
+  color: var(--text, #eff3f9);
+  border: 1px solid var(--border, #8494a155);
+  border-radius: 15px;
+  box-shadow: 0 16px 48px #080e2550;
+}
+.host-power-dialog::backdrop { background: #101a315e; }
+.host-power-dialog h2 { font-size: 1.16rem; margin: 0; overflow-wrap: anywhere; }
+.host-power-dialog p { margin: .65rem 0; font-size: .9rem; }
+.host-power-status { border: 1px solid var(--border, #8494a155); border-radius: 8px; padding: 8px 10px; }
+.host-power-status[data-kind=warning] { color: #ffd48f; border-color: #bd842e; }
+:root[data-theme=light] .host-power-status[data-kind=warning] { color: #754504; background: #fff7e7; }
+.host-power-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 16px; flex-wrap: wrap; }
+.host-power-actions button { min-height: 40px; }
+.host-power-actions [data-action=reboot]:enabled { color: white; background: #255aaf; }
+.host-power-actions [data-action=poweroff]:enabled { color: white; background: #ac283d; }
+.host-power-actions button:disabled, .host-power-menu button:disabled { opacity: .5; cursor: default; }
+.host-power-shortcut { color: var(--text); font-size: .8rem; margin: 5px 8px 1px; }
+.host-power-page {
+  color-scheme: light dark;
+  --panel: light-dark(#fff, #202635);
+  --text: light-dark(#18243a, #edf3ff);
+  --muted: light-dark(#4a5c73, #b0bdd2);
+  --border: light-dark(#c9d5e2, #475268);
+  margin: 0;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 16px;
+  background: light-dark(#eef3f9, #101520);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+.host-power-page main {
+  width: min(100%, 380px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-sizing: border-box;
+  padding: 22px;
+  background: var(--panel);
+}
+.host-power-page .host-power-menu { border: 0; padding: 0; gap: 12px; }
+.host-power-page .hbtn {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font: inherit;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.host-power-page .host-power-menu button { min-height: 48px; font-weight: 650; }
+.host-power-page .host-power-menu [data-power=poweroff] { color: light-dark(#a42438, #ffa5af); }
+.host-power-page .host-power-status[data-kind=warning] { color: light-dark(#754504, #ffd48f); }

@@ -2,6 +2,7 @@
 import io
 import hashlib
 import configparser
+from contextlib import contextmanager
 import ctypes
 import errno
 from datetime import datetime
@@ -20,8 +21,37 @@ from flask import Blueprint, jsonify, request, send_file
 
 TEXT_LIMIT = 512 * 1024
 IMAGE_LIMIT = 32 * 1024 * 1024
+PGM_LIMIT = 128 * 1024 * 1024
 IMAGE_EXTENSIONS = {'.pgm', '.png', '.jpg', '.jpeg', '.bmp', '.webp', '.tif', '.tiff'}
 TEXT_EXTENSIONS = {'.yaml', '.yml', '.json', '.txt', '.md', '.csv', '.py', '.sh', '.xml', '.log', '.ini', '.cfg', '.toml', '.rviz', '.pgm.info'}
+
+
+@contextmanager
+def open_preview_image(path):
+    from PIL import Image
+
+    extension = path.suffix.lower()
+    if extension not in IMAGE_EXTENSIONS:
+        raise ValueError('プレビューに対応していない画像形式です')
+    is_pgm = extension == '.pgm'
+    limit = PGM_LIMIT if is_pgm else IMAGE_LIMIT
+    if path.stat().st_size > limit:
+        raise ValueError(f'画像は {limit // (1024 * 1024)} MiB までです')
+    # An 8-bit PGM uses one byte per cell, plus its header.
+    pixel_limit = PGM_LIMIT if is_pgm else 40_000_000
+    pixel_error = f'プレビュー画像は{pixel_limit:,}画素までです'
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore' if is_pgm else 'error', Image.DecompressionBombWarning)
+            image = Image.open(path)
+    except (Image.DecompressionBombWarning, Image.DecompressionBombError) as error:
+        raise ValueError(pixel_error) from error
+    with image:
+        if is_pgm and (image.format != 'PPM' or image.mode in ('1', 'RGB')):
+            raise ValueError('PGM地図を指定してください')
+        if image.width * image.height > pixel_limit:
+            raise ValueError(pixel_error)
+        yield image
 
 
 class HostFiles:
@@ -184,23 +214,17 @@ class HostFiles:
     def image(self, value):
         from PIL import Image, ImageOps
         path = self.regular_file(value)
-        if path.suffix.lower() not in IMAGE_EXTENSIONS or path.stat().st_size > IMAGE_LIMIT:
-            raise ValueError('画像形式、またはサイズ上限（32 MB）を確認してください')
-        with warnings.catch_warnings():
-            warnings.simplefilter('error', Image.DecompressionBombWarning)
-            with Image.open(path) as image:
-                if image.width*image.height > 40_000_000:
-                    raise ValueError('プレビュー画像は4,000万画素までです')
-                original_size = image.size
-                image.thumbnail((1800,1800))
-                if image.mode in ('I', 'I;16', 'I;16B', 'F'):
-                    import numpy as np
-                    a = np.asarray(image, dtype=float)
-                    lo, hi = float(a.min()), float(a.max())
-                    image = Image.fromarray(np.clip((a-lo)*255/max(hi-lo,1),0,255).astype('uint8'))
-                image = ImageOps.exif_transpose(image).convert('RGB')
-                result = io.BytesIO()
-                image.save(result, format='PNG')
+        with open_preview_image(path) as image:
+            original_size = image.size
+            image.thumbnail((1800, 1800))
+            if image.mode in ('I', 'I;16', 'I;16B', 'F'):
+                import numpy as np
+                a = np.asarray(image, dtype=float)
+                lo, hi = float(a.min()), float(a.max())
+                image = Image.fromarray(np.clip((a-lo)*255/max(hi-lo,1),0,255).astype('uint8'))
+            image = ImageOps.exif_transpose(image).convert('RGB')
+            result = io.BytesIO()
+            image.save(result, format='PNG')
         result.seek(0)
         return result, original_size
 
