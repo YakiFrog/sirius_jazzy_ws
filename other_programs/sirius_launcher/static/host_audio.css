@@ -1,3 +1,12 @@
+[data-volume-level=unavailable], [data-volume-level=silent] { --host-volume-color: var(--muted); }
+[data-volume-level=muted] { --host-volume-color: #ffabb6; }
+[data-volume-level=low] { --host-volume-color: #71dfbd; }
+[data-volume-level=medium] { --host-volume-color: #9dc6ff; }
+[data-volume-level=high] { --host-volume-color: #ffd18a; }
+:root[data-theme=light] [data-volume-level=muted] { --host-volume-color: #a9213a; }
+:root[data-theme=light] [data-volume-level=low] { --host-volume-color: #087459; }
+:root[data-theme=light] [data-volume-level=medium] { --host-volume-color: #2256a5; }
+:root[data-theme=light] [data-volume-level=high] { --host-volume-color: #8b5009; }
 .compact-header #host-volume-toggle {
   order: 3;
   display: grid;
@@ -11,10 +20,16 @@
   color: var(--text);
   cursor: pointer;
 }
-#host-volume-toggle:is(:hover,[aria-expanded=true]) {
-  border-color: var(--accent);
-  background: var(--accent-bg);
-  color: var(--accent);
+.compact-header #host-volume-toggle[data-volume-level],
+#header-more-panel > #host-volume-menu[data-volume-level] {
+  color: var(--host-volume-color);
+  background: color-mix(in srgb, var(--host-volume-color) 9%, var(--panel));
+  border-color: color-mix(in srgb, var(--host-volume-color) 35%, var(--line));
+}
+.compact-header #host-volume-toggle[data-volume-level]:is(:hover,[aria-expanded=true]),
+#header-more-panel > #host-volume-menu[data-volume-level]:is(:hover,[aria-expanded=true]) {
+  border-color: var(--host-volume-color);
+  background: color-mix(in srgb, var(--host-volume-color) 15%, var(--panel));
 }
 .host-volume-button svg, #host-volume-mute svg {
   width: 18px;
@@ -28,6 +43,8 @@
   z-index: 120;
   box-sizing: border-box;
   width: min(310px, calc(100vw - 20px));
+  max-height: calc(100dvh - 16px);
+  overflow: auto;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -56,8 +73,7 @@
 #host-volume-close { min-width: 32px; min-height: 32px; padding: 2px; }
 .host-volume-output { margin: 12px 0; font-size: 11px; color: var(--muted); }
 #host-volume-device { min-width: 0; flex: 1; overflow-wrap: anywhere; color: var(--text); }
-#host-volume-status { flex: 0 0 auto; }
-#host-volume-status[data-muted=true] { color: var(--yellow, var(--accent)); font-weight: 700; }
+#host-volume-status { flex: 0 0 auto; color: var(--host-volume-color, var(--muted)); font-weight: 650; }
 .host-volume-setting { margin-bottom: 11px; }
 #host-volume-slider { flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; background: transparent; accent-color: var(--accent); }
 #host-volume-value { min-width: 5ch; text-align: right; font-variant-numeric: tabular-nums; }

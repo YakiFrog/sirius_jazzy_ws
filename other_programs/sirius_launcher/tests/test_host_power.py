@@ -93,4 +93,6 @@ def test_power_button_is_added_directly_to_the_header():
     assert "void refresh()" in script
     assert "popover.hidden = false" in script
     assert '.host-power-popover' in style and '.host-power-trigger' in style
-    assert 'host_power.css?v=3' in page and 'host_power.js?v=5' in page
+    assert 'host_power.css?v=4' in page and 'host_power.js?v=6' in page
+    assert '電源専用画面' not in script
+    assert not (root / 'power.html').exists()

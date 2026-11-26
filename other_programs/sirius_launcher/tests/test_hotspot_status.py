@@ -79,3 +79,16 @@ def test_auth_and_local_url_do_not_follow_the_remote_browser_hostname(monitor):
     assert response.json['url']=='http://10.42.0.1:8095/console'
     assert response.headers['Cache-Control']=='no-store'
     assert not any('password' in key or 'psk' in key for key in response.json)
+
+
+def test_hotspot_chip_changes_color_for_connected_disconnected_and_unknown():
+    root = Path(__file__).resolve().parents[1]
+    style = (root / 'static' / 'hotspot.css').read_text(encoding='utf-8')
+    page = (root / 'launcher.html').read_text(encoding='utf-8')
+    assert '#hotspot-toggle[data-state=active]' in style
+    assert '#hotspot-toggle[data-state=inactive]' in style
+    assert '#hotspot-toggle[data-state=unknown]' in style
+    assert 'color:var(--mint)' in style
+    assert 'color:var(--red)' in style
+    assert 'var(--amber,#e5bd79)' in style
+    assert 'hotspot.css?v=20261126-status-color2' in page

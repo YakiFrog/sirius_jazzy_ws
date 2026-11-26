@@ -5,12 +5,15 @@ import os
 from pathlib import Path
 import shlex
 import shutil
+import signal
 import socket
 import subprocess
 import threading
 import time
 
 from flask import Blueprint, Response, jsonify, request
+from fullscreen_workspace import ensure_fullscreen
+from launcher_windows import launcher_windows
 
 EXPRESSIONS = {'normal', 'happy', 'angry', 'sad', 'surprised', 'cat', 'wink', 'pien',
                'sleeping', 'battery', 'failure', 'hurt'}
@@ -30,6 +33,7 @@ class FaceBridge:
         self.cached = None
         self.cached_at = 0
         self.launch_until = 0
+        self.cancel_placement = threading.Event()
         self.gui = None
         self.preview_lock = threading.Lock()
         self.preview_cached = None
@@ -119,44 +123,121 @@ class FaceBridge:
     def processes(self, shortcut):
         if not shortcut:
             return []
-        try:
-            result = subprocess.run(['ps', '-u', str(os.getuid()), '-o', 'pid=,args='],
-                                    capture_output=True, text=True, timeout=.6)
-            found = []
-            for line in result.stdout.splitlines():
-                fields = line.strip().split(None, 1)
-                if len(fields) == 2:
-                    try:
-                        if shortcut['executable'] in shlex.split(fields[1]):
-                            found.append(int(fields[0]))
-                    except ValueError:
-                        continue
-            return found
-        except (OSError, ValueError, subprocess.TimeoutExpired):
+        command = shortcut['executable']
+        executable = Path(command if os.path.isabs(command) else shutil.which(command) or '')
+        if not executable.is_absolute():
             return []
+        executable = executable.resolve()
+        # An AppImage's UI runs from a temporary FUSE mount with a different
+        # executable path. Match the mount type and the app's executable name.
+        mount_type = 'fuse.' + executable.name
+        mounts = {
+            Path(fields[4].replace(r'\040', ' '))
+            for line in Path('/proc/self/mountinfo').read_text().splitlines()
+            if (fields := line.split()) and fields[fields.index('-') + 1] == mount_type
+        } if executable.suffix.lower() == '.appimage' else set()
+        result = subprocess.run(['ps', '-u', str(os.getuid()), '-o', 'pid='],
+                                capture_output=True, text=True, timeout=1, check=True)
+        found = []
+        for pid in map(int, result.stdout.split()):
+            try:
+                target = Path(os.readlink(f'/proc/{pid}/exe'))
+            except (FileNotFoundError, PermissionError, ProcessLookupError):
+                continue
+            if target == executable or (
+                target.name.lower() == shortcut['wm_class'] and target.parent in mounts
+            ):
+                found.append(pid)
+        return found
+
+    def stop(self, shortcut):
+        pids = self.processes(shortcut)
+        windows = self.windows(shortcut)
+        if not pids and (windows or time.monotonic() < self.launch_until):
+            raise FaceError('顔のプロセスを確認できません。少し待ってから再試行してください')
+        self.cancel_placement.set()
+        self.cached = self.preview_cached = None
+        self.launch_until = 0
+        for window in windows:
+            if window['pid'] in pids:
+                try:
+                    subprocess.run(['wmctrl', '-i', '-c', window['id']], env=self.gui_env(),
+                                   capture_output=True, timeout=1)
+                except (OSError, subprocess.TimeoutExpired):
+                    break
+
+        def wait_for_exit(timeout):
+            deadline = time.monotonic() + timeout
+            remaining = self.processes(shortcut)
+            while remaining and time.monotonic() < deadline:
+                time.sleep(.1)
+                remaining = self.processes(shortcut)
+            return remaining
+
+        remaining = wait_for_exit(2 if windows else 0)
+        for sig in (signal.SIGTERM, signal.SIGKILL):
+            if not remaining:
+                break
+            for pid in remaining:
+                try:
+                    fd = os.pidfd_open(pid)
+                except ProcessLookupError:
+                    continue
+                try:
+                    if pid in self.processes(shortcut):
+                        signal.pidfd_send_signal(fd, sig)
+                except ProcessLookupError:
+                    pass
+                finally:
+                    os.close(fd)
+            remaining = wait_for_exit(2)
+        if remaining or self.windows(shortcut) or self.listening(50051):
+            raise FaceError('SiriusFaceの終了を確認できません')
+        return dict(ok=True, stopped=True)
+
+    def launch(self, shortcut, env):
+        result = subprocess.run(['gio', 'launch', str(shortcut['path'])], env=env,
+                                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL, timeout=3, start_new_session=True)
+        if result.returncode:
+            raise FaceError('SiriusFaceのショートカットを起動できませんでした')
+        self.launch_until = time.monotonic()+30
+        self.cached = None
+        if env.get('DISPLAY'):
+            self.cancel_placement.set()
+            self.cancel_placement = threading.Event()
+            threading.Thread(target=self.place_window, args=(shortcut, env, self.cancel_placement),
+                             daemon=True).start()
+        return dict(ok=True, starting=True)
+
+    def place_window(self, shortcut, env, canceled):
+        # Follow the same workspace setting as desktop autostart.
+        config_dir = Path(env.get('XDG_CONFIG_HOME') or self.home/'.config')
+        config = configparser.ConfigParser(interpolation=None)
+        try:
+            config.read(config_dir/'autostart/sirius-face.desktop')
+            args = shlex.split(config.get('Desktop Entry', 'Exec', fallback=''))
+        except (OSError, ValueError, configparser.Error):
+            args = []
+        workspace = None
+        for arg in args:
+            key, _, value = arg.partition('=')
+            if key == 'SIRIUS_FACE_WORKSPACE' and value.isdecimal():
+                workspace = int(value)
+                break
+        deadline = time.monotonic()+30
+        while not canceled.is_set() and time.monotonic() < deadline:
+            windows = self.windows(shortcut)
+            if windows:
+                with self.lock:
+                    if not canceled.is_set():
+                        ensure_fullscreen(windows[0]['id'], workspace, env)
+                return
+            canceled.wait(.25)
 
     def launcher_windows(self):
-        """Identify local Launcher app windows, including the older shortcut."""
-        if not shutil.which('wmctrl'):
-            return []
         port = os.environ.get('SIRIUS_WEB_PORT', '8090')
-        try:
-            result = subprocess.run(['wmctrl', '-lp'], env=self.gui_env(), capture_output=True,
-                                    text=True, timeout=1)
-        except (OSError, subprocess.TimeoutExpired):
-            return []
-        found = []
-        for line in result.stdout.splitlines():
-            fields = line.split(None, 4)
-            if len(fields) < 4:
-                continue
-            try:
-                cmd = ' '+Path('/proc', fields[2], 'cmdline').read_bytes().replace(b'\0', b' ').decode()+' '
-            except (OSError, UnicodeError):
-                continue
-            if any(' --app=http://'+host+':'+port+' ' in cmd for host in ('127.0.0.1', 'localhost')):
-                found.append(dict(id=fields[0], pid=int(fields[2])))
-        return found
+        return launcher_windows(port, self.gui_env())
 
     def focus_screen(self, target):
         windows = self.windows(self.shortcut()) if target == 'face' else self.launcher_windows()
@@ -221,7 +302,8 @@ class FaceBridge:
         if not isinstance(data, dict):
             raise ValueError('操作内容が不正です')
         action = data.get('action')
-        if action not in {'launch', 'focus', 'focus_launcher', 'expression', 'gaze', 'subtitle', 'clear_text', 'speak', 'instruction'}:
+        if action not in {'launch', 'stop', 'restart', 'focus', 'focus_launcher', 'expression',
+                          'gaze', 'subtitle', 'clear_text', 'speak', 'instruction'}:
             raise ValueError('対応していないFace操作です')
         payload = {'action': action}
         if action == 'expression':
@@ -251,22 +333,25 @@ class FaceBridge:
         if action in {'focus', 'focus_launcher'}:
             return self.focus_screen('face' if action == 'focus' else 'launcher')
         with self.lock:
-            state = self.status()
             if action == 'launch':
+                state = self.status()
                 if state['connected'] or state['running'] or state['starting']:
                     return dict(ok=True, already_running=True)
+            if action in {'launch', 'stop', 'restart'}:
                 shortcut = self.shortcut()
-                if not shortcut or not shutil.which('gio'):
+                if not shortcut:
                     raise FaceError('デスクトップのSirius Face UIショートカットが見つかりません')
+                if action == 'stop':
+                    return self.stop(shortcut)
                 env = self.gui_env()
                 if not env.get('DISPLAY') and not env.get('WAYLAND_DISPLAY'):
                     raise FaceError('NUCのデスクトップに接続できません')
-                subprocess.Popen(['gio', 'launch', str(shortcut['path'])], env=env,
-                                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                 stderr=subprocess.DEVNULL, start_new_session=True)
-                self.launch_until = time.monotonic()+30
-                self.cached = None
-                return dict(ok=True, starting=True)
+                if not shutil.which('gio'):
+                    raise FaceError('SiriusFaceの起動に必要な gio が見つかりません')
+                if action == 'restart':
+                    self.stop(shortcut)
+                return self.launch(shortcut, env)
+            state = self.status()
             if not state['connected']:
                 raise FaceError('SiriusFaceへ接続できません。顔の起動状態を確認してください')
             if action == 'instruction' and not state.get('speech_ready'):

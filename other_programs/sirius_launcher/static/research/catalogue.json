@@ -16,9 +16,14 @@
     {
       "id": "workflow",
       "label": "実験基盤"
+    },
+    {
+      "id": "related",
+      "label": "関連研究"
     }
   ],
   "bundles": {
+    "visual-loop-20261024": "{home}/experiment_records/visual_loop_20261024/web",
     "map-review-20261021": "{home}/research_archive/nuc/map-review-20261021",
     "map-review-20261022": "{home}/research_archive/nuc/map-review-20261022",
     "latest-road": "{workspace}/maps_waypoints/maps/road_semantic/theta_20261022_194816",
@@ -34,12 +39,321 @@
     "texture-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_texture_quality_map_20261020",
     "context-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_semantic_tactile_context_map_20261020",
     "regions-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_semantic_regions_map_20261020",
-    "nakanoshima-indexed": "{workspace}/maps_waypoints/maps/road_semantic/theta_20260920_113447_pgm"
+    "nakanoshima-indexed": "{workspace}/maps_waypoints/maps/road_semantic/theta_20260920_113447_pgm",
+    "road-dual-20261024": "/home/kotantu-desktop/experiment_records/road_dual_20261024",
+    "amcl-stability-20261025": "{home}/experiment_records/amcl_ab_20261025/web",
+    "jrm2027-summary": "/home/kotantu-desktop/JRM2027/web/research-summary",
+    "related-work-20261106": "{home}/experiment_records/related_work_20261106/web",
+    "vla-control-20261112": "{home}/experiment_records/vla_control_20261112/web"
   },
   "aliases": {
     "/shadow_map/": "shadow-map"
   },
   "entries": [
+    {
+      "id": "related-work-20261106",
+      "date": "2026-11-12",
+      "category": "related",
+      "title": "JRM2027 関連研究ノート：路面画像・地形コスト・頑健なループ閉合",
+      "summary": "路面画像による地図生成・再訪検出、地形コストと実機評価、誤ループ閉合の頑健化に関する6件を整理。CCライセンスの3件は全文翻訳PDFも公開。",
+      "status": "日本語要約＋全文翻訳3件",
+      "bundle": "related-work-20261106",
+      "page": "index.html",
+      "image": "thumbnail.webp",
+      "featured": false,
+      "metrics": [
+        {
+          "label": "文献",
+          "value": "6件"
+        },
+        {
+          "label": "全文翻訳",
+          "value": "3件"
+        }
+      ],
+      "findings": [
+        "StreetMapとGround Texture SLAMは、路面画像を地図生成・位置合わせ・再訪検出に使う点で、本研究の画像ループ閉合に近い。",
+        "TerrainNet、PACER、How Does It Feel?は、路面カテゴリ・コストマップ・実機走行の設計と評価の参考になる。",
+        "Switchable Constraintsは、誤ったループ閉合を最適化中に抑制する保険として位置付けられる。",
+        "CCライセンスのTerrainNet、PACER、How Does It Feel?は、本文全体の日本語訳をPDFで公開している。"
+      ],
+      "limits": [
+        "全文翻訳はCCライセンスの3件のみ。StreetMap、Ground Texture SLAM、Switchable Constraintsは権利者許諾が必要なため要約のみ。",
+        "翻訳PDFは図表本体を再掲せず、キャプションのみ翻訳している。引用・数値の正確性は原論文を確認すること。"
+      ],
+      "evidence": [
+        {
+          "label": "日本語要約PDF（5ページ）",
+          "bundle": "related-work-20261106",
+          "path": "related_work_ja.pdf"
+        },
+        {
+          "label": "全文翻訳: TerrainNet",
+          "bundle": "related-work-20261106",
+          "path": "fulltext/terrainnet_ja.pdf"
+        },
+        {
+          "label": "全文翻訳: PACER",
+          "bundle": "related-work-20261106",
+          "path": "fulltext/pacer_ja.pdf"
+        },
+        {
+          "label": "全文翻訳: How Does It Feel?",
+          "bundle": "related-work-20261106",
+          "path": "fulltext/how_does_it_feel_ja.pdf"
+        },
+        {
+          "label": "詳細要約: Ground Texture SLAM",
+          "bundle": "related-work-20261106",
+          "path": "summaries/ground_texture_slam_summary_ja.pdf"
+        }
+      ]
+    },
+    {
+      "id": "vla-control-20261112",
+      "date": "2026-11-12",
+      "category": "workflow",
+      "title": "THETA × OmniVLA-edge：連携確認と指示追従・障害物回避の課題",
+      "summary": "実カメラ画像からVLA推論・駆動までを接続。一方、左右・停止の指示追従や無接触回避は未達。指示テロップ付き動画で失敗の挙動を確認できる。",
+      "status": "連携のみ確認・自律移動は未達",
+      "bundle": "vla-control-20261112",
+      "page": "index.html",
+      "image": "vla/desktop.jpg",
+      "featured": true,
+      "metrics": [
+        {
+          "label": "実カメラ推論",
+          "value": "157回"
+        },
+        {
+          "label": "CPU推論・中央値",
+          "value": "47.8 ms"
+        }
+      ],
+      "findings": [
+        "THETAの前後両レンズ画像を実OmniVLA-edgeに送り、観測・推論・走行を継続更新。",
+        "既存の通常10指示・障害物2指示を評価。切替区間を除き、入力指示と区間番号を明示した33秒・25秒の動画へ改訂。",
+        "UI停止、通信失敗、古い応答の破棄、推論中停止、手動復帰を確認。"
+      ],
+      "limits": [
+        "左右・停止の指示ごとの動作の違いは確認できず、「停止して」「stop」でも移動した。UI停止とは別に評価。",
+        "前進指令が残ったまま実速度が低下し、障害物への押し付けと整合する。接触イベント未記録で、回避の成功とは評価しない。",
+        "CPUのみ。魚眼画像・日本語は未評価の入力条件で、標準シーンでは描画負荷により鮮度期限で停止する場合がある。実ロボットは未検証。"
+      ],
+      "evidence": [
+        {
+          "label": "実験結果JSON",
+          "bundle": "vla-control-20261112",
+          "path": "vla/result-summary.json"
+        },
+        {
+          "label": "構成・起動方法",
+          "bundle": "vla-control-20261112",
+          "path": "VLA_IMPLEMENTATION.md"
+        },
+        {
+          "label": "検証報告",
+          "bundle": "vla-control-20261112",
+          "path": "VLA_RESULT.md"
+        }
+      ]
+    },
+    {
+      "id": "theta-visual-loop-road-maps-20261024",
+      "date": "2026-11-10",
+      "category": "road",
+      "title": "中之島：閉合前後のTHETA路面画像地図とコストマップ",
+      "summary": "EKF＋SLAMの閉合前後でTHETA路面地図を比較。RGB画像、分類付き路面地図、グローバル・ローカルコストを切り替えられる。",
+      "status": "全区間生成・Nav2読込確認済み",
+      "bundle": "visual-loop-20261024",
+      "page": "theta-maps/index.html",
+      "image": "theta-maps/closed/rgb.webp",
+      "featured": true,
+      "recording": "mapping_all_real_20261024_114415",
+      "metrics": [
+        {
+          "label": "反映フレーム",
+          "value": "8,350枚／各版"
+        },
+        {
+          "label": "路面格子",
+          "value": "5 cm"
+        }
+      ],
+      "findings": [
+        "閉合後の撮影姿勢で、同じBAGの路面画像と分類結果を再投影した。",
+        "閉合前・閉合後のコスト格子をNav2で読み戻し、保存値と全セル一致することを確認した。"
+      ],
+      "limits": [
+        "1件のBAGによる比較。実機走行での性能とコース全体の絶対位置精度は未評価。"
+      ],
+      "evidence": [
+        {
+          "label": "Open版の生成・コスト検証",
+          "bundle": "visual-loop-20261024",
+          "path": "theta-maps/open/verification.json"
+        },
+        {
+          "label": "Closed版の生成・コスト検証",
+          "bundle": "visual-loop-20261024",
+          "path": "theta-maps/closed/verification.json"
+        }
+      ]
+    },
+    {
+      "id": "visual-loop-20261024",
+      "date": "2026-11-10",
+      "category": "lidar",
+      "title": "中之島：全方位画像でSLAM Toolboxのループ閉合",
+      "summary": "10月24日の中之島BAGで、THETA画像から相対姿勢を計測。保存済みの姿勢グラフへ1本の制約を加え、地図を再生成。",
+      "status": "オフライン実験・再生成確認済み",
+      "bundle": "visual-loop-20261024",
+      "page": "index.html",
+      "image": "detail-after.webp",
+      "featured": true,
+      "recording": "mapping_all_real_20261024_114415",
+      "metrics": [
+        {
+          "label": "始終点間距離",
+          "value": "13.41 → 0.20 m"
+        },
+        {
+          "label": "近傍点群間距離・中央値",
+          "value": "4.49 → 0.47 m"
+        }
+      ],
+      "findings": [
+        "画像制約を1本追加して1,769ノードを最適化。保存したグラフから地図を再生成できることも確認。",
+        "始点側・終点側のLiDAR点群を比較すると、0.50 m以内に近接した点の割合が6.1%から50.9%に増えた。"
+      ],
+      "limits": [
+        "1つのBAGの再訪区間で確認。コース全体の絶対位置精度や、実機走行への適用は未評価。"
+      ],
+      "evidence": [
+        {
+          "label": "計測結果JSON",
+          "bundle": "visual-loop-20261024",
+          "path": "results.json"
+        },
+        {
+          "label": "画像対応の記録",
+          "bundle": "visual-loop-20261024",
+          "path": "visual_measurement.json"
+        }
+      ]
+    },
+    {
+      "id": "jrm2027-summary",
+      "date": "2026-11-01",
+      "category": "road",
+      "title": "JRM2027：いま整理できる研究成果",
+      "summary": "全方位意味地図の生成・保存と走行利用が主題。設計理由を追記し、点字処理の詳細は補足資料へ整理。",
+      "status": "日本語草案・生成物確認済み",
+      "bundle": "jrm2027-summary",
+      "page": "index.html",
+      "image": "theta-semantic.webp",
+      "featured": true,
+      "metrics": [
+        {
+          "label": "日本語草案",
+          "value": "本文6ページ・図6点"
+        },
+        {
+          "label": "点字の詳細",
+          "value": "補足2ページ"
+        }
+      ],
+      "findings": [
+        "認識・投影・時系列統合・地図保存・Nav2へのコスト入力を提案手法として記述。",
+        "THETA由来の路面地図を用い、中之島公園の中之島ロボットチャレンジ走行コースを1周走行したと著者から確認。",
+        "走行候補5件の記録されたローカル用路面コストとTHETA候補地図の再構成が全セル一致。BAGのAMCL推定値を参照図として掲載。",
+        "点字処理は出力変更・保持条件の確認に限定。同一コスト設定での前後差は0セル。詳細条件・診断結果は補足PDFに保存。"
+      ],
+      "limits": [
+        "元カテゴリ地図の版と、著者報告の1周に対応するBAGは最終照合待ち。",
+        "AMCL推定値は正解軌跡ではなく、認識精度・走行性能・無介入完走の定量評価は未実施。"
+      ]
+    },
+    {
+      "id": "amcl-stability-20261025",
+      "date": "2026-10-25",
+      "category": "motion",
+      "title": "AMCLの位置飛び：設定変更前後の比較",
+      "summary": "同じBAGの問題区間を隔離再生。地図上の軌跡・位置変化量・IMUとの向きの差を同期表示。",
+      "status": "BAG比較済み・実機走行未検証",
+      "bundle": "amcl-stability-20261025",
+      "page": "index.html",
+      "recording": "rosbag_20261025_125115",
+      "metrics": [
+        {
+          "label": "最大連続位置変化",
+          "value": "8.19 → 0.30 m"
+        },
+        {
+          "label": "相対旋回差",
+          "value": "69.6 → 5.5°"
+        }
+      ],
+      "findings": [
+        "REAL用AMCLの6項目のみ変更。良好なOdomを重視し、照合範囲を1〜40mに統一。",
+        "元の設定では大きな位置変化が再現。変更後は比較区間で1m超の変化なし。"
+      ],
+      "limits": [
+        "問題区間の抽出再生。実機走行や全16分の再計算は未検証。",
+        "0.30mは観測された位置変化量で、補正上限ではありません。絶対位置の正解軌跡はありません。"
+      ],
+      "evidence": [
+        {
+          "label": "比較指標",
+          "bundle": "amcl-stability-20261025",
+          "path": "comparison.json"
+        },
+        {
+          "label": "検証記録",
+          "bundle": "amcl-stability-20261025",
+          "path": "verification.md"
+        }
+      ],
+      "image": "comparison.png"
+    },
+    {
+      "id": "road-dual-20261024",
+      "date": "2026-10-24",
+      "category": "road",
+      "title": "屋外路面地図：THETA・ZED＋SAM3",
+      "summary": "gyro-only EKF＋SLAM補正軌跡で両カメラの路面を同じ座標へ投影。",
+      "status": "生成済み・THETA暗部点字補正済み",
+      "bundle": "road-dual-20261024",
+      "page": "index.html",
+      "recording": "mapping_all_real_20261024_114415",
+      "metrics": [
+        {
+          "label": "THETA反映画像",
+          "value": "8350"
+        },
+        {
+          "label": "ZED反映画像",
+          "value": "12141"
+        }
+      ],
+      "findings": [
+        "FAST-LIO由来の動的TFを使わず、既存EKF gyro-only地図座標を使用。",
+        "THETAの点字は暗部補正・黄色指定で再推論し、707から72,587セルへ更新。元RGB・座標・観測範囲は保持。"
+      ],
+      "limits": [
+        "計測した正解軌跡はなく、絶対精度は未評価です。",
+        "既存SLAM軌跡の閉合誤差を画像処理で強制補正していません。",
+        "点字修正の再推論は約1秒間隔。全画像のRGBと、点字以外の既存分類を基にした修正版です。"
+      ],
+      "evidence": [
+        {
+          "label": "軌跡検証",
+          "bundle": "road-dual-20261024",
+          "path": "trajectory_validation.json"
+        }
+      ],
+      "image": "theta_shadow/indexed.png"
+    },
     {
       "id": "theta-road-1022",
       "date": "2026-10-23",

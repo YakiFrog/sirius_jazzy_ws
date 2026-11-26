@@ -1,8 +1,7 @@
 'use strict';
 (() => {
-  const standalone = document.querySelector('[data-power-page]');
   const headerHost = document.querySelector('.appbar .top-status');
-  if (!standalone && !headerHost) return;
+  if (!headerHost) return;
 
   const labels = {reboot: '再起動', poweroff: 'シャットダウン'};
   const messages = {
@@ -23,75 +22,62 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10M6 5a9 9 0 1 0 12 0"/></svg>シャットダウン
     </button>
     <p class="host-power-menu-status" role="status" hidden></p>`;
-  let powerTrigger = null;
-  let popover = null;
-  let closePowerMenu = () => {};
-  if (standalone) {
-    standalone.append(group);
-  } else {
-    const shortcut = document.createElement('a');
-    shortcut.className = 'host-power-shortcut';
-    shortcut.href = '/power';
-    shortcut.textContent = '電源専用画面を開く';
-    group.append(shortcut);
+  const popover = document.createElement('div');
+  popover.id = 'header-power-popover';
+  popover.className = 'host-power-popover';
+  popover.setAttribute('aria-label', 'PCの電源');
+  popover.hidden = true;
+  popover.append(group);
+  document.body.append(popover);
 
-    popover = document.createElement('div');
-    popover.id = 'header-power-popover';
-    popover.className = 'host-power-popover';
-    popover.setAttribute('aria-label', 'PCの電源');
+  const powerTrigger = document.createElement('button');
+  powerTrigger.type = 'button';
+  powerTrigger.id = 'header-power-button';
+  powerTrigger.className = 'host-power-trigger';
+  powerTrigger.title = 'PCの電源';
+  powerTrigger.setAttribute('aria-label', 'PCの電源');
+  powerTrigger.setAttribute('aria-haspopup', 'dialog');
+  powerTrigger.setAttribute('aria-controls', 'header-power-popover');
+  powerTrigger.setAttribute('aria-expanded', 'false');
+  powerTrigger.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10M6 5a9 9 0 1 0 12 0"/></svg>';
+  const more = document.getElementById('header-more-button');
+  const moreWrap = more?.closest('.header-more');
+  if (moreWrap?.parentElement) moreWrap.before(powerTrigger);
+  else headerHost.append(powerTrigger);
+
+  function closePowerMenu() {
+    if (popover.hidden) return;
     popover.hidden = true;
-    popover.append(group);
-    document.body.append(popover);
-
-    powerTrigger = document.createElement('button');
-    powerTrigger.type = 'button';
-    powerTrigger.id = 'header-power-button';
-    powerTrigger.className = 'host-power-trigger';
-    powerTrigger.title = 'PCの電源';
-    powerTrigger.setAttribute('aria-label', 'PCの電源');
-    powerTrigger.setAttribute('aria-haspopup', 'dialog');
-    powerTrigger.setAttribute('aria-controls', 'header-power-popover');
     powerTrigger.setAttribute('aria-expanded', 'false');
-    powerTrigger.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10M6 5a9 9 0 1 0 12 0"/></svg>';
-    const more = document.getElementById('header-more-button');
-    const moreWrap = more?.closest('.header-more');
-    if (moreWrap?.parentElement) moreWrap.before(powerTrigger);
-    else headerHost.append(powerTrigger);
-
-    closePowerMenu = () => {
-      if (popover.hidden) return;
-      popover.hidden = true;
-      powerTrigger.setAttribute('aria-expanded', 'false');
-    };
-    function openPowerMenu() {
-      const rect = powerTrigger.getBoundingClientRect();
-      const width = Math.min(270, innerWidth - 20);
-      const left = Math.min(Math.max(10, rect.right - width), innerWidth - 10 - width);
-      popover.style.top = Math.max(8, rect.bottom + 8) + 'px';
-      popover.style.left = left + 'px';
-      popover.style.right = 'auto';
-      popover.hidden = false;
-      powerTrigger.setAttribute('aria-expanded', 'true');
-      void refresh();
-    }
-    powerTrigger.addEventListener('click', event => {
-      event.stopPropagation();
-      if (popover.hidden) openPowerMenu();
-      else closePowerMenu();
-    });
-    document.addEventListener('click', event => {
-      if (!popover.hidden && !popover.contains(event.target) && event.target !== powerTrigger) {
-        closePowerMenu();
-      }
-    });
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && !popover.hidden) {
-        closePowerMenu();
-        powerTrigger.focus();
-      }
-    });
-    addEventListener('resize', closePowerMenu);
   }
+  function openPowerMenu() {
+    const rect = powerTrigger.getBoundingClientRect();
+    const width = Math.min(270, innerWidth - 20);
+    const left = Math.min(Math.max(10, rect.right - width), innerWidth - 10 - width);
+    popover.style.top = Math.max(8, rect.bottom + 8) + 'px';
+    popover.style.left = left + 'px';
+    popover.style.right = 'auto';
+    popover.hidden = false;
+    powerTrigger.setAttribute('aria-expanded', 'true');
+    void refresh();
+  }
+  powerTrigger.addEventListener('click', event => {
+    event.stopPropagation();
+    if (popover.hidden) openPowerMenu();
+    else closePowerMenu();
+  });
+  document.addEventListener('click', event => {
+    if (!popover.hidden && !popover.contains(event.target) && event.target !== powerTrigger) {
+      closePowerMenu();
+    }
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !popover.hidden) {
+      closePowerMenu();
+      powerTrigger.focus();
+    }
+  });
+  addEventListener('resize', closePowerMenu);
 
   const dialog = document.createElement('dialog');
   dialog.className = 'host-power-dialog';
@@ -170,7 +156,6 @@
     }
   }
 
-  if (standalone) void refresh();
   group.addEventListener('click', event => {
     const button = event.target.closest('[data-power]');
     if (!button || !info) return;
@@ -189,10 +174,7 @@
   });
 
   cancel.addEventListener('click', () => dialog.close());
-  dialog.addEventListener('close', () => {
-    if (standalone) choices.find(button => button.dataset.power === selection.action)?.focus();
-    else (powerTrigger || document.getElementById('header-more-button'))?.focus();
-  });
+  dialog.addEventListener('close', () => powerTrigger.focus());
   dialog.addEventListener('cancel', event => { if (submitting) event.preventDefault(); });
   confirm.addEventListener('click', async () => {
     submitting = true;

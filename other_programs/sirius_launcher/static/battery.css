@@ -4,6 +4,29 @@
 .battery-power-totals{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}.battery-power-totals section{padding:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px}.battery-power-totals small{display:block;font-size:10px;color:var(--muted);margin-bottom:6px}.battery-power-totals strong{font-size:21px;font-weight:500}.battery-port-caption{font-size:10px;color:var(--muted);margin:16px 0 8px}.battery-ports{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px;margin:0;font-size:11px}.battery-ports>div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:6px 0}.battery-ports dt{color:var(--muted)}.battery-ports dd{margin:0;white-space:nowrap}.battery-detail-note{color:var(--muted);font-size:10px;line-height:1.7;margin:12px 0}.battery-source-group.is-stale .battery-power-totals,.battery-source-group.is-stale .battery-ports{opacity:.55}
 @media(max-width:420px){.battery-ports{gap:4px 10px;font-size:10px}.battery-ports>div{flex-wrap:wrap}.battery-power-totals strong{font-size:19px}}
 .battery-heading{position:sticky;top:0;z-index:2;background:var(--panel);padding:8px 0}
+.battery-chip-reading {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  line-height: 1;
+}
+.battery-chip-reading #battery-chip-value { line-height: 1; }
+#battery-toggle[data-level=normal] { --battery-level-color: #8adbb3; }
+#battery-toggle[data-level=low] { --battery-level-color: #f1c16b; }
+#battery-toggle[data-level=critical] { --battery-level-color: #ff9ca7; }
+:root[data-theme=light] #battery-toggle[data-level=normal] { --battery-level-color: #176447; }
+:root[data-theme=light] #battery-toggle[data-level=low] { --battery-level-color: #895000; }
+:root[data-theme=light] #battery-toggle[data-level=critical] { --battery-level-color: #a7223b; }
+#battery-toggle svg { color: var(--battery-level-color, currentColor); }
+#battery-toggle #battery-chip-value { color: var(--battery-level-color, var(--text)); }
+.battery-charge-symbol, #battery-toggle[data-charging=true] #battery-level { display: none; }
+#battery-toggle[data-charging=true] .battery-charge-symbol { display: block; }
+#battery-chip-runtime {
+  color: var(--muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
 /* Compact summaries on phones; wider workspaces use the available columns. */
 .battery-details-grid{display:grid;grid-template-columns:minmax(0,1fr)}
 .battery-values section{min-width:0}

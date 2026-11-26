@@ -251,6 +251,23 @@ body.refined-ui{padding:var(--app-safe-top) var(--app-safe-right) 0 var(--app-sa
 .refined-ui .mission-face-message:hover{background:none}
 .refined-ui .mission-face-message strong{display:flex;justify-content:flex-start;max-width:100%;padding:0;border:0;border-radius:0;background:none;font-size:12px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .refined-ui .mission-face-message>span{display:block;max-width:100%;font-size:10px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.refined-ui .mission-face[data-tone=blocked] .mission-face-message::after {
+ position:absolute;
+ inset:-2px -4px;
+ border:1px solid var(--status-blocked);
+ border-radius:7px;
+ box-shadow:0 0 0 2px color-mix(in srgb,var(--status-blocked) 20%,transparent);
+ pointer-events:none;
+ content:'';
+ animation:mission-blocked-pulse 2.4s ease-in-out infinite;
+}
+@keyframes mission-blocked-pulse {
+ 0%,100%{opacity:.45}
+ 50%{opacity:1}
+}
+@media(prefers-reduced-motion:reduce) {
+ .refined-ui .mission-face[data-tone=blocked] .mission-face-message::after{animation:none}
+}
 .refined-ui .compact-header .top-status{grid-column:3;grid-row:1;display:flex;width:auto;max-width:none;justify-self:end;justify-content:flex-end;flex-wrap:nowrap;gap:6px}
 .refined-ui .compact-header #header-teleop{min-height:36px;height:36px;padding:6px 9px;font-size:11px}
 .refined-ui .compact-header #battery-toggle{min-height:36px;height:36px}

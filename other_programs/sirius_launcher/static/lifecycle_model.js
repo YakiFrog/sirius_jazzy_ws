@@ -32,6 +32,21 @@ function lifecycleGraphState(nav, domain, mapReady) {
     stopped===false&&communication?{tone:'ok',label:'応答あり'}:{tone:'unknown',label:'未確認'};
   return {tf,laser,mux,driver};
 }
+function lifecycleRequiredNodes(payload) {
+  // Older servers did not include the required node list.
+  return payload.required_nodes || Object.keys(payload.nodes || payload.telemetry?.nodes || {})
+    .filter(name => name !== 'docking_server' && name !== 'waypoint_follower');
+}
+function lifecycleBlockers(payload) {
+  if (!payload?.available) return [];
+  const rows = payload.telemetry?.nodes || {};
+  return lifecycleRequiredNodes(payload).flatMap(name => {
+    const row = rows[name];
+    const id = row?.value?.id;
+    if (!row?.fresh || !Number.isInteger(id) || id === 0 || id === 3) return [];
+    return [{name, label: payload.nodes?.[name] || name, state: lifecycleState(row, true).label}];
+  });
+}
 function lifecycleHealth(payload, now = Date.now() / 1000) {
   if (!payload?.available) return {tone: 'unknown', errors: []};
   const rows = payload.telemetry?.nodes || {};
@@ -63,9 +78,7 @@ function lifecycleHealth(payload, now = Date.now() / 1000) {
   }
   if (errors.length) return {tone: 'error', errors};
   if (!observed) return {tone: 'unknown', errors};
-  // These two nodes can stay inactive when their optional features are unused.
-  const required = Object.keys(payload.nodes || rows)
-    .filter(name => name !== 'docking_server' && name !== 'waypoint_follower');
+  const required = lifecycleRequiredNodes(payload);
   if (required.some(name => !rows[name]?.fresh || !Number.isInteger(rows[name].value?.id))) {
     return {tone: 'unknown', errors};
   }
@@ -96,4 +109,4 @@ function lifecycleStartup(payload) {
   }
   return notices;
 }
-if(typeof module!=='undefined')module.exports={lifecycleState,lifecycleCostmap,lifecycleGraphState,lifecycleHealth,lifecycleStartup};
+if(typeof module!=='undefined')module.exports={lifecycleState,lifecycleCostmap,lifecycleGraphState,lifecycleHealth,lifecycleStartup,lifecycleBlockers};

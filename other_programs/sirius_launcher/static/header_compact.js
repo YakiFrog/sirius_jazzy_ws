@@ -32,7 +32,7 @@
     }
     const ap = document.getElementById('hotspot-toggle');
     if (ap) { ap.setAttribute('aria-label', 'アクセスポイントの状態・接続方法'); ap.title = ap.textContent.trim() + '：接続方法を表示'; }
-    const battery = document.getElementById('battery-toggle'); if (battery) { battery.title = 'バッテリーの状態・詳細'; battery.setAttribute('aria-label', 'バッテリーの状態・詳細'); }
+    const battery = document.getElementById('battery-toggle'); if (battery && !battery.title) { battery.title = 'バッテリーの状態・詳細'; battery.setAttribute('aria-label', battery.title); }
   }
   let pending = false;
   new MutationObserver(() => { if (!pending) { pending = true; requestAnimationFrame(() => { pending = false; arrange(); }); } }).observe(host, {childList:true, subtree:true});

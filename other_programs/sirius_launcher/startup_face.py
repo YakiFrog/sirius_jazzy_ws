@@ -8,9 +8,12 @@ import sys
 import time
 
 from face_bridge import FaceBridge
+from fullscreen_workspace import ensure_fullscreen
 
 
 def main():
+    workspace = os.environ.get('SIRIUS_FACE_WORKSPACE')
+    workspace = int(workspace) if workspace else None
     runtime = Path(os.environ.get('XDG_RUNTIME_DIR', '/tmp'))
     with (runtime / f'sirius_face_autostart_{os.getuid()}.lock').open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
@@ -43,11 +46,7 @@ def main():
             windows = bridge.windows(shortcut)
             if windows:
                 window = windows[0]['id']
-                subprocess.run(['wmctrl', '-i', '-r', window, '-b', 'add,fullscreen'],
-                               env=env, capture_output=True, timeout=2)
-                state = subprocess.run(['xprop', '-id', window, '_NET_WM_STATE'], env=env,
-                                       capture_output=True, text=True, timeout=2)
-                if state.returncode == 0 and '_NET_WM_STATE_FULLSCREEN' in state.stdout:
+                if ensure_fullscreen(window, workspace, env):
                     print(f'SiriusFace fullscreen: {window}', flush=True)
                     return
             time.sleep(.3)

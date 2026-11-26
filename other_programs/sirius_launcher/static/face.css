@@ -37,3 +37,7 @@
 #face-live-empty{font-size:12px;line-height:1.7}#face-live-empty small{font-size:10px;color:#aebbd0}#face-live-empty[hidden]{display:none}
 @media(min-width:821px){.face-widgets>.face-live-preview{grid-column:1/-1;margin:0}.face-live-frame{height:175px}}
 @media(max-width:480px){.face-live-frame{height:auto;aspect-ratio:16/9;max-height:200px}}
+
+.face-power-actions { margin-bottom: 8px; }
+.face-power-actions > button { min-width: 60px; }
+.face-power-feedback { margin: 0 0 8px; min-height: 0; }

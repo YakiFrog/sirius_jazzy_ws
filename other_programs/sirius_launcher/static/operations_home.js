@@ -1,7 +1,7 @@
 'use strict';
 
 // Presentation only: reuse existing read-only receivers and explicit action buttons.
-function operationsSummary(nav, battery) {
+function operationsSummary(nav, battery, lifecycleBlockers = []) {
   const ready = typeof navigationPreflightState === 'function' ? navigationPreflightState(nav) : {tone:'unknown',badge:'未確認',checks:[]};
   const current = key => nav?.available && nav.navigation?.stages?.[key]?.fresh ? nav.navigation.stages[key].value : null;
   const driver = battery?.driver || {};
@@ -14,6 +14,9 @@ function operationsSummary(nav, battery) {
   if (current('driver') === true && !reasons.length) reasons.push('駆動側の緊急停止・保護停止が有効です');
   const blocked = ready.checks.filter(c => c.tone === 'blocked');
   for (const check of blocked) reasons.push(check.label+'：'+check.text);
+  for (const node of lifecycleBlockers) {
+    if (!blocked.some(check => check.id === node.name)) reasons.push(node.label+'：'+node.state);
+  }
   if (reasons.length) return {tone:'blocked',title:'自律移動できません',reason:reasons[0],reasons,
     stop:current('driver') === true || current('lock') === true || (driverFresh && (driver.emergency_stop === true || driver.physical_emergency_stop === true)) ? '停止中' : '準備不足',ready};
   if (ready.tone !== 'ok') return {tone:'unknown',title:'自律移動の状態を確認中',reason:ready.checks.find(c=>c.tone!=='ok')?.text || '診断データの受信を待っています',reasons:[],stop:'未確認',ready};
@@ -43,8 +46,10 @@ if (typeof document !== 'undefined') (() => {
   // Preserve shortcuts/search: focusing a program field reveals its native controls.
   document.getElementById('cmdin')?.addEventListener('focus',()=>{const d=document.querySelector('.program-library');if(d)d.open=true;});
   let nav=window.siriusNavigationSnapshot,battery=window.siriusBatterySnapshot,lastNav=Date.now(),lastBattery=Date.now();
+  let lifecycleBlockers = [], lastLifecycle = 0;
   function paint(){
-    const now=Date.now(),n=now-lastNav<8000?nav:null,b=now-lastBattery<8000?battery:null,state=operationsSummary(n,b);
+    const now=Date.now(),n=now-lastNav<8000?nav:null,b=now-lastBattery<8000?battery:null;
+    const state=operationsSummary(n,b,now-lastLifecycle<8000?lifecycleBlockers:[]);
     face.dataset.tone=state.tone;document.getElementById('mission-title').textContent=state.title;
     document.getElementById('mission-reason').textContent=state.reason+(state.reasons.length>1?' ／ ほか'+(state.reasons.length-1)+'項目':'');
     face.title=state.reasons.join('\n')||state.reason;
@@ -63,6 +68,7 @@ if (typeof document !== 'undefined') (() => {
   }
   window.addEventListener('sirius:navigation-state',e=>{nav=e.detail;lastNav=Date.now();paint();});
   window.addEventListener('sirius:battery-state',e=>{battery=e.detail;lastBattery=Date.now();paint();});
+  window.addEventListener('sirius:lifecycle-blockers',e=>{lifecycleBlockers=e.detail;lastLifecycle=Date.now();paint();});
   // Low-bandwidth, on-demand window snapshots. Never display a cached image as live.
   let previewBusy=false,objectURL=null,lastImage=0;
   const image=document.getElementById('mission-face-image'),placeholder=document.getElementById('mission-face-placeholder');

@@ -2,9 +2,9 @@
 (function(){
   if(document.getElementById('battery-toggle'))return;
   const host=document.querySelector('.top-status');if(!host)return;
-  const style=document.createElement('link');style.rel='stylesheet';style.href='/static/battery.css';document.head.append(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='/static/battery.css?v=20261126-charge-indicator';document.head.append(style);
   const toggle=document.createElement('button');toggle.id='battery-toggle';toggle.className='battery-chip';toggle.type='button';
-  toggle.innerHTML='<svg viewBox="0 0 25 20" fill="none" aria-hidden="true"><rect x="1" y="4" width="20" height="12" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M24 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect id="battery-level" x="4" y="7" width="0" height="6" rx="1" fill="currentColor"/></svg><span class="battery-chip-label">バッテリー</span><b id="battery-chip-value">—</b><span id="battery-chip-status">未取得</span>';
+  toggle.innerHTML='<svg viewBox="0 0 25 20" fill="none" aria-hidden="true"><rect x="1" y="4" width="20" height="12" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M24 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect id="battery-level" x="4" y="7" width="0" height="6" rx="1" fill="currentColor"/><path class="battery-charge-symbol" d="M12.5 5.3 6.9 10.9h3.7l-1 3.8 5.6-5.6h-3.7z" fill="currentColor"/></svg><span class="battery-chip-label">バッテリー</span><span class="battery-chip-reading"><b id="battery-chip-value">—</b><small id="battery-chip-runtime" hidden></small></span><span id="battery-chip-status">未取得</span>';
   const clock=document.getElementById('clock');if(clock&&clock.parentNode===host)host.insertBefore(toggle,clock);else host.append(toggle);
   const stopStyle=document.createElement('link');stopStyle.rel='stylesheet';stopStyle.href='/static/emergency-stop.css';document.head.append(stopStyle);
   const stopToggle=document.createElement('button');stopToggle.id='emergency-stop-toggle';stopToggle.type='button';stopToggle.className='emergency-stop-chip';stopToggle.dataset.state='unknown';
@@ -80,9 +80,10 @@
   const text=(id,value)=>{document.getElementById(id).textContent=value;if(id==='emergency-stop-command-status'){const feedback=document.getElementById('drive-estop-feedback');if(feedback)feedback.textContent=value;}};
   const fmt=(v,unit,decimals=1)=>Number.isFinite(v)?v.toFixed(decimals)+' '+unit:'— '+unit;
   const watt=v=>fmt(v,'W',Number.isInteger(v)?0:1);
-  function duration(hours){
-    if(!Number.isFinite(hours)||hours<=0||hours>=6553.5)return '未取得';
+  function duration(hours,compact=false){
+    if(!Number.isFinite(hours)||hours<=0||hours>=6553.5)return compact?'—':'未取得';
     const minutes=Math.round(hours*60),h=Math.floor(minutes/60),m=minutes%60;
+    if(compact)return minutes===0?'<1m':(h?h+'h':'')+(m?m+'m':'');
     return minutes===0?'1分未満':(h?h+'時間':'')+(m?m+'分':'');
   }
   function source(data,key,kind){
@@ -102,16 +103,29 @@
     const battery=source(data,'battery','BatteryState'),driver=source(data,'driver','RoboteqStatus'),details=source(data,'details','SolixStatus');
     const primary=data.source_type==='RoboteqStatus'?driver:battery;
     const live=primary.state==='live',driverLive=driver.state==='live';
+    const detailsLive=details.state==='live';
+    const charging=live&&primary!==driver&&(primary.charging==='充電中'||
+      (!primary.charging&&detailsLive&&details.time_remaining_kind==='charging'));
+    const percentage=live&&Number.isFinite(primary.percentage)?Math.round(primary.percentage):null;
     renderStop(driver);
     const driverFault=driverLive&&faultFlags(driver)>0;
-    let message=status(primary);
+    let message=charging?'充電中':status(primary);
     if(primary!==driver&&driverFault)message+=' · '+status(driver);
     else if(primary!==driver&&driver.state==='stale')message+=' · MD更新停止';
     const value=Number.isFinite(primary.percentage)?fmt(primary.percentage,'%',0):Number.isFinite(primary.voltage)?fmt(primary.voltage,'V'):'—';
     text('battery-chip-value',value);text('battery-chip-status',message);
     document.querySelector('.battery-chip-label').textContent=primary===driver?'MD電源':'バッテリー';
     toggle.dataset.state=primary.state||'waiting';toggle.classList.toggle('caution',driverFault||driver.state==='stale');
-    toggle.title='バッテリー・駆動電源: '+value+' / '+message;toggle.setAttribute('aria-label',toggle.title);
+    toggle.dataset.level=percentage===null?'unknown':percentage<20?'critical':percentage<50?'low':'normal';
+    toggle.dataset.charging=String(charging);
+    const discharging=!charging&&detailsLive&&details.time_remaining_kind==='discharging';
+    const runtime=discharging?details.runtime_hours:null;
+    const timeChip=document.getElementById('battery-chip-runtime');
+    timeChip.hidden=!discharging;
+    timeChip.textContent=discharging?'残り '+duration(runtime,true):'';
+    toggle.title='バッテリー・駆動電源: '+value+' / '+message
+      +(discharging?' / 推定稼働時間 '+duration(runtime):'');
+    toggle.setAttribute('aria-label',toggle.title);
     document.getElementById('battery-level').setAttribute('width',live&&Number.isFinite(primary.percentage)?String(Math.min(100,Math.max(0,primary.percentage))/100*14):'0');
     text('battery-state',message);
     text('battery-percentage',fmt(battery.percentage,'%',0));text('battery-voltage',fmt(driver.voltage,'V'));

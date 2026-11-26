@@ -175,6 +175,54 @@ def test_symlink_operations_affect_link_not_target(browser):
     assert renamed.is_symlink() and target.read_bytes()==original
 
 
+def test_copy_files_and_folders_preserves_sources_and_links(browser, tmp_path):
+    client, files, maps = browser
+    folder = maps / 'course'
+    (folder / 'nested').mkdir(parents=True)
+    (folder / 'nested' / 'route.yaml').write_text('waypoints: []')
+    outside = tmp_path / 'external.txt'
+    outside.write_text('external')
+    (folder / 'link').symlink_to(outside)
+    payload = dict(action='copy', path=str(folder), destination=str(maps), name='course-backup')
+    response = client.post('/api/files/operate', json=payload)
+    assert response.status_code == 200
+    assert response.json['copied'] == [dict(source=str(folder), path=str(maps / 'course-backup'))]
+    assert (maps / 'course-backup' / 'nested' / 'route.yaml').read_text() == 'waypoints: []'
+    assert (maps / 'course-backup' / 'link').is_symlink()
+    (maps / 'course-backup' / 'nested' / 'route.yaml').write_text('waypoints: [1]')
+    assert (folder / 'nested' / 'route.yaml').read_text() == 'waypoints: []'
+    assert client.post('/api/files/operate', json=payload).status_code == 409
+    assert client.post('/api/files/operate', json={**payload, 'destination': str(folder / 'nested')}).status_code == 400
+    assert client.post('/api/files/operate', json={**payload, 'destination': str(tmp_path)}).status_code == 403
+    assert client.post('/api/files/operate', json={**payload, 'name': '../escape'}).status_code == 400
+
+    pair = [maps / 'map.yaml', maps / 'map.pgm']
+    batch = dict(action='copy_many', paths=[str(path) for path in pair], destination=str(maps))
+    assert client.post('/api/files/operate', json=batch).status_code == 200
+    for source in pair:
+        target = source.with_stem(source.stem + '-copy')
+        assert target.read_bytes() == source.read_bytes()
+    assert not list(maps.glob('.files-copy-*'))
+
+
+def test_failed_copy_cleans_staging_and_preserves_source(browser, monkeypatch):
+    client, files, maps = browser
+    source = maps / 'map.yaml'
+    original = source.read_bytes()
+
+    def fail(src, staged):
+        staged.write_text('incomplete')
+        raise OSError('mock write failure')
+
+    monkeypatch.setattr(files, 'copy_regular', fail)
+    payload = dict(action='copy', path=str(source), destination=str(maps), name='incomplete.yaml')
+    result = client.post('/api/files/operate', json=payload)
+    assert result.status_code == 400
+    assert source.read_bytes() == original
+    assert not (maps / 'incomplete.yaml').exists()
+    assert not list(maps.glob('.files-copy-*'))
+
+
 def test_trash_persistence_restore_and_collision(browser):
     client,files,maps=browser
     folder=maps/'delete me';folder.mkdir();(folder/'data.txt').write_text('valuable')

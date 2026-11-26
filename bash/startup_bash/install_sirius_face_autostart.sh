@@ -16,7 +16,7 @@ cat > "$TARGET" <<EOF
 Type=Application
 Name=SiriusFace
 Comment=SiriusFace full-screen display
-Exec=/usr/bin/python3 "$STARTER"
+Exec=env SIRIUS_FACE_WORKSPACE=0 /usr/bin/python3 "$STARTER"
 Terminal=false
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Delay=5

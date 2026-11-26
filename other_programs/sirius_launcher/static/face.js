@@ -20,7 +20,12 @@
   const dialog=document.createElement('dialog');dialog.className='face-dialog';dialog.id='face-dialog';dialog.setAttribute('aria-labelledby','face-dialog-title');
   dialog.innerHTML=`<header class="face-dialog-heading"><div><p class="face-eyebrow">SIRIUS FACE / EAR</p><h2 id="face-dialog-title">顔の操作</h2></div><button type="button" id="face-close" class="face-close" aria-label="顔の操作を閉じる">×</button></header>
    <div class="face-widgets" data-device-pane="face">
-   <section class="face-status-area"><h3>接続・画面</h3><strong id="face-status-text">接続を確認中…</strong><div class="face-indicators"><span id="face-api-state">API —</span><span id="face-window-state">画面 —</span><span id="face-speech-state">音声 —</span></div><p id="face-shortcut-name"></p><div class="face-window-actions"><button type="button" id="face-launch">顔を起動</button><button type="button" id="face-focus">顔画面を表示</button><button type="button" id="face-launcher-focus">Launcher画面を表示</button><button type="button" id="face-refresh">状態を更新</button></div><p class="face-panel-note">NUCのモニター表示を切り替えます。顔画面の右上にマウスを寄せると戻るボタンが現れます。</p><p class="face-panel-note" id="face-switch-keys" hidden>NUCのキー：Ctrl + Alt + F で切り替え ／ Ctrl + Alt + W でLauncherへ</p></section>
+   <section class="face-status-area"><h3>接続・画面</h3><strong id="face-status-text">接続を確認中…</strong><div class="face-indicators"><span id="face-api-state">API —</span><span id="face-window-state">画面 —</span><span id="face-speech-state">音声 —</span></div><p id="face-shortcut-name"></p><div class="face-power-actions face-window-actions" role="group" aria-label="SiriusFaceの起動と停止">
+    <button type="button" id="face-launch" disabled>顔を起動</button>
+    <button type="button" id="face-stop" disabled>顔を停止</button>
+    <button type="button" id="face-restart" disabled>顔を再起動</button>
+   </div><p class="face-feedback face-power-feedback" id="face-power-feedback" role="status" hidden></p>
+   <div class="face-window-actions"><button type="button" id="face-focus">顔画面を表示</button><button type="button" id="face-launcher-focus">Launcher画面を表示</button><button type="button" id="face-refresh">状態を更新</button></div><p class="face-panel-note">NUCのモニター表示を切り替えます。顔画面の右上にマウスを寄せると戻るボタンが現れます。</p><p class="face-panel-note" id="face-switch-keys" hidden>NUCのキー：Ctrl + Alt + F で切り替え ／ Ctrl + Alt + W でLauncherへ</p></section>
    <section class="face-section face-expressions-section"><h3>表情・表示モード</h3><div id="face-expressions" class="face-expression-grid"></div><p class="face-panel-note">故障は表示演出です。「痛がる」は一時的な反応です。バッテリー表示はFace側の受信データを使い、未受信時は既定値になる場合があります。</p></section>
    <section class="face-section face-action-section"><h3>行動指示</h3><div class="face-action-mode" role="group" aria-label="行動指示の方式"><button type="button" data-action-mode="llm" aria-pressed="true">LLM経由</button><button type="button" data-action-mode="nav" aria-pressed="false">LLMなし（直接）</button></div><form class="face-action-form" id="face-action-form"><input id="face-action-text" maxlength="200" placeholder="例：前に進んで / 左を向いて / 座標(4,2)にいって" aria-label="行動指示"><button type="submit" id="face-action-send">送信</button></form><div class="face-action-presets" id="face-action-presets"></div><p class="face-action-feedback" id="face-action-feedback" role="status" aria-live="polite"></p><p class="face-panel-note" id="face-action-note">LLM経由：自由な文章をLLMが解釈して行動します。</p></section>
    <section class="face-section face-gaze-section"><h3>視線</h3><div class="face-gaze-grid" id="face-gaze"></div></section>
@@ -100,7 +105,10 @@
    container.append(...sorted,...remaining,...fixed);
   }
   window.siriusFaceCollapse=initCollapse;
-  function message(text,bad=false){$('face-feedback').textContent=text;$('face-feedback').classList.toggle('error',bad);}
+  function message(text,bad=false,id='face-feedback'){
+   const feedback=$(id);feedback.textContent=text;feedback.classList.toggle('error',bad);
+   if(id==='face-power-feedback')feedback.hidden=!text;
+  }
   function actionFeedback(text,bad=false){const el=$('face-action-feedback');if(!el)return;el.textContent=text;el.classList.toggle('error',bad);}
   function paintActionMode(){const ready=!!(state&&state.connected&&state.speech_ready);for(const button of document.querySelectorAll('[data-action-mode]')){button.setAttribute('aria-pressed',String(button.dataset.actionMode===actionMode));button.disabled=busy;}const input=$('face-action-text'),send=$('face-action-send');if(input)input.disabled=busy||!ready;if(send)send.disabled=busy||!ready;for(const button of document.querySelectorAll('[data-action-preset]'))button.disabled=busy||!ready;const note=$('face-action-note');if(note)note.textContent=!ready?'SiriusFaceの指示APIへ接続すると送信できます。':actionMode==='nav'?'LLMなし（直接）：ナビゲーション側の指示パーサーへ送ります。':'LLM経由：自由な文章をLLMが解釈して行動します。';}
   function paint(){if(!state)return;window.siriusFaceState=state;window.dispatchEvent(new CustomEvent('sirius:face-state',{detail:state}));const s=state,summary=s.connected?'接続済み':s.error?'接続を確認できません':s.starting?'起動中…':s.running?'起動中・API待ち':'未起動';
@@ -108,7 +116,10 @@
    $('face-card-expression').textContent='表情 '+(s.connected?(names[s.expression]||s.expression||'—'):'—');
    for(const[id,on,label]of[['face-api-state',s.connected,'API'],['face-window-state',s.window_visible,'画面'],['face-speech-state',s.speech_ready,'音声']]){const el=$(id);el.textContent=label+' '+(on?'接続可':'未確認');el.classList.toggle('ready',on);}
    $('face-shortcut-name').textContent=s.shortcut_available?'デスクトップの「'+s.shortcut_name+'」を使用':'この端末には顔の起動ショートカットがありません';
-   $('face-launch').disabled=busy||!s.shortcut_available||s.running||s.starting;$('face-launch').textContent=s.starting?'起動中…':s.running?'起動済み':'顔を起動';
+   const canManage=!busy&&s.shortcut_available;
+   $('face-launch').disabled=!canManage||s.running||s.starting;
+   $('face-stop').disabled=!canManage||!s.running;
+   $('face-restart').disabled=!canManage||(s.starting&&!s.running);
    $('face-focus').disabled=busy||!s.window_visible;screenButton.disabled=busy||!s.window_visible;$('face-launcher-focus').disabled=busy||!s.launcher_visible;$('face-switch-keys').hidden=!s.switch_shortcuts;$('face-refresh').disabled=busy||polling;
    for(const b of $('face-expressions').children){b.disabled=busy||!s.connected;b.setAttribute('aria-pressed',String(s.connected&&b.dataset.expression===s.expression));}
    for(const b of $('face-gaze').children)b.disabled=busy||!s.connected||!s.window_visible;
@@ -120,8 +131,22 @@
    catch(error){state={...(state||{}),connected:false,speech_ready:false,error:'Faceの状態を取得できません'};if(dialog.open)message(error.message,true);}
    finally{polling=false;paint();}
   }
-  async function send(action,extra={},successMessage=null,onError=null){if(busy)return false;if(['focus','focus_launcher'].includes(action)&&typeof DRIVE!=='undefined'&&DRIVE.enabled)driveDisable();busy=true;message('送信中…');paint();try{const response=await fetch('/api/face/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...extra}),signal:AbortSignal.timeout(8000)});const result=await response.json();if(!response.ok||result.error)throw Error(result.error==='auth'?'Launcherへのログインが必要です':result.error||'操作できませんでした');message(successMessage||(result.already_running?'顔はすでに起動しています':result.starting?'顔の起動を開始しました':'送信しました'));return true;}
-   catch(error){message(error.message,true);if(onError)onError(error.message);if(!dialog.open)dialog.showModal();return false;}finally{busy=false;paint();await poll(true);}
+  async function send(action,extra={},successMessage=null,onError=null){
+   if(busy)return false;
+   if(['focus','focus_launcher'].includes(action)&&typeof DRIVE!=='undefined'&&DRIVE.enabled)driveDisable();
+   const pending={launch:'起動中…',stop:'停止中…',restart:'再起動中…'}[action];
+   const feedback=pending?'face-power-feedback':'face-feedback';
+   busy=true;message(pending||'送信中…',false,feedback);paint();
+   try{
+    const response=await fetch('/api/face/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...extra}),signal:AbortSignal.timeout(pending?16000:8000)});
+    const result=await response.json();
+    if(!response.ok||result.error)throw Error(result.error==='auth'?'Launcherへのログインが必要です':result.error||'操作できませんでした');
+    const done=result.already_running?'顔はすでに起動しています':result.stopped?'顔を停止しました':
+     result.starting?(action==='restart'?'顔の再起動を開始しました':'顔の起動を開始しました'):'送信しました';
+    message(successMessage||done,false,feedback);return true;
+   }catch(error){
+    message(error.message,true,feedback);if(onError)onError(error.message);if(!dialog.open)dialog.showModal();return false;
+   }finally{busy=false;paint();await poll(true);}
   }
   async function sendInstruction(mode,text){const value=String(text||'').trim();if(!value){message('行動指示を入力してください',true);actionFeedback('行動指示を入力してください',true);$('face-action-text').focus();return false;}const label=mode==='nav'?'ナビ指示（LLMなし）':'LLM指示';const done=label+'を送信しました：'+value;actionFeedback('送信中…');const ok=await send('instruction',{mode,text:value},done,error=>actionFeedback(error,true));if(ok){actionFeedback(done);$('face-action-text').value='';}return ok;}
   function setActionMode(mode){actionMode=mode==='nav'?'nav':'llm';try{localStorage.setItem('sirius-face-action-mode',actionMode);}catch(error){}paintActionMode();}
@@ -130,6 +155,8 @@
   $('face-panel-open').onclick=()=>{if(typeof DRIVE!=='undefined'&&DRIVE.enabled)driveDisable();dialog.showModal();$('face-close').focus();poll(true);};$('face-close').onclick=()=>dialog.close();
   dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();});
   screenButton.onclick=()=>send('focus');$('face-launcher-focus').onclick=()=>send('focus_launcher');$('face-launch').onclick=()=>send('launch');$('face-focus').onclick=()=>send('focus');$('face-refresh').onclick=()=>poll(true);
+  $('face-stop').onclick=()=>{if(confirm('SiriusFaceを停止しますか？'))send('stop');};
+  $('face-restart').onclick=()=>{if(confirm('SiriusFaceを再起動しますか？'))send('restart');};
   const textAction=action=>{const text=$('face-message').value.trim();if(!text){message('メッセージを入力してください',true);$('face-message').focus();return;}if(action==='speak'&&/[\[\]]/.test(text)){message('読み上げには制御タグを使えません',true);return;}send(action,{text});};
   $('face-subtitle').onclick=()=>textAction('subtitle');$('face-speak').onclick=()=>textAction('speak');$('face-clear-text').onclick=()=>send('clear_text');
   for(const[key,label,instruction]of ACTION_PRESETS){const b=document.createElement('button');b.type='button';b.className='face-action-preset';b.dataset.actionPreset=key;b.textContent=label;b.title=instruction;b.onclick=()=>sendInstruction(actionMode,instruction);$('face-action-presets').append(b);}

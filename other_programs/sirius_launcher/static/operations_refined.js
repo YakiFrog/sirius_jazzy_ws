@@ -12,7 +12,7 @@
  const themeMeta=document.querySelector('meta[name="theme-color"]');
  function syncThemeChrome(){if(themeMeta)themeMeta.content=document.documentElement.dataset.theme==='light'?'#f2f5fa':'#0f151f';}
  new MutationObserver(syncThemeChrome).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});syncThemeChrome();
- const css=document.createElement('link');css.rel='stylesheet';css.href='/static/operations_refined.css?v=20261110-presets-scroll';document.head.append(css);
+ const css=document.createElement('link');css.rel='stylesheet';css.href='/static/operations_refined.css?v=20261126-header-warning';document.head.append(css);
  const diagnostic=document.getElementById('navigation-diagnostics-button'),runningHeading=home.querySelector('.sidebar>.section-heading');
  if(diagnostic&&runningHeading){runningHeading.querySelector('.live-dot')?.remove();runningHeading.append(diagnostic);}
  const top=bar.querySelector('.top-status'),power=document.getElementById('operations-power');

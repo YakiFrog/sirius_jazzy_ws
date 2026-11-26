@@ -9,6 +9,7 @@ from flask import Blueprint, jsonify, request
 
 
 DEFAULT_SINK = "@DEFAULT_AUDIO_SINK@"
+MAX_VOLUME = 150
 VOLUME_LINE = re.compile(r"Volume:\s+(\d+(?:\.\d+)?)\s*(\[MUTED\])?\s*")
 OUTPUT_LABEL = re.compile(r'\bnode\.description\s*=\s*"([^"\n]+)"')
 
@@ -55,8 +56,8 @@ def register_host_audio(app, auth_ok):
             if not isinstance(body, dict) or len(body) != 1:
                 return jsonify(error="invalid_audio_setting"), 400
             volume, muted = body.get("volume"), body.get("muted")
-            if type(volume) is int and 0 <= volume <= 100:
-                command = ("set-volume", "-l", "1.0", DEFAULT_SINK, f"{volume}%")
+            if type(volume) is int and 0 <= volume <= MAX_VOLUME:
+                command = ("set-volume", "-l", str(MAX_VOLUME / 100), DEFAULT_SINK, f"{volume}%")
             elif type(muted) is bool:
                 command = ("set-mute", DEFAULT_SINK, str(int(muted)))
             else:

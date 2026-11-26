@@ -20,6 +20,7 @@ def bridge(tmp_path, monkeypatch):
     monkeypatch.setattr(instance,'launcher_windows',lambda:[])
     monkeypatch.setattr(instance,'processes',lambda _:[])
     monkeypatch.setattr(instance,'listening',lambda _:False)
+    monkeypatch.setattr(instance,'place_window',lambda *_:None)
     return instance
 
 
@@ -65,7 +66,8 @@ def test_auth_guards_read_and_control(bridge,monkeypatch):
     monkeypatch.setattr(bridge,'status',lambda:pytest.fail('Unauthenticated status read'))
     c=client(bridge,False)
     assert c.get('/api/face/status').status_code==401
-    assert c.post('/api/face/action',json={'action':'launch'}).status_code==401
+    for action in ('launch', 'stop', 'restart'):
+        assert c.post('/api/face/action',json={'action':action}).status_code==401
 
 
 def test_status_is_read_only_cached_and_recovers_from_failure(bridge,monkeypatch):
@@ -87,13 +89,46 @@ def test_desktop_shortcut_is_used_and_repeated_launch_is_suppressed(bridge,monke
     calls=[]
     monkeypatch.setattr(bridge,'gui_env',lambda:{'DISPLAY':':0'})
     monkeypatch.setattr('face_bridge.shutil.which',lambda name:'/usr/bin/'+name)
-    monkeypatch.setattr('face_bridge.subprocess.Popen',lambda args,**kw:calls.append((args,kw)))
+    def run(args, **kwargs):
+        calls.append((args, kwargs))
+        return SimpleNamespace(returncode=0)
+    monkeypatch.setattr('face_bridge.subprocess.run', run)
     c=client(bridge)
     assert c.post('/api/face/action',json={'action':'launch'}).json['starting']
     assert c.post('/api/face/action',json={'action':'launch'}).json['already_running']
     assert len(calls)==1
     assert calls[0][0]==['gio','launch',str(bridge.home/'Desktop/sirius_face.desktop')]
     assert calls[0][1]['start_new_session']
+
+
+def test_restart_closes_running_face_with_no_api_before_starting(bridge, monkeypatch):
+    active = True
+    calls = []
+    monkeypatch.setattr(bridge, 'gui_env', lambda: {'DISPLAY': ':0'})
+    monkeypatch.setattr(bridge, 'processes', lambda _: [123] if active else [])
+    monkeypatch.setattr(bridge, 'windows', lambda _: [{'id': '0x11', 'pid': 123}] if active else [])
+
+    def run(args, **kwargs):
+        nonlocal active
+        calls.append(args[0])
+        if args[0] == 'wmctrl':
+            assert args[1:] == ['-i', '-c', '0x11']
+            active = False
+        else:
+            assert not active
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr('face_bridge.subprocess.run', run)
+    c = client(bridge)
+    assert c.get('/api/face/status').json['running']
+    assert c.post('/api/face/action', json={'action': 'restart'}).json['starting']
+    assert calls == ['wmctrl', 'gio']
+
+
+def test_restart_preserves_face_if_it_cannot_start(bridge, monkeypatch):
+    monkeypatch.setattr(bridge, 'gui_env', lambda: {})
+    monkeypatch.setattr(bridge, 'stop', lambda _: pytest.fail('Face must keep running'))
+    assert client(bridge).post('/api/face/action', json={'action': 'restart'}).status_code == 503
 
 
 @pytest.mark.parametrize('connected,running',[(True,False),(False,True)])

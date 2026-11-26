@@ -10,6 +10,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from file_browser import HostFiles, register_file_browser
+import map_editor
 from map_editor import register_map_editor
 
 
@@ -76,7 +77,7 @@ def test_opens_and_previews_pgm_at_the_128_mib_limit(editor):
     assert '128 MiB' in over_limit.json['error']
 
 
-def test_edit_export_preserves_other_fields_and_refuses_overwrite(editor):
+def test_edit_export_preserves_other_fields_and_confirms_overwrite(editor):
     client, root = editor
     source = root / 'waypoints' / 'course.yaml'
     original = dict(format_version='1.0', custom={'course': '実験'}, waypoints=[
@@ -99,8 +100,47 @@ def test_edit_export_preserves_other_fields_and_refuses_overwrite(editor):
     assert document['custom'] == original['custom']
     assert document['waypoints'][1]['initial_pose'] == original['waypoints'][0]['initial_pose']
     assert source.read_text() == before
-    assert client.post('/api/map-editor/waypoints', json=payload).status_code == 409
+    conflict = client.post('/api/map-editor/waypoints', json=payload)
+    assert conflict.status_code == 409 and conflict.json['existing'] == [exported.name]
+    exported.write_text(before)
+    stale = client.post('/api/map-editor/waypoints', json={**payload, 'overwrite': conflict.json['overwrite']})
+    assert stale.status_code == 409 and exported.read_text() == before
+    assert client.post('/api/map-editor/waypoints', json={**payload, 'overwrite': stale.json['overwrite']}).status_code == 201
+    assert yaml.safe_load(exported.read_text()) == document
     assert client.post('/api/map-editor/waypoints', json={**payload, 'name': '../unsafe.yaml'}).status_code == 400
+
+
+def test_picker_creates_a_folder_and_saves_waypoints_in_it(editor):
+    client, root = editor
+    folders = '/api/map-editor/export-folders'
+    waypoint_root = root / 'waypoints'
+    payload = dict(kind='waypoints', directory=str(waypoint_root), name='Experiment')
+    result = client.post(folders, json=payload)
+    assert result.status_code == 201
+    directory = waypoint_root / 'Experiment'
+    assert Path(result.json['path']) == directory
+    listing = client.get(folders, query_string={'kind': 'waypoints'}).json
+    assert [folder['name'] for folder in listing['folders']] == ['Experiment']
+    assert client.get(folders, query_string={'kind': 'waypoints', 'path': str(directory)}).json['parent'] == str(waypoint_root)
+    assert client.post(folders, json=payload).status_code == 409
+
+    alias = waypoint_root / 'outside'
+    alias.symlink_to(root / 'maps', target_is_directory=True)
+    for outside in (str(alias), str(root / 'maps')):
+        assert client.post(folders, json={**payload, 'directory': outside}).status_code == 403
+        assert client.post('/api/map-editor/waypoints', json=dict(
+            directory=outside, name='test.yaml', document={'waypoints': []})).status_code == 403
+
+    result = client.post('/api/map-editor/waypoints', json=dict(
+        directory=str(directory), name='test.yaml', document={'waypoints': []}))
+    assert result.status_code == 201
+    assert Path(result.json['path']) == directory / 'test.yaml'
+    assert yaml.safe_load((directory / 'test.yaml').read_text()) == {'waypoints': []}
+    query = {'kind': 'waypoints', 'path': str(directory)}
+    contents = client.get(folders, query_string=query).json
+    assert contents['folders'] == []
+    assert contents['files'] == [{'name': 'test.yaml'}]
+    assert client.get(folders, query_string={**query, 'path': str(directory / 'test.yaml')}).status_code == 400
 
 
 def test_rejects_actions_that_mv_goal_cannot_use_together(editor):
@@ -112,7 +152,7 @@ def test_rejects_actions_that_mv_goal_cannot_use_together(editor):
     assert not (root / 'waypoints' / 'invalid.yaml').exists()
 
 
-def test_native_tile_and_map_export_preserve_pixels_and_ros_metadata(editor):
+def test_native_tile_and_map_export_preserve_pixels_and_ros_metadata(editor, monkeypatch):
     client, root = editor
     source = root / 'maps' / 'original.pgm'
     source_yaml = source.with_suffix('.yaml')
@@ -146,6 +186,47 @@ def test_native_tile_and_map_export_preserve_pixels_and_ros_metadata(editor):
         assert edited.getpixel((512, 1)) == 255
     assert source.read_bytes() == original
     assert client.post('/api/map-editor/map', json=payload).status_code == 409
+
+    directory = source.parent / 'run'
+    directory.mkdir()
+    selected = dict(payload, directory=str(directory))
+    existing = directory / 'edited.yaml'
+    existing.write_text('existing')
+    assert client.post('/api/map-editor/map', json=selected).status_code == 409
+    assert existing.read_text() == 'existing'
+    assert not existing.with_suffix('.pgm').exists()
+    existing.unlink()
+    direct = client.post('/api/map-editor/map', json=selected)
+    assert direct.status_code == 201
+    assert Path(direct.json['path']) == existing
+    current = client.get('/api/map-editor/map', query_string={'path': str(existing)})
+    assert current.status_code == 200
+
+    overwrite = dict(selected, path=str(existing), revision=current.json['revision'],
+                     strokes=[dict(tool='pen', size=1, points=[[2, 4]])])
+    raster = existing.with_suffix('.pgm')
+    originals = raster.read_bytes(), existing.read_bytes()
+    conflict = client.post('/api/map-editor/map', json=overwrite)
+    assert conflict.status_code == 409 and conflict.json['existing'] == [raster.name, existing.name]
+
+    replace = map_editor.os.replace
+    def fail_config_replace(staged, target):
+        if target == existing:
+            raise OSError('Could not replace the YAML.')
+        replace(staged, target)
+    with monkeypatch.context() as patch:
+        patch.setattr(map_editor.os, 'replace', fail_config_replace)
+        failure = client.post('/api/map-editor/map', json={**overwrite, 'overwrite': conflict.json['overwrite']})
+    assert failure.status_code == 400
+    assert (raster.read_bytes(), existing.read_bytes()) == originals
+
+    changed = client.post('/api/map-editor/map', json=overwrite)
+    assert changed.status_code == 409
+    result = client.post('/api/map-editor/map', json={**overwrite, 'overwrite': changed.json['overwrite']})
+    assert result.status_code == 201
+    assert yaml.safe_load(existing.read_text()) == {**metadata, 'image': raster.name}
+    with Image.open(raster) as image:
+        assert image.getpixel((2, 4)) == 0
 
 
 def test_semantic_map_uses_the_pgm_indices_and_json_palette_and_origin(editor):
@@ -249,7 +330,8 @@ def test_optional_texture_image_is_exposed_as_a_preview_layer(editor):
 def test_map_editor_has_an_optional_texture_image_layer():
     script = (Path(__file__).resolve().parents[1] / 'static' / 'map_editor.js').read_text(encoding='utf-8')
     assert "texture: 'Texture Image'" in script
-    assert "state.rasters[layer] = {map, image, tiles: new Map()}" in script
+    assert "raster: {map, image, tiles: new Map()}" in script
+    assert "state.rasters[layer] = raster" in script
     assert "map.texture" in script
     assert "/api/map-editor/texture-preview" in script
     assert "/api/map-editor/texture-tile" in script
@@ -345,13 +427,18 @@ def test_map_editor_exposes_nav2_costmap_layers_and_tools():
     assert "costmap: 'Cost Map'" in script and "inflation: 'Inflation (Nav2)'" in script
     assert "cost: ['Cost Pen'" in script and "'cost-eraser': ['Cost Eraser'" in script
     assert "id=\"me-costmap-panel\"" in script
-    assert "post('costmap'" in script and "post('costmap-export'" in script
+    assert "post('costmap'" in script and "saveExport('costmap-export'" in script
     assert "source = '/api/map-editor/costmap-tile?'" in script
     assert "scheduleCostmap()" in script
     assert '.me-cost-table' in style and '.me-cost-row' in style
 
 
-def test_costmap_generates_a_planned_path_around_lethal_cells(editor):
+@pytest.mark.parametrize('use_scipy', [True, False])
+def test_costmap_generates_a_planned_path_around_lethal_cells(editor, monkeypatch, use_scipy):
+    if use_scipy and map_editor.dijkstra is None:
+        pytest.skip('SciPy is not installed')
+    if not use_scipy:
+        monkeypatch.setattr(map_editor, 'dijkstra', None)
     client, root = editor
     width, height = 20, 20
     pixels = bytearray([1] * (width * height))
@@ -400,7 +487,7 @@ def test_map_editor_imports_waypoint_drag_reorder_and_generated_path_ui():
     assert "event.dataTransfer.setData('text/plain', String(index))" in script
     assert "id=\"me-generate-path\"" in script
     assert "post('costmap-path'" in script
-    assert "state.showGeneratedPath ? '#169b62'" in script
+    assert "state.showGeneratedPath ? appearance.pathColor : appearance.linkColor" in script
     assert '.me-waypoint-handle' in style and '.me-waypoint-row.drop-target' in style
 
 
@@ -411,4 +498,144 @@ def test_map_editor_headers_are_themed_in_light_mode():
     assert 'background: transparent;' in style
     assert '#page-map-editor .me-header {' in style
     page = (root / 'launcher.html').read_text(encoding='utf-8')
-    assert 'map_editor.css?v=20261124-light' in page
+    assert '/static/map_editor.css?v=' in page
+
+
+def test_map_editor_supports_bulk_waypoint_deletion():
+    root = Path(__file__).resolve().parents[1]
+    script = (root / 'static' / 'map_editor.js').read_text(encoding='utf-8')
+    style = (root / 'static' / 'map_editor.css').read_text(encoding='utf-8')
+    page = (root / 'launcher.html').read_text(encoding='utf-8')
+    assert 'id="me-select-all"' in script
+    assert 'id="me-delete-selected"' in script
+    assert 'checkedWaypoints' in script
+    assert 'function removeSelectedWaypoints()' in script
+    assert "state.route.waypoints = rows().filter(row => !numbers.has(row.number))" in script
+    assert 'me-waypoint-check' in script
+    assert '.me-bulk-bar' in style
+    assert 'grid-template-columns: 18px 14px minmax(0, 1fr) 38px;' in style
+    assert 'src="/static/map_editor.js?v=' in page and '/static/map_editor.css?v=' in page
+
+
+def test_plans_on_plain_pgm_and_aligns_shifted_semantic_costs(editor):
+    client, root = editor
+    image = root / 'maps' / 'base.pgm'
+    yaml_path = image.with_suffix('.yaml')
+    pixels = bytearray([255] * 400)
+    for row in range(18):
+        pixels[row * 20 + 10] = 0
+    image.write_bytes(b'P5\n20 20\n255\n' + pixels)
+    yaml_path.write_text(yaml.safe_dump(dict(image=image.name, mode='trinary',
+                                            origin=[0.0, 0.0, 0.0], resolution=0.1,
+                                            occupied_thresh=0.65)))
+    meta = client.get('/api/map-editor/map', query_string={'path': str(yaml_path)}).json
+    base = {'path': str(yaml_path), 'revision': meta['revision']}
+    payload = {'base': base, 'inflation': {'inflation_radius': 0}}
+    points = [[0.25, 1.75], [1.85, 1.75]]
+
+    def prepare(body):
+        response = client.post('/api/map-editor/costmap', json=body)
+        assert response.status_code == 200
+        return response.json
+
+    def plan(prepared):
+        response = client.post('/api/map-editor/costmap-path',
+                               json=dict(token=prepared['token'], points=points))
+        assert response.status_code == 200
+        return response.json
+
+    plain = prepare(payload)
+    assert plain['stats']['lethal_cells'] == 18
+    plain_plan = plan(plain)
+    assert plain_plan['planned_segments'] == 1 and not plain_plan['failed_edges']
+    assert min(point[1] for point in plain_plan['path']) <= 0.2
+
+    semantic = root / 'maps' / 'shifted.colored.pgm'
+    semantic.write_bytes(b'P5\n12 8\n255\n' + bytes([2] + [0] * 95))
+    sidecar = semantic.with_suffix('.json')
+    sidecar.write_text(json.dumps(dict(
+        resolution=0.2, origin=[0.4, 0.0], width=12, height=8,
+        palette=[[127, 127, 127], [255, 255, 255], [0, 255, 0]],
+        labels={'2': {'name': 'grass', 'global_cost': 100, 'local_cost': 100}},
+    )))
+    semantic_meta = client.get('/api/map-editor/map', query_string={'path': str(sidecar)}).json
+    mixed = prepare({**payload, 'path': str(sidecar), 'revision': semantic_meta['revision']})
+    assert (mixed['width'], mixed['height']) == (12, 8)
+    assert mixed['planning_grid'] == {'width': 20, 'height': 20, 'origin': [0, 0, 0], 'resolution': 0.1}
+    assert mixed['stats']['lethal_cells'] == 22
+    tile = client.get('/api/map-editor/costmap-tile',
+                      query_string={'token': mixed['token'], 'kind': 'inflation', 'col': 0, 'row': 0})
+    with Image.open(BytesIO(tile.data)) as rendered:
+        assert rendered.getpixel((10, 0)) == (255, 0, 255, 255)
+        assert rendered.getpixel((4, 4)) == (255, 0, 255, 255)
+    assert min(point[1] for point in plan(mixed)['path']) <= 0.2
+    blocked = prepare({**payload, 'base': {**base, 'strokes': [
+        {'tool': 'pen', 'size': 1, 'points': [[10, 18], [10, 19]]},
+    ]}})
+    assert plan(blocked) == {'path': points, 'planned_segments': 0, 'segments': 1, 'failed_edges': [1]}
+
+
+def test_moving_one_waypoint_reuses_unaffected_path_segments(editor, monkeypatch):
+    client, root = editor
+    image = root / 'maps' / 'cached.pgm'
+    image.write_bytes(b'P5\n20 20\n255\n' + bytes([255] * 400))
+    map_path = image.with_suffix('.yaml')
+    map_path.write_text(yaml.safe_dump(dict(
+        image=image.name, mode='trinary', origin=[0, 0, 0], resolution=1.0)))
+    metadata = client.get('/api/map-editor/map', query_string={'path': str(map_path)}).json
+    base = {'path': str(map_path), 'revision': metadata['revision']}
+    calls = []
+    original = map_editor.MapEditor.plan_cost_segment
+
+    def record(editor, grid, start, goal):
+        calls.append((start, goal))
+        return original(editor, grid, start, goal)
+
+    monkeypatch.setattr(map_editor.MapEditor, 'plan_cost_segment', record)
+
+    def prepare(radius):
+        response = client.post('/api/map-editor/costmap', json={
+            'base': base, 'inflation': {'inflation_radius': radius},
+        })
+        assert response.status_code == 200
+        return response.json['token']
+
+    def plan(token, points, mode='max'):
+        response = client.post('/api/map-editor/costmap-path', json={
+            'token': token, 'points': points, 'combine': mode,
+        })
+        assert response.status_code == 200
+        assert response.json['planned_segments'] == 4
+        return response.json['path']
+
+    token = prepare(0)
+    points = [[2.5, 12.5], [5.5, 12.5], [8.5, 12.5], [11.5, 12.5], [14.5, 12.5]]
+    first_plan = plan(token, points)
+    assert len(calls) == 4
+    changed = points[:2] + [[8.5, 14.5]] + points[3:]
+    calls.clear()
+    plan(token, changed)
+    assert calls == [((5, 7), (8, 5)), ((8, 5), (11, 7))]
+    calls.clear()
+    in_same_cell = points[:2] + [[8.6, 14.5]] + points[3:]
+    assert in_same_cell[2] in plan(token, in_same_cell)
+    assert plan(token, points) == first_plan
+    assert not calls
+    plan(token, changed, 'add')
+    assert len(calls) == 4
+    changed_token = prepare(1)
+    calls.clear()
+    plan(changed_token, changed)
+    assert len(calls) == 4
+
+
+def test_map_editor_header_keeps_actions_on_one_line():
+    root = Path(__file__).resolve().parents[1]
+    style = (root / 'static' / 'map_editor.css').read_text(encoding='utf-8')
+    page = (root / 'launcher.html').read_text(encoding='utf-8')
+    assert '.me-header {\n  justify-content: space-between;\n  padding-bottom: 10px;\n  flex-wrap: nowrap;' in style
+    assert 'text-overflow: ellipsis;' in style
+    assert '.me-header > .me-actions {\n  flex: 0 0 auto;\n  flex-wrap: nowrap;' in style
+    assert '#me-map-label { flex: 1 1 auto; }' in style
+    assert "el('me-route-label').title = routeLabel" in (root / 'static' / 'map_editor.js').read_text(encoding='utf-8')
+    assert 'map_editor.css?v=' in page

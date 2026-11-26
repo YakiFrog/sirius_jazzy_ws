@@ -20,7 +20,7 @@ cat > "$TARGET" <<EOF
 Type=Application
 Name=Sirius Control Console
 Comment=Sirius full-screen launcher
-Exec=env ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-53} SIRIUS_WEB_KIOSK=1 bash "$WS/bash/startup_bash/start_sirius_console.sh"
+Exec=env ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-53} SIRIUS_WEB_KIOSK=1 SIRIUS_WEB_WORKSPACE=1 bash "$WS/bash/startup_bash/start_sirius_console.sh"
 Terminal=false
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Delay=3

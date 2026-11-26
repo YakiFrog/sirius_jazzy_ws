@@ -357,4 +357,4 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelec
 initConsole();
 
 // Battery telemetry remains visible on every console page.
-(function(){const script=document.createElement('script');script.src='/static/battery.js';document.body.append(script);})();
+(function(){const script=document.createElement('script');script.src='/static/battery.js?v=20261126-charge-indicator';document.body.append(script);})();

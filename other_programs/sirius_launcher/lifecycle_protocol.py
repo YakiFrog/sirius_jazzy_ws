@@ -8,6 +8,7 @@ NODES = {
     'velocity_smoother':'速度平滑化', 'collision_monitor':'衝突監視',
     'waypoint_follower':'Nav2ウェイポイント', 'docking_server':'ドッキング',
 }
+REQUIRED_NODES = tuple(name for name in NODES if name not in ('docking_server', 'waypoint_follower'))
 # action: (ROS transition ID, required stable state, target state, Japanese label)
 ACTIONS = {'configure':(1,1,2,'設定'), 'activate':(3,2,3,'有効化'),
            'deactivate':(4,3,2,'無効化'), 'cleanup':(2,2,1,'設定解除')}

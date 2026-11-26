@@ -20,3 +20,13 @@ def test_dedicated_emergency_stop_ui_keeps_its_details():
     assert 'id="emergency-stop-physical"' in js
     assert 'id="emergency-stop-electronic"' in js
     assert '物理ボタンは8V以下で押下を推定し' in js
+
+
+def test_battery_chip_includes_estimated_runtime_when_discharging():
+    js = (ROOT / 'static' / 'battery.js').read_text(encoding='utf-8')
+    style = (ROOT / 'static' / 'battery.css').read_text(encoding='utf-8')
+    assert 'id="battery-chip-runtime"' in js
+    assert "details.time_remaining_kind==='discharging'" in js
+    assert "timeChip.textContent=discharging?'残り '+duration(runtime,true):''" in js
+    assert "推定稼働時間 '+duration(runtime)" in js
+    assert '#battery-chip-runtime' in style

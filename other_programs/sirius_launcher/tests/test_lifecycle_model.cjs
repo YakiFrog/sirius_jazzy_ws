@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {lifecycleState,lifecycleCostmap,lifecycleGraphState,lifecycleHealth,lifecycleStartup}=require('../static/lifecycle_model.js');
+const {lifecycleState,lifecycleCostmap,lifecycleGraphState,lifecycleHealth,lifecycleStartup,lifecycleBlockers}=require('../static/lifecycle_model.js');
 const e=value=>({fresh:true,value});
 test('fresh lifecycle states are distinct, including errors and transitions',()=>{
  for(const [id,tone,label] of [[1,'waiting','未設定'],[2,'waiting','待機中'],[3,'ok','稼働中'],[13,'transition','遷移中'],[15,'error','エラー処理中'],[4,'unknown','終了']]){
@@ -62,6 +62,13 @@ test('OK requires active primary nodes and permits inactive optional features',(
  assert.equal(lifecycleHealth(payload).tone,'waiting');
  payload.telemetry.nodes.planner_server.fresh=false;
  assert.equal(lifecycleHealth(payload).tone,'unknown');
+});
+test('warning names a fresh inactive required node even if another node is unknown',()=>{
+ const data={available:true,nodes:{controller_server:'速度制御'},required_nodes:['controller_server','planner_server'],
+  telemetry:{nodes:{controller_server:e({id:2}),docking_server:e({id:2})}}};
+ assert.deepEqual(lifecycleBlockers(data),[{name:'controller_server',label:'速度制御',state:'待機中'}]);
+ data.telemetry.nodes.controller_server.fresh=false;
+ assert.deepEqual(lifecycleBlockers(data),[]);
 });
 test('TF polling messages are waiting and a terminal error becomes a timeout notice',()=>{
  const name='global_costmap/global_costmap';

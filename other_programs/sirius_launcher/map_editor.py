@@ -1,13 +1,14 @@
 """Serve ROS map rasters and export copies of edited maps and waypoints."""
 from collections import OrderedDict
+from contextlib import contextmanager
 from hashlib import sha256
 from io import BytesIO
 import heapq
 import json
 import math
 import os
-import time
 from pathlib import Path
+import stat
 import tempfile
 from threading import Lock
 from urllib.parse import urlsplit
@@ -16,6 +17,12 @@ from flask import Blueprint, jsonify, request, send_file
 import numpy as np
 from PIL import Image, ImageDraw
 import yaml
+
+try:
+    from scipy.sparse import csr_matrix
+    from scipy.sparse.csgraph import dijkstra
+except ImportError:
+    dijkstra = None
 
 from file_browser import HostFiles, PGM_LIMIT, TEXT_LIMIT, open_preview_image
 
@@ -30,10 +37,9 @@ COSTMAP_DEFAULTS = {
     'occupied_thresh': 0.65, 'negate': 0,
 }
 COSTMAP_CACHE_LIMIT = 3
+PATH_CACHE_SEGMENTS = 2 * MAX_WAYPOINTS
+PATH_CACHE_POINTS = 250_000
 MAX_INFLATION_CELLS = 400
-MAX_PATH_DIMENSION = 900
-MAX_PATH_EXPANSIONS = 200_000
-PATH_TIME_LIMIT = 6.0
 POSE_FIELDS = {'number': 'int', 'x': 'float', 'y': 'float', 'angle_radians': 'float'}
 SUPPORTED_TYPES = {'int', 'float', 'bool', 'string', 'str', 'pose'}
 ACTION_TYPES = {
@@ -105,6 +111,15 @@ def check_json_values(value, depth=0, seen=None):
         raise ValueError('The YAML contains a value that the browser cannot edit.')
 
 
+class ExportConflict(FileExistsError):
+    def __init__(self, existing):
+        super().__init__('Files with these names already exist.')
+        self.names = [path.name for path in existing]
+        versions = [(str(path), info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+                    for path, info in existing.items()]
+        self.approval = sha256(repr(versions).encode()).hexdigest()
+
+
 class MapEditor:
     def __init__(self, files):
         self.files = files
@@ -114,6 +129,103 @@ class MapEditor:
         self.tile_sources = OrderedDict()
         self.costmap_lock = Lock()
         self.costmap_cache = OrderedDict()
+        self.path_cache_lock = Lock()
+        self.combined_grid = None
+
+    def export_directory(self, kind, value=None):
+        if kind not in ('maps', 'waypoints'):
+            raise ValueError('Choose Maps or Waypoints.')
+        root = self.root / kind
+        parent = self.files.resolve(str(root) if value is None else value)
+        if not parent.is_relative_to(root):
+            raise PermissionError('Choose a folder within the export location.')
+        if not parent.is_dir():
+            raise ValueError('Choose a folder.')
+        return parent
+
+    def export_folders(self, kind, value):
+        parent = self.export_directory(kind, value)
+        listing = self.files.listing(str(parent))
+        root = self.root / kind
+        folders = [item for item in listing['entries'] if item['directory'] and not item['symlink']]
+        files = [{'name': item['name']} for item in listing['entries'] if not item['directory']]
+        return dict(path=str(parent), root=str(root), parent=str(parent.parent) if parent != root else None,
+                    folders=folders, files=files, truncated=listing['truncated'])
+
+    def create_export_folder(self, body):
+        if not isinstance(body, dict):
+            raise ValueError('Choose a folder in which to create the new folder.')
+        parent = self.export_directory(body.get('kind'), body.get('directory'))
+        name = self.files.filename(body.get('name'))
+        if name.startswith('.'):
+            raise ValueError('Use a visible folder name.')
+        return self.files.mutate(dict(action='mkdir', parent=str(parent), name=name))
+
+    @staticmethod
+    def check_export_targets(targets, approval):
+        existing = {}
+        for target in targets:
+            try:
+                info = target.lstat()
+            except FileNotFoundError:
+                continue
+            if not stat.S_ISREG(info.st_mode):
+                raise FileExistsError(f'{target.name} is not a regular file. Choose another name.')
+            existing[target] = info
+        if existing:
+            conflict = ExportConflict(existing)
+            if approval != conflict.approval:
+                raise conflict
+        elif approval is not None:
+            raise FileExistsError('The destination changed. Check it before saving again.')
+        return existing
+
+    @staticmethod
+    def publish_export_file(source, target, existing):
+        if target in existing:
+            os.chmod(source, stat.S_IMODE(existing[target].st_mode) & 0o777)
+            os.replace(source, target)
+        else:
+            os.link(source, target)
+
+    @contextmanager
+    def stage_raster_export(self, body, name, pgm_name, yaml_name):
+        parent = self.export_directory('maps', body.get('directory'))
+        bundled = body.get('directory') is None
+        target = parent / name if bundled else parent
+        raster = target / pgm_name
+        config = target / yaml_name
+        approval = body.get('overwrite')
+        if bundled:
+            if os.path.lexists(target):
+                raise FileExistsError('A map with this name already exists.')
+        else:
+            with self.files.lock:
+                self.check_export_targets((raster, config), approval)
+        with tempfile.TemporaryDirectory(dir=parent, prefix='.map-editor-') as directory:
+            staging = Path(directory)
+            yield staging, config
+            with self.files.lock:
+                if bundled:
+                    self.files.rename_exclusive(staging, target)
+                    return
+                existing = self.check_export_targets((raster, config), approval)
+                # Publish the image first and keep the original for rollback until the YAML is visible.
+                staged_raster = staging / pgm_name
+                staged_info = staged_raster.stat()
+                previous = staging / 'previous'
+                if raster in existing:
+                    os.link(raster, previous)
+                self.publish_export_file(staged_raster, raster, existing)
+                try:
+                    self.publish_export_file(staging / yaml_name, config, existing)
+                except OSError:
+                    if raster.exists() and os.path.samestat(raster.lstat(), staged_info):
+                        if raster in existing:
+                            os.replace(previous, raster)
+                        else:
+                            raster.unlink(missing_ok=True)
+                    raise
 
     @staticmethod
     def revision(path):
@@ -293,7 +405,9 @@ class MapEditor:
         image_revision = self.revision(image)
         return dict(path=str(path), image=str(image), width=width, height=height,
                     resolution=resolution, origin=origin, editable=editable, tile_size=TILE_SIZE,
-                    occupied=255 if meta.get('negate') in (1, '1') else 0, image_revision=image_revision,
+                    occupied=255 if meta.get('negate') in (1, '1') else 0,
+                    occupied_thresh=meta.get('occupied_thresh') if finite(meta.get('occupied_thresh')) else None,
+                    image_revision=image_revision,
                     revision=self.revision(path) + image_revision), meta
 
     @staticmethod
@@ -362,18 +476,31 @@ class MapEditor:
         return data
 
     def costmap_prepare(self, body):
-        """Build a Nav2 cost grid and inflation layer for the Map Editor.
+        """Prepare semantic costs in their own grid and plan on the base grid when present."""
+        if not isinstance(body, dict) or not (body.get('path') or body.get('base')):
+            raise ValueError('Open a map first.')
+        semantic = None
+        if body.get('path'):
+            semantic, _ = self.semantic_data(body['path'])
+            if semantic['revision'] != body.get('revision'):
+                raise FileExistsError('The road semantic map changed. Reopen it to continue.')
 
-        The browser keeps only the compact class-cost table and vector cost
-        strokes. The full-resolution grid is prepared here and addressed by a
-        content token so previews and detail tiles stay fast on large maps.
-        """
-        if not isinstance(body, dict):
-            raise ValueError('Open a road semantic map first.')
-        metadata, _ = self.semantic_data(body.get('path'))
-        if metadata['revision'] != body.get('revision'):
-            raise FileExistsError('The road semantic map changed. Reopen it to continue.')
-        labels = {int(item['id']): item for item in metadata['semantic']['labels']}
+        base, base_yaml, drawing = None, {}, []
+        source = body.get('base')
+        if source is not None:
+            if not isinstance(source, dict) or not source.get('path'):
+                raise ValueError('Choose a base PGM and YAML.')
+            base, base_yaml = self.map_data(source['path'])
+            if 'semantic' in base:
+                raise ValueError('Choose an occupancy PGM and YAML as the base map.')
+            if base['revision'] != source.get('revision'):
+                raise FileExistsError('The base map changed. Reopen it to continue.')
+            drawing = self.validate_map_drawing(source.get('strokes', []), base['width'], base['height'])
+
+        display = semantic or base
+        planning = base or semantic
+        width, height = display['width'], display['height']
+        labels = {int(row['id']): row.copy() for row in semantic['semantic']['labels']} if semantic else {}
         overrides = body.get('labels') or {}
         if not isinstance(overrides, dict) or len(overrides) > 256:
             raise ValueError('Invalid semantic cost table.')
@@ -389,6 +516,8 @@ class MapEditor:
         inflation = body.get('inflation') if isinstance(body.get('inflation'), dict) else {}
         params = {}
         for key, default in COSTMAP_DEFAULTS.items():
+            if key == 'occupied_thresh' and finite(base_yaml.get(key)):
+                default = base_yaml[key]
             value = inflation.get(key, default)
             params[key] = self.cost_value(value) if key == 'negate' else value
         for key in ('inflation_radius', 'cost_scaling', 'inscribed_radius', 'occupied_thresh'):
@@ -400,45 +529,10 @@ class MapEditor:
         params['occupied_thresh'] = max(0.0, min(1.0, float(params['occupied_thresh'])))
         params['negate'] = 1 if params['negate'] else 0
 
-        with open_preview_image(Path(metadata['image'])) as image:
-            if image.mode != 'L':
-                raise ValueError('Cost maps require an 8-bit indexed PGM.')
-            indices = np.asarray(image, dtype=np.uint8).copy()
-        height, width = indices.shape
-        base_occupied = None
-        base = body.get('base')
-        if isinstance(base, dict) and base.get('path'):
-            base_metadata, _ = self.map_data(base.get('path'))
-            if base_metadata['revision'] != base.get('revision'):
-                raise FileExistsError('The base map changed. Reopen it to continue.')
-            same_grid = (base_metadata['width'] == width and base_metadata['height'] == height and
-                         abs(float(base_metadata['resolution']) - float(metadata['resolution'])) < 1e-9 and
-                         all(abs(float(a) - float(b)) < 1e-9 for a, b in
-                             zip(base_metadata['origin'][:2], metadata['origin'][:2])))
-            if same_grid and 'occupied' in base_metadata:
-                with open_preview_image(Path(base_metadata['image'])) as image:
-                    pixels = np.asarray(image, dtype=np.float32) / 255.0
-                    probability = pixels if base_metadata['occupied'] else (1.0 - pixels)
-                    base_occupied = probability >= params['occupied_thresh']
-        values = np.zeros((height, width), dtype=np.uint8)
-        values[indices == 0] = 255
-        for index, info in labels.items():
-            if index <= 0:
-                continue
-            cost = self.cost_value(max(info['global_cost'], info['local_cost']))
-            if cost:
-                values[indices == index] = cost
         strokes = self.costmap_strokes(body.get('strokes'), width, height)
-        if strokes:
-            raster = Image.fromarray(values, 'L')
-            draw = ImageDraw.Draw(raster)
-            for stroke in strokes:
-                self.draw_stroke(draw, stroke, stroke.get('value', 0) if stroke['tool'] == 'cost' else 0)
-            values = np.asarray(raster, dtype=np.uint8).copy()
-
         key_data = json.dumps(dict(
-            revision=metadata['revision'],
-            base=None if not isinstance(base, dict) else [base.get('path'), base.get('revision')],
+            semantic=semantic['revision'] if semantic else None,
+            base=base['revision'] if base else None, drawing=drawing,
             labels={str(index): [info['global_cost'], info['local_cost']] for index, info in labels.items()},
             inflation=params, strokes=strokes,
         ), sort_keys=True, separators=(',', ':'))
@@ -446,27 +540,111 @@ class MapEditor:
         with self.costmap_lock:
             entry = self.costmap_cache.get(token)
             if entry is None:
-                occupied = (values >= 100) & (values < 255)
-                if base_occupied is not None:
-                    occupied = occupied | base_occupied
+                indices = None
+                base_values = self.base_map_costs(base, base_yaml, params['occupied_thresh'], drawing) if base else None
+                if semantic:
+                    with open_preview_image(Path(semantic['image'])) as image:
+                        if image.mode != 'L':
+                            raise ValueError('Cost maps require an 8-bit indexed PGM.')
+                        indices = np.asarray(image, dtype=np.uint8).copy()
+                    table = np.zeros(256, dtype=np.uint8)
+                    for index, row in labels.items():
+                        table[index] = self.cost_value(max(row['global_cost'], row['local_cost']))
+                    table[0] = 255
+                    values = table[indices]
+                else:
+                    values = base_values
+                if strokes:
+                    raster = Image.fromarray(values, 'L')
+                    draw = ImageDraw.Draw(raster)
+                    for stroke in strokes:
+                        self.draw_stroke(draw, stroke, stroke.get('value', 0) if stroke['tool'] == 'cost' else 0)
+                    values = np.asarray(raster, dtype=np.uint8).copy()
+
+                if base:
+                    overlay = self.resample_cost_grid(values, display, base) if semantic else values
+                    plan_values = np.maximum(base_values, np.where(overlay == 255, 0, overlay))
+                else:
+                    plan_values = np.where(values == 255, 0, values)
+                if not semantic:
+                    values = plan_values
                 inflation_cost = self.compute_inflation(
-                    occupied, float(metadata['resolution']), params['inflation_radius'],
+                    plan_values == 100, float(planning['resolution']), params['inflation_radius'],
                     params['cost_scaling'], min(params['inscribed_radius'], params['inflation_radius']))
+                grid = {key: planning[key] for key in ('width', 'height', 'resolution', 'origin')}
                 entry = dict(values=values, indices=indices, labels=labels, strokes=strokes,
-                             inflation=inflation_cost, width=width, height=height,
-                             resolution=float(metadata['resolution']), origin=metadata['origin'])
+                             inflation=inflation_cost, plan_values=plan_values, grid=grid,
+                             path_segments=OrderedDict(), path_points=0,
+                             width=width, height=height,
+                             resolution=float(display['resolution']), origin=display['origin'])
                 self.costmap_cache[token] = entry
                 while len(self.costmap_cache) > COSTMAP_CACHE_LIMIT:
                     self.costmap_cache.popitem(last=False)
             self.costmap_cache.move_to_end(token)
-        return dict(token=token, width=width, height=height,
-                    stats=dict(cost_cells=int(np.count_nonzero((values > 0) & (values < 255))),
+        values = entry['plan_values']
+        return dict(token=token, width=width, height=height, planning_grid=entry['grid'],
+                    stats=dict(cost_cells=int(np.count_nonzero(values)),
                                lethal_cells=int(np.count_nonzero(values == 100)),
                                inflated_cells=int(np.count_nonzero((entry['inflation'] > 0) &
                                                                    (entry['inflation'] < 254))),
                                inflation_max=int(entry['inflation'].max()) if entry['inflation'].size else 0,
-                               classes=len([info for index, info in labels.items() if index > 0 and
-                                            max(info['global_cost'], info['local_cost']) > 0])))
+                               classes=sum(index > 0 and max(row['global_cost'], row['local_cost']) > 0
+                                           for index, row in labels.items())))
+
+    def base_map_costs(self, base, metadata, occupied_thresh, drawing):
+        with open_preview_image(Path(base['image'])) as image:
+            pixels = np.asarray(image)
+            if metadata.get('mode') == 'raw':
+                values = np.where(pixels <= 100, pixels, 0).astype(np.uint8)
+            else:
+                probability = pixels.astype(np.float32) / (255 if image.mode == 'L' else 65535)
+                if not base['occupied']:
+                    probability = 1.0 - probability
+                values = (probability >= occupied_thresh).astype(np.uint8) * 100
+        if drawing:
+            raster = Image.fromarray(values, 'L')
+            draw = ImageDraw.Draw(raster)
+            for stroke in drawing:
+                self.draw_stroke(draw, stroke, 100 if stroke['tool'] == 'pen' else 0)
+            values = np.asarray(raster, dtype=np.uint8).copy()
+        return values
+
+    @staticmethod
+    def resample_cost_grid(values, source, target):
+        """Sample semantic costs at the centers of the occupancy map cells."""
+        sx, sy, angle_source = source['origin']
+        tx, ty, angle_target = target['origin']
+        height, width = target['height'], target['width']
+        if values.shape == (height, width) and source['origin'] == target['origin'] and (
+                source['resolution'] == target['resolution']):
+            return values
+        result = np.zeros((height, width), dtype=np.uint8)
+        resolution = source['resolution']
+        dx, dy = tx - sx, ty - sy
+        cos_source, sin_source = math.cos(angle_source), math.sin(angle_source)
+        ox = cos_source * dx + sin_source * dy
+        oy = -sin_source * dx + cos_source * dy
+        delta = angle_target - angle_source
+        cos_delta, sin_delta = math.cos(delta), math.sin(delta)
+        xs = (np.arange(width) + 0.5) * target['resolution']
+        ys = (height - np.arange(height) - 0.5) * target['resolution']
+        if sin_delta == 0.0:
+            cols = np.floor((ox + xs * cos_delta) / resolution).astype(np.int64)
+            rows = values.shape[0] - 1 - np.floor((oy + ys * cos_delta) / resolution).astype(np.int64)
+            valid_x = (cols >= 0) & (cols < values.shape[1])
+            valid_y = (rows >= 0) & (rows < values.shape[0])
+            result[np.ix_(valid_y, valid_x)] = values[np.ix_(rows[valid_y], cols[valid_x])]
+            return result
+        rows_per_chunk = max(1, 500_000 // width)
+        for top in range(0, height, rows_per_chunk):
+            local_y = ys[top:top + rows_per_chunk, None]
+            cols = np.floor((ox + xs * cos_delta - local_y * sin_delta) / resolution).astype(np.int64)
+            rows = values.shape[0] - 1 - np.floor(
+                (oy + xs * sin_delta + local_y * cos_delta) / resolution).astype(np.int64)
+            valid = (cols >= 0) & (cols < values.shape[1]) & (rows >= 0) & (rows < values.shape[0])
+            chunk = result[top:top + rows_per_chunk]
+            chunk[valid] = values[rows[valid], cols[valid]]
+        return result
 
     def costmap_strokes(self, strokes, width, height):
         if strokes is None:
@@ -516,8 +694,22 @@ class MapEditor:
         max_cells = int(np.ceil(radius_m / resolution)) if radius_m > 0 and resolution > 0 else 0
         if max_cells > MAX_INFLATION_CELLS:
             raise ValueError('Inflation radius is too large for this map resolution.')
-        if not occupied.any() or max_cells == 0:
-            return np.zeros((height, width), dtype=np.uint8)
+        if max_cells == 0:
+            return occupied.astype(np.uint8) * 254
+        costs = np.zeros((height, width), dtype=np.uint8)
+        rows_per_chunk = max(1, 2_000_000 // width)
+        for start in range(0, height, rows_per_chunk):
+            stop = min(height, start + rows_per_chunk)
+            top, bottom = max(0, start - max_cells), min(height, stop + max_cells)
+            band = occupied[top:bottom]
+            if band.any():
+                inflated = MapEditor.inflation_band(band, resolution, radius_m, cost_scaling, inscribed_m, max_cells)
+                costs[start:stop] = inflated[start - top:stop - top]
+        return costs
+
+    @staticmethod
+    def inflation_band(occupied, resolution, radius_m, cost_scaling, inscribed_m, max_cells):
+        height, width = occupied.shape
         inf = np.float32(np.inf)
         index = np.arange(width, dtype=np.float32)
         left_source = np.where(occupied, index, np.float32(-1.0))
@@ -561,8 +753,12 @@ class MapEditor:
         values, indices = entry['values'], entry['indices']
         left, top, right, bottom = box or (0, 0, entry['width'], entry['height'])
         values = values[top:bottom, left:right]
-        indices = indices[top:bottom, left:right]
         rgba = np.zeros((*values.shape, 4), dtype=np.uint8)
+        if indices is None:
+            rgba[..., 0] = 255
+            rgba[..., 3] = np.round(values.astype(np.float32) * 2.55).astype(np.uint8)
+            return rgba
+        indices = indices[top:bottom, left:right]
         for index, info in entry['labels'].items():
             if index <= 0:
                 continue
@@ -599,7 +795,7 @@ class MapEditor:
     @staticmethod
     def inflation_rgba(entry, box=None):
         cost = entry['inflation']
-        left, top, right, bottom = box or (0, 0, entry['width'], entry['height'])
+        left, top, right, bottom = box or (0, 0, cost.shape[1], cost.shape[0])
         cost = cost[top:bottom, left:right]
         rgba = np.zeros((*cost.shape, 4), dtype=np.uint8)
         inflated = (cost >= 1) & (cost <= 252)
@@ -628,9 +824,10 @@ class MapEditor:
         if col is None or row is None or min(col, row) < 0:
             raise ValueError('Invalid cost map tile coordinates.')
         left, top = col * TILE_SIZE, row * TILE_SIZE
-        if left >= entry['width'] or top >= entry['height']:
+        grid = entry['grid'] if kind == 'inflation' else entry
+        if left >= grid['width'] or top >= grid['height']:
             raise ValueError('Cost map tile is outside the map.')
-        box = (left, top, min(left + TILE_SIZE, entry['width']), min(top + TILE_SIZE, entry['height']))
+        box = (left, top, min(left + TILE_SIZE, grid['width']), min(top + TILE_SIZE, grid['height']))
         rgba = self.costmap_rgba(entry, box) if kind != 'inflation' else self.inflation_rgba(entry, box)
         data = BytesIO()
         Image.fromarray(rgba, 'RGBA').save(data, 'PNG')
@@ -642,32 +839,25 @@ class MapEditor:
             raise ValueError('Select a cost map to export.')
         entry = self.costmap_entry(body.get('token'))
         name = self.files.filename(body.get('name'))
-        if name.startswith('.') or Path(name).suffix:
+        if name.startswith('.') or (body.get('directory') is None and Path(name).suffix):
             raise ValueError('Use a visible map name without an extension.')
         pgm_name = self.files.filename(name + '.pgm')
         yaml_name = self.files.filename(name + '.yaml')
-        parent = self.files.resolve(str(self.root / 'maps'))
-        if parent != self.root / 'maps' or not parent.is_dir():
-            raise PermissionError('The maps folder is unavailable.')
-        target = parent / name
-        if os.path.lexists(target):
-            raise FileExistsError('A map with this name already exists.')
-        with tempfile.TemporaryDirectory(dir=parent, prefix='.map-editor-') as directory:
-            staging = Path(directory)
+        with self.stage_raster_export(body, name, pgm_name, yaml_name) as (staging, config):
             Image.fromarray(entry['values'], 'L').save(staging / pgm_name, 'PPM')
             metadata = dict(image=pgm_name, mode='raw', resolution=entry['resolution'],
-                            origin=[entry['origin'][0], entry['origin'][1], 0.0],
+                            origin=entry['origin'],
                             negate=0, occupied_thresh=0.65, free_thresh=0.196)
             (staging / yaml_name).write_text(
                 yaml.safe_dump(metadata, sort_keys=False, allow_unicode=True), encoding='utf-8')
-            self.files.rename_exclusive(staging, target)
-        return dict(path=str(target / yaml_name), name=name)
+        return dict(path=str(config), image=str(config.with_name(pgm_name)), name=name)
 
     def costmap_path(self, body):
-        """Plan a cost-aware path through prepared costmap waypoints."""
+        """Plan Nav2-style cost-aware paths through prepared costmap waypoints."""
         if not isinstance(body, dict):
             raise ValueError('Generate a cost map first.')
-        entry = self.costmap_entry(body.get('token'))
+        token = body.get('token')
+        entry = self.costmap_entry(token)
         points = body.get('points')
         if (not isinstance(points, list) or not 2 <= len(points) <= MAX_WAYPOINTS or
                 any(not isinstance(point, list) or len(point) != 2 or not all(map(finite, point))
@@ -675,122 +865,401 @@ class MapEditor:
             raise ValueError('Place at least two waypoints on the cost map.')
         combine = body.get('combine', 'max')
         combine = combine if combine in ('max', 'add') else 'max'
-        height, width = entry['height'], entry['width']
-        values = entry['values']
-        semantic = np.zeros((height, width), dtype=np.float32)
-        soft = (values > 0) & (values < 100)
-        semantic[soft] = np.clip(np.round(values[soft].astype(np.float32) * 2.52), 1, 252)
-        semantic[values >= 100] = 254
-        inflation = entry['inflation'].astype(np.float32)
-        if combine == 'add':
-            combined = np.clip(semantic + inflation, 0, 254).astype(np.float32)
-        else:
-            combined = np.maximum(semantic, inflation)
-        factor = max(1, int(math.ceil(max(width, height) / MAX_PATH_DIMENSION)))
-        grid_width = int(math.ceil(width / factor))
-        grid_height = int(math.ceil(height / factor))
-        padded = np.zeros((grid_height * factor, grid_width * factor), dtype=np.float32)
-        padded[:height, :width] = combined
-        grid = padded.reshape(grid_height, factor, grid_width, factor).max(axis=(1, 3))
-
+        grid = entry['grid']
+        height, width = grid['height'], grid['width']
+        ox, oy, yaw = grid['origin']
+        resolution = grid['resolution']
+        cosine, sine = math.cos(yaw), math.sin(yaw)
         def to_pixel(point):
-            return ((float(point[1]) - entry['origin'][1]) / entry['resolution'],
-                    height - (float(point[0]) - entry['origin'][0]) / entry['resolution'])
-
-        def nearest_free(sx, sy):
-            sx = min(max(int(round(sx)), 0), width - 1)
-            sy = min(max(int(round(sy)), 0), height - 1)
-            gx, gy = min(sx // factor, grid_width - 1), min(sy // factor, grid_height - 1)
-            if grid[gy, gx] < 254:
-                return gx, gy
-            for radius in range(1, 13):
-                best = None
-                for y in range(max(0, gy - radius), min(grid_height, gy + radius + 1)):
-                    for x in range(max(0, gx - radius), min(grid_width, gx + radius + 1)):
-                        if grid[y, x] >= 254:
-                            continue
-                        distance = (x - gx) ** 2 + (y - gy) ** 2
-                        if best is None or distance < best[0]:
-                            best = (distance, x, y)
-                if best:
-                    return best[1], best[2]
-            return gx, gy
-
-        def astar(start, goal):
-            sx, sy = start
-            gx, gy = goal
-            if grid[sy, sx] >= 254 or grid[gy, gx] >= 254:
+            dx, dy = point[0] - ox, point[1] - oy
+            x = (cosine * dx + sine * dy) / resolution
+            y = (-sine * dx + cosine * dy) / resolution
+            if not (0 <= x < width and 0 <= y < height):
                 return None
-            size = grid_width * grid_height
-            start_index, goal_index = sy * grid_width + sx, gy * grid_width + gx
-            scores = np.full(size, np.inf, dtype=np.float32)
-            parents = np.full(size, -1, dtype=np.int32)
-            closed = np.zeros(size, dtype=bool)
-            scores[start_index] = 0.0
-            queue = [(math.hypot(gx - sx, gy - sy), 0.0, start_index)]
-            expanded = 0
-            deadline = time.monotonic() + PATH_TIME_LIMIT
-            while queue:
-                _, score, index = heapq.heappop(queue)
-                if closed[index]:
-                    continue
-                if index == goal_index:
-                    break
-                expanded += 1
-                if expanded > MAX_PATH_EXPANSIONS or (expanded % 2048 == 0 and time.monotonic() > deadline):
-                    return None
-                closed[index] = True
-                y, x = divmod(index, grid_width)
-                for dy in (-1, 0, 1):
-                    for dx in (-1, 0, 1):
-                        if not (dx or dy):
-                            continue
-                        nx, ny = x + dx, y + dy
-                        if not (0 <= nx < grid_width and 0 <= ny < grid_height):
-                            continue
-                        nindex = ny * grid_width + nx
-                        if closed[nindex] or grid[ny, nx] >= 254:
-                            continue
-                        step = math.hypot(dx, dy) * (1.0 + float(grid[ny, nx]) / 25.0)
-                        tentative = score + step
-                        if tentative >= scores[nindex]:
-                            continue
-                        scores[nindex] = tentative
-                        parents[nindex] = index
-                        heuristic = math.hypot(gx - nx, gy - ny)
-                        heapq.heappush(queue, (tentative + heuristic, tentative, nindex))
-            if scores[goal_index] == np.inf:
-                return None
-            chain = []
-            index = goal_index
-            while index >= 0:
-                y, x = divmod(index, grid_width)
-                chain.append((x, y))
-                if index == start_index:
-                    break
-                index = parents[index]
-            return chain[::-1]
+            return math.floor(x), height - 1 - math.floor(y)
 
-        path = []
-        planned = 0
-        for first, second in zip(points, points[1:]):
-            start_world = [float(first[0]), float(first[1])]
-            goal_world = [float(second[0]), float(second[1])]
-            start = nearest_free(*to_pixel(start_world))
-            goal = nearest_free(*to_pixel(goal_world))
-            chain = astar(start, goal)
-            if chain:
-                segment = [[entry['origin'][0] + (x * factor + factor / 2.0) * entry['resolution'],
-                            entry['origin'][1] + (height - y * factor - factor / 2.0) * entry['resolution']]
-                           for x, y in chain]
-                segment[0], segment[-1] = start_world, goal_world
-                planned += 1
+        def to_world(px, py):
+            x, y = (px + 0.5) * resolution, (height - py - 0.5) * resolution
+            return [ox + cosine * x - sine * y, oy + sine * x + cosine * y]
+
+        cells = [to_pixel(point) for point in points]
+        keys = [(combine, start, goal) for start, goal in zip(cells, cells[1:])]
+        cached = entry['path_segments']
+        with self.path_cache_lock:
+            existing = {}
+            for key in keys:
+                if key in cached:
+                    existing[key] = cached[key]
+                    cached.move_to_end(key)
+        combined = None
+        path, failed_edges = [points[0]], []
+        for key, second in zip(keys, points[1:]):
+            _, start, goal = key
+            middle = None
+            if start is not None and goal is not None:
+                if key not in existing:
+                    if combined is None:
+                        combined = self.combined_planning_cost(token, entry, combine)
+                    segment = self.plan_cost_segment(combined, start, goal)
+                    existing[key] = [to_world(px, py) for px, py in segment[1:-1]] if segment else None
+                    self.cache_path_segment(entry, key, existing[key])
+                middle = existing[key]
+            if middle is None:
+                failed_edges.append(len(path))
             else:
-                segment = [start_world, goal_world]
-            if path:
-                segment = segment[1:]
-            path.extend(segment)
-        return dict(path=path, planned_segments=planned, segments=len(points) - 1)
+                path.extend(middle)
+            path.append(second)
+        return dict(path=path, planned_segments=len(points) - 1 - len(failed_edges),
+                    segments=len(points) - 1, failed_edges=failed_edges)
+
+    def combined_planning_cost(self, token, entry, mode):
+        key = (token, mode)
+        with self.path_cache_lock:
+            if self.combined_grid is not None and self.combined_grid[0] == key:
+                return self.combined_grid[1]
+        lookup = np.rint(np.arange(101, dtype=np.float32) * 2.52).astype(np.uint8)
+        lookup[100] = 254
+        cost = lookup[entry['plan_values']]
+        inflation = entry['inflation']
+        if mode == 'add':
+            cost = np.minimum(cost.astype(np.uint16) + inflation, 254).astype(np.uint8)
+        else:
+            np.maximum(cost, inflation, out=cost)
+        with self.path_cache_lock:
+            self.combined_grid = (key, cost)
+        return cost
+
+    def cache_path_segment(self, entry, key, middle):
+        count = len(middle) if middle is not None else 0
+        if count > PATH_CACHE_POINTS:
+            return
+        with self.path_cache_lock:
+            cache = entry['path_segments']
+            if key in cache:
+                cache.move_to_end(key)
+                return
+            cache[key] = middle
+            entry['path_points'] += count
+            while len(cache) > PATH_CACHE_SEGMENTS or entry['path_points'] > PATH_CACHE_POINTS:
+                _, expired = cache.popitem(last=False)
+                if expired is not None:
+                    entry['path_points'] -= len(expired)
+
+    def plan_cost_segment(self, cost, start, goal):
+        """Plan one segment like Nav2 NavFn: potential field, gradient, smoother."""
+        height, width = cost.shape
+        sx, sy = start
+        gx, gy = goal
+        if cost[sy, sx] >= 253 or cost[gy, gx] >= 253:
+            return None
+        if (sx, sy) == (gx, gy):
+            return [(sx, sy)]
+        margin = max(64, int(math.hypot(gx - sx, gy - sy) * 0.5))
+        for distance in (margin, margin * 3, max(width, height)):
+            x0 = max(0, min(sx, gx) - distance)
+            x1 = min(width, max(sx, gx) + distance + 1)
+            y0 = max(0, min(sy, gy) - distance)
+            y1 = min(height, max(sy, gy) + distance + 1)
+            window = cost[y0:y1, x0:x1]
+            area = window.shape[0] * window.shape[1]
+            step = int(math.ceil(math.sqrt(area / 250_000.0))) if area > 250_000 else 1
+            if step > 1:
+                grid, cstart, cgoal = self.downsample_cost_window(
+                    window, (sx - x0, sy - y0), (gx - x0, gy - y0), step)
+            else:
+                grid, cstart, cgoal = window, (sx - x0, sy - y0), (gx - x0, gy - y0)
+            found = self.navfn_path(grid, cstart, cgoal)
+            if found is None:
+                raw = self.astar_cost_window(grid, cstart, cgoal)
+                if raw is None:
+                    continue
+                found = [(float(px), float(py)) for px, py in raw]
+            if step > 1:
+                full = [(min(x1 - 1, x0 + px * step + step // 2),
+                         min(y1 - 1, y0 + py * step + step // 2)) for px, py in found]
+            else:
+                full = [(x0 + px, y0 + py) for px, py in found]
+            full[0], full[-1] = (sx, sy), (gx, gy)
+            smoothed = self.smooth_cost_path(full, cost)
+            if self.cost_path_is_free(smoothed, cost):
+                return smoothed
+            if self.cost_path_is_free(full, cost):
+                return full
+        return None
+
+    def navfn_path(self, grid, start, goal):
+        potential = (self.sparse_cost_potential(grid, goal) if dijkstra is not None
+                     else self.astar_cost_potential(grid, goal))
+        return self.gradient_cost_path(potential, start, goal)
+
+    @staticmethod
+    def sparse_cost_potential(grid, goal):
+        """Compute the weighted NavFn-style field through traversable cells."""
+        height, width = grid.shape
+        gx, gy = goal
+        size = grid.size
+        cells = np.arange(size, dtype=np.int32).reshape(grid.shape)
+        free = grid < 253
+        free[gy, gx] = True
+        step_cost = 50.0 + grid.astype(np.float32) * 0.8
+        source_indices, target_indices, weights = [], [], []
+        for dy, dx in ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)):
+            source = (slice(max(-dy, 0), min(height, height - dy)),
+                      slice(max(-dx, 0), min(width, width - dx)))
+            target = (slice(max(dy, 0), min(height, height + dy)),
+                      slice(max(dx, 0), min(width, width + dx)))
+            connected = free[source] & free[target]
+            source_indices.append(cells[source][connected])
+            target_indices.append(cells[target][connected])
+            weights.append(step_cost[target][connected] * math.hypot(dx, dy))
+        edges = csr_matrix((np.concatenate(weights),
+                            (np.concatenate(source_indices), np.concatenate(target_indices))),
+                           shape=(size, size))
+        distances = dijkstra(edges, directed=True, indices=gy * width + gx)
+        return np.minimum(distances, 1.0e10).astype(np.float32).reshape(grid.shape)
+
+    @staticmethod
+    def astar_cost_potential(grid, goal):
+        """Goal potential field using NavFn-like COST_NEUTRAL/cost weighting."""
+        height, width = grid.shape
+        gx = min(max(int(goal[0]), 0), width - 1)
+        gy = min(max(int(goal[1]), 0), height - 1)
+        blocked = grid >= 253
+        blocked[gy, gx] = False
+        neutral, factor = 50.0, 0.8
+        step_cost = (neutral + grid.astype(np.float32) * factor).astype(np.float32)
+        ys, xs = np.mgrid[0:height, 0:width]
+        heuristic = (np.hypot(xs - gx, ys - gy) * neutral).astype(np.float32)
+        size = height * width
+        potential = np.full(size, np.float32(1.0e10), dtype=np.float32)
+        closed = np.zeros(size, dtype=bool)
+        goal_index = gy * width + gx
+        potential[goal_index] = 0.0
+        queue = [(0.0, goal_index)]
+        neighbors = ((-1, -1, 1.41421356), (-1, 0, 1.0), (-1, 1, 1.41421356),
+                     (0, -1, 1.0), (0, 1, 1.0),
+                     (1, -1, 1.41421356), (1, 0, 1.0), (1, 1, 1.41421356))
+        while queue:
+            _, index = heapq.heappop(queue)
+            if closed[index]:
+                continue
+            closed[index] = True
+            cy, cx = divmod(index, width)
+            base = potential[index]
+            for dy, dx, distance in neighbors:
+                ny, nx = cy + dy, cx + dx
+                if ny < 0 or nx < 0 or ny >= height or nx >= width:
+                    continue
+                nindex = ny * width + nx
+                if closed[nindex] or blocked[ny, nx]:
+                    continue
+                tentative = base + distance * step_cost[ny, nx]
+                if tentative < potential[nindex]:
+                    potential[nindex] = tentative
+                    heapq.heappush(queue, (float(tentative) + float(heuristic[ny, nx]), nindex))
+        return potential.reshape(height, width)
+
+    @staticmethod
+    def gradient_cost_path(potential, start, goal):
+        """Descend the potential field to produce a sub-pixel path."""
+        height, width = potential.shape
+        if height < 3 or width < 3:
+            return None
+        flat = potential.reshape(-1)
+        high, neutral, path_step = 1.0e10, 50.0, 0.5
+        sx = min(max(int(start[0]), 1), width - 2)
+        sy = min(max(int(start[1]), 1), height - 2)
+        cell, dx, dy = sy * width + sx, 0.0, 0.0
+        path = [(float(sx), float(sy))]
+        for _ in range(200_000):
+            nearest = cell + int(round(dx)) + width * int(round(dy))
+            nearest = min(max(nearest, 0), height * width - 1)
+            if flat[nearest] < neutral:
+                path.append((float(goal[0]), float(goal[1])))
+                return path
+            if cell < width or cell >= (height - 1) * width:
+                return path if len(path) > 1 else None
+            path.append((float(cell % width) + dx, float(cell // width) + dy))
+            below, above = cell + width, cell - width
+            neighbors = (cell, cell + 1, cell - 1, below, below + 1, below - 1,
+                         above, above + 1, above - 1)
+            if any(flat[index] >= high for index in neighbors) or (
+                    len(path) > 2 and path[-1] == path[-3]):
+                minimum = min(neighbors, key=lambda index: flat[index])
+                if flat[minimum] >= high:
+                    return None
+                cell, dx, dy = minimum, 0.0, 0.0
+                continue
+            gx = MapEditor.interpolate_cost_gradient(
+                flat, cell, cell + 1, below, below + 1, dx, dy, width, height, True)
+            gy = MapEditor.interpolate_cost_gradient(
+                flat, cell, cell + 1, below, below + 1, dx, dy, width, height, False)
+            if gx == 0.0 and gy == 0.0:
+                return None
+            scale = path_step / math.hypot(gx, gy)
+            dx += gx * scale
+            dy += gy * scale
+            if dx > 1.0:
+                cell += 1
+                dx -= 1.0
+            elif dx < -1.0:
+                cell -= 1
+                dx += 1.0
+            if dy > 1.0:
+                cell += width
+                dy -= 1.0
+            elif dy < -1.0:
+                cell -= width
+                dy += 1.0
+        return path if len(path) > 1 else None
+
+    @staticmethod
+    def interpolate_cost_gradient(potential, a, b, c, d, dx, dy, width, height, x_axis):
+        ga = MapEditor.cost_gradient_at(potential, a, width, height, x_axis)
+        gb = MapEditor.cost_gradient_at(potential, b, width, height, x_axis)
+        gc = MapEditor.cost_gradient_at(potential, c, width, height, x_axis)
+        gd = MapEditor.cost_gradient_at(potential, d, width, height, x_axis)
+        top = (1.0 - dx) * ga + dx * gb
+        bottom = (1.0 - dx) * gc + dx * gd
+        return (1.0 - dy) * top + dy * bottom
+
+    @staticmethod
+    def cost_gradient_at(potential, index, width, height, x_axis):
+        high = 1.0e10
+        x, y = index % width, index // width
+        if x <= 0 or x >= width - 1 or y <= 0 or y >= height - 1:
+            return 0.0
+        current = potential[index]
+        if current >= high:
+            if x_axis:
+                if potential[index - 1] < high:
+                    return -1.0
+                if potential[index + 1] < high:
+                    return 1.0
+            else:
+                if potential[index - width] < high:
+                    return -1.0
+                if potential[index + width] < high:
+                    return 1.0
+            return 0.0
+        dx = dy = 0.0
+        if potential[index - 1] < high:
+            dx += potential[index - 1] - current
+        if potential[index + 1] < high:
+            dx += current - potential[index + 1]
+        if potential[index - width] < high:
+            dy += potential[index - width] - current
+        if potential[index + width] < high:
+            dy += current - potential[index + width]
+        length = math.hypot(dx, dy)
+        if length <= 0.0:
+            return 0.0
+        return (dx if x_axis else dy) / length
+
+    @staticmethod
+    def smooth_cost_path(points, cost, data_weight=0.2, smooth_weight=0.3,
+                         tolerance=1e-10, max_iterations=1000, refinement=2):
+        """Approximate Nav2 SimpleSmoother without cutting into lethal cells."""
+        if len(points) <= 2:
+            return points
+        height, width = cost.shape
+        values = np.array(points, dtype=np.float64)
+        for _ in range(refinement + 1):
+            original = values.copy()
+            for _ in range(max_iterations):
+                previous = values.copy()
+                values[1:-1] = (values[1:-1] + data_weight * (original[1:-1] - values[1:-1]) +
+                                smooth_weight * (values[2:] + values[:-2] - 2.0 * values[1:-1]))
+                change = float(np.abs(values[1:-1] - previous[1:-1]).sum())
+                xs = np.clip(np.round(values[:, 0]).astype(np.int64), 0, width - 1)
+                ys = np.clip(np.round(values[:, 1]).astype(np.int64), 0, height - 1)
+                if np.any(cost[ys, xs] >= 253):
+                    values = previous
+                    break
+                if change < tolerance:
+                    break
+        return [(float(point[0]), float(point[1])) for point in values]
+
+    @staticmethod
+    def cost_path_is_free(points, cost):
+        height, width = cost.shape
+        for first, second in zip(points, points[1:]):
+            x0, y0 = first
+            x1, y1 = second
+            steps = int(max(abs(x1 - x0), abs(y1 - y0))) + 1
+            for step in range(steps + 1):
+                x = int(round(x0 + (x1 - x0) * step / steps))
+                y = int(round(y0 + (y1 - y0) * step / steps))
+                if 0 <= x < width and 0 <= y < height and cost[y, x] >= 253:
+                    return False
+        return True
+
+    @staticmethod
+    def downsample_cost_window(window, start, goal, step):
+        height, width = window.shape
+        rows = (height + step - 1) // step
+        cols = (width + step - 1) // step
+        padded = np.pad(window, ((0, rows * step - height), (0, cols * step - width)),
+                        constant_values=0)
+        coarse = padded.reshape(rows, step, cols, step).max(axis=(1, 3))
+        return coarse, (start[0] // step, start[1] // step), (goal[0] // step, goal[1] // step)
+
+    @staticmethod
+    def astar_cost_window(grid, start, goal):
+        height, width = grid.shape
+        sx, sy = start
+        gx, gy = goal
+        blocked = grid >= 254
+        blocked[sy, sx] = False
+        blocked[gy, gx] = False
+        neutral, factor = 50.0, 0.8
+        step_cost = (neutral + grid.astype(np.float32) * factor) / neutral
+        ys, xs = np.mgrid[0:height, 0:width]
+        heuristic = np.hypot(xs - gx, ys - gy).astype(np.float32)
+        size = height * width
+        scores = np.full(size, np.inf, dtype=np.float32)
+        parents = np.full(size, -1, dtype=np.int32)
+        closed = np.zeros(size, dtype=bool)
+        start_index, goal_index = sy * width + sx, gy * width + gx
+        scores[start_index] = 0.0
+        neighbors = ((-1, -1, 1.41421356), (-1, 0, 1.0), (-1, 1, 1.41421356),
+                     (0, -1, 1.0), (0, 1, 1.0),
+                     (1, -1, 1.41421356), (1, 0, 1.0), (1, 1, 1.41421356))
+        queue = [(float(heuristic[sy, sx]), start_index)]
+        found = False
+        while queue:
+            _, index = heapq.heappop(queue)
+            if index == goal_index:
+                found = True
+                break
+            if closed[index]:
+                continue
+            closed[index] = True
+            cy, cx = divmod(index, width)
+            base = scores[index]
+            for dy, dx, distance in neighbors:
+                ny, nx = cy + dy, cx + dx
+                if ny < 0 or nx < 0 or ny >= height or nx >= width:
+                    continue
+                nindex = ny * width + nx
+                if closed[nindex] or blocked[ny, nx]:
+                    continue
+                tentative = base + distance * step_cost[ny, nx]
+                if tentative < scores[nindex]:
+                    scores[nindex] = tentative
+                    parents[nindex] = index
+                    heapq.heappush(queue, (tentative + float(heuristic[ny, nx]), nindex))
+        if not found:
+            return None
+        path, current = [], goal_index
+        while current != -1:
+            cy, cx = divmod(current, width)
+            path.append((cx, cy))
+            if current == start_index:
+                break
+            current = parents[current]
+        path.reverse()
+        return path
 
     def tile(self, value, revision, col, row):
         path = self.scoped_file(value, self.map_directories)
@@ -836,24 +1305,11 @@ class MapEditor:
         data.seek(0)
         return data
 
-    def export_map(self, body):
-        if not isinstance(body, dict):
-            raise ValueError('Select a map to export.')
-        name = self.files.filename(body.get('name'))
-        if name.startswith('.'):
-            raise ValueError('Map name must be visible in the file picker.')
-        pgm_name = self.files.filename(name + '.pgm')
-        yaml_name = self.files.filename(name + '.yaml')
-        metadata, map_yaml = self.map_data(body.get('path'))
-        if metadata['revision'] != body.get('revision'):
-            raise FileExistsError('The source map has changed. Reopen it before exporting.')
-        if not metadata['editable']:
-            raise ValueError('Drawing is available for 8-bit occupancy PGM maps.')
-        strokes = body.get('strokes')
+    @staticmethod
+    def validate_map_drawing(strokes, width, height):
         if not isinstance(strokes, list):
             raise ValueError('Invalid drawing.')
         count = 0
-        width, height = metadata['width'], metadata['height']
         for stroke in strokes:
             if not isinstance(stroke, dict) or stroke.get('tool') not in ('pen', 'eraser'):
                 raise ValueError('Invalid drawing tool.')
@@ -867,35 +1323,35 @@ class MapEditor:
                 if (not isinstance(point, list) or len(point) != 2 or any(type(v) is not int for v in point)
                         or not (0 <= point[0] < width and 0 <= point[1] < height)):
                     raise ValueError('A brush point is outside the PGM.')
+        return strokes
 
-        parent = self.files.resolve(str(self.root / 'maps'))
-        if parent != self.root / 'maps' or not parent.is_dir():
-            raise PermissionError('The maps folder is unavailable.')
-        target = parent / name
-        if os.path.lexists(target):
-            raise FileExistsError('A map with this name already exists.')
-        with tempfile.TemporaryDirectory(dir=parent, prefix='.map-editor-') as directory:
-            staging = Path(directory)
+    def export_map(self, body):
+        if not isinstance(body, dict):
+            raise ValueError('Select a map to export.')
+        name = self.files.filename(body.get('name'))
+        if name.startswith('.'):
+            raise ValueError('Map name must be visible in the file picker.')
+        pgm_name = self.files.filename(name + '.pgm')
+        yaml_name = self.files.filename(name + '.yaml')
+        metadata, map_yaml = self.map_data(body.get('path'))
+        if metadata['revision'] != body.get('revision'):
+            raise FileExistsError('The source map has changed. Reopen it before exporting.')
+        if not metadata['editable']:
+            raise ValueError('Drawing is available for 8-bit occupancy PGM maps.')
+        strokes = self.validate_map_drawing(body.get('strokes'), metadata['width'], metadata['height'])
+
+        with self.stage_raster_export(body, name, pgm_name, yaml_name) as (staging, config):
             with open_preview_image(Path(metadata['image'])) as image:
                 draw = ImageDraw.Draw(image)
                 for stroke in strokes:
-                    size = stroke['size']
                     color = metadata['occupied'] if stroke['tool'] == 'pen' else 255 - metadata['occupied']
-                    points = [tuple(point) for point in stroke['points']]
-                    if len(points) > 1:
-                        draw.line(points, fill=color, width=size)
-                    if size == 1:
-                        draw.point(points, fill=color)
-                        continue
-                    for x, y in points:
-                        draw.ellipse((x - (size - 1) // 2, y - (size - 1) // 2, x + size // 2, y + size // 2), fill=color)
+                    self.draw_stroke(draw, stroke, color)
                 image.save(staging / pgm_name, 'PPM')
             map_yaml['image'] = pgm_name
             (staging / yaml_name).write_text(yaml.safe_dump(map_yaml, sort_keys=False, allow_unicode=True), encoding='utf-8')
             if self.map_data(metadata['path'])[0]['revision'] != metadata['revision']:
                 raise FileExistsError('The source map changed during export.')
-            self.files.rename_exclusive(staging, target)
-        return dict(path=str(target / yaml_name), name=name)
+        return dict(path=str(config), image=str(config.with_name(pgm_name)), name=name)
 
     @staticmethod
     def parse_format(body):
@@ -950,23 +1406,41 @@ class MapEditor:
         data = yaml.safe_dump(document, allow_unicode=True, sort_keys=False).encode()
         if len(data) > TEXT_LIMIT:
             raise ValueError('YAML files may be up to 512 KiB.')
-        parent = self.files.resolve(str(self.root / 'waypoints'))
-        if parent != self.root / 'waypoints' or not parent.is_dir():
-            raise PermissionError('The waypoints folder is unavailable.')
+        parent = self.export_directory('waypoints', body.get('directory'))
+        target = self.save_export_file(parent, name, data, body.get('overwrite'))
+        return dict(path=str(target), name=name, count=len(document['waypoints']))
+
+    def save_landmarks(self, body):
+        if not isinstance(body, dict):
+            raise ValueError('Select landmarks to export.')
+        name = self.files.filename(body.get('name'))
+        if name.startswith('.') or Path(name).suffix.lower() != '.json':
+            raise ValueError('Use a visible filename ending in .json.')
+        document = body.get('document')
+        rows = document.get('landmarks') if isinstance(document, dict) else None
+        if not isinstance(rows, list) or len(rows) > 1000:
+            raise ValueError('Expected a landmarks array (up to 1,000).')
+        check_json_values(document)
+        data = (json.dumps(document, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode()
+        if len(data) > TEXT_LIMIT:
+            raise ValueError('JSON files may be up to 512 KiB.')
+        target = self.save_export_file(self.export_directory('maps', body.get('directory')), name, data, body.get('overwrite'))
+        return dict(path=str(target), name=name)
+
+    def save_export_file(self, parent, name, data, approval):
         target = parent / name
-        with tempfile.NamedTemporaryFile(dir=parent, prefix='.waypoint-', delete=False) as stream:
+        with tempfile.NamedTemporaryFile(dir=parent, prefix='.map-editor-', delete=False) as stream:
             tmp = Path(stream.name)
             try:
                 stream.write(data)
                 stream.flush()
                 os.fsync(stream.fileno())
-                # link publishes the complete file and fails when the name is occupied.
-                os.link(tmp, target)
-            except FileExistsError:
-                raise FileExistsError('A waypoint YAML with this name already exists.') from None
+                with self.files.lock:
+                    existing = self.check_export_targets((target,), approval)
+                    self.publish_export_file(tmp, target, existing)
             finally:
                 tmp.unlink(missing_ok=True)
-        return dict(path=str(target), name=name, count=len(document['waypoints']))
+        return target
 
 
 def register_map_editor(app, auth_ok, files=None):
@@ -990,12 +1464,24 @@ def register_map_editor(app, auth_ok, files=None):
         status = 403 if isinstance(error, PermissionError) else 409 if isinstance(error, FileExistsError) else 404 if isinstance(error, FileNotFoundError) else 400
         return jsonify(error=str(error)), status
 
+    @bp.errorhandler(ExportConflict)
+    def export_conflict(error):
+        return jsonify(error=str(error), existing=error.names, overwrite=error.approval), 409
+
     @bp.get('/roots')
     def roots():
         semantic = editor.root / 'maps' / 'road_semantic'
         return jsonify(maps=str(editor.root / 'maps'), archive=str(editor.root / 'map_archive'),
                        semantic=str(semantic) if semantic.is_dir() else None,
                        waypoints=str(editor.root / 'waypoints'))
+
+    @bp.get('/export-folders')
+    def list_export_folders():
+        return jsonify(editor.export_folders(request.args.get('kind'), request.args.get('path')))
+
+    @bp.post('/export-folders')
+    def create_export_folder():
+        return jsonify(editor.create_export_folder(request.get_json(silent=True))), 201
 
     @bp.get('/map')
     def load_map():
@@ -1080,5 +1566,9 @@ def register_map_editor(app, auth_ok, files=None):
     @bp.post('/waypoints')
     def save_waypoints():
         return jsonify(editor.save_waypoints(request.get_json(silent=True))), 201
+
+    @bp.post('/landmarks')
+    def save_landmarks():
+        return jsonify(editor.save_landmarks(request.get_json(silent=True))), 201
 
     app.register_blueprint(bp)

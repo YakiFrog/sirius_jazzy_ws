@@ -61,7 +61,7 @@ const PresetEditor=(()=>{
     row.addEventListener('toggle',()=>{if(row.open){[...rows.children].filter(other=>other!==row).forEach(other=>other.open=false);drawChoices();}});
     row.open=expand;return row;
   }
-  function open(){rows.replaceChildren();for(const preset of DATA.presets)add(preset.name,preset.items,preset.category,preset.visible,preset.note,false);baseline=JSON.stringify(collect());document.getElementById('perr').textContent='';modal.classList.add('open');if(rows.firstElementChild)rows.firstElementChild.open=true;}
+  function open(){rows.replaceChildren();for(const preset of DATA.presets)add(preset.name,preset.items,preset.category,preset.visible,preset.note,false);baseline=JSON.stringify(collect());document.getElementById('perr').textContent='';modal.classList.add('open');}
   function close(){if(saving)return;if(JSON.stringify(collect())!==baseline&&!confirm('保存していない変更を破棄して閉じますか？'))return;modal.classList.remove('open');}
   async function save(){
     if(saving)return;const presets=collect(),names=new Set(),known=new Set(catalog().map(p=>p.name));

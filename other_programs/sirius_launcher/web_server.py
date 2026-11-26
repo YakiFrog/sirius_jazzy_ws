@@ -57,6 +57,7 @@ from ear_control import register_ear
 from hotspot_status import register_hotspot
 from host_audio import register_host_audio
 from host_power import register_host_power
+from host_profile import register_host_profile
 from launcher_access import enforce_tailnet_access, load_tailnet_access
 from research_archive import register_research_archive
 from preset_metadata import read_preset_metadata, preset_presentation
@@ -961,6 +962,7 @@ register_ear(app, auth_ok, domain=lambda: DEFAULT_DOMAIN)
 register_hotspot(app, auth_ok)
 register_host_audio(app, auth_ok)
 register_host_power(app, lambda: PASSWORD, LOCK)
+register_host_profile(app, auth_ok)
 register_research_archive(app, auth_ok)
 
 
@@ -1000,15 +1002,6 @@ def console():
         return LOGIN
     resp.headers["Cache-Control"] = "no-store"
     return resp
-
-
-@app.route("/power")
-def power_page():
-    if not auth_ok():
-        return LOGIN
-    response = make_response(Path(__file__).with_name("power.html").read_text(encoding="utf-8"))
-    response.headers["Cache-Control"] = "no-store"
-    return response
 
 
 @app.route("/api/health")
