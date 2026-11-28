@@ -9,6 +9,7 @@
 .preset-info-modal .hbtn{background:var(--panel-2);color:var(--text);border:1px solid var(--line)}
 .preset-info-modal h3{margin-top:0;overflow-wrap:anywhere}
 .preset-info-caption{color:var(--muted);font-size:12px;line-height:1.8}
+.preset-info-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:18px}
 .preset-info-list{padding-left:25px;margin:18px 0}
 .preset-info-list li{padding:10px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
 .preset-info-list code{font-size:13px;color:var(--text)}
@@ -18,6 +19,10 @@
 #presets .preset-common{display:flex}
 .preset-common .preset-category-badge{color:var(--accent);background:var(--accent-bg)}
 .preset-copy{flex:1;min-width:0}.preset-copy .preset-name{display:block}
+.preset-name-row{display:flex;align-items:center;gap:6px;min-width:0}
+.preset-name-row .preset-name{flex:1;min-width:0}
+.preset-common-badge{flex:none;padding:0 4px;border:1px solid var(--line);border-radius:4px;color:var(--faint);background:transparent;font-size:9px;font-weight:500;line-height:1.55;opacity:.75}
+#preset-hide-common[aria-pressed=true]{color:var(--accent);background:var(--accent-bg);border-color:var(--accent)}
 .preset-note{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:4px;color:var(--muted);font-size:10px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere}
 .preset-info-note{white-space:pre-wrap;overflow-wrap:anywhere;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--text);font-size:12px;line-height:1.8}
 .preset-info-note[hidden]{display:none}
@@ -107,7 +112,9 @@
 /* Reserve identical tracks so status text never moves the process controls. */
 #running .ritem,#running .ritem.err{display:grid;position:relative;grid-template-columns:minmax(0,1fr) repeat(3,42px);grid-template-rows:28px 18px 18px 20px;gap:4px 6px;padding:7px 8px!important;margin:0!important;border-width:1px 1px 1px 3px!important;border-style:solid!important;align-items:center}
 #running .ritem:not(.err){border-top-color:transparent!important;border-right-color:transparent!important}
-#running .ritem>.n{grid-area:1/1;white-space:nowrap;width:100%;min-width:0}
+#running .ritem>.n{display:flex;align-items:baseline;gap:5px;grid-area:1/1;white-space:nowrap;width:100%;min-width:0}
+#running .running-program-name{flex:none;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#running .running-origin{min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font:400 .74em/1.2 system-ui,sans-serif}
 #running .ritem>.xbtn:not(.input-wait-action){grid-row:1;width:42px;min-width:42px;padding:4px 0;white-space:nowrap}
 #running .ritem>.xbtn[onclick^="restartIt("]{grid-column:2}
 #running .ritem>.xbtn[onclick^="stopIt("]{grid-column:3}

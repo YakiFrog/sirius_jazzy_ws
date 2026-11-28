@@ -34,12 +34,55 @@
     "texture-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_texture_quality_map_20261020",
     "context-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_semantic_tactile_context_map_20261020",
     "regions-map": "{workspace}/maps_waypoints/map_archive/road_semantic_history_20261023/theta_semantic_regions_map_20261020",
-    "nakanoshima-indexed": "{workspace}/maps_waypoints/maps/road_semantic/theta_20260920_113447_pgm"
+    "nakanoshima-indexed": "{workspace}/maps_waypoints/maps/road_semantic/theta_20260920_113447_pgm",
+    "amcl-stability-20261025": "{home}/experiment_records/amcl_ab_20261025/web"
   },
   "aliases": {
     "/shadow_map/": "shadow-map"
   },
   "entries": [
+    {
+      "id": "amcl-stability-20261025",
+      "date": "2026-10-25",
+      "category": "motion",
+      "title": "AMCLの位置飛び：設定変更前後の比較",
+      "summary": "同じBAGの問題区間を隔離再生。地図上の軌跡・位置変化量・IMUとの向きの差を同期表示。",
+      "status": "BAG比較済み・実機走行未検証",
+      "bundle": "amcl-stability-20261025",
+      "page": "index.html",
+      "recording": "rosbag_20261025_125115",
+      "metrics": [
+        {
+          "label": "最大連続位置変化",
+          "value": "8.19 → 0.30 m"
+        },
+        {
+          "label": "相対旋回差",
+          "value": "69.6 → 5.5°"
+        }
+      ],
+      "findings": [
+        "REAL用AMCLの6項目のみ変更。良好なOdomを重視し、照合範囲を1〜40mに統一。",
+        "元の設定では大きな位置変化が再現。変更後は比較区間で1m超の変化なし。"
+      ],
+      "limits": [
+        "問題区間の抽出再生。実機走行や全16分の再計算は未検証。",
+        "0.30mは観測された位置変化量で、補正上限ではありません。絶対位置の正解軌跡はありません。"
+      ],
+      "evidence": [
+        {
+          "label": "比較指標",
+          "bundle": "amcl-stability-20261025",
+          "path": "comparison.json"
+        },
+        {
+          "label": "検証記録",
+          "bundle": "amcl-stability-20261025",
+          "path": "verification.md"
+        }
+      ],
+      "image": "comparison.png"
+    },
     {
       "id": "theta-road-1022",
       "date": "2026-10-23",

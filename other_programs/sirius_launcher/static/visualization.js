@@ -4,7 +4,7 @@ const VIZ_KEYS={
   bridge:'sirius-viz-bridge',
   auto:'sirius-viz-auto',
   refresh:'sirius-viz-refresh-minutes',
-  layout:'sirius-viz-layout-initialized-v1',
+  layout:'sirius-viz-layout-initialized-v2',
   layoutSelected:'sirius-viz-layout-selected-v1',
   sidebar:'sirius-viz-sidebar-collapsed',
   workspace:'sirius-viz-workspace-initialized-v1'

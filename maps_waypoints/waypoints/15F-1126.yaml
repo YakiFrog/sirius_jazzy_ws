@@ -1,0 +1,14 @@
+format_version: '1.0'
+waypoints:
+- number: 1
+  x: -0.9654509296787932
+  y: -6.385415380490041
+  angle_radians: -0.12945850652552568
+- number: 2
+  x: 2.8106439605139144
+  y: -6.86408723887293
+  angle_radians: -0.13298148180328923
+  change_map: 15F-1126-2
+  initial_pose:
+    position_mode: first_waypoint
+    yaw_mode: current

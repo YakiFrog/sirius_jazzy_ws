@@ -159,10 +159,12 @@ def receive():
     from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
     from tf2_msgs.msg import TFMessage
     from battery_monitor import BatteryReceiver
+    from camera_monitor import CameraReceiver
     from navigation_monitor import NavigationReceiver
     rclpy.init()
     node = rclpy.create_node('sirius_launcher_tf_monitor')
     battery = BatteryReceiver(node)
+    cameras = CameraReceiver(node)
     navigation = NavigationReceiver(node)
     store, publishers, stop = TransformStore(), {}, threading.Event()
     # Parent/server closure closes the pipe, including exec/self-restarts.
@@ -197,9 +199,11 @@ def receive():
                 publishers[bytes(endpoint.endpoint_gid).hex()] = name
                 candidates.append(name)
             publishers['unknown:'+topic] = '候補: '+', '.join(sorted(set(candidates))) if candidates else '配信元を特定できません'
-        data=store.snapshot(time.monotonic(), publishers)
-        data['battery']=battery.store.snapshot(time.monotonic())
-        data['navigation']=navigation.state.snapshot(time.monotonic())
+        now = time.monotonic()
+        data=store.snapshot(now, publishers)
+        data['battery']=battery.store.snapshot(now)
+        data['navigation']=navigation.state.snapshot(now)
+        data['cameras']=cameras.snapshot(now)
         print(json.dumps(data, allow_nan=False), flush=True)
     node.create_timer(1.0, publish_snapshot)
     try:

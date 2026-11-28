@@ -115,7 +115,7 @@ if [[ "$FPS" =~ ^[0-9]+$ ]]; then
     FPS="${FPS}.0"
 fi
 
-# デバイスはノード側で /dev/theta_capture が無ければ /dev/video0 にフォールバックする。
+# 既定のudevリンク、または明示的に指定したキャプチャ機器の接続を待つ。
 DEVICE="${THETA_DEVICE:-/dev/theta_capture}"
 FOURCC="${THETA_FOURCC:-YUYV}"
 

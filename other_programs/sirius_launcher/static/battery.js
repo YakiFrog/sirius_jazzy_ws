@@ -2,9 +2,9 @@
 (function(){
   if(document.getElementById('battery-toggle'))return;
   const host=document.querySelector('.top-status');if(!host)return;
-  const style=document.createElement('link');style.rel='stylesheet';style.href='/static/battery.css';document.head.append(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='/static/battery.css?v=20261126-charge-indicator';document.head.append(style);
   const toggle=document.createElement('button');toggle.id='battery-toggle';toggle.className='battery-chip';toggle.type='button';
-  toggle.innerHTML='<svg viewBox="0 0 25 20" fill="none" aria-hidden="true"><rect x="1" y="4" width="20" height="12" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M24 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect id="battery-level" x="4" y="7" width="0" height="6" rx="1" fill="currentColor"/></svg><span class="battery-chip-label">バッテリー</span><b id="battery-chip-value">—</b><span id="battery-chip-status">未取得</span>';
+  toggle.innerHTML='<svg viewBox="0 0 25 20" fill="none" aria-hidden="true"><rect x="1" y="4" width="20" height="12" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M24 8v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect id="battery-level" x="4" y="7" width="0" height="6" rx="1" fill="currentColor"/><path class="battery-charge-symbol" d="M12.5 5.3 6.9 10.9h3.7l-1 3.8 5.6-5.6h-3.7z" fill="currentColor"/></svg><span class="battery-chip-label">バッテリー</span><span class="battery-chip-reading"><b id="battery-chip-value">—</b><small id="battery-chip-runtime" hidden></small></span><span id="battery-chip-status">未取得</span>';
   const clock=document.getElementById('clock');if(clock&&clock.parentNode===host)host.insertBefore(toggle,clock);else host.append(toggle);
   const stopStyle=document.createElement('link');stopStyle.rel='stylesheet';stopStyle.href='/static/emergency-stop.css';document.head.append(stopStyle);
   const stopToggle=document.createElement('button');stopToggle.id='emergency-stop-toggle';stopToggle.type='button';stopToggle.className='emergency-stop-chip';stopToggle.dataset.state='unknown';
@@ -14,10 +14,10 @@
   stopDialog.innerHTML=`<div class="emergency-stop-heading"><h2 id="emergency-stop-title">非常停止の状態</h2><button id="emergency-stop-close" type="button">閉じる</button></div>
     <div class="emergency-stop-cards">
       <section id="emergency-stop-physical-card"><h3>物理ボタン</h3><strong id="emergency-stop-physical">未確認</strong><p id="emergency-stop-voltage">駆動電圧：未取得</p><small>駆動電圧からの推定</small></section>
-      <section id="emergency-stop-electronic-card"><h3>電子非常停止</h3><strong id="emergency-stop-electronic">未確認</strong><p>Roboteqの非常停止フラグ</p></section>
+      <section id="emergency-stop-electronic-card"><h3>電子非常停止</h3><strong id="emergency-stop-electronic">未確認</strong><p>ドライバの電子停止状態（物理停止とは独立）</p></section>
     </div><div class="emergency-stop-actions"><button type="button" id="emergency-stop-on">電子停止 ON</button><button type="button" id="emergency-stop-off" disabled>電子停止 OFF（解除）</button></div>
     <p id="emergency-stop-command-status" role="status"></p><p id="emergency-stop-age" class="emergency-stop-age">受信待ち</p>
-    <p class="emergency-stop-note">物理ボタンは8V以下で押下を推定し、11V以上で未検出に戻します。押してから電圧が下がるまで表示が遅れます。「未検出」はボタン解除や走行可能を保証しません。ここで操作できるのは電子非常停止です。</p>`;
+    <p class="emergency-stop-note">物理ボタンは8V以下で押下を推定し、11V以上で未検出に戻します。押してから電圧が下がるまで表示が遅れます。「未検出」はボタン解除や走行可能を保証しません。ここで操作できるのは電子非常停止です。電子OFFでも物理停止・駆動保護中は動きません。</p>`;
   document.body.append(stopDialog);stopToggle.onclick=()=>{stopDialog.showModal();document.getElementById('emergency-stop-close').focus();};
   document.getElementById('emergency-stop-close').onclick=()=>stopDialog.close();
   stopDialog.addEventListener('click',e=>{if(e.target===stopDialog){const r=stopDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)stopDialog.close();}});
@@ -30,6 +30,11 @@
       <section id="battery-input-card"><small>Anker 入力合計</small><strong id="battery-power-input">— W</strong></section>
       <section id="battery-output-card"><small>Anker 出力合計</small><strong id="battery-power-output">— W</strong></section>
     </div>
+    <section class="battery-history-card" aria-label="バッテリー残量の推移">
+      <div class="battery-history-head"><h3>残量の推移</h3><span id="battery-history-window">履歴を収集中</span></div>
+      <div class="battery-history-chart" id="battery-history-chart"><p class="battery-history-empty">履歴を収集中…</p></div>
+      <div class="battery-history-legend" id="battery-history-legend"></div>
+    </section>
     <div class="battery-details-grid">
     <section class="battery-source-group" id="battery-body-group">
       <div class="battery-source-heading"><h3>バッテリー本体</h3><span id="battery-body-state">未取得</span></div>
@@ -80,9 +85,10 @@
   const text=(id,value)=>{document.getElementById(id).textContent=value;if(id==='emergency-stop-command-status'){const feedback=document.getElementById('drive-estop-feedback');if(feedback)feedback.textContent=value;}};
   const fmt=(v,unit,decimals=1)=>Number.isFinite(v)?v.toFixed(decimals)+' '+unit:'— '+unit;
   const watt=v=>fmt(v,'W',Number.isInteger(v)?0:1);
-  function duration(hours){
-    if(!Number.isFinite(hours)||hours<=0||hours>=6553.5)return '未取得';
+  function duration(hours,compact=false){
+    if(!Number.isFinite(hours)||hours<=0||hours>=6553.5)return compact?'—':'未取得';
     const minutes=Math.round(hours*60),h=Math.floor(minutes/60),m=minutes%60;
+    if(compact)return minutes===0?'<1m':(h?h+'h':'')+(m?m+'m':'');
     return minutes===0?'1分未満':(h?h+'時間':'')+(m?m+'分':'');
   }
   function source(data,key,kind){
@@ -95,21 +101,82 @@
     if(faultFlags(record)>0)return 'ドライバー通知';
     return record.charging||'受信中';
   }
+  function renderBatteryHistory(data){
+    const box=document.getElementById('battery-history-chart');
+    const legend=document.getElementById('battery-history-legend');
+    const windowLabel=document.getElementById('battery-history-window');
+    if(!box||!legend||!windowLabel)return;
+    const history=data.history||{};
+    const now=Date.now()/1000;
+    const maxWindow=Number(data.history_window_seconds)||6*3600;
+    const series=[
+      {key:'battery',label:'本体',color:'var(--accent)',points:(history.battery||[]).filter(p=>Number.isFinite(p.time)&&Number.isFinite(p.percentage))},
+      {key:'solix',label:'Anker',color:'var(--mint)',points:(history.solix||[]).filter(p=>Number.isFinite(p.time)&&Number.isFinite(p.percentage))}
+    ].filter(item=>item.points.length);
+    if(!series.length){box.innerHTML='<p class="battery-history-empty">残量履歴を収集中…</p>';legend.replaceChildren();windowLabel.textContent='履歴を収集中';return;}
+    const times=series.flatMap(item=>item.points.map(p=>p.time));
+    const first=Math.min(...times),latest=Math.max(...times,now);
+    let start=Math.max(first,now-maxWindow),end=Math.max(latest,now);
+    if(end-start<60)start=end-60;
+    const span=end-start;
+    const w=620,h=180,left=34,right=12,top=10,bottom=25;
+    const x=t=>left+(t-start)/span*(w-left-right);
+    const y=p=>top+(100-Math.max(0,Math.min(100,p)))/100*(h-top-bottom);
+    const label=t=>new Date(t*1000).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit',hour12:false});
+    const parts=[`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="バッテリー残量の時間推移">`];
+    for(const value of [0,25,50,75,100]){
+      const gy=y(value);parts.push(`<line x1="${left}" y1="${gy.toFixed(1)}" x2="${w-right}" y2="${gy.toFixed(1)}" stroke="var(--line)" stroke-width=".7" stroke-dasharray="3 5"/>`);
+      parts.push(`<text x="${left-6}" y="${(gy+3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--muted)">${value}</text>`);
+    }
+    for(const index of [0,1,2,3]){
+      const t=start+span*index/3,gx=x(t),anchor=index===0?'start':index===3?'end':'middle';
+      parts.push(`<line x1="${gx.toFixed(1)}" y1="${top}" x2="${gx.toFixed(1)}" y2="${h-bottom}" stroke="var(--line)" stroke-width=".6" opacity=".55"/>`);
+      parts.push(`<text x="${gx.toFixed(1)}" y="${h-7}" text-anchor="${anchor}" font-size="9" fill="var(--muted)">${label(t)}</text>`);
+    }
+    for(const item of series){
+      const points=item.points.map(p=>[x(p.time),y(p.percentage)]);
+      const path=points.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+      parts.push(`<path d="${path}" fill="none" stroke="${item.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`);
+      const lastPoint=points.at(-1),lastValue=item.points.at(-1).percentage;
+      parts.push(`<circle cx="${lastPoint[0].toFixed(1)}" cy="${lastPoint[1].toFixed(1)}" r="2.8" fill="${item.color}"/><text x="${Math.min(w-right-34,lastPoint[0]+5).toFixed(1)}" y="${Math.max(10,lastPoint[1]-5).toFixed(1)}" font-size="9" fill="${item.color}">${lastValue.toFixed(1)}%</text>`);
+    }
+    parts.push('</svg>');box.innerHTML=parts.join('');
+    windowLabel.textContent=span>=3600?'直近 '+(span/3600).toFixed(span%3600?1:0)+'時間':'直近 '+Math.max(1,Math.round(span/60))+'分';
+    legend.replaceChildren();
+    for(const item of series){const chip=document.createElement('span'),swatch=document.createElement('i');swatch.style.background=item.color;chip.append(swatch,item.label);legend.append(chip);}
+  }
+
   function render(data){
     last=data;
+    window.siriusBatterySnapshot=data;
+    window.dispatchEvent(new CustomEvent('sirius:battery-state',{detail:data}));
+    renderBatteryHistory(data);
     const battery=source(data,'battery','BatteryState'),driver=source(data,'driver','RoboteqStatus'),details=source(data,'details','SolixStatus');
     const primary=data.source_type==='RoboteqStatus'?driver:battery;
     const live=primary.state==='live',driverLive=driver.state==='live';
+    const detailsLive=details.state==='live';
+    const charging=live&&primary!==driver&&(primary.charging==='充電中'||
+      (!primary.charging&&detailsLive&&details.time_remaining_kind==='charging'));
+    const percentage=live&&Number.isFinite(primary.percentage)?Math.round(primary.percentage):null;
     renderStop(driver);
     const driverFault=driverLive&&faultFlags(driver)>0;
-    let message=status(primary);
+    let message=charging?'充電中':status(primary);
     if(primary!==driver&&driverFault)message+=' · '+status(driver);
     else if(primary!==driver&&driver.state==='stale')message+=' · MD更新停止';
     const value=Number.isFinite(primary.percentage)?fmt(primary.percentage,'%',0):Number.isFinite(primary.voltage)?fmt(primary.voltage,'V'):'—';
     text('battery-chip-value',value);text('battery-chip-status',message);
     document.querySelector('.battery-chip-label').textContent=primary===driver?'MD電源':'バッテリー';
     toggle.dataset.state=primary.state||'waiting';toggle.classList.toggle('caution',driverFault||driver.state==='stale');
-    toggle.title='バッテリー・駆動電源: '+value+' / '+message;toggle.setAttribute('aria-label',toggle.title);
+    toggle.dataset.level=percentage===null?'unknown':percentage<20?'critical':percentage<50?'low':'normal';
+    toggle.dataset.charging=String(charging);
+    const discharging=!charging&&detailsLive&&details.time_remaining_kind==='discharging';
+    const runtime=discharging?details.runtime_hours:null;
+    const timeChip=document.getElementById('battery-chip-runtime');
+    timeChip.hidden=!discharging;
+    timeChip.textContent=discharging?'残り '+duration(runtime,true):'';
+    toggle.title='バッテリー・駆動電源: '+value+' / '+message
+      +(discharging?' / 推定稼働時間 '+duration(runtime):'');
+    toggle.setAttribute('aria-label',toggle.title);
     document.getElementById('battery-level').setAttribute('width',live&&Number.isFinite(primary.percentage)?String(Math.min(100,Math.max(0,primary.percentage))/100*14):'0');
     text('battery-state',message);
     text('battery-percentage',fmt(battery.percentage,'%',0));text('battery-voltage',fmt(driver.voltage,'V'));
@@ -168,7 +235,7 @@
     document.getElementById('emergency-stop-physical-card').dataset.state=physical===true?'active':physical===false?'clear':fresh?'checking':'unknown';
     document.getElementById('emergency-stop-electronic-card').dataset.state=electronic===true?'active':electronic===false?'clear':'unknown';
     set('emergency-stop-physical',physical===true?'押されている推定':physical===false?'押下を検出せず':fresh?'判定中':'確認できません');
-    set('emergency-stop-electronic',electronic===true?'停止中':electronic===false?'停止フラグなし':'確認できません');
+    set('emergency-stop-electronic',electronic===true?'ON・停止中':electronic===false?'OFF・解除済み':'確認できません');
     set('emergency-stop-voltage','駆動電圧：'+fmt(driver.voltage,'V')+(fresh?'':'（最終値）'));
     set('emergency-stop-age',fresh?'取得元：'+(driver.topic||'/roboteq/status')+' · '+(Number.isFinite(driver.age_seconds)?driver.age_seconds.toFixed(1)+'秒前':'受信中'):'現在の状態は未確認です：'+(labels[driver.state]||'未取得'));
   }

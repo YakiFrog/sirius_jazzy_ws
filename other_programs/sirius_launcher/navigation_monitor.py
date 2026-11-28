@@ -1,6 +1,7 @@
-"""Read-only navigation telemetry. No publishers, services or action clients."""
+"""Read-only navigation telemetry and lifecycle queries. Never changes state."""
 import math
 import time
+from lifecycle_protocol import NODES as LIFECYCLE_NODES
 
 PREFLIGHT_NODES = ('bt_navigator', 'planner_server', 'controller_server',
                    'amcl', 'map_server', 'velocity_smoother', 'collision_monitor')
@@ -8,8 +9,16 @@ PREFLIGHT_NODES = ('bt_navigator', 'planner_server', 'controller_server',
 class NavigationState:
     def __init__(self):
         self.values = {}
+        self.lifecycle_history=[]
+        self.lifecycle_since={}
 
     def ingest(self, key, value, now):
+        if key.startswith('lifecycle/') and isinstance(value,dict):
+            previous=self.values.get(key)
+            if previous is None or previous[1].get('id')!=value.get('id') or previous[1].get('label')!=value.get('label'):
+                self.lifecycle_since[key]=now
+                self.lifecycle_history.insert(0,{'node':key[len('lifecycle/'):],**value,'time':time.time()})
+                del self.lifecycle_history[60:]
         self.values[key] = (now, value)
 
     def snapshot(self, now):
@@ -45,6 +54,12 @@ class NavigationState:
         topic = configured['value'] if configured['fresh'] else None
         scan = entry('laser/'+topic) if topic else entry('missing_scan')
         return {'summary': summary, 'mismatch': mismatch, 'stages': data,
+                'lifecycle':{'nodes':{name:{**entry('lifecycle/'+name,6),
+                    'observed_seconds':max(0,now-self.lifecycle_since.get('lifecycle/'+name,now))}
+                    for name in LIFECYCLE_NODES},
+                    'history':list(self.lifecycle_history),
+                    'costmaps':{name:entry('costmap/'+name,6) for name in ('global','local')},
+                    'logs':{name:entry('lifecycle_log/'+name,15) for name in LIFECYCLE_NODES}},
                 'preflight': {'nodes': {name: entry('lifecycle/'+name, 6) for name in PREFLIGHT_NODES},
                               'scan': {**scan, 'topic': topic},
                               'communication': entry('driver_communication'),
@@ -54,7 +69,8 @@ class NavigationState:
 class NavigationReceiver:
     def __init__(self, node):
         from geometry_msgs.msg import Twist
-        from nav_msgs.msg import Path, Odometry
+        from nav_msgs.msg import Path, Odometry, OccupancyGrid
+        from lifecycle_msgs.msg import TransitionEvent
         from action_msgs.msg import GoalStatusArray
         from diagnostic_msgs.msg import DiagnosticArray
         from roboteq_ros2_driver.msg import RoboteqDiagnostics
@@ -77,6 +93,14 @@ class NavigationReceiver:
         for key, topic in [('nav', '/cmd_vel_nav'), ('safe', '/cmd_vel_nav_safe'), ('output', '/cmd_vel')]:
             subscribe(Twist, topic, receive(key, velocity))
         subscribe(Path, '/plan', receive('path', lambda m: len(m.poses)))
+        for key in ('global','local'):
+            subscribe(OccupancyGrid,'/'+key+'_costmap/costmap',receive('costmap/'+key,
+                lambda m:{'width':m.info.width,'height':m.info.height,'frame':m.header.frame_id,
+                          'valid':m.info.width>0 and m.info.height>0 and len(m.data)==m.info.width*m.info.height}))
+        for name in LIFECYCLE_NODES:
+            subscribe(TransitionEvent,'/'+name+'/transition_event',
+                receive('lifecycle/'+name,lambda m:{'id':m.goal_state.id,'label':m.goal_state.label,
+                                                  'active':m.goal_state.id==3}))
         subscribe(Odometry, '/odom', receive('motion', lambda m: velocity(m.twist.twist)['moving']))
         def driver(msg):
             now = time.monotonic()
@@ -101,6 +125,9 @@ class NavigationReceiver:
                         self.state.ingest('lock', text.startswith('locked '), time.monotonic())
         subscribe(DiagnosticArray, '/diagnostics', diagnostics)
         def logs(msg):
+            name=msg.name.replace('.','/')
+            if name in LIFECYCLE_NODES and (msg.level>=30 or any(t in msg.msg for t in ('Activating','Configuring','Checking transform','Timed out waiting','Failed to activate'))):
+                self.state.ingest('lifecycle_log/'+name,{'level':msg.level,'text':msg.msg[:500]},time.monotonic())
             if msg.name in ('bt_navigator', 'controller_server', 'planner_server', 'nav2_goal_client'):
                 if msg.level >= 30 or any(s in msg.msg for s in (
                         'Goal accepted', 'Goal REJECTED', 'InitialPose', 'Goal succeeded', 'Goal failed')):
@@ -109,7 +136,7 @@ class NavigationReceiver:
         # Only lifecycle state/configuration queries: never change state, goals,
         # parameters, power outputs or emergency stops.
         clients = {name: node.create_client(GetState, '/'+name+'/get_state')
-                   for name in PREFLIGHT_NODES}
+                   for name in LIFECYCLE_NODES}
         scan_client = node.create_client(GetParameters, '/amcl/get_parameters')
         pending = {}
         self.scan_subscription = None
@@ -163,7 +190,7 @@ class NavigationReceiver:
                         if key != 'scan_topic':
                             state = response.current_state
                             self.state.ingest('lifecycle/'+key,
-                                {'active': state.id == 3, 'label': state.label}, time.monotonic())
+                                {'id':state.id,'active': state.id == 3, 'label': state.label}, time.monotonic())
                         else:
                             topic = response.values[0].string_value
                             if not topic:

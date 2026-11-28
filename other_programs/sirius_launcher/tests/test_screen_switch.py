@@ -22,9 +22,23 @@ def test_identifies_only_dedicated_launcher_despite_renamed_title(tmp_path, monk
                         if str(path)=='/proc/456/cmdline' else original(path))
     monkeypatch.setattr('face_bridge.shutil.which', lambda _: '/usr/bin/wmctrl')
     monkeypatch.setattr('face_bridge.subprocess.run', lambda *a, **k: SimpleNamespace(
-        stdout='0x01 0 123 host Changed title\n0x02 1 456 host SiriusLauncher\n', returncode=0))
+        stdout='0x00 0 123 google-chrome.Google-chrome host Regular tab\n'
+               '0x01 0 123 127.0.0.1.SiriusLauncher host Changed title\n'
+               '0x02 1 456 127.0.0.1.Google-chrome host SiriusLauncher\n', returncode=0))
     bridge = FaceBridge(tmp_path)
     assert bridge.launcher_windows() == [dict(id='0x01', pid=123)]
+
+
+def test_identifies_old_localhost_app_for_screen_switch(tmp_path, monkeypatch):
+    original = Path.read_bytes
+    monkeypatch.setattr(Path, 'read_bytes', lambda path:
+        b'/opt/google/chrome/chrome\0--app=http://localhost:8090\0' if str(path)=='/proc/123/cmdline'
+        else b'chrome\0--app=http://localhost:80901\0' if str(path)=='/proc/456/cmdline' else original(path))
+    monkeypatch.setattr('face_bridge.shutil.which', lambda _: '/usr/bin/wmctrl')
+    monkeypatch.setattr('face_bridge.subprocess.run', lambda *a, **k: SimpleNamespace(
+        stdout='0x01 0 123 localhost.Google-chrome host Launcher\n'
+               '0x02 0 456 localhost.Google-chrome host Other\n', returncode=0))
+    assert FaceBridge(tmp_path).launcher_windows() == [dict(id='0x01', pid=123)]
 
 
 def test_bidirectional_switch_uses_existing_windows_without_face_api(tmp_path, monkeypatch):

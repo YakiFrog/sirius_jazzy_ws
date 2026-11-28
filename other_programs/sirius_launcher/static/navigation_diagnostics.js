@@ -119,11 +119,13 @@ if (typeof document !== 'undefined') (() => {
     <details class="nav-diag-technical"><summary>トピック・元の数値</summary><div></div></details>
     <h3 class="nav-diag-section-title">直近のNav2通知</h3><p id="nav-diag-event">未取得</p><p class="nav-diag-note">OKは上記の受信状態を示します。車輪の回転があっても、空転や周囲の安全までは判定しません。表示から走行・停止・解除の指令は送りません。</p>`;
   const preflightPanel = document.createElement('section'); preflightPanel.id = 'nav-diag-preflight'; preflightPanel.dataset.tone = 'unknown';
-  preflightPanel.innerHTML = '<small>緊急停止を除いた「解除前チェック」</small><div><b class="nav-diag-badge">未確認</b><h3 id="nav-diag-preflight-title">準備状態を確認中</h3></div><p id="nav-diag-preflight-detail"></p><p class="nav-diag-note">現在の物理・電子停止とmuxロックは、この判定から除外します。解除後の駆動電圧や実際の駆動応答は、停止中には検証できません。</p>';
+  preflightPanel.innerHTML = '<small>緊急停止を除いた「解除前チェック」</small><div><b class="nav-diag-badge">未確認</b><h3 id="nav-diag-preflight-title">準備状態を確認中</h3></div><p id="nav-diag-preflight-detail"></p><ul class="nav-diag-issues" aria-label="準備不足・未確認の項目"></ul><button class="nav-diag-issues-more" type="button" hidden></button><details class="nav-diag-scope"><summary>判定範囲</summary><p class="nav-diag-note">物理・電子停止とmuxロックは除外します。解除後の駆動電圧・実際の駆動応答は停止中には検証できません。</p></details>';
   dialog.querySelector('#nav-diag-summary').before(preflightPanel);
-  const breakdown = document.createElement('details'); breakdown.className = 'nav-diag-preflight-list'; breakdown.open = true;
-  breakdown.innerHTML = '<summary>解除前チェックの内訳</summary><ul></ul>';
+  const breakdown = document.createElement('details'); breakdown.className = 'nav-diag-preflight-list';
+  breakdown.innerHTML = '<summary>全項目の内訳</summary><ul></ul>';
   preflightPanel.after(breakdown);
+  const issuesMore=preflightPanel.querySelector('.nav-diag-issues-more');
+  issuesMore.onclick=()=>{breakdown.open=true;breakdown.scrollIntoView({block:'nearest'});};
   document.body.append(dialog);
   const definitions = [
     ['goal', 'ゴール受付', '目標位置をNav2が受け取る', '/navigate_to_pose/_action/status'],
@@ -162,13 +164,33 @@ if (typeof document !== 'undefined') (() => {
     ui.age.textContent = entry && Number.isFinite(entry.age) ? '最後の受信：' + entry.age.toFixed(1) + '秒前' + (entry.fresh ? '' : '（現在値は未確認）') : '受信待ち';
   }
   function render(data, failed) {
+    window.siriusNavigationSnapshot=data;
+    window.dispatchEvent(new CustomEvent('sirius:navigation-state',{detail:data}));
     const overall = navigationDiagnosticState(data), summary = document.getElementById('nav-diag-summary');
     const readiness = navigationPreflightState(data);
     button.dataset.tone = readiness.tone; button.querySelector('b').textContent = readiness.badge;
     button.setAttribute('aria-label', '解除前チェック：' + readiness.title); button.title = readiness.title+' ／ 現在：'+overall.title;
     preflightPanel.dataset.tone = readiness.tone; preflightPanel.querySelector('b').textContent = readiness.badge;
-    document.getElementById('nav-diag-preflight-title').textContent = readiness.title;
-    document.getElementById('nav-diag-preflight-detail').textContent = failed || readiness.detail;
+    const counts={blocked:0,attention:0,unknown:0,ok:0};
+    readiness.checks.forEach(c=>{if(c.tone in counts)counts[c.tone]++;});
+    document.getElementById('nav-diag-preflight-title').textContent = readiness.tone==='ok'?'解除前の準備OK':counts.blocked?'準備が足りない項目があります':'準備状態を確認中';
+    document.getElementById('nav-diag-preflight-detail').textContent = failed || '要対応 '+counts.blocked+'件 · 未確認 '+(counts.attention+counts.unknown)+'件 · 確認済 '+counts.ok+'件';
+    const issues=readiness.checks.filter(c=>c.tone!=='ok').sort((a,b)=>(a.tone==='blocked'?0:1)-(b.tone==='blocked'?0:1));
+    const issueList=preflightPanel.querySelector('.nav-diag-issues');issueList.replaceChildren();
+    for(const check of issues.slice(0,4)){
+      const row=document.createElement('li');row.dataset.tone=check.tone;
+      const label=document.createElement('strong');label.textContent=check.id==='routing'?'速度指令の接続':check.label;
+      const value=document.createElement('span');
+      value.textContent=check.id==='routing'&&check.tone==='blocked'?'速度指令の接続が不足しています':
+        check.id==='tf'&&check.tone==='blocked'?'地図からロボットまでの座標を確認できません':
+        check.text==='非稼働：unconfigured'?'未設定':check.text==='非稼働：inactive'?'停止中':
+        check.text==='状態未確認'?'状態データが未取得':check.text;
+      row.title=check.label+'：'+check.text;
+      row.append(label,value);issueList.append(row);
+    }
+    issuesMore.hidden=issues.length<=4;
+    issuesMore.textContent='残り'+Math.max(0,issues.length-4)+'項目を確認 →';
+    breakdown.querySelector('summary').textContent='全'+readiness.checks.length+'項目の内訳（確認済 '+counts.ok+'）';
     const list = breakdown.querySelector('ul'); list.replaceChildren();
     for (const check of readiness.checks) {
       const row = document.createElement('li'); row.dataset.tone = check.tone;

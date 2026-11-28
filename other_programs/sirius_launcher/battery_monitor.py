@@ -1,4 +1,5 @@
 """Robot battery telemetry normalization; no host/laptop battery fallback."""
+from collections import deque
 import math
 import json
 import time
@@ -6,6 +7,9 @@ import time
 
 PHYSICAL_STOP_LOW_VOLTAGE = 8.0
 PHYSICAL_STOP_RECOVERED_VOLTAGE = 11.0
+BATTERY_HISTORY_SECONDS = 6 * 3600
+BATTERY_HISTORY_SAMPLE_SECONDS = 10
+BATTERY_HISTORY_MAX_POINTS = 4096
 
 
 def number(value, low=None, high=None):
@@ -41,7 +45,8 @@ def normalize(message, kind):
         currents = [number(getattr(message, name, None)) for name in
                     ('battery_current_ch1','battery_current_ch2')]
         common.update(internal_voltage=number(getattr(message, 'voltage_internal', None), 0),
-                      fault_flags=flags, emergency_stop=None if flags is None else bool(flags & 16),
+                      fault_flags=flags, controller_emergency_stop=None if flags is None else bool(flags & 16),
+                      emergency_stop=None,
                       physical_emergency_stop=(True if voltage is not None and voltage<=PHYSICAL_STOP_LOW_VOLTAGE
                                                else False if voltage is not None and voltage>=PHYSICAL_STOP_RECOVERED_VOLTAGE else None),
                       temperature=number(getattr(message, 'temperature', None)),
@@ -86,11 +91,35 @@ class BatteryStore:
         self.records={}
         self.sources=[]
         self.errors=[]
+        self.driver_stop=None
+        self.history={'battery':deque(maxlen=BATTERY_HISTORY_MAX_POINTS),
+                      'solix':deque(maxlen=BATTERY_HISTORY_MAX_POINTS)}
+        self.history_last={}
+
+    def _record_history(self, kind, data):
+        key={'BatteryState':'battery','SolixStatus':'solix'}.get(kind)
+        percentage=data.get('percentage')
+        if not key or percentage is None or not data.get('present',True):
+            return
+        stamp=time.time()
+        previous=self.history_last.get(key)
+        if (previous and stamp-previous['time'] < BATTERY_HISTORY_SAMPLE_SECONDS
+                and abs(percentage-previous['percentage']) < 1):
+            return
+        point={'time':round(stamp,3),'percentage':round(percentage,2)}
+        self.history[key].append(point)
+        self.history_last[key]=point
 
     def ingest(self, topic, kind, message, now):
+        if kind == 'RoboteqDiagnostics':
+            self.driver_stop = {'received': now, 'software': bool(message.software_estop),
+                                'hardware': bool(message.hardware_estop),
+                                'active': bool(message.estop_active), 'topic': topic}
+            return
         if topic not in self.records and len(self.records)>=32:
             del self.records[min(self.records,key=lambda key:self.records[key]['received'])]
         data = normalize(message,kind)
+        self._record_history(kind, data)
         previous = self.records.get(topic)
         voltage = data.get('voltage')
         # A decaying bus voltage cannot reveal the physical button instantly.
@@ -127,16 +156,30 @@ class BatteryStore:
             if state != 'live':data['physical_emergency_stop'] = None
             return {**empty,**data,'state':state,'age_seconds':age}
         records=list(self.records.values())
+        driver = select([r for r in records if r['source_type']=='RoboteqStatus'])
+        stop = self.driver_stop
+        fresh_stop = stop is not None and 0 <= now-stop['received'] <= min(2., self.stale_after)
+        driver.update(emergency_stop=stop['software'] if fresh_stop else None,
+                      hardware_protection_stop=stop['hardware'] if fresh_stop else None,
+                      drive_stop_active=stop['active'] if fresh_stop else None,
+                      emergency_stop_source=stop['topic'] if fresh_stop else None)
+        cutoff=time.time()-BATTERY_HISTORY_SECONDS
+        history={key:[point for point in values if point['time'] >= cutoff]
+                 for key,values in self.history.items()}
         return {**select([r for r in records if r['source_type']!='SolixStatus']),
                 'battery':select([r for r in records if r['source_type']=='BatteryState']),
-                'driver':select([r for r in records if r['source_type']=='RoboteqStatus']),
-                'details':select([r for r in records if r['source_type']=='SolixStatus'])}
+                'driver':driver,
+                'details':select([r for r in records if r['source_type']=='SolixStatus']),
+                'history':history,
+                'history_window_seconds':BATTERY_HISTORY_SECONDS,
+                'history_sample_seconds':BATTERY_HISTORY_SAMPLE_SECONDS}
 
 
 class BatteryReceiver:
     """Discover standard BatteryState and Sirius RoboteqStatus on any ROS namespace."""
     TYPES={'sensor_msgs/msg/BatteryState':'BatteryState',
            'roboteq_ros2_driver/msg/RoboteqStatus':'RoboteqStatus',
+           'roboteq_ros2_driver/msg/RoboteqDiagnostics':'RoboteqDiagnostics',
            'std_msgs/msg/String':'SolixStatus'}
 
     @classmethod

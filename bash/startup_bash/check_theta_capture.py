@@ -77,15 +77,14 @@ def read_topic(topic, timeout=4.0):
 
 
 def main():
-    device = sys.argv[1] if len(sys.argv) > 1 else '/dev/theta_capture'
-    if not os.path.exists(device):
-        device = '/dev/video0'
-        print(f'/dev/theta_capture が無いので {device} を使用（udev未設定？）')
-
+    device = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('THETA_DEVICE', '/dev/theta_capture')
     source = 'device'
-    best = read_device(device)
+    present = os.path.exists(device)
+    best = read_device(device) if present else None
     if best is None:
-        if device_busy(device):
+        if not present:
+            print(f'{device} が見つかりません。キャプチャボードのUSB接続を確認してください。')
+        elif device_busy(device):
             print(f'{device} は使用中（theta_capture が起動中？）。公開トピックで確認します。')
         else:
             print(f'{device} からフレームを取得できません（theta_capture が使用中の可能性）。'

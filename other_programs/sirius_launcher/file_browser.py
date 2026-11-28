@@ -1,11 +1,13 @@
-"""Host files, non-overwriting moves, recoverable deletion and bookmarks."""
+"""Host files, non-overwriting copies and moves, deletion and bookmarks."""
 import io
 import hashlib
 import configparser
+from contextlib import contextmanager
 import ctypes
 import errno
 from datetime import datetime
 import re
+import shutil
 import uuid
 from urllib.parse import quote, unquote
 import json
@@ -20,8 +22,37 @@ from flask import Blueprint, jsonify, request, send_file
 
 TEXT_LIMIT = 512 * 1024
 IMAGE_LIMIT = 32 * 1024 * 1024
+PGM_LIMIT = 128 * 1024 * 1024
 IMAGE_EXTENSIONS = {'.pgm', '.png', '.jpg', '.jpeg', '.bmp', '.webp', '.tif', '.tiff'}
 TEXT_EXTENSIONS = {'.yaml', '.yml', '.json', '.txt', '.md', '.csv', '.py', '.sh', '.xml', '.log', '.ini', '.cfg', '.toml', '.rviz', '.pgm.info'}
+
+
+@contextmanager
+def open_preview_image(path):
+    from PIL import Image
+
+    extension = path.suffix.lower()
+    if extension not in IMAGE_EXTENSIONS:
+        raise ValueError('プレビューに対応していない画像形式です')
+    is_pgm = extension == '.pgm'
+    limit = PGM_LIMIT if is_pgm else IMAGE_LIMIT
+    if path.stat().st_size > limit:
+        raise ValueError(f'画像は {limit // (1024 * 1024)} MiB までです')
+    # An 8-bit PGM uses one byte per cell, plus its header.
+    pixel_limit = PGM_LIMIT if is_pgm else 40_000_000
+    pixel_error = f'プレビュー画像は{pixel_limit:,}画素までです'
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore' if is_pgm else 'error', Image.DecompressionBombWarning)
+            image = Image.open(path)
+    except (Image.DecompressionBombWarning, Image.DecompressionBombError) as error:
+        raise ValueError(pixel_error) from error
+    with image:
+        if is_pgm and (image.format != 'PPM' or image.mode in ('1', 'RGB')):
+            raise ValueError('PGM地図を指定してください')
+        if image.width * image.height > pixel_limit:
+            raise ValueError(pixel_error)
+        yield image
 
 
 class HostFiles:
@@ -184,23 +215,17 @@ class HostFiles:
     def image(self, value):
         from PIL import Image, ImageOps
         path = self.regular_file(value)
-        if path.suffix.lower() not in IMAGE_EXTENSIONS or path.stat().st_size > IMAGE_LIMIT:
-            raise ValueError('画像形式、またはサイズ上限（32 MB）を確認してください')
-        with warnings.catch_warnings():
-            warnings.simplefilter('error', Image.DecompressionBombWarning)
-            with Image.open(path) as image:
-                if image.width*image.height > 40_000_000:
-                    raise ValueError('プレビュー画像は4,000万画素までです')
-                original_size = image.size
-                image.thumbnail((1800,1800))
-                if image.mode in ('I', 'I;16', 'I;16B', 'F'):
-                    import numpy as np
-                    a = np.asarray(image, dtype=float)
-                    lo, hi = float(a.min()), float(a.max())
-                    image = Image.fromarray(np.clip((a-lo)*255/max(hi-lo,1),0,255).astype('uint8'))
-                image = ImageOps.exif_transpose(image).convert('RGB')
-                result = io.BytesIO()
-                image.save(result, format='PNG')
+        with open_preview_image(path) as image:
+            original_size = image.size
+            image.thumbnail((1800, 1800))
+            if image.mode in ('I', 'I;16', 'I;16B', 'F'):
+                import numpy as np
+                a = np.asarray(image, dtype=float)
+                lo, hi = float(a.min()), float(a.max())
+                image = Image.fromarray(np.clip((a-lo)*255/max(hi-lo,1),0,255).astype('uint8'))
+            image = ImageOps.exif_transpose(image).convert('RGB')
+            result = io.BytesIO()
+            image.save(result, format='PNG')
         result.seek(0)
         return result, original_size
 
@@ -301,6 +326,10 @@ class HostFiles:
         with self.lock:
             if action=='move_many':
                 return self.move_many(body.get('paths'),body.get('destination'))
+            if action == 'copy':
+                return self.copy_entries([body.get('path')], body.get('destination'), body.get('name'))
+            if action == 'copy_many':
+                return self.copy_entries(body.get('paths'), body.get('destination'))
             if action=='mkdir':
                 parent=self.resolve(body.get('parent'))
                 if not parent.is_dir():
@@ -350,6 +379,67 @@ class HostFiles:
             except OSError:
                 warning='操作は完了しましたが、お気に入りの更新に失敗しました'
             return dict(path=str(target),parent=str(target.parent),warning=warning)
+
+    @staticmethod
+    def copy_name(source):
+        suffix = '' if not source.is_symlink() and source.is_dir() else source.suffix
+        ending = '-copy' + suffix
+        if len(ending.encode('utf-8')) >= 255:
+            suffix, ending = '', '-copy'
+        stem = source.name[:-len(suffix)] if suffix else source.name
+        stem = stem.encode('utf-8')[:255 - len(ending.encode('utf-8'))].decode('utf-8', 'ignore')
+        return stem + ending
+
+    @staticmethod
+    def copy_regular(source, target):
+        if not stat.S_ISREG(os.lstat(source).st_mode):
+            raise ValueError('通常のファイル・フォルダだけを複製できます')
+        shutil.copy2(source, target, follow_symlinks=False)
+
+    def publish_copy(self, source, target):
+        with tempfile.TemporaryDirectory(dir=target.parent, prefix='.files-copy-') as directory:
+            staged = Path(directory) / 'item'
+            if source.is_symlink():
+                staged.symlink_to(os.readlink(source))
+            elif source.is_dir():
+                shutil.copytree(source, staged, symlinks=True, copy_function=self.copy_regular)
+            else:
+                self.copy_regular(source, staged)
+            self.rename_exclusive(staged, target)
+
+    def copy_entries(self, values, destination, name=None):
+        if not isinstance(values, list) or not 1 <= len(values) <= 5000:
+            raise ValueError('複製する項目を1〜5,000件選択してください')
+        if not destination:
+            raise ValueError('複製先フォルダを指定してください')
+        destination = self.resolve(destination)
+        if not destination.is_dir() or destination.is_relative_to(self.trash):
+            raise ValueError('複製先フォルダを指定してください')
+        sources = [self.source(value) for value in values]
+        if len(set(sources)) != len(sources):
+            raise ValueError('同じ項目が重複しています')
+        targets = []
+        for source in sources:
+            default_name = self.copy_name(source) if destination == source.parent else source.name
+            targets.append(destination / self.filename(name if name is not None else default_name))
+        if len(set(targets)) != len(targets):
+            raise FileExistsError('選択項目に同名の複製先があります')
+        for source, target in zip(sources, targets):
+            if not source.is_symlink() and source.is_dir() and destination.is_relative_to(source):
+                raise ValueError('フォルダ自身や、その中には複製できません')
+            if os.path.lexists(target):
+                raise FileExistsError('複製先に同名の項目があります: ' + target.name)
+        copied = []
+        for index, (source, target) in enumerate(zip(sources, targets)):
+            try:
+                self.publish_copy(source, target)
+            except (OSError, ValueError) as error:
+                if not copied:
+                    raise
+                return dict(copied=copied, remaining=[str(p) for p in sources[index:]],
+                            partial=True, error_message=str(error))
+            copied.append(dict(source=str(source), path=str(target)))
+        return dict(copied=copied, remaining=[], partial=False)
 
     def move_many(self, values, destination):
         if not isinstance(values,list) or not 1<=len(values)<=5000:

@@ -29,6 +29,38 @@ def client(bridge, authenticated=True):
     return app.test_client()
 
 
+def test_preview_requires_auth_and_never_captures_on_unauthorized_request(bridge, monkeypatch):
+    monkeypatch.setattr(bridge,'preview',lambda:pytest.fail('must not capture'))
+    assert client(bridge,False).get('/api/face/preview').status_code==401
+
+
+def test_preview_returns_no_store_jpeg_and_handles_absent_window(bridge, monkeypatch):
+    assert client(bridge).get('/api/face/preview').status_code==503
+    monkeypatch.setattr(bridge,'preview',lambda:b'\xff\xd8example')
+    response=client(bridge).get('/api/face/preview')
+    assert response.status_code==200 and response.mimetype=='image/jpeg'
+    assert response.headers['Cache-Control']=='no-store'
+
+
+def test_preview_scoped_window_cache_and_invalid_capture(bridge, monkeypatch):
+    clock=[10.0]
+    monkeypatch.setattr('face_bridge.time.monotonic',lambda:clock[0])
+    monkeypatch.setattr(bridge,'windows',lambda _:[dict(id='0x123',width=1920,height=1080)])
+    monkeypatch.setattr(bridge,'gui_env',lambda:{})
+    calls=[]
+    def run(args,**kwargs):
+        calls.append(args);return SimpleNamespace(returncode=0,stdout=b'\xff\xd8image')
+    monkeypatch.setattr('face_bridge.subprocess.run',run)
+    assert bridge.preview()==bridge.preview()==b'\xff\xd8image'
+    assert len(calls)==1 and calls[0][-1]=='0x123'
+    clock[0]+=.25
+    assert bridge.preview()==b'\xff\xd8image' and len(calls)==2
+    bridge.preview_at=0
+    monkeypatch.setattr('face_bridge.subprocess.run',lambda *a,**k:SimpleNamespace(returncode=1,stdout=b''))
+    with pytest.raises(FaceError):bridge.preview()
+    assert bridge.preview_cached is None
+
+
 def test_auth_guards_read_and_control(bridge,monkeypatch):
     monkeypatch.setattr(bridge,'status',lambda:pytest.fail('Unauthenticated status read'))
     c=client(bridge,False)
@@ -75,7 +107,10 @@ def test_existing_face_is_reused_without_launch(bridge,monkeypatch,connected,run
     {'action':'arbitrary_rpc'}, {'action':'expression','expression':'not-an-expression'},
     {'action':'gaze','direction':'unbounded'}, {'action':'speak','text':'[nav]進め'},
     {'action':'speak','text':'[llm]質問'}, {'action':'subtitle','text':'x'*141},
-    {'action':'speak','text':''}, ['launch'],
+    {'action':'speak','text':''}, {'action':'instruction','mode':'other','text':'進め'},
+    {'action':'instruction','mode':'llm','text':'[nav]進め'},
+    {'action':'instruction','mode':'nav','text':''}, {'action':'instruction','mode':'nav','text':'x'*201},
+    ['launch'],
 ])
 def test_invalid_values_and_navigation_tags_never_reach_face(bridge,monkeypatch,payload):
     monkeypatch.setattr(bridge,'rpc',lambda _:pytest.fail('Invalid payload sent to Face'))
@@ -84,21 +119,32 @@ def test_invalid_values_and_navigation_tags_never_reach_face(bridge,monkeypatch,
 
 def test_allowed_commands_map_to_only_the_expected_face_rpc(bridge,monkeypatch):
     calls=[]
-    monkeypatch.setattr(bridge,'status',lambda:dict(connected=True,running=True,starting=False))
+    monkeypatch.setattr(bridge,'status',lambda:dict(connected=True,running=True,starting=False,speech_ready=True))
     monkeypatch.setattr(bridge,'windows',lambda _:[dict(id='0x123',width=1920,height=1080)])
     monkeypatch.setattr(bridge,'rpc',lambda p:(calls.append(p) or {'ok':True}))
     c=client(bridge)
     for payload in [dict(action='expression',expression='happy'),dict(action='gaze',direction='up'),
-                    dict(action='subtitle',text='テスト'),dict(action='speak',text='こんにちは'),dict(action='clear_text')]:
+                    dict(action='subtitle',text='テスト'),dict(action='speak',text='こんにちは'),
+                    dict(action='instruction',mode='llm',text='前に進んで'),
+                    dict(action='instruction',mode='nav',text='止まれ'),dict(action='clear_text')]:
         assert c.post('/api/face/action',json=payload).json['ok']
     assert calls==[dict(action='expression',expression='happy'),dict(action='gaze',x=960,y=162),
-                   dict(action='subtitle',text='テスト'),dict(action='speak',text='こんにちは'),dict(action='clear_text')]
+                   dict(action='subtitle',text='テスト'),dict(action='speak',text='こんにちは'),
+                   dict(action='instruction',mode='llm',text='前に進んで'),
+                   dict(action='instruction',mode='nav',text='止まれ'),dict(action='clear_text')]
 
 
 def test_disconnected_face_does_not_accept_controls(bridge):
     c=client(bridge)
     assert c.get('/api/face/status').status_code==200
     assert c.post('/api/face/action',json=dict(action='expression',expression='normal')).status_code==503
+
+
+def test_instruction_requires_the_speech_api(bridge, monkeypatch):
+    monkeypatch.setattr(bridge,'status',lambda:dict(connected=True,running=True,starting=False,speech_ready=False))
+    monkeypatch.setattr(bridge,'rpc',lambda _:pytest.fail('Instruction must not reach Face without speech API'))
+    response=client(bridge).post('/api/face/action',json=dict(action='instruction',mode='llm',text='前に進んで'))
+    assert response.status_code==503
 
 
 @pytest.mark.parametrize('expression', ['battery', 'failure', 'hurt'])
@@ -127,7 +173,10 @@ def test_worker_sends_typed_grpc_and_blocks_control_tags(monkeypatch):
     assert face_worker.call('/face',dict(action='expression',expression='happy'))['ok']
     assert face_worker.call('/face',dict(action='speak',text='こんにちは'))['ok']
     with pytest.raises(ValueError):face_worker.call('/face',dict(action='speak',text='[nav]進め'))
-    assert calls==[('expression','happy',1.5),('speak','こんにちは',2.5)]
+    assert face_worker.call('/face',dict(action='instruction',mode='llm',text='前に進んで'))['ok']
+    assert face_worker.call('/face',dict(action='instruction',mode='nav',text='止まれ'))['ok']
+    assert calls==[('expression','happy',1.5),('speak','こんにちは',2.5),
+                   ('speak','[llm]前に進んで',2.5),('speak','[nav]止まれ',2.5)]
     result=face_worker.call('/face',dict(action='status'))
     assert result['connected'] and result['speech_ready']
     assert calls[-1]==('speak','[ping]',.4)  # health probe produces no speech

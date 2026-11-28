@@ -29,7 +29,7 @@ def main():
     import rclpy
     from rclpy.qos import qos_profile_sensor_data
     from geometry_msgs.msg import Twist
-    from roboteq_ros2_driver.msg import RoboteqStatus
+    from roboteq_ros2_driver.msg import RoboteqStatus, RoboteqDiagnostics
 
     lock = open(Path('/tmp') / f'sirius_launcher_velocity_{os.getuid()}_{os.environ.get("ROS_DOMAIN_ID", "0")}.lock', 'w')
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -38,7 +38,7 @@ def main():
     model = VelocityControl()
     commands = queue.Queue(maxsize=64)
     eof = threading.Event()
-    driver = {'at': 0., 'physical': None, 'electronic': None}
+    driver = {'at': 0., 'physical': None, 'electronic': None, 'electronic_at': 0.}
     route = {'topic': '/cmd_vel_web', 'blocked': '接続確認中', 'at': 0., 'mode': 'mux'}
     publishers = {}
 
@@ -50,7 +50,6 @@ def main():
 
     def telemetry(msg):
         driver['at'] = time.monotonic()
-        driver['electronic'] = bool(msg.fault_flags & 16)
         voltage = float(msg.voltage)
         if voltage <= PHYSICAL_STOP_LOW_VOLTAGE:
             driver['physical'] = True
@@ -59,6 +58,11 @@ def main():
 
     subscription = node.create_subscription(RoboteqStatus, '/roboteq/status', telemetry,
                                              qos_profile_sensor_data)
+    def electronic_state(msg):
+        driver['electronic'] = bool(msg.software_estop)
+        driver['electronic_at'] = time.monotonic()
+    stop_subscription = node.create_subscription(RoboteqDiagnostics, '/roboteq/diagnostics',
+                                                electronic_state, qos_profile_sensor_data)
 
     def input_lines():
         try:
@@ -97,6 +101,8 @@ def main():
     def interlock(now):
         if now-driver['at'] > 2.:
             return 'Roboteqの状態を受信できません'
+        if now-driver['electronic_at'] > 2.:
+            return '電子停止状態を受信できません'
         if driver['electronic']:
             return '電子緊急停止がONです'
         if driver['physical'] is not False:

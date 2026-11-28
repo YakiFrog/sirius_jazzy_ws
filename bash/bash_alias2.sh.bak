@@ -1,30 +1,30 @@
-# PRESET: フルセンサ & FastLIO-自己位置推定
-# PRESET_ITEMS: roboteq,velodyne,imu,odom_path_real,foxglove,hokuyo,lio3d_lite,rviz2real
-# PRESET_UI: {"category": "共通", "visible": true, "note": ""}
-
-# PRESET: こまったときのROSBAG録画
-# PRESET_ITEMS: record_mapping
-# PRESET_UI: {"category": "共通", "visible": true, "note": "とりあえずこれで記録しておけば後処理できる"}
-
 # PRESET: フルセンサ &  sf_real
 # PRESET_ITEMS: roboteq,velodyne,hokuyo,imu,sf_real,odom_path_real,foxglove,tf_real
 # PRESET_UI: {"category": "共通", "visible": true, "note": ""}
 
-# PRESET: シミュレータセット
-# PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
-# PRESET_UI: {"category": "シミュレーション", "visible": true, "note": ""}
-
-# PRESET: 実機オフライン録画準備 (録画は別ボタン)
-# PRESET_ITEMS: roboteq,velodyne,imu,rviz2real,sf_real,slamtoolbox_real,zed_offline_recorder
-# PRESET_UI: {"category": "地図生成", "visible": true, "note": ""}
+# PRESET: 現実自律移動セット
+# PRESET_ITEMS: twist_mux,llm_goal,pos,nav2_real,mv_goal,record_rosbag,sirius_ble_gateway,sam3_map_load
+# PRESET_UI: {"category": "自律移動", "visible": true, "note": ""}
 
 # PRESET: ZED, THETA起動_real
 # PRESET_ITEMS: theta_capture,zed_offline_recorder
 # PRESET_UI: {"category": "センサー", "visible": true, "note": ""}
 
-# PRESET: 現実自律移動セット
-# PRESET_ITEMS: twist_mux,llm_goal,pos,nav2_real,mv_goal,record_rosbag,sirius_ble_gateway
-# PRESET_UI: {"category": "自律移動", "visible": true, "note": ""}
+# PRESET: こまったときのROSBAG録画
+# PRESET_ITEMS: record_mapping
+# PRESET_UI: {"category": "共通", "visible": true, "note": "とりあえずこれで記録しておけば後処理できる"}
+
+# PRESET: シミュレータセット
+# PRESET_ITEMS: rte,rviz2sim,sf_sim,odom_path
+# PRESET_UI: {"category": "シミュレーション", "visible": true, "note": ""}
+
+# PRESET: フルセンサ & FastLIO-自己位置推定
+# PRESET_ITEMS: roboteq,velodyne,imu,odom_path_real,foxglove,hokuyo,lio3d_lite,rviz2real
+# PRESET_UI: {"category": "共通", "visible": true, "note": ""}
+
+# PRESET: 実機オフライン録画準備 (録画は別ボタン)
+# PRESET_ITEMS: roboteq,velodyne,imu,rviz2real,sf_real,slamtoolbox_real,zed_offline_recorder
+# PRESET_UI: {"category": "地図生成", "visible": true, "note": ""}
 
 # PRESET: THETA色付き3D地図（実機）
 # PRESET_ITEMS: rviz2real,theta_capture,theta_colorize

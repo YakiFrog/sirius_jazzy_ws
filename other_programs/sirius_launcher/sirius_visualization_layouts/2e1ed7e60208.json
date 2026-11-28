@@ -112,7 +112,7 @@
           }
         },
         "publish": {
-          "type": "point",
+          "type": "pose_estimate",
           "poseTopic": "/sirius_visualization/disabled_pose",
           "pointTopic": "/sirius_visualization/disabled_point",
           "poseEstimateTopic": "/initialpose",

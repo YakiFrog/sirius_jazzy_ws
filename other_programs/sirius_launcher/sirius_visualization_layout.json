@@ -12,8 +12,16 @@
           "divisions": 30,
           "lineWidth": 1,
           "color": "#248eff",
-          "position": [0, 0, 0],
-          "rotation": [0, 0, 0],
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
           "order": 1
         }
       },
@@ -21,9 +29,22 @@
         "distance": 20,
         "perspective": true,
         "phi": 55,
-        "target": [0, 0, 0],
-        "targetOffset": [0, 0, 0],
-        "targetOrientation": [0, 0, 0, 1],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
         "thetaOffset": 45,
         "fovy": 45,
         "near": 0.5,
@@ -66,7 +87,7 @@
         }
       },
       "publish": {
-        "type": "point",
+        "type": "pose_estimate",
         "poseTopic": "/sirius_visualization/disabled_pose",
         "pointTopic": "/sirius_visualization/disabled_point",
         "poseEstimateTopic": "/initialpose",

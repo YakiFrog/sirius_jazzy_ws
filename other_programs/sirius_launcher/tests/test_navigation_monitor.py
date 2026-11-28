@@ -46,3 +46,18 @@ def test_preflight_uses_configured_scan_and_expires_read_only_statuses():
     assert not data['nodes']['bt_navigator']['fresh']
     assert not data['scan']['fresh']
     assert not data['communication']['fresh']
+
+
+def test_lifecycle_history_records_changes_and_costmap_data_separately():
+    s=NavigationState()
+    s.ingest('lifecycle/global_costmap/global_costmap',{'id':2,'label':'inactive','active':False},10)
+    s.ingest('lifecycle/global_costmap/global_costmap',{'id':13,'label':'activating','active':False},11)
+    s.ingest('lifecycle/global_costmap/global_costmap',{'id':3,'label':'active','active':True},12)
+    s.ingest('lifecycle/global_costmap/global_costmap',{'id':3,'label':'active','active':True},13)
+    d=s.snapshot(14)['lifecycle']
+    assert len(d['history'])==3
+    assert d['nodes']['global_costmap/global_costmap']['value']['id']==3
+    assert not d['costmaps']['global']['fresh']  # Active does not prove receipt.
+    s.ingest('costmap/global',{'valid':True,'width':20,'height':30,'frame':'map'},14)
+    assert s.snapshot(15)['lifecycle']['costmaps']['global']['fresh']
+    assert not s.snapshot(21)['lifecycle']['nodes']['global_costmap/global_costmap']['fresh']
